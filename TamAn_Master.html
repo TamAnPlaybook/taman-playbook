@@ -1,4 +1,4 @@
-<!-- VERSION: v3.7-importpos-uplinef1 -->
+<!-- VERSION: v3.8-binary-balance-colors -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1758,6 +1758,52 @@ function syncTreeToMembers(rerender){
     if(rerender){renderAll();updateStats();populateBcSel();}
   }
 }
+// Màu nền node theo quy tắc cân nhánh (sơ đồ nhị phân)
+var BIN_HL={ORANGE:'#FFB74D',GREEN:'#81C784',BLUE:'#4FC3F7',PURPLE:'#BA68C8'};
+function computeBinaryHighlights(pos,rootId){
+  // Trả về { nodeId: {bg, nn?} } cho các node ĐANG HIỂN THỊ (có trong pos), dựa trên rootId hiển thị.
+  // - Mỗi tầng (≥1) mỗi nhánh Trái/Phải: ID gắn ĐẦU TIÊN (theo thứ tự tạo) → cam; nếu nhánh kia cùng tầng cũng có → cả 2 thành xanh lá (cân cặp).
+  // - Tầng ≥4: các ID còn lại = "ID NN", đánh số 1..A (trái) / 1..B (phải) theo trên→dưới, trái→phải; min(A,B) cặp đầu = tím (cân nhánh nhỏ), còn lại xanh dương.
+  var out={};
+  if(!rootId||!pos[rootId])return out;
+  var orderIdx={};treeNodes.forEach(function(n,i){orderIdx[n.id]=i;});
+  function branchOf(n){
+    var cur=n,g=0;
+    while(cur&&cur.parentId&&g<300){
+      if(cur.parentId===rootId)return cur.side||null;
+      cur=treeNodes.find(function(x){return x.id===cur.parentId;});g++;
+    }
+    return null;
+  }
+  var meta={},firstOf={},hasLB={};
+  treeNodes.forEach(function(n){
+    if(!pos[n.id]||n.id===rootId)return;
+    var side=branchOf(n);if(!side)return;
+    var lvl=computeLevel2(n.id);
+    meta[n.id]={lvl:lvl,side:side};
+    var key=lvl+'|'+side;hasLB[key]=true;
+    if(!firstOf[key]||orderIdx[n.id]<orderIdx[firstOf[key].id])firstOf[key]=n;
+  });
+  var isFirst={};
+  Object.keys(firstOf).forEach(function(key){
+    var p=key.split('|'),lvl=+p[0],side=p[1];
+    if(lvl<1)return;
+    var node=firstOf[key];isFirst[node.id]=true;
+    var both=!!hasLB[lvl+'|'+(side==='L'?'R':'L')];
+    out[node.id]={bg:both?BIN_HL.GREEN:BIN_HL.ORANGE};
+  });
+  var nnL=[],nnR=[];
+  treeNodes.forEach(function(n){
+    var m=meta[n.id];if(!m||m.lvl<4||isFirst[n.id])return;
+    (m.side==='L'?nnL:nnR).push(n);
+  });
+  function byPos(a,b){var pa=pos[a.id],pb=pos[b.id];if(pa.y!==pb.y)return pa.y-pb.y;return pa.x-pb.x;}
+  nnL.sort(byPos);nnR.sort(byPos);
+  var mn=Math.min(nnL.length,nnR.length);
+  nnL.forEach(function(n,i){out[n.id]={bg:(i<mn?BIN_HL.PURPLE:BIN_HL.BLUE),nn:i+1};});
+  nnR.forEach(function(n,i){out[n.id]={bg:(i<mn?BIN_HL.PURPLE:BIN_HL.BLUE),nn:i+1};});
+  return out;
+}
 function renderTree(){
   clearRankMemo();
   syncTreeToMembers(false);
@@ -1783,6 +1829,12 @@ function renderTree(){
     lines+='<path d="M'+x1+' '+y1+' C'+x1+' '+my+','+x2+' '+my+','+x2+' '+y2+'" stroke="'+col+'" stroke-width="2.5" fill="none" opacity="0.75"/>';
   });
   var _rb=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);
+  var hl=computeBinaryHighlights(pos,_rb);
+  // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
+  if(_rb&&pos[_rb]){
+    var _dx=pos[_rb].x+NW/2;
+    lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#9AA0A6" stroke-width="2.5" stroke-dasharray="9,7" opacity="0.6"/>';
+  }
   var _rootTang=_rb?computeLevel2(_rb):0;
   var _sepRel=4-_rootTang; // hàng (tương đối) của Tầng 4 trên màn hình đang xem
   var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4 (theo tầng tuyệt đối)
@@ -1805,8 +1857,10 @@ function renderTree(){
     var hasL=kids.some(function(k){return k.side==='L';});
     var hasR=kids.some(function(k){return k.side==='R';});
     h+='<div class="tnode" style="left:'+(p.x+NW/2)+'px;top:'+(p.y+NH/2)+'px;width:'+NW+'px;height:'+NH+'px">';
-    h+='<div class="tnode-box'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" style="width:100%;height:100%;background:white;border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
+    var _bg=(hl[n.id]&&hl[n.id].bg)||'white';
+    h+='<div class="tnode-box'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
+    if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     h+='<div style="font-weight:700;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;color:#777;margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(!n.parentId){
