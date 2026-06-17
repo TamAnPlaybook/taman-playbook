@@ -1,4 +1,4 @@
-<!-- VERSION: v3.5-tier-lines-focus -->
+<!-- VERSION: v3.6-phahe-right-only -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -2072,8 +2072,11 @@ function buildNodeView(n){
   h+='<button class="btn btn-g btn-sm nmod-edit-btn" data-nid="'+n.id+'">\u270F\uFE0F S\u1eeda</button>';
   if(n.side){
     var newSide=n.side==='L'?'R':'L';
-    var newLbl=n.side==='L'?'Ph\u1ea3i':'Tr\u00e1i';
-    h+='<button class="btn btn-o btn-sm nmod-side-btn" data-nid="'+n.id+'" data-newside="'+newSide+'">\u21C4 \u0110\u1ed5i sang '+newLbl+'</button>';
+    // Ph\u1ea3 h\u1ec7 ch\u1ec9 \u0111\u01b0\u1ee3c b\u00ean Ph\u1ea3i \u2192 \u1ea9n n\u00fat \u0111\u1ed5i-sang-Tr\u00e1i cho node ph\u1ea3 h\u1ec7.
+    if(!(ph&&newSide==='L')){
+      var newLbl=newSide==='R'?'Ph\u1ea3i':'Tr\u00e1i';
+      h+='<button class="btn btn-o btn-sm nmod-side-btn" data-nid="'+n.id+'" data-newside="'+newSide+'">\u21C4 \u0110\u1ed5i sang '+newLbl+'</button>';
+    }
   }
   h+='</div>';
   return h;
@@ -2192,10 +2195,30 @@ function saveNodeModal(){
     data.id=uid();
     data.parentId=activeNodeModal.parentId||null;
     data.side=activeNodeModal.side||null;
+    // QUY TẮC vị trí: ID PHẢ HỆ (bảo trợ ≠ người đặt trên) chỉ được đặt bên PHẢI.
+    // ID TRỰC HỆ (bảo trợ = người đặt trên) được cả 2 bên.
+    if(data.parentId){
+      var _par=treeNodes.find(function(x){return x.id===data.parentId;});
+      var _isPH=_par&&data.f1of&&_par.name!==data.f1of;
+      if(_isPH&&data.side==='L'){
+        var _rTaken=treeNodes.some(function(x){return x.parentId===data.parentId&&x.side==='R';});
+        if(_rTaken){showToast('ID phả hệ chỉ đặt được bên Phải, nhưng bên Phải đã có người.');return;}
+        data.side='R'; // tự dời sang Phải cho đúng quy tắc phả hệ
+        _saveMsg='✓ Đã thêm bên Phải (ID phả hệ chỉ đặt bên Phải)';
+      }
+    }
     treeNodes.push(data);
   }else if(activeNodeModal.mode==='edit'){
     var n=treeNodes.find(function(x){return x.id===activeNodeModal.nodeId;});
     if(n){
+      // QUY TẮC vị trí: không cho đổi bảo trợ khiến node thành phả hệ khi đang ở bên TRÁI.
+      if(n.side==='L'&&n.parentId){
+        var _pare=treeNodes.find(function(x){return x.id===n.parentId;});
+        if(_pare&&data.f1of&&_pare.name!==data.f1of){
+          showToast('Node này đang bên Trái. ID phả hệ phải ở bên Phải — hãy đổi sang Phải trước.');
+          return;
+        }
+      }
       var oldName=n.name;
       n.name=data.name;n.joinDate=data.joinDate;n.idCode=data.idCode;
       n.f1of=data.f1of;n.phone=data.phone;n.note=data.note;
@@ -2231,6 +2254,7 @@ function deleteNode(){
 }
 function moveNodeSide(nid,newSide){
   var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
+  if(newSide==='L'&&isPhaHe(n)){showToast('ID phả hệ chỉ được đặt bên Phải');return;}
   var sib=treeNodes.find(function(x){return x.parentId===n.parentId&&x.side===newSide&&x.id!==nid;});
   if(sib){showToast('B\u00ean '+(newSide==='L'?'Tr\u00e1i':'Ph\u1ea3i')+' \u0111\u00e3 c\u00f3 ng\u01b0\u1eddi');return;}
   n.side=newSide;
