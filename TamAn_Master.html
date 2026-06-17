@@ -1,4 +1,4 @@
-<!-- VERSION: v3.6-phahe-right-only -->
+<!-- VERSION: v3.7-importpos-uplinef1 -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -2107,19 +2107,26 @@ function buildNodeForm(node,addOpts){
   var tnOpts='';
   var nameSet={};
   treeNodes.forEach(function(n){nameSet[n.name]=1;});
-  treeNodes.forEach(function(n){
-    if(node&&n.id===node.id)return;
-    var sel=defF1===n.name?' selected':'';
-    tnOpts+='<option value="'+escHtml(n.name)+'"'+sel+'>'+escHtml(n.name)+'</option>';
-  });
-  // Tên người bảo trợ NGOÀI sơ đồ đã từng nhập (f1of không trùng tên ID nào)
-  var extSeen={};
-  treeNodes.forEach(function(n){
-    if(n.f1of&&!nameSet[n.f1of]&&!extSeen[n.f1of]){extSeen[n.f1of]=1;
-      var sel2=defF1===n.f1of?' selected':'';
-      tnOpts+='<option value="'+escHtml(n.f1of)+'"'+sel2+'>'+escHtml(n.f1of)+' (ngoài sơ đồ)</option>';
-    }
-  });
+  var added={};
+  function addF1Opt(val,label){
+    if(!val||added[val])return;added[val]=1;
+    var sel=defF1===val?' selected':'';
+    tnOpts+='<option value="'+escHtml(val)+'"'+sel+'>'+escHtml(label)+'</option>';
+  }
+  // CHỈ HIỆN TUYẾN TRÊN: bảo trợ hợp lệ = người đặt trên (parent) và các ID phía trên tới gốc
+  // (gồm cả trực hệ lẫn phả hệ). KHÔNG hiện sideline (ID không nằm trên tuyến trên của vị trí này).
+  var startPid=node?node.parentId:((activeNodeModal&&activeNodeModal.parentId)||null);
+  var curUp=startPid,seenUp={},guardUp=0;
+  while(curUp&&!seenUp[curUp]&&guardUp<300){
+    seenUp[curUp]=1;
+    var un=treeNodes.find(function(x){return x.id===curUp;});
+    if(!un)break;
+    addF1Opt(un.name,un.name);                                   // ID tuyến trên (trong sơ đồ)
+    if(un.f1of&&!nameSet[un.f1of])addF1Opt(un.f1of,un.f1of+' (ngoài sơ đồ)'); // người bảo trợ ngoài sơ đồ của mắt xích trên
+    curUp=un.parentId;guardUp++;
+  }
+  // Giữ bảo trợ HIỆN TẠI nếu (dữ liệu cũ) không nằm trong tuyến trên — để sửa không bị mất giá trị
+  if(defF1&&!added[defF1])addF1Opt(defF1,defF1+' (hiện tại)');
   var h='';
   h+='<div class="nmod-row"><div class="nmod-lbl">H\u1ecd t\u00ean <span style="color:#E53935">*</span></div>';
   h+='<input id="nf-name" class="nmod-inp" style="flex:1;min-width:0" value="'+escHtml(v.name||'')+'" placeholder="Nguy\u1ec5n V\u0103n A"></div>';
@@ -2652,11 +2659,20 @@ function importSubtree(){
   };
   inp.click();
 }
+function importHeadNode(data){
+  // Đầu nhánh (ID đầu tiên của nhánh lẻ) trong file: ưu tiên node trùng rootName & không có cha; nếu chỉ có 1 gốc thì lấy gốc đó.
+  if(!data||!Array.isArray(data.nodes))return null;
+  var roots=data.nodes.filter(function(n){return !n.parentId;});
+  if(data.rootName){var byName=roots.find(function(n){return n.name===data.rootName;});if(byName)return byName;}
+  return roots.length===1?roots[0]:null;
+}
 function openImportModal(data){
   var existing=treeNodes.length;
   var curNames={};treeNodes.forEach(function(n){curNames[n.name]=1;});
   var dupNames=0;
   data.nodes.forEach(function(n){if(curNames[n.name])dupNames++;});
+  if(pendingImport)pendingImport._attach=null;
+  var head=importHeadNode(data);
   var structLbl=data.structure==='star'?'theo tuyến bảo trợ (mặt trời)':data.structure==='binary'?'theo vị trí đặt (nhị phân)':'cả cây';
   var body='<div style="font-size:14px;line-height:1.8">';
   body+='Nhánh trong file: <b>'+escHtml(data.rootName||'?')+'</b><br>';
@@ -2665,17 +2681,80 @@ function openImportModal(data){
   body+='Cây hiện tại của bạn: <b>'+existing+'</b> ID';
   if(existing&&dupNames)body+=' · trùng tên: <b style="color:#C62828">'+dupNames+'</b>';
   body+='</div>';
+  // XÁC NHẬN VỊ TRÍ — chọn ID trong cây để gắn đầu nhánh lẻ vào (chỉ khi đã có cây & có đầu nhánh rõ ràng)
+  if(existing&&head){
+    var headDup=!!curNames[head.name];
+    body+='<div style="margin-top:12px;font-size:13px;color:#444;background:#EDE7F6;border:1px solid #D1C4E9;border-radius:9px;padding:11px;line-height:1.7">';
+    body+='<b>📍 Vị trí gắn nhánh lẻ</b> — chọn 1 ID trong cây để gắn đầu nhánh <b>"'+escHtml(head.name)+'"</b> vào dưới:';
+    if(headDup){
+      body+='<div style="color:#C62828;margin-top:6px">⚠ Đầu nhánh trùng tên với ID đã có → không gắn theo vị trí được. Đổi tên trước, hoặc dùng "Nối tiếp" (thêm gốc riêng, bỏ qua ID trùng).</div>';
+    }else{
+      body+='<input id="imp-pos-filter" class="sel-filter" style="margin-top:8px" placeholder="🔍 Gõ tìm tên ID để gắn vào...">';
+      body+='<div id="imp-pos-sug" style="display:none;max-height:200px;overflow-y:auto;background:white;border:1px solid #D8D8D8;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);margin-top:4px"></div>';
+      body+='<div id="imp-pos-picked" style="margin-top:8px"></div>';
+      body+='<div style="font-size:11px;color:#7E57C2;margin-top:6px">Chọn vị trí rồi bấm <b>Gắn vào vị trí</b>. Phả hệ (bảo trợ ≠ ID đặt trên) chỉ gắn được bên Phải.</div>';
+    }
+    body+='</div>';
+  }
   body+='<div style="margin-top:12px;font-size:13px;color:#444;background:#F6F6F4;border-radius:9px;padding:11px;line-height:1.7">';
   body+='<b>Chọn cách nhập:</b><br>';
   body+='• <b>Thay thế toàn bộ</b> — xoá cây + thành viên hiện tại, thay bằng nhánh trong file. Dùng cho <b>tài khoản mới / trống</b>.<br>';
-  body+='• <b>Nối tiếp</b> — thêm nhánh vào cây hiện tại như một <b>gốc riêng</b>. Điều kiện: ID <b>trùng tên sẽ bị bỏ qua</b>'+(dupNames?(' ('+dupNames+' ID)'):'')+', mã ID được tạo mới để không đụng nhau.';
+  body+='• <b>Gắn vào vị trí</b> — gắn đầu nhánh vào đúng ID đã chọn ở trên.<br>';
+  body+='• <b>Nối tiếp (gốc riêng)</b> — thêm nhánh như một <b>gốc tách rời</b>, không gắn vào ai. ID <b>trùng tên sẽ bị bỏ qua</b>'+(dupNames?(' ('+dupNames+' ID)'):'')+', mã ID được tạo mới để không đụng nhau.';
   body+='</div>';
   document.getElementById('imp-body').innerHTML=body;
   var foot='<button class="btn btn-o" data-imp-close>Hủy</button>';
-  if(existing)foot+='<button class="btn btn-d" data-imp-mode="merge">➕ Nối tiếp</button>';
+  if(existing&&head&&!curNames[head.name])foot+='<button class="btn btn-g" data-imp-mode="attach">📍 Gắn vào vị trí</button>';
+  if(existing)foot+='<button class="btn btn-d" data-imp-mode="merge">➕ Nối tiếp (gốc riêng)</button>';
   foot+='<button class="btn btn-r" data-imp-mode="replace">♻️ Thay thế toàn bộ</button>';
   document.getElementById('imp-foot').innerHTML=foot;
   document.getElementById('imp-ov').classList.add('open');
+}
+function renderImpPosSug(q){
+  // Dropdown gợi ý chọn ID đích để gắn nhánh — CÙNG CHUẨN tìm kiếm của app (bỏ dấu + tag F·Tầng + click chọn)
+  var box=document.getElementById('imp-pos-sug');if(!box)return;
+  q=q||'';
+  if(!q.trim()){box.style.display='none';box.innerHTML='';return;}
+  var nq=noAccent(q);
+  var cands=treeNodes.filter(function(c){return noAccent(c.name).indexOf(nq)>=0;});
+  cands.sort(function(a,b){var ai=noAccent(a.name).indexOf(nq),bi=noAccent(b.name).indexOf(nq);if(ai!==bi)return ai-bi;return a.name.localeCompare(b.name);});
+  if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có ID khớp</div>';return;}
+  var h='';
+  cands.slice(0,15).forEach(function(c){
+    var si=sponsorInfo(c);
+    var tag=si.depth>0?('F'+si.depth+' · Tầng '+computeLevel2(c.id)):'Gốc';
+    h+='<div class="srch-sug" data-imppos-nid="'+c.id+'" data-imppos-name="'+escHtml(c.name)+'"><span class="srch-sug-name">'+escHtml(c.name)+'</span><span class="srch-sug-tag">'+tag+'</span></div>';
+  });
+  box.innerHTML=h;box.style.display='block';
+}
+function renderImpPosPicked(){
+  var box=document.getElementById('imp-pos-picked');if(!box)return;
+  if(!pendingImport||!pendingImport._attach){box.innerHTML='';return;}
+  var at=pendingImport._attach;
+  var par=treeNodes.find(function(x){return x.id===at.parentId;});
+  if(!par){box.innerHTML='<span style="color:#C62828">ID gắn không còn tồn tại</span>';at.side=null;return;}
+  var head=importHeadNode(pendingImport);
+  var phaHe=head&&head.f1of&&head.f1of!==par.name;
+  var freeL=!treeNodes.some(function(x){return x.parentId===at.parentId&&x.side==='L';});
+  var freeR=!treeNodes.some(function(x){return x.parentId===at.parentId&&x.side==='R';});
+  var allowed=[];
+  if(phaHe){if(freeR)allowed.push('R');}
+  else{if(freeL)allowed.push('L');if(freeR)allowed.push('R');}
+  var h='✓ Gắn dưới: <b>'+escHtml(par.name)+'</b>'+(phaHe?' <span style="color:#8E24AA">· phả hệ (chỉ bên Phải)</span>':' <span style="color:#1A7A5E">· trực hệ</span>');
+  if(!allowed.length){
+    at.side=null;
+    h+='<div style="color:#C62828;margin-top:4px">'+(phaHe?'Bên Phải của ID này đã có người → không gắn phả hệ vào đây. Chọn ID khác.':'Cả 2 bên của ID này đã đầy → chọn ID khác.')+'</div>';
+  }else{
+    if(at.side&&allowed.indexOf(at.side)<0)at.side=null;
+    if(!at.side)at.side=allowed[0];
+    h+='<div style="margin-top:6px;display:flex;gap:6px">';
+    allowed.forEach(function(s){
+      var sel=at.side===s;
+      h+='<button class="btn btn-sm '+(sel?'btn-d':'btn-o')+'" data-imppos-side="'+s+'">'+(s==='L'?'⬅️ Trái':'➡️ Phải')+(sel?' ✓':'')+'</button>';
+    });
+    h+='</div>';
+  }
+  box.innerHTML=h;
 }
 function closeImportModal(){
   var ov=document.getElementById('imp-ov');if(ov)ov.classList.remove('open');
@@ -2697,9 +2776,20 @@ function doImportReplace(){
   afterImportRender();
   showToast('✓ Đã thay thế: '+treeNodes.length+' ID, '+members.length+' TV');
 }
-function doImportMerge(){
+function doImportMerge(useAttach){
   var data=pendingImport;if(!data)return;
   var curNames={};treeNodes.forEach(function(n){curNames[n.name]=1;});
+  var head=importHeadNode(data);
+  var attach=(useAttach&&data._attach&&data._attach.parentId&&data._attach.side)?data._attach:null;
+  var attParName='';
+  if(attach){
+    var par=treeNodes.find(function(x){return x.id===attach.parentId;});
+    if(!par){showToast('ID gắn không còn tồn tại — chọn lại');return;}
+    if(!head||curNames[head.name]){showToast('Đầu nhánh trùng tên ID đã có → không gắn theo vị trí được');return;}
+    if(head.f1of&&head.f1of!==par.name&&attach.side==='L'){showToast('Đầu nhánh là phả hệ → chỉ gắn được bên Phải');return;}
+    if(treeNodes.some(function(x){return x.parentId===attach.parentId&&x.side===attach.side;})){showToast('Bên '+(attach.side==='L'?'Trái':'Phải')+' của "'+par.name+'" đã có người');return;}
+    attParName=par.name;
+  }
   var idMap={},accepted=[],skipped=0;
   data.nodes.forEach(function(n){
     if(curNames[n.name]){skipped++;return;} // chống trùng tên (tên là khoá bảo trợ → không cho đụng)
@@ -2709,7 +2799,8 @@ function doImportMerge(){
   accepted.forEach(function(a){
     var c=JSON.parse(JSON.stringify(a.src));
     c.id=a.newId;
-    if(c.parentId&&idMap[c.parentId])c.parentId=idMap[c.parentId]; // cha được nhận → nối lại
+    if(attach&&head&&a.src.id===head.id){c.parentId=attach.parentId;c.side=attach.side;} // đầu nhánh → gắn vào vị trí đã chọn
+    else if(c.parentId&&idMap[c.parentId])c.parentId=idMap[c.parentId]; // cha được nhận → nối lại
     else{c.parentId=null;c.side=null;}                            // cha bị bỏ/không có → thành gốc riêng
     treeNodes.push(c);
   });
@@ -2729,7 +2820,8 @@ function doImportMerge(){
   });
   saveTree2();saveMembers();
   afterImportRender();
-  showToast('✓ Nối tiếp: +'+accepted.length+' ID, +'+memAdded+' TV, bỏ qua '+skipped+' trùng tên');
+  var posMsg=attach?(' → gắn dưới "'+attParName+'" ('+(attach.side==='L'?'Trái':'Phải')+')'):'';
+  showToast('✓ '+(attach?'Gắn nhánh':'Nối tiếp')+': +'+accepted.length+' ID, +'+memAdded+' TV, bỏ qua '+skipped+' trùng tên'+posMsg);
 }
 
 // ================================================================
@@ -2834,7 +2926,26 @@ document.addEventListener('click',function(e){
     if(_mode==='replace'){
       if(treeNodes.length&&!confirm('Thay thế TOÀN BỘ cây + thành viên hiện tại bằng nhánh trong file? Không thể hoàn tác.'))return;
       doImportReplace();
-    }else if(_mode==='merge'){doImportMerge();}
+    }else if(_mode==='attach'){
+      if(!pendingImport||!pendingImport._attach||!pendingImport._attach.parentId||!pendingImport._attach.side){showToast('Chọn vị trí (ID + bên) để gắn trước');return;}
+      doImportMerge(true);
+    }else if(_mode==='merge'){doImportMerge(false);}
+    return;
+  }
+  // Chọn ID đích để gắn nhánh lẻ (modal nhập nhánh)
+  t=e.target.closest('[data-imppos-nid]');
+  if(t){
+    var _ppid=t.getAttribute('data-imppos-nid'),_ppnm=t.getAttribute('data-imppos-name');
+    if(pendingImport)pendingImport._attach={parentId:_ppid,parentName:_ppnm,side:null};
+    var _pf=document.getElementById('imp-pos-filter');if(_pf)_pf.value=_ppnm;
+    var _ps=document.getElementById('imp-pos-sug');if(_ps)_ps.style.display='none';
+    renderImpPosPicked();
+    return;
+  }
+  // Chọn bên (Trái/Phải) để gắn nhánh lẻ
+  t=e.target.closest('[data-imppos-side]');
+  if(t){
+    if(pendingImport&&pendingImport._attach){pendingImport._attach.side=t.getAttribute('data-imppos-side');renderImpPosPicked();}
     return;
   }
   if(e.target&&e.target.id==='imp-ov'){closeImportModal();return;}
@@ -3135,6 +3246,7 @@ document.addEventListener('input',function(e){
   if(e.target.id==='srch'){renderDdSearchSug(e.target.value);}
   if(e.target.id==='tree-search'){renderSearchSug(e.target.value);}
   if(e.target.id==='lk-add-filter'){renderLkAddSug(e.target.value);}
+  if(e.target.id==='imp-pos-filter'){renderImpPosSug(e.target.value);}
 });
 
 // ================================================================
