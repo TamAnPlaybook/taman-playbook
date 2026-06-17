@@ -1,4 +1,4 @@
-<!-- VERSION: v3.8-binary-balance-colors -->
+<!-- VERSION: v3.9-focus-relative-divider-joindate -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1760,34 +1760,52 @@ function syncTreeToMembers(rerender){
 }
 // Màu nền node theo quy tắc cân nhánh (sơ đồ nhị phân)
 var BIN_HL={ORANGE:'#FFB74D',GREEN:'#81C784',BLUE:'#4FC3F7',PURPLE:'#BA68C8'};
+function rootSideOf(nid,rootId){
+  // Nhánh (L/R) của nid so với rootId; null nếu là rootId hoặc không nằm dưới rootId.
+  var cur=treeNodes.find(function(x){return x.id===nid;}),g=0;
+  while(cur&&cur.parentId&&g<400){
+    if(cur.parentId===rootId)return cur.side||null;
+    cur=treeNodes.find(function(x){return x.id===cur.parentId;});g++;
+  }
+  return null;
+}
+function relLevelOf(nid,rootId){
+  // Tầng TƯƠNG ĐỐI tính từ rootId (rootId = 0); -1 nếu nid không nằm dưới rootId.
+  if(nid===rootId)return 0;
+  var d=0,cur=nid,g=0;
+  while(cur&&cur!==rootId&&g<400){
+    var n=treeNodes.find(function(x){return x.id===cur;});
+    if(!n||!n.parentId)return -1;
+    cur=n.parentId;d++;g++;
+  }
+  return cur===rootId?d:-1;
+}
 function computeBinaryHighlights(pos,rootId){
-  // Trả về { nodeId: {bg, nn?} } cho các node ĐANG HIỂN THỊ (có trong pos), dựa trên rootId hiển thị.
-  // - Mỗi tầng (≥1) mỗi nhánh Trái/Phải: ID gắn ĐẦU TIÊN (theo thứ tự tạo) → cam; nếu nhánh kia cùng tầng cũng có → cả 2 thành xanh lá (cân cặp).
+  // Trả về { nodeId: {bg, nn?} } cho các node ĐANG HIỂN THỊ (có trong pos), tính TƯƠNG ĐỐI với rootId hiển thị
+  // → focus 1 ID thì ID đó thành "gốc" và mọi tính năng hiện như gốc thật.
+  // - Mỗi tầng (≥1) mỗi nhánh Trái/Phải: ID gắn ĐẦU TIÊN (THÁNG VÀO ID/joinDate sớm nhất) → cam; nếu nhánh kia cùng tầng cũng có → cả 2 xanh lá (cân cặp).
   // - Tầng ≥4: các ID còn lại = "ID NN", đánh số 1..A (trái) / 1..B (phải) theo trên→dưới, trái→phải; min(A,B) cặp đầu = tím (cân nhánh nhỏ), còn lại xanh dương.
   var out={};
   if(!rootId||!pos[rootId])return out;
   var orderIdx={};treeNodes.forEach(function(n,i){orderIdx[n.id]=i;});
-  function branchOf(n){
-    var cur=n,g=0;
-    while(cur&&cur.parentId&&g<300){
-      if(cur.parentId===rootId)return cur.side||null;
-      cur=treeNodes.find(function(x){return x.id===cur.parentId;});g++;
-    }
-    return null;
+  function earlier(a,b){ // sớm hơn = THÁNG VÀO ID nhỏ hơn; thiếu joinDate xếp sau; hoà thì theo thứ tự tạo
+    var ja=parseJoinDate(a.joinDate),jb=parseJoinDate(b.joinDate);
+    var aa=ja?ja.abs:Infinity,bb=jb?jb.abs:Infinity;
+    if(aa!==bb)return aa<bb;
+    return orderIdx[a.id]<orderIdx[b.id];
   }
   var meta={},firstOf={},hasLB={};
   treeNodes.forEach(function(n){
     if(!pos[n.id]||n.id===rootId)return;
-    var side=branchOf(n);if(!side)return;
-    var lvl=computeLevel2(n.id);
+    var side=rootSideOf(n.id,rootId);if(!side)return;
+    var lvl=relLevelOf(n.id,rootId);if(lvl<1)return;
     meta[n.id]={lvl:lvl,side:side};
     var key=lvl+'|'+side;hasLB[key]=true;
-    if(!firstOf[key]||orderIdx[n.id]<orderIdx[firstOf[key].id])firstOf[key]=n;
+    if(!firstOf[key]||earlier(n,firstOf[key]))firstOf[key]=n;
   });
   var isFirst={};
   Object.keys(firstOf).forEach(function(key){
     var p=key.split('|'),lvl=+p[0],side=p[1];
-    if(lvl<1)return;
     var node=firstOf[key];isFirst[node.id]=true;
     var both=!!hasLB[lvl+'|'+(side==='L'?'R':'L')];
     out[node.id]={bg:both?BIN_HL.GREEN:BIN_HL.ORANGE};
@@ -1810,6 +1828,18 @@ function renderTree(){
   var pos=layoutTree();
   var svg=document.getElementById('tree-svg');
   var box=document.getElementById('tree-nodes');
+  var _rb=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);
+  // Đặt GỐC vào đúng khe giữa 2 nhánh → đường chia không cắt nhánh nào, 2 nhánh Trái/Phải không lấn qua lằn ranh ở giữa
+  if(_rb&&pos[_rb]){
+    var _lEdge=-Infinity,_rEdge=Infinity,_hasL=false,_hasR=false;
+    treeNodes.forEach(function(n){
+      if(!pos[n.id]||n.id===_rb)return;
+      var sd=rootSideOf(n.id,_rb);
+      if(sd==='L'){_hasL=true;if(pos[n.id].x+NW>_lEdge)_lEdge=pos[n.id].x+NW;}
+      else if(sd==='R'){_hasR=true;if(pos[n.id].x<_rEdge)_rEdge=pos[n.id].x;}
+    });
+    if(_hasL&&_hasR)pos[_rb].x=(_lEdge+_rEdge)/2-NW/2;
+  }
   var maxX=0,maxY=0;
   Object.keys(pos).forEach(function(k){
     if(pos[k].x>maxX)maxX=pos[k].x;
@@ -1828,17 +1858,15 @@ function renderTree(){
     var my=(y1+y2)/2;
     lines+='<path d="M'+x1+' '+y1+' C'+x1+' '+my+','+x2+' '+my+','+x2+' '+y2+'" stroke="'+col+'" stroke-width="2.5" fill="none" opacity="0.75"/>';
   });
-  var _rb=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);
   var hl=computeBinaryHighlights(pos,_rb);
   // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
   if(_rb&&pos[_rb]){
     var _dx=pos[_rb].x+NW/2;
     lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#9AA0A6" stroke-width="2.5" stroke-dasharray="9,7" opacity="0.6"/>';
   }
-  var _rootTang=_rb?computeLevel2(_rb):0;
-  var _sepRel=4-_rootTang; // hàng (tương đối) của Tầng 4 trên màn hình đang xem
-  var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4 (theo tầng tuyệt đối)
-  if(_rootTang<=3&&maxY>=_sepRel*(NH+VGAP)+60){
+  var _sepRel=4; // Tầng 4 TƯƠNG ĐỐI từ gốc đang hiển thị (focus tính như gốc)
+  var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4
+  if(maxY>=_sepRel*(NH+VGAP)+60){
     lines+='<line x1="0" y1="'+sepY+'" x2="'+W+'" y2="'+sepY+'" stroke="#FFD600" stroke-width="4" stroke-dasharray="14,7" opacity="0.95"/>';
     lines+='<rect x="'+(W/2-110)+'" y="'+(sepY-13)+'" width="220" height="26" rx="13" fill="#FFD600"/>';
     lines+='<text x="'+(W/2)+'" y="'+(sepY+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#5D4000" font-family="Arial">T\u1ea7ng 3 \u2191 \u2502 \u2193 T\u1ea7ng 4</text>';
@@ -1850,7 +1878,7 @@ function renderTree(){
     var col=branchColor(n.id);
     var rk=nodeRank(n.id);
     var near=!!rankAlertInfo(n.id);
-    var lvl=computeLevel2(n.id);
+    var lvl=focusNodeId?relLevelOf(n.id,_rb):computeLevel2(n.id);
     var si=sponsorInfo(n);
     var ph=isPhaHe(n);
     var kids=treeNodes.filter(function(x){return x.parentId===n.id;});
@@ -2417,8 +2445,7 @@ function renderStarChart(){
   });
   // Đường mốc tầng F: hiện ở MỌI màn hình (kể cả khi chọn ID khác làm gốc), lệch khỏi khuỷu dây nối cho dễ phân biệt
   var maxD=0;Object.keys(pos).forEach(function(k){if(pos[k].depth>maxD)maxD=pos[k].depth;});
-  var _rootF=0;
-  if(focusNodeId){var _frn=treeNodes.find(function(x){return x.id===focusNodeId;});_rootF=_frn?sponsorInfo(_frn).depth:0;}
+  // Mốc F tính TƯƠNG ĐỐI từ gốc đang hiển thị (focus 1 ID → tính như gốc thật)
   var sepLine=function(dRel,color,label){
     if(dRel<0||maxD<dRel+1)return ''; // ranh giới nằm trên đỉnh, hoặc chưa có tầng dưới → khỏi vẽ
     var gapTop=dRel*(NHs+VGAPs)+40+NHs+oy;     // đáy hàng tầng trên
@@ -2429,8 +2456,8 @@ function renderStarChart(){
     s+='<text x="'+(W/2)+'" y="'+(y+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#0B2027" font-family="Arial">'+label+'</text>';
     return s;
   };
-  lines+=sepLine(6-_rootF,'#00E5FF','F6 ↑ │ ↓ F7');
-  lines+=sepLine(9-_rootF,'#FFC400','F9 ↑ │ ↓ F10');
+  lines+=sepLine(6,'#00E5FF','F6 ↑ │ ↓ F7');
+  lines+=sepLine(9,'#FFC400','F9 ↑ │ ↓ F10');
   svg.innerHTML=lines;
   var h='';
   _starCenters={};
@@ -2449,7 +2476,8 @@ function renderStarChart(){
     h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
-    h+='<div style="font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">'+(isRoot?'GỐC':'F'+si.depth)+(n.joinDate?' · '+escHtml(n.joinDate):'')+'</div>';
+    var _fLbl=focusNodeId?(p.depth===0?'GỐC':'F'+p.depth):(isRoot?'GỐC':'F'+si.depth);
+    h+='<div style="font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">'+_fLbl+(n.joinDate?' · '+escHtml(n.joinDate):'')+'</div>';
     h+='</div>';
   });
   box.innerHTML=h;
