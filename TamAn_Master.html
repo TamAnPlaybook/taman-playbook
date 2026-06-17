@@ -1,4 +1,4 @@
-<!-- VERSION: v3.9-focus-relative-divider-joindate -->
+<!-- VERSION: v4.1-mobile-tablet-touch-responsive -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -7,10 +7,10 @@
 <title>Quản trị Team Tâm An TTHC</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;font-size:16px;line-height:1.6;min-height:100vh}
+body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;font-size:16px;line-height:1.6;min-height:100vh;min-height:100dvh;-webkit-text-size-adjust:100%}
 
 /* SETUP */
-#setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1A1A1A,#2A2A2A)}
+#setup-screen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1A1A1A,#2A2A2A)}
 .setup-box{background:white;border-radius:20px;padding:32px 28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .setup-logo{font-size:22px;font-weight:700;color:#C8A84B;margin-bottom:4px}
 .setup-sub{font-size:13px;color:#999;margin-bottom:24px}
@@ -115,7 +115,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .tnode{position:absolute;transform:translate(-50%,-50%)}
 .tn-add{position:absolute;width:22px;height:22px;border-radius:50%;color:white;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;bottom:-11px;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);z-index:10;line-height:1}
 .tn-add-l{left:18%}.tn-add-r{right:18%;left:auto}
-#star-canvas-wrap{overflow:hidden;width:100%;height:calc(100vh - 230px);background:#0D1117;position:relative;cursor:grab;user-select:none}
+#star-canvas-wrap{overflow:hidden;width:100%;height:calc(100vh - 230px);height:calc(100dvh - 230px);background:#0D1117;position:relative;cursor:grab;user-select:none}
 .btn{padding:12px 16px;border-radius:10px;font-size:14px;font-weight:700;font-family:Arial;cursor:pointer;border:none;flex:1;text-align:center}
 .btn-g{background:#1A7A5E;color:white}
 .btn-d{background:#1A1A1A;color:white}
@@ -199,6 +199,8 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 @media(max-width:600px){#tree-search{font-size:16px}}
 @keyframes nodeflash{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,0)}50%{box-shadow:0 0 0 6px rgba(255,193,7,.95)}}
 .node-flash{animation:nodeflash .55s ease-in-out 4;position:relative;z-index:6}
+@keyframes nnblink{0%,100%{box-shadow:0 0 0 0 rgba(244,67,54,0)}50%{background:#FFEB3B;box-shadow:0 0 0 9px rgba(244,67,54,.85)}}
+.nn-blink{animation:nnblink .8s ease-in-out infinite;z-index:7}
 
 /* ĐIỂM DANH — gốc/center ở giữa hàng đầu + 2 cột Trái/Phải */
 .dd-center{display:flex;justify-content:center;margin:8px 0 6px}
@@ -224,6 +226,33 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   .dd-cols .av{width:30px;height:30px;font-size:12px}
   .dd-cols .mc-name{font-size:12.5px}
   .dd-cols .dd-ord{min-width:20px;height:20px;font-size:10px;padding:0 4px}
+}
+
+/* ===== Tối ưu CẢM ỨNG: điện thoại + máy tính bảng + mọi thiết bị di động =====
+   Áp dụng khi màn hẹp (≤1024px) HOẶC con trỏ cảm ứng (pointer:coarse) → desktop chuột giữ nguyên.
+   Đặt CUỐI stylesheet để thắng mọi rule nền theo thứ tự nguồn. */
+@media (max-width:1024px),(pointer:coarse){
+  /* Tắt auto-zoom của iOS khi chạm ô nhập (cần font ≥16px) */
+  input,select,textarea,.srch,.nmod-inp,.sel,.sel-filter,.setup-input,#tree-search,#tree-search input{font-size:16px!important}
+  /* Vùng chạm thoải mái cho điều hướng & nút thao tác */
+  .mtab{padding:13px 16px;font-size:14px}
+  .stab,.tb-row .stab{padding:10px 14px;font-size:13px;min-height:40px}
+  .lk-pill,.fb-filter{padding:9px 13px;font-size:13px;min-height:38px;display:inline-flex;align-items:center}
+  .db-btn{min-height:42px;padding:9px 15px;font-size:16px}
+  .db-today{min-height:42px;padding:9px 13px;font-size:13px}
+  .btn-sm{padding:11px 15px;font-size:13px;min-height:40px}
+  .modal-x,.nmod-x{width:42px;height:42px;font-size:20px}
+  .tgb{min-width:54px;min-height:42px;padding:10px 12px;font-size:13px}
+  .tbtn{padding:11px 14px;font-size:14px;min-height:42px}
+  .pin-btn{min-width:42px;min-height:42px;font-size:21px;display:inline-flex;align-items:center;justify-content:center}
+  .sb{padding:6px 12px;font-size:13px}
+  .tn-add{width:32px;height:32px;font-size:20px;bottom:-16px}
+  .skc{width:26px;height:26px;min-width:26px}
+  .ski{padding:12px}
+  /* Ô nhập KPI tháng: cao đủ để chạm/gõ, số to dễ đọc (≥16px nên iOS không tự zoom) */
+  .kpiinp{font-size:20px!important;min-height:38px;padding:5px 4px}
+  /* Cuộn quán tính mượt trên iOS cho các thanh/panel cuộn */
+  .main-tabs,.stabs,.tb-row,.ov-wrap,.chart-bars,.search-row,.modal-body,.nmod-body{-webkit-overflow-scrolling:touch}
 }
 </style>
 </head>
@@ -1783,8 +1812,9 @@ function relLevelOf(nid,rootId){
 function computeBinaryHighlights(pos,rootId){
   // Trả về { nodeId: {bg, nn?} } cho các node ĐANG HIỂN THỊ (có trong pos), tính TƯƠNG ĐỐI với rootId hiển thị
   // → focus 1 ID thì ID đó thành "gốc" và mọi tính năng hiện như gốc thật.
-  // - Mỗi tầng (≥1) mỗi nhánh Trái/Phải: ID gắn ĐẦU TIÊN (THÁNG VÀO ID/joinDate sớm nhất) → cam; nếu nhánh kia cùng tầng cũng có → cả 2 xanh lá (cân cặp).
+  // - Mỗi tầng (≥1) mỗi nhánh Trái/Phải: ID gắn ĐẦU TIÊN (THÁNG VÀO ID/joinDate sớm nhất) → LUÔN xanh lá (mọi tầng cùng 1 màu, không đổi theo cặp).
   // - Tầng ≥4: các ID còn lại = "ID NN", đánh số 1..A (trái) / 1..B (phải) theo trên→dưới, trái→phải; min(A,B) cặp đầu = tím (cân nhánh nhỏ), còn lại xanh dương.
+  //   ID NN có con số LỚN NHẤT (ở nhánh nhiều hơn) → nền nhấp nháy báo vị trí + hiện A = |số NN trái − số NN phải|.
   var out={};
   if(!rootId||!pos[rootId])return out;
   var orderIdx={};treeNodes.forEach(function(n,i){orderIdx[n.id]=i;});
@@ -1807,8 +1837,7 @@ function computeBinaryHighlights(pos,rootId){
   Object.keys(firstOf).forEach(function(key){
     var p=key.split('|'),lvl=+p[0],side=p[1];
     var node=firstOf[key];isFirst[node.id]=true;
-    var both=!!hasLB[lvl+'|'+(side==='L'?'R':'L')];
-    out[node.id]={bg:both?BIN_HL.GREEN:BIN_HL.ORANGE};
+    out[node.id]={bg:BIN_HL.GREEN}; // ID đầu tiên mỗi tầng/nhánh: LUÔN xanh lá, không đổi
   });
   var nnL=[],nnR=[];
   treeNodes.forEach(function(n){
@@ -1820,6 +1849,13 @@ function computeBinaryHighlights(pos,rootId){
   var mn=Math.min(nnL.length,nnR.length);
   nnL.forEach(function(n,i){out[n.id]={bg:(i<mn?BIN_HL.PURPLE:BIN_HL.BLUE),nn:i+1};});
   nnR.forEach(function(n,i){out[n.id]={bg:(i<mn?BIN_HL.PURPLE:BIN_HL.BLUE),nn:i+1};});
+  // ID NN có con số LỚN NHẤT (ở nhánh nhiều hơn) → nhấp nháy báo vị trí + A = chênh lệch số NN 2 nhánh
+  var aDiff=Math.abs(nnL.length-nnR.length);
+  if(aDiff>0){
+    var heavy=nnL.length>nnR.length?nnL:nnR;
+    var topNN=heavy[heavy.length-1]; // số lớn nhất = phần tử cuối (đã sort theo vị trí)
+    if(topNN&&out[topNN.id]){out[topNN.id].blink=true;out[topNN.id].adiff=aDiff;}
+  }
   return out;
 }
 function renderTree(){
@@ -1862,12 +1898,12 @@ function renderTree(){
   // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
   if(_rb&&pos[_rb]){
     var _dx=pos[_rb].x+NW/2;
-    lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#9AA0A6" stroke-width="2.5" stroke-dasharray="9,7" opacity="0.6"/>';
+    lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#2979FF" stroke-width="5" stroke-dasharray="10,8" opacity="0.9"/>';
   }
   var _sepRel=4; // Tầng 4 TƯƠNG ĐỐI từ gốc đang hiển thị (focus tính như gốc)
   var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4
   if(maxY>=_sepRel*(NH+VGAP)+60){
-    lines+='<line x1="0" y1="'+sepY+'" x2="'+W+'" y2="'+sepY+'" stroke="#FFD600" stroke-width="4" stroke-dasharray="14,7" opacity="0.95"/>';
+    lines+='<line x1="0" y1="'+sepY+'" x2="'+W+'" y2="'+sepY+'" stroke="#FFD600" stroke-width="8" stroke-dasharray="14,7" opacity="1"/>';
     lines+='<rect x="'+(W/2-110)+'" y="'+(sepY-13)+'" width="220" height="26" rx="13" fill="#FFD600"/>';
     lines+='<text x="'+(W/2)+'" y="'+(sepY+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#5D4000" font-family="Arial">T\u1ea7ng 3 \u2191 \u2502 \u2193 T\u1ea7ng 4</text>';
   }
@@ -1886,9 +1922,11 @@ function renderTree(){
     var hasR=kids.some(function(k){return k.side==='R';});
     h+='<div class="tnode" style="left:'+(p.x+NW/2)+'px;top:'+(p.y+NH/2)+'px;width:'+NW+'px;height:'+NH+'px">';
     var _bg=(hl[n.id]&&hl[n.id].bg)||'white';
-    h+='<div class="tnode-box'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
+    var _blink=(hl[n.id]&&hl[n.id].blink)?' nn-blink':'';
+    h+='<div class="tnode-box'+(near?' near-rank':'')+_blink+'" data-node-id="'+n.id+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
+    if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
     h+='<div style="font-weight:700;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;color:#777;margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(!n.parentId){
