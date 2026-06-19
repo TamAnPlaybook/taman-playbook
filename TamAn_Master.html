@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1.1-doubletap-fullscreen-edit-divider -->
+<!-- VERSION: v4.1.2-connector-bold-truc-he-vs-khach -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1898,7 +1898,11 @@ function renderTree(){
     var col=branchColor(n.id);
     var x1=p.x+NW/2,y1=p.y+NH,x2=c.x+NW/2,y2=c.y;
     var my=(y1+y2)/2;
-    lines+='<path d="M'+x1+' '+y1+' C'+x1+' '+my+','+x2+' '+my+','+x2+' '+y2+'" stroke="'+col+'" stroke-width="2.5" fill="none" opacity="0.75"/>';
+    // Dây nối ĐẬM + màu team đậm rõ (dễ phân biệt nhánh khi nhìn toàn cây):
+    //  • Trực hệ (bảo trợ = người đặt trên)  → nét LIỀN dày
+    //  • Khách / phả hệ (đặt dưới người khác bảo trợ) → nét ĐỨT (vẫn giữ màu team để biết thuộc nhánh nào)
+    var _dash=isPhaHe(n)?' stroke-dasharray="11,7"':'';
+    lines+='<path d="M'+x1+' '+y1+' C'+x1+' '+my+','+x2+' '+my+','+x2+' '+y2+'" stroke="'+col+'" stroke-width="4" fill="none" stroke-linecap="round" opacity="1"'+_dash+'/>';
   });
   var hl=computeBinaryHighlights(pos,_rb);
   // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
