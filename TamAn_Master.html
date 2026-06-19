@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1.6-account-list-access-toggle-sodo-default -->
+<!-- VERSION: v4.3-branch-import-toggle-admin -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -185,8 +185,9 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 
 
 .hide-topbars .date-bar,.hide-topbars .stats-bar,.hide-topbars .search-row{display:none}
-#tree-search-bar{background:white;border-bottom:1px solid #E8E8E8;padding:6px 10px;position:relative;z-index:30}
-#tree-search{width:100%;max-width:440px;border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 12px;font-size:14px;font-family:Arial;outline:none}
+#tree-search-bar{background:white;border-bottom:1px solid #E8E8E8;padding:6px 10px;position:relative;z-index:30;display:flex;align-items:center;gap:8px}
+#tree-search{flex:1 1 auto;min-width:0;max-width:440px;border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 12px;font-size:14px;font-family:Arial;outline:none}
+#btn-thangtien{flex-shrink:0}
 #tree-search:focus{border-color:#1A7A5E}
 #tree-search-sug{display:none;position:absolute;top:calc(100% - 2px);left:10px;right:10px;max-width:440px;max-height:260px;overflow-y:auto;background:white;border:1px solid #D8D8D8;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.14);z-index:40}
 #srch-sug{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;max-height:260px;overflow-y:auto;background:white;border:1px solid #D8D8D8;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.14);z-index:60}
@@ -254,6 +255,28 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   /* Cuộn quán tính mượt trên iOS cho các thanh/panel cuộn */
   .main-tabs,.stabs,.tb-row,.ov-wrap,.chart-bars,.search-row,.modal-body,.nmod-body{-webkit-overflow-scrolling:touch}
 }
+
+/* ===== THANH NÚT TẦNG / F (bên trái cây) — bấm để làm sáng ID theo tầng ===== */
+.tree-rail{position:absolute;left:6px;top:6px;bottom:6px;z-index:55;display:flex;flex-direction:column;gap:4px;overflow-y:auto;padding:4px;scrollbar-width:none;align-items:stretch;max-width:62px}
+.tree-rail::-webkit-scrollbar{display:none}
+.rail-cap{font-size:9px;font-weight:700;letter-spacing:.05em;color:#8a6d1f;text-align:center;text-transform:uppercase;padding:1px 0;background:rgba(255,255,255,.85);border-radius:6px;flex-shrink:0}
+.star-rail .rail-cap{color:#90CAF9;background:rgba(13,17,23,.7)}
+.rail-btn{flex:0 0 auto;min-width:34px;padding:6px 7px;border-radius:8px;border:1.5px solid #C8A84B;background:rgba(255,255,255,.94);color:#1A1A1A;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);line-height:1.1;text-align:center}
+.rail-btn.on{background:#C8A84B;color:#1A1A1A;border-color:#6b520f;box-shadow:0 0 0 2px rgba(200,168,75,.45)}
+.star-rail .rail-btn{border-color:#42A5F5;background:rgba(20,28,40,.92);color:#E3F2FD}
+.star-rail .rail-btn.on{background:#42A5F5;color:#06223f;border-color:#0D47A1}
+@keyframes lvlglow{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,0)}50%{box-shadow:0 0 0 8px rgba(255,193,7,.9)}}
+.node-hot{animation:lvlglow 1.1s ease-in-out infinite;z-index:9}
+.node-dim{opacity:.26;filter:grayscale(.35);transition:opacity .15s}
+@media (max-width:1024px),(pointer:coarse){
+  .rail-btn{min-width:40px;min-height:38px;padding:8px 8px;font-size:13px}
+  .tree-rail{max-width:70px}
+}
+
+/* ===== Tab Thăng tiến ===== */
+.tt-badge{display:inline-block;min-width:17px;height:17px;line-height:17px;padding:0 4px;border-radius:9px;background:#E53935;color:white;font-size:10px;font-weight:700;text-align:center;vertical-align:middle;margin-left:2px}
+.tt-badge:empty{display:none}
+.tt-card:active{background:#FAFAFA}
 </style>
 </head>
 <body>
@@ -449,9 +472,9 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
     <div id="tree-search-bar">
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm tên ID hoặc người bảo trợ...">
+      <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
       <div id="tree-search-sug"></div>
     </div>
-    <div id="rank-alert" style="display:none;background:#FFF8E1;border-bottom:1px solid #FFE082;padding:6px 12px;font-size:12px;line-height:1.7;max-height:84px;overflow-y:auto"></div>
     <div id="branch-stats" style="background:white;border-bottom:1px solid #E8E8E8;padding:6px 10px;font-size:12px;line-height:2"></div>
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="tree-binary">
@@ -460,6 +483,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
           <div id="tree-nodes" style="position:absolute;top:0;left:0"></div>
         </div>
+        <div id="tree-level-rail" class="tree-rail" style="display:none"></div>
       </div>
     </div>
     <div id="tree-star" style="display:none">
@@ -468,6 +492,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
           <svg id="star-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
           <div id="star-nodes" style="position:absolute;top:0;left:0"></div>
         </div>
+        <div id="star-level-rail" class="tree-rail star-rail" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -533,6 +558,17 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
     <div class="nmod-body" id="imp-body"></div>
     <div class="nmod-foot" id="imp-foot"></div>
+  </div>
+</div>
+
+<!-- THĂNG TIẾN — popup tiến độ đổi vị trí / lên cấp bậc (mở từ nút cạnh ô tìm kiếm) -->
+<div class="nmod-ov" id="tt-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#9889; Tiến độ thăng tiến</div>
+      <button class="nmod-x" id="tt-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="thangtien-content"></div>
   </div>
 </div>
 
@@ -605,13 +641,17 @@ var F_COLORS=['#E53935','#8E24AA','#1565C0','#00897B','#F4511E','#6D4C41','#3949
 // STATE
 // ================================================================
 var NS='',members=[],treeNodes=[];
-var branchExportEnabled=true; // BẬT/TẮT chức năng Xuất nhánh — do QTV chính chỉnh ở Quản trị (appConfig/registration.branchEnabled)
+var branchExportEnabled=true; // BẬT/TẮT "Xuất nhánh" cho THÀNH VIÊN — QTV chính chỉnh (appConfig/registration.branchEnabled)
+var branchImportEnabled=true; // BẬT/TẮT "Nhập nhánh" cho THÀNH VIÊN — QTV chính chỉnh (appConfig/registration.branchImportEnabled)
+var isBranchAdmin=false;      // user hiện tại là QTV? → LUÔN thấy cả Xuất/Nhập nhánh bất kể cấu hình
 var currentDay=new Date(),currentMonth={y:new Date().getFullYear(),m:new Date().getMonth()};
 var filterMode='all',modalMid=null,modalType=null;
 var activeNodeModal=null,selectedHighlight=null;
 var treeScale=1,treeOffset={x:0,y:0},treePanning=false,treePanStart={x:0,y:0};
 var NW=150,NH=96,HGAP=42,VGAP=120;
 var starScale=1,starOffset={x:0,y:0},starPanning=false,starPanStart={x:0,y:0};
+var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu nhỏ "thoải mái" mọi thiết bị
+var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
 var currentSubTab={dd:'sang',nhatky:'kh'};
@@ -850,14 +890,22 @@ function enterAppFirebase(user){
   showAndFitTree();
 }
 function applyBranchFeatureUI(){
-  // Ẩn/hiện nút "Xuất nhánh" theo cấu hình QTV chính
-  var b=document.getElementById('btn-export-branch');
-  if(b)b.style.display=branchExportEnabled?'':'none';
+  // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
+  var be=document.getElementById('btn-export-branch');
+  if(be)be.style.display=(isBranchAdmin||branchExportEnabled)?'':'none';
+  var bi=document.getElementById('btn-import-branch');
+  if(bi)bi.style.display=(isBranchAdmin||branchImportEnabled)?'':'none';
 }
 function loadBranchFeature(){
-  // Mặc định BẬT; chỉ TẮT khi QTV chính đặt branchEnabled===false
-  fsGetGlobal('registration').then(function(reg){
+  // Mặc định BẬT; chỉ TẮT khi QTV chính đặt false. QTV (trong admins.emails) LUÔN thấy cả 2 nút.
+  Promise.all([
+    fsGetGlobal('admins').catch(function(){return null;}),
+    fsGetGlobal('registration').catch(function(){return null;})
+  ]).then(function(r){
+    var admins=r[0],reg=r[1];
+    isBranchAdmin=!!(admins&&admins.emails&&fbUser&&admins.emails.indexOf(fbUser.email)>=0);
     branchExportEnabled=!(reg&&reg.branchEnabled===false);
+    branchImportEnabled=!(reg&&reg.branchImportEnabled===false);
     applyBranchFeatureUI();
   }).catch(function(){applyBranchFeatureUI();});
 }
@@ -1714,18 +1762,76 @@ function rankAlertInfo(nid){
   }
   if(pct>=1||pct<0.5)return null;
   var html='\u26A1 <b>'+escHtml(n.name)+'</b>: <b style="color:'+nextDef.color+'">'+Math.round(pct*100)+'%</b> l\u00ean <b style="color:'+nextDef.color+'">'+nextDef.name+'</b> \u2014 '+detail.join('; ');
-  return {pct:pct,html:html};
+  return {pct:pct,html:html,nid:nid,color:nextDef.color};
 }
 function renderRankAlert(){
-  var el=document.getElementById('rank-alert');if(!el)return;
-  var msgs=[];
+  // Tiến độ thăng tiến — render vào TAB RIÊNG "Thăng tiến" (đã tách khỏi sơ đồ cho gọn)
+  var el=document.getElementById('thangtien-content');
+  var badge=document.getElementById('tt-badge');
+  var items=[];
   treeNodes.forEach(function(n){
     var ai=rankAlertInfo(n.id);
-    if(ai)msgs.push(ai.html);
+    if(ai)items.push(ai);
   });
-  if(!msgs.length){el.style.display='none';el.innerHTML='';return;}
-  el.style.display='block';
-  el.innerHTML=msgs.slice(0,8).join('<br>');
+  items.sort(function(a,b){return b.pct-a.pct;}); // gần đạt nhất lên đầu
+  if(badge)badge.textContent=items.length?String(items.length):'';
+  if(!el)return;
+  if(!items.length){
+    el.innerHTML='<div style="text-align:center;color:#BBB;font-size:14px;padding:40px 12px;border:1px dashed #E4E4E4;border-radius:12px">Chưa có ID nào đạt &ge;50% tiêu chí cấp bậc kế tiếp.</div>';
+    return;
+  }
+  var h='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#7A5C00;line-height:1.6">Có <b>'+items.length+'</b> ID đang tiến gần cấp bậc kế tiếp. Bấm vào một dòng để nhảy tới ID đó trên sơ đồ.</div>';
+  items.forEach(function(it){
+    h+='<div class="tt-card" data-tt-nid="'+it.nid+'" style="background:white;border:1px solid #E8E8E8;border-left:4px solid '+it.color+';border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.7;cursor:pointer">'+it.html+'</div>';
+  });
+  el.innerHTML=h;
+}
+// ================================================================
+// THANH NÚT TẦNG / F (bên trái cây) — bấm để làm sáng toàn bộ ID ở tầng/F đó
+// Dùng cho cả 3 chế độ: sơ đồ thường, Cả cây (fit), Toàn trang (fullscreen)
+// vì rail nằm TRONG canvas-wrap nên di chuyển theo khi mở Toàn trang.
+// ================================================================
+function buildTreeRail(lvlSet){
+  var rail=document.getElementById('tree-level-rail');if(!rail)return;
+  var lvls=Object.keys(lvlSet).map(Number).sort(function(a,b){return a-b;});
+  // tầng đang chọn không còn tồn tại (đổi nhánh/xóa) → bỏ chọn để tránh làm mờ cả cây
+  if(activeLvlHL!=null&&lvls.indexOf(activeLvlHL)<0)activeLvlHL=null;
+  if(!lvls.length){rail.innerHTML='';rail.style.display='none';return;}
+  rail.style.display='flex';
+  var h='<div class="rail-cap">Tầng</div>';
+  lvls.forEach(function(l){
+    h+='<button class="rail-btn'+(activeLvlHL===l?' on':'')+'" data-lvlhl="'+l+'">'+l+'</button>';
+  });
+  rail.innerHTML=h;
+}
+function buildStarRail(fSet){
+  var rail=document.getElementById('star-level-rail');if(!rail)return;
+  var fs=Object.keys(fSet).map(Number).sort(function(a,b){return a-b;});
+  if(activeStarHL!=null&&fs.indexOf(activeStarHL)<0)activeStarHL=null;
+  if(!fs.length){rail.innerHTML='';rail.style.display='none';return;}
+  rail.style.display='flex';
+  var h='<div class="rail-cap">F</div>';
+  fs.forEach(function(d){
+    h+='<button class="rail-btn'+(activeStarHL===d?' on':'')+'" data-fhl="'+d+'">'+d+'</button>';
+  });
+  rail.innerHTML=h;
+}
+function clearNodeHL(){
+  document.querySelectorAll('.node-hot,.node-dim').forEach(function(el){el.classList.remove('node-hot','node-dim');});
+}
+function applyLevelHL(){
+  clearNodeHL();
+  if(currentTreeMode==='binary'){
+    if(activeLvlHL==null)return;
+    document.querySelectorAll('#tree-nodes .tnode-box').forEach(function(el){
+      el.classList.add((+el.getAttribute('data-lvl')===activeLvlHL)?'node-hot':'node-dim');
+    });
+  }else{
+    if(activeStarHL==null)return;
+    document.querySelectorAll('#star-nodes .star-node').forEach(function(el){
+      el.classList.add((+el.getAttribute('data-flvl')===activeStarHL)?'node-hot':'node-dim');
+    });
+  }
 }
 function placementChildren(nid){
   return treeNodes.filter(function(x){return x.parentId===nid;});
@@ -1991,12 +2097,14 @@ function renderTree(){
   }
   svg.innerHTML=lines;
   var h='';
+  var lvlSet={};
   treeNodes.forEach(function(n){
     var p=pos[n.id];if(!p)return;
     var col=branchColor(n.id);
     var rk=nodeRank(n.id);
     var near=!!rankAlertInfo(n.id);
     var lvl=focusNodeId?relLevelOf(n.id,_rb):computeLevel2(n.id);
+    if(lvl>=1)lvlSet[lvl]=1;
     var si=sponsorInfo(n);
     var ph=isPhaHe(n);
     var kids=treeNodes.filter(function(x){return x.parentId===n.id;});
@@ -2005,7 +2113,7 @@ function renderTree(){
     h+='<div class="tnode" style="left:'+(p.x+NW/2)+'px;top:'+(p.y+NH/2)+'px;width:'+NW+'px;height:'+NH+'px">';
     var _bg=(hl[n.id]&&hl[n.id].bg)||'white';
     var _blink=(hl[n.id]&&hl[n.id].blink)?' nn-blink':'';
-    h+='<div class="tnode-box'+(near?' near-rank':'')+_blink+'" data-node-id="'+n.id+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
+    h+='<div class="tnode-box'+(near?' near-rank':'')+_blink+'" data-node-id="'+n.id+'" data-lvl="'+lvl+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
@@ -2035,6 +2143,7 @@ function renderTree(){
   }
   box.innerHTML=h;
   applyTreeTransform();
+  try{buildTreeRail(lvlSet);applyLevelHL();}catch(e){console.error('buildTreeRail lỗi:',e);}
   try{renderBranchStats();}catch(e){console.error('renderBranchStats lỗi:',e);}
   try{renderRankAlert();}catch(e){console.error('renderRankAlert lỗi:',e);}
 }
@@ -2580,6 +2689,7 @@ function renderStarChart(){
   lines+=sepLine(9,'#FFC400','F9 ↑ │ ↓ F10');
   svg.innerHTML=lines;
   var h='';
+  var fSet={};
   _starCenters={};
   treeNodes.forEach(function(n){
     var p=pos[n.id];if(!p)return;
@@ -2590,18 +2700,21 @@ function renderStarChart(){
     var isRoot=!(n.f1of&&map[n.f1of]&&map[n.f1of].id!==n.id);
     var si=sponsorInfo(n);
     var bdCol=rk>0?RANKS[rk-1].color:col;
-    h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
+    var _fd=focusNodeId?p.depth:(isRoot?0:si.depth); // F-số đang hiển thị (focus 1 ID → tính như gốc)
+    if(_fd>=1)fSet[_fd]=1;
+    h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" data-flvl="'+_fd+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
     h+='<div style="display:flex;align-items:center;gap:4px">';
     h+='<span style="width:14px;height:14px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
     h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
-    var _fLbl=focusNodeId?(p.depth===0?'GỐC':'F'+p.depth):(isRoot?'GỐC':'F'+si.depth);
+    var _fLbl=_fd===0?'GỐC':'F'+_fd;
     h+='<div style="font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">'+_fLbl+(n.joinDate?' · '+escHtml(n.joinDate):'')+'</div>';
     h+='</div>';
   });
   box.innerHTML=h;
   applyStarTransform();
+  try{buildStarRail(fSet);applyLevelHL();}catch(e){console.error('buildStarRail lỗi:',e);}
   try{renderBranchStats();}catch(e){console.error('renderBranchStats lỗi:',e);}
   try{renderRankAlert();}catch(e){console.error('renderRankAlert lỗi:',e);}
 }
@@ -2721,6 +2834,7 @@ function renderAdminPage(){
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
       var isMainAdmin=(admins.emails[0]===myEmail);
       var branchOn=!(reg&&reg.branchEnabled===false);
+      var importOn=!(reg&&reg.branchImportEnabled===false);
       // KHOA DANG NHAP TAI KHOAN - chi QTV CHINH duoc lam
       if(isMainAdmin){
         var blockedList=(reg&&reg.blockedEmails)||[];
@@ -2764,12 +2878,21 @@ function renderAdminPage(){
         h+='</div>';
       }
       h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Xuất nhánh (tách nhánh)</div>';
-      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> để chặn tách/chuyển nhánh (ẩn nút "Xuất nhánh" của mọi người).</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> = ẩn nút "Xuất nhánh" trên trang <b>thành viên</b> (quản trị viên luôn dùng được).</div>';
       if(isMainAdmin){
         h+='<div class="nmod-row"><div class="nmod-lbl">Trạng thái: <b style="color:'+(branchOn?'#1A7A5E':'#E53935')+'">'+(branchOn?'Đang BẬT':'Đang TẮT')+'</b></div>';
-        h+='<button class="btn '+(branchOn?'btn-r':'btn-g')+' btn-sm" data-toggle-branch="'+(branchOn?'0':'1')+'">'+(branchOn?'Tắt chức năng':'Bật chức năng')+'</button></div>';
+        h+='<button class="btn '+(branchOn?'btn-r':'btn-g')+' btn-sm" data-toggle-branch="'+(branchOn?'0':'1')+'">'+(branchOn?'Tắt cho thành viên':'Bật cho thành viên')+'</button></div>';
       }else{
         h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(branchOn?'#1A7A5E':'#E53935')+'">'+(branchOn?'Đang BẬT':'Đang TẮT')+'</b> · Chỉ <b>quản trị viên chính</b> ('+escHtml(admins.emails[0]||'')+') được điều chỉnh.</div>';
+      }
+      h+='</div>';
+      h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Nhập nhánh (ghép nhánh)</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép nhập 1 nhánh từ file vào cây. <b>Tắt</b> = ẩn nút "Nhập nhánh" trên trang <b>thành viên</b> (quản trị viên luôn dùng được).</div>';
+      if(isMainAdmin){
+        h+='<div class="nmod-row"><div class="nmod-lbl">Trạng thái: <b style="color:'+(importOn?'#1A7A5E':'#E53935')+'">'+(importOn?'Đang BẬT':'Đang TẮT')+'</b></div>';
+        h+='<button class="btn '+(importOn?'btn-r':'btn-g')+' btn-sm" data-toggle-import="'+(importOn?'0':'1')+'">'+(importOn?'Tắt cho thành viên':'Bật cho thành viên')+'</button></div>';
+      }else{
+        h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(importOn?'#1A7A5E':'#E53935')+'">'+(importOn?'Đang BẬT':'Đang TẮT')+'</b> · Chỉ <b>quản trị viên chính</b> ('+escHtml(admins.emails[0]||'')+') được điều chỉnh.</div>';
       }
       h+='</div>';
       h+='<div class="adm-box"><div class="adm-title">\uD83D\uDC65 Quản trị viên</div>';
@@ -2862,7 +2985,7 @@ function collectMemberData(midSet){
   return out;
 }
 function exportSubtree(){
-  if(!branchExportEnabled){showToast('Chức năng Xuất nhánh đang TẮT (do quản trị viên chính)');return;}
+  if(!isBranchAdmin&&!branchExportEnabled){showToast('Chức năng Xuất nhánh đang TẮT (do quản trị viên chính)');return;}
   if(!treeNodes.length){showToast('Chưa có dữ liệu cây');return;}
   var rootNode=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
   // Xuất đúng theo nhánh ĐANG HIỂN THỊ: tab Mặt trời → tuyến BẢO TRỢ (f1of); tab Nhị phân → VỊ TRÍ ĐẶT (parentId)
@@ -2907,6 +3030,7 @@ function exportSubtree(){
   showToast('✓ Đã xuất nhánh "'+data.rootName+'"'+typeLbl+': '+nodes.length+' ID, '+expMembers.length+' TV');
 }
 function importSubtree(){
+  if(!isBranchAdmin&&!branchImportEnabled){showToast('Chức năng Nhập nhánh đang TẮT (do quản trị viên chính)');return;}
   var inp=document.createElement('input');
   inp.type='file';inp.accept='.json';
   inp.onchange=function(){
@@ -3346,13 +3470,24 @@ document.addEventListener('click',function(e){
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
-  // Bật/Tắt chức năng Xuất nhánh — chỉ QTV chính thấy nút này
+  // Bật/Tắt "Xuất nhánh" cho THÀNH VIÊN — chỉ QTV chính thấy nút này
   t=e.target.closest('[data-toggle-branch]');
   if(t){
     var _bv=t.getAttribute('data-toggle-branch')==='1'; // 1 = bật
     fsSetGlobal('registration',{branchEnabled:_bv}).then(function(){
       branchExportEnabled=_bv;applyBranchFeatureUI();
-      showToast(_bv?'✓ Đã BẬT Xuất nhánh':'✓ Đã TẮT Xuất nhánh');
+      showToast(_bv?'✓ Đã BẬT Xuất nhánh cho thành viên':'✓ Đã TẮT Xuất nhánh cho thành viên');
+      renderAdminPage();
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // Bật/Tắt "Nhập nhánh" cho THÀNH VIÊN — chỉ QTV chính thấy nút này
+  t=e.target.closest('[data-toggle-import]');
+  if(t){
+    var _iv=t.getAttribute('data-toggle-import')==='1'; // 1 = bật
+    fsSetGlobal('registration',{branchImportEnabled:_iv}).then(function(){
+      branchImportEnabled=_iv;applyBranchFeatureUI();
+      showToast(_iv?'✓ Đã BẬT Nhập nhánh cho thành viên':'✓ Đã TẮT Nhập nhánh cho thành viên');
       renderAdminPage();
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
@@ -3444,6 +3579,37 @@ document.addEventListener('click',function(e){
     return;
   }
 
+
+  // Nút TẦNG (rail trái cây nhị phân) → làm sáng toàn bộ ID ở tầng đó (bấm lại = tắt)
+  t=e.target.closest('[data-lvlhl]');
+  if(t){
+    var _lv=+t.getAttribute('data-lvlhl');
+    activeLvlHL=(activeLvlHL===_lv)?null:_lv;
+    var _rail=t.parentNode;
+    _rail.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
+    if(activeLvlHL!=null)t.classList.add('on');
+    applyLevelHL();
+    return;
+  }
+  // Nút F (rail trái cây mặt trời) → làm sáng toàn bộ ID ở tầng F đó (bấm lại = tắt)
+  t=e.target.closest('[data-fhl]');
+  if(t){
+    var _fv=+t.getAttribute('data-fhl');
+    activeStarHL=(activeStarHL===_fv)?null:_fv;
+    var _frail=t.parentNode;
+    _frail.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
+    if(activeStarHL!=null)t.classList.add('on');
+    applyLevelHL();
+    return;
+  }
+  // Popup Thăng tiến: bấm 1 dòng → đóng popup và nhảy tới ID đó trên sơ đồ
+  t=e.target.closest('[data-tt-nid]');
+  if(t){
+    var _ttid=t.getAttribute('data-tt-nid');
+    closeThangTien();
+    setTimeout(function(){locateNode(_ttid);},120);
+    return;
+  }
 
   // Tree node click (binary)
   t=e.target.closest('.tnode-box');
@@ -3639,6 +3805,8 @@ function openLegend(){
   document.getElementById('legend-ov').classList.add('open');
 }
 function closeLegend(){document.getElementById('legend-ov').classList.remove('open');}
+function openThangTien(){renderRankAlert();document.getElementById('tt-ov').classList.add('open');}
+function closeThangTien(){document.getElementById('tt-ov').classList.remove('open');}
 // ================================================================
 // SEARCH FILTER cho select dài — gõ từ khóa lọc danh sách tên
 // ================================================================
@@ -3709,12 +3877,12 @@ function bindStatic(){
   document.getElementById('btn-send-huy').addEventListener('click',sendToHuy);
 
   document.getElementById('btn-tzoom-in').addEventListener('click',function(){
-    if(currentTreeMode==='binary'){treeScale=Math.min(treeScale*1.2,3);applyTreeTransform();}
-    else{starScale=Math.min(starScale*1.2,3);applyStarTransform();}
+    if(currentTreeMode==='binary'){treeScale=Math.min(treeScale*1.2,MAXZ);applyTreeTransform();}
+    else{starScale=Math.min(starScale*1.2,MAXZ);applyStarTransform();}
   });
   document.getElementById('btn-tzoom-out').addEventListener('click',function(){
-    if(currentTreeMode==='binary'){treeScale=Math.max(treeScale/1.2,0.12);applyTreeTransform();}
-    else{starScale=Math.max(starScale/1.2,0.12);applyStarTransform();}
+    if(currentTreeMode==='binary'){treeScale=Math.max(treeScale/1.2,MINZ);applyTreeTransform();}
+    else{starScale=Math.max(starScale/1.2,MINZ);applyStarTransform();}
   });
   document.getElementById('btn-tfit').addEventListener('click',function(){
     resizeTreeCanvas();
@@ -3733,6 +3901,9 @@ function bindStatic(){
   document.getElementById('btn-legend').addEventListener('click',openLegend);
   document.getElementById('legend-close').addEventListener('click',closeLegend);
   document.getElementById('legend-ov').addEventListener('click',function(e){if(e.target===this)closeLegend();});
+  document.getElementById('btn-thangtien').addEventListener('click',openThangTien);
+  document.getElementById('tt-close').addEventListener('click',closeThangTien);
+  document.getElementById('tt-ov').addEventListener('click',function(e){if(e.target===this)closeThangTien();});
 
   // Cum calc (delegated vì render động)
   document.addEventListener('click',function(e){
@@ -3773,9 +3944,32 @@ function renderCurrentTree(){
   if(currentTreeMode==='binary'){renderTree();setTimeout(treeFit,50);}
   else{renderStarChart();setTimeout(starFit,50);}
 }
+function treeViewActive(){
+  return document.getElementById('fs-overlay').classList.contains('open')
+      || document.getElementById('page-tree').classList.contains('on');
+}
+// Resize thường (kéo cửa sổ desktop): chỉ chỉnh lại CHIỀU CAO khung, GIỮ NGUYÊN zoom/pan người dùng đang xem.
 window.addEventListener('resize',function(){
-  if(document.getElementById('page-tree').classList.contains('on'))resizeTreeCanvas();
+  if(treeViewActive())resizeTreeCanvas();
 });
+// Xoay ngang/dọc màn hình (điện thoại + máy tính bảng + mọi nền tảng):
+// resize lại khung RỒI fit toàn cây cho khít hướng mới — mượt nhờ rAF kép sau khi layout ổn định.
+function onOrientationChange(){
+  if(!treeViewActive())return;
+  resizeTreeCanvas();
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    resizeTreeCanvas();
+    if(currentTreeMode==='binary')treeFit();else starFit();
+  });});
+}
+window.addEventListener('orientationchange',function(){setTimeout(onOrientationChange,280);});
+// Một số trình duyệt di động không phát orientationchange ổn định → dùng matchMedia hướng màn hình làm phương án dự phòng.
+if(window.matchMedia){
+  var _mqOri=window.matchMedia('(orientation: landscape)');
+  var _oriHandler=function(){setTimeout(onOrientationChange,280);};
+  if(_mqOri.addEventListener)_mqOri.addEventListener('change',_oriHandler);
+  else if(_mqOri.addListener)_mqOri.addListener(_oriHandler);
+}
 function setupWheelZoom(wrapId,getState,setState){
   var wrap=document.getElementById(wrapId);if(!wrap)return;
   wrap.addEventListener('wheel',function(e){
@@ -3784,7 +3978,7 @@ function setupWheelZoom(wrapId,getState,setState){
     var rect=wrap.getBoundingClientRect();
     var mx=e.clientX-rect.left,my=e.clientY-rect.top;
     var f=e.deltaY<0?1.12:1/1.12;
-    var ns=Math.min(3,Math.max(0.12,st.scale*f));
+    var ns=Math.min(MAXZ,Math.max(MINZ,st.scale*f));
     var k=ns/st.scale;
     setState(ns,{x:mx-(mx-st.offset.x)*k,y:my-(my-st.offset.y)*k});
   },{passive:false});
@@ -3800,13 +3994,13 @@ function setupPan(wrapId,getOffset,setOffset){
   function down(x,y){panning=true;start={x:x,y:y};orig=getOffset();wrap.style.cursor='grabbing';}
   function move(x,y){if(!panning)return;setOffset({x:orig.x+(x-start.x),y:orig.y+(y-start.y)});}
   function up(){panning=false;pinch=null;wrap.style.cursor='grab';}
-  function onNode(el){return el.closest('.tnode-box')||el.closest('.tn-add')||el.closest('.star-node');}
+  function onNode(el){return el.closest('.tnode-box')||el.closest('.tn-add')||el.closest('.star-node')||el.closest('.tree-rail');}
   // Phóng to MƯỢT (có hiệu ứng) tại điểm (cx,cy màn hình) — dùng cho double tap / double click
   function smoothZoom(cx,cy,factor){
     var rect=wrap.getBoundingClientRect();
     var mx=cx-rect.left,my=cy-rect.top;
     var st=getScale();
-    var ns=Math.min(3,Math.max(0.12,st*factor));
+    var ns=Math.min(MAXZ,Math.max(MINZ,st*factor));
     if(ns===st)return;
     var k=ns/st,off=getOffset();
     var cv=document.getElementById(isTree?'tree-canvas':'star-canvas');
@@ -3850,7 +4044,7 @@ function setupPan(wrapId,getOffset,setOffset){
     if(pinch&&e.touches.length===2){
       var t1=e.touches[0],t2=e.touches[1];
       var d=Math.hypot(t2.clientX-t1.clientX,t2.clientY-t1.clientY);
-      var ns=Math.min(3,Math.max(0.12,pinch.scale0*(d/pinch.d0)));
+      var ns=Math.min(MAXZ,Math.max(MINZ,pinch.scale0*(d/pinch.d0)));
       var k=ns/pinch.scale0;
       setScale(ns);
       setOffset({x:pinch.mid.x-(pinch.mid.x-pinch.off0.x)*k,y:pinch.mid.y-(pinch.mid.y-pinch.off0.y)*k});
