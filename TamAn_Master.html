@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1-mobile-tablet-touch-responsive -->
+<!-- VERSION: v4.1.1-doubletap-fullscreen-edit-divider -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -79,7 +79,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .modal-x{width:32px;height:32px;border-radius:50%;background:#F0F0F0;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
 .modal-body{overflow-y:auto;flex:1;padding:0 16px 8px}
 .modal-foot{padding:12px 16px;display:flex;gap:8px;border-top:1px solid #F0F0F0;flex-shrink:0}
-.nmod-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:flex-end;justify-content:center}
+.nmod-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:flex-end;justify-content:center}
 .nmod-ov.open{display:flex}
 .nmod{background:white;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column}
 .nmod-hd{padding:14px 16px 12px;border-bottom:1px solid #F0F0F0;display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -1874,7 +1874,13 @@ function renderTree(){
       if(sd==='L'){_hasL=true;if(pos[n.id].x+NW>_lEdge)_lEdge=pos[n.id].x+NW;}
       else if(sd==='R'){_hasR=true;if(pos[n.id].x<_rEdge)_rEdge=pos[n.id].x;}
     });
-    if(_hasL&&_hasR)pos[_rb].x=(_lEdge+_rEdge)/2-NW/2;
+    // Đặt lằn ranh (gốc) sao cho KHÔNG nhánh nào lấn qua: giữa mép phải nhánh Trái và mép trái nhánh Phải.
+    // Nhánh 1 bên (vd Trái 31 / Phải 0): lằn ranh nằm ngoài rìa nhánh đang có → bên kia trống hoàn toàn.
+    var _div;
+    if(_hasL&&_hasR)_div=(_lEdge+_rEdge)/2;
+    else if(_hasL)_div=_lEdge+HGAP/2;
+    else if(_hasR)_div=_rEdge-HGAP/2;
+    if(_div!==undefined)pos[_rb].x=_div-NW/2;
   }
   var maxX=0,maxY=0;
   Object.keys(pos).forEach(function(k){
@@ -3548,16 +3554,38 @@ function setupPan(wrapId,getOffset,setOffset){
   function down(x,y){panning=true;start={x:x,y:y};orig=getOffset();wrap.style.cursor='grabbing';}
   function move(x,y){if(!panning)return;setOffset({x:orig.x+(x-start.x),y:orig.y+(y-start.y)});}
   function up(){panning=false;pinch=null;wrap.style.cursor='grab';}
+  function onNode(el){return el.closest('.tnode-box')||el.closest('.tn-add')||el.closest('.star-node');}
+  // Phóng to MƯỢT (có hiệu ứng) tại điểm (cx,cy màn hình) — dùng cho double tap / double click
+  function smoothZoom(cx,cy,factor){
+    var rect=wrap.getBoundingClientRect();
+    var mx=cx-rect.left,my=cy-rect.top;
+    var st=getScale();
+    var ns=Math.min(3,Math.max(0.12,st*factor));
+    if(ns===st)return;
+    var k=ns/st,off=getOffset();
+    var cv=document.getElementById(isTree?'tree-canvas':'star-canvas');
+    if(cv){cv.style.transition='transform .25s ease';setTimeout(function(){cv.style.transition='';},300);}
+    setScale(ns);
+    setOffset({x:mx-(mx-off.x)*k,y:my-(my-off.y)*k});
+  }
+  // Theo dõi tap để nhận double-tap (không tính khi đã kéo hoặc pinch)
+  var tapStart=null,movedFar=false,lastTapT=0,lastTapX=0,lastTapY=0;
   wrap.addEventListener('mousedown',function(e){
-    if(e.target.closest('.tnode-box')||e.target.closest('.tn-add')||e.target.closest('.star-node'))return;
+    if(onNode(e.target))return;
     down(e.clientX,e.clientY);e.preventDefault();
   });
   window.addEventListener('mousemove',function(e){move(e.clientX,e.clientY);});
   window.addEventListener('mouseup',up);
+  // Double click chuột (Mac/Win) = phóng to tại con trỏ
+  wrap.addEventListener('dblclick',function(e){
+    if(onNode(e.target))return;
+    smoothZoom(e.clientX,e.clientY,1.8);
+    e.preventDefault();
+  });
   wrap.addEventListener('touchstart',function(e){
     if(e.touches.length===2){
       // Pinch bắt đầu
-      panning=false;
+      panning=false;tapStart=null;
       var t1=e.touches[0],t2=e.touches[1];
       var rect=wrap.getBoundingClientRect();
       pinch={
@@ -3568,8 +3596,9 @@ function setupPan(wrapId,getOffset,setOffset){
       };
       e.preventDefault();return;
     }
-    if(e.target.closest('.tnode-box')||e.target.closest('.tn-add')||e.target.closest('.star-node'))return;
+    if(onNode(e.target)){tapStart=null;return;}
     var t=e.touches[0];down(t.clientX,t.clientY);
+    tapStart={x:t.clientX,y:t.clientY};movedFar=false;
   },{passive:false});
   wrap.addEventListener('touchmove',function(e){
     if(pinch&&e.touches.length===2){
@@ -3583,13 +3612,29 @@ function setupPan(wrapId,getOffset,setOffset){
       e.preventDefault();return;
     }
     if(panning){
-      var t=e.touches[0];move(t.clientX,t.clientY);
+      var t=e.touches[0];
+      if(tapStart&&Math.hypot(t.clientX-tapStart.x,t.clientY-tapStart.y)>12)movedFar=true;
+      move(t.clientX,t.clientY);
       e.preventDefault();
     }
   },{passive:false});
   wrap.addEventListener('touchend',function(e){
     if(e.touches.length<2)pinch=null;
-    if(e.touches.length===0)up();
+    if(e.touches.length===0){
+      // Double tap trên vùng trống (không kéo, không chạm node) = phóng to tại điểm chạm
+      if(tapStart&&!movedFar){
+        var now=Date.now();
+        if(now-lastTapT<300&&Math.hypot(tapStart.x-lastTapX,tapStart.y-lastTapY)<40){
+          smoothZoom(tapStart.x,tapStart.y,1.8);
+          lastTapT=0; // reset để không cộng dồn sang lần thứ 3
+          e.preventDefault();
+        }else{
+          lastTapT=now;lastTapX=tapStart.x;lastTapY=tapStart.y;
+        }
+      }
+      tapStart=null;
+      up();
+    }
   });
 }
 
