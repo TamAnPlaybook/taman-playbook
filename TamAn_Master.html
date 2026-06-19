@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1.3-legend-chu-thich-admin-toggle-xuat-nhanh -->
+<!-- VERSION: v4.1.4-block-login-admin-tab-sodo-first -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -341,10 +341,10 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <button class="tb-out" id="btn-logout">Thoát</button>
   </div>
   <div class="main-tabs">
-    <button class="mtab on" data-main="dd">&#128203; Điểm danh</button>
+    <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
+    <button class="mtab" data-main="dd">&#128203; Điểm danh</button>
     <button class="mtab" data-main="month">&#128197; Tháng</button>
     <button class="mtab" data-main="nhatky">&#128211; Nhật ký</button>
-    <button class="mtab" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" data-main="admin">&#9881;&#65039; Quản trị</button>
   </div>
@@ -369,7 +369,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div id="dd-branch-bar" style="display:none;background:#FFF8E1;border-bottom:1px solid #FFE082;padding:6px 12px;font-size:12.5px;align-items:center;gap:8px"></div>
 
   <!-- ĐIỂM DANH -->
-  <div class="page on" id="page-dd">
+  <div class="page" id="page-dd">
     <div class="content">
       <div class="stabs">
         <button class="stab on" data-sub="dd:sang">&#127749; Sáng</button>
@@ -431,7 +431,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
 
   <!-- SƠ ĐỒ -->
-  <div class="page" id="page-tree">
+  <div class="page on" id="page-tree">
     <div class="tb-row">
       <button class="stab on" data-treemode="binary">&#127795; Nhị phân</button>
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
@@ -632,7 +632,7 @@ async function loadFirebase(){
   fbReady=true;
   authM.onAuthStateChanged(fbAuth,function(user){
     fbUser=user;
-    if(user)enterAppFirebase(user);
+    if(user)gateLogin(user);
   });
   // Hoàn tất đăng nhập nếu quay về từ Google redirect
   authM.getRedirectResult(fbAuth).catch(function(e){
@@ -787,6 +787,25 @@ async function doGoogle(){
   btn.style.opacity='1';
 }
 
+function gateLogin(user){
+  // QTV chính có thể khoá đăng nhập 1 email → kiểm tra trước khi cho vào app
+  fsGetGlobal('registration').then(function(reg){
+    var blocked=(reg&&reg.blockedEmails)||[];
+    var email=(user.email||'').toLowerCase();
+    var isBlocked=!!email&&blocked.some(function(x){return String(x).toLowerCase()===email;});
+    if(isBlocked){
+      fbSignOut().catch(function(){});
+      document.getElementById('setup-screen').style.display='flex';
+      document.getElementById('app').style.display='none';
+      showFbForm('login');
+      showLoginErr('login','Tài khoản này đã bị khoá đăng nhập. Vui lòng liên hệ quản trị viên.');
+    }else{
+      enterAppFirebase(user);
+    }
+  }).catch(function(){
+    enterAppFirebase(user); // lỗi đọc cấu hình → vẫn cho vào, không khoá oan
+  });
+}
 function enterAppFirebase(user){
   NS=user.uid.slice(0,16);
   var displayName=user.displayName||user.email.split('@')[0];
@@ -802,6 +821,10 @@ function enterAppFirebase(user){
   document.getElementById('tb-date').textContent=fmtDate(now);
   renderAll();updateStats();populateBcSel();renderMonthPage();renderGuide();
   loadBranchFeature();
+  // Mặc định mở tab Sơ đồ (tab đầu tiên): ẩn thanh ngày/thống kê + vẽ cây
+  document.getElementById('app').classList.add('hide-topbars');
+  if(currentTreeMode==='binary')renderTree();else renderStarChart();
+  showAndFitTree();
 }
 function applyBranchFeatureUI(){
   // Ẩn/hiện nút "Xuất nhánh" theo cấu hình QTV chính
@@ -2668,6 +2691,21 @@ function renderAdminPage(){
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
       var isMainAdmin=(admins.emails[0]===myEmail);
       var branchOn=!(reg&&reg.branchEnabled===false);
+      // KHOA DANG NHAP TAI KHOAN - chi QTV CHINH duoc lam
+      if(isMainAdmin){
+        var blockedList=(reg&&reg.blockedEmails)||[];
+        h+='<div class="adm-box"><div class="adm-title">🔒 Khoá đăng nhập tài khoản</div>';
+        h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Nhập email tài khoản để <b>chặn đăng nhập</b>. Tài khoản bị khoá sẽ bị đăng xuất ở lần tải trang kế tiếp và không vào lại được tới khi mở khoá. Không khoá được tài khoản quản trị viên.</div>';
+        if(blockedList.length){
+          blockedList.forEach(function(em){
+            h+='<div class="nmod-row"><div class="nmod-lbl" style="color:#E53935">🔒 '+escHtml(em)+'</div><button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">Mở khoá</button></div>';
+          });
+        }else{
+          h+='<div style="font-size:13px;color:#999;padding:2px 0">Chưa khoá tài khoản nào.</div>';
+        }
+        h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-blockmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
+        h+='<button class="btn btn-r btn-sm" id="btn-block-add">🔒 Khoá đăng nhập</button></div></div>';
+      }
       h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Xuất nhánh (tách nhánh)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> để chặn tách/chuyển nhánh (ẩn nút "Xuất nhánh" của mọi người).</div>';
       if(isMainAdmin){
@@ -3259,6 +3297,36 @@ document.addEventListener('click',function(e){
       branchExportEnabled=_bv;applyBranchFeatureUI();
       showToast(_bv?'✓ Đã BẬT Xuất nhánh':'✓ Đã TẮT Xuất nhánh');
       renderAdminPage();
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // QTV chính: KHOÁ đăng nhập 1 email
+  if(e.target.id==='btn-block-add'){
+    var bm=((document.getElementById('adm-blockmail')||{}).value||'').trim().toLowerCase();
+    if(!bm){showToast('Nhập email');return;}
+    fsGetGlobal('admins').then(function(ad){
+      var adminEmails=((ad&&ad.emails)||[]).map(function(x){return String(x).toLowerCase();});
+      if(adminEmails.indexOf(bm)>=0){showToast('Không thể khoá tài khoản quản trị viên');return;}
+      return fsGetGlobal('registration').then(function(reg){
+        var blocked=(reg&&reg.blockedEmails)||[];
+        if(blocked.some(function(x){return String(x).toLowerCase()===bm;})){showToast('Tài khoản này đã bị khoá');return;}
+        blocked.push(bm);
+        return fsSetGlobal('registration',{blockedEmails:blocked}).then(function(){
+          showToast('✓ Đã khoá đăng nhập: '+bm);renderAdminPage();
+        });
+      });
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // QTV chính: MỞ KHOÁ đăng nhập 1 email
+  t=e.target.closest('[data-unblock-email]');
+  if(t){
+    var ue=t.getAttribute('data-unblock-email');
+    fsGetGlobal('registration').then(function(reg){
+      var blocked=((reg&&reg.blockedEmails)||[]).filter(function(x){return String(x).toLowerCase()!==String(ue).toLowerCase();});
+      return fsSetGlobal('registration',{blockedEmails:blocked}).then(function(){
+        showToast('✓ Đã mở khoá: '+ue);renderAdminPage();
+      });
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
