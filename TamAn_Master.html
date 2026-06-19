@@ -1,4 +1,14 @@
-<!-- VERSION: v4.3-branch-import-toggle-admin -->
+<!-- VERSION: v4.4-copyright-domainlock -->
+<!--
+  ============================================================================
+  © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
+  Toàn bộ giao diện, mã nguồn và logic trong tệp này là tài sản trí tuệ riêng.
+  NGHIÊM CẤM sao chép, phân phối, sửa đổi hoặc sử dụng lại dưới mọi hình thức
+  khi chưa có sự đồng ý bằng văn bản của tác giả.
+  Ứng dụng chỉ hoạt động trên trang chính thức: tamanplaybook.github.io
+  Liên hệ: hotanhuy0905@gmail.com
+  ============================================================================
+-->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -351,7 +361,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <button class="setup-btn" data-show-form="login">&larr; Quay lại đăng nhập</button>
     </div>
 
-    <div class="setup-note">Bảo mật bởi Firebase (Google)<br>Quên mật khẩu &rarr; dùng chức năng khôi phục email</div>
+    <div class="setup-note">Bảo mật bởi Firebase (Google)<br>Quên mật khẩu &rarr; dùng chức năng khôi phục email<br><span style="color:#C8A84B">&#169; 2026 Hồ Tấn Huy &middot; Bản quyền được bảo lưu</span></div>
   </div>
 </div>
 
@@ -4081,7 +4091,26 @@ function setupPan(wrapId,getOffset,setOffset){
 // ================================================================
 // INIT
 // ================================================================
+// ================================================================
+// KHOÁ TÊN MIỀN — chống chạy bản sao chép ngoài trang chính thức
+// (kết hợp với Authorized domains của Firebase để bản nhái không đăng nhập được)
+// ================================================================
+function isOfficialHost(){
+  var h=(location.hostname||'').toLowerCase();
+  return h==='tamanplaybook.github.io'||h==='localhost'||h==='127.0.0.1';
+}
+function showCopyrightBlock(){
+  document.body.innerHTML='<div style="min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#1A1A1A;color:#eee;font-family:Arial,Helvetica,sans-serif">'
+    +'<div style="max-width:460px;text-align:center;background:#222;border:1px solid #444;border-radius:16px;padding:32px">'
+    +'<div style="font-size:40px;margin-bottom:10px">&#128274;</div>'
+    +'<div style="font-size:18px;font-weight:700;color:#C8A84B;margin-bottom:12px">Quản trị Team Tâm An TTHC</div>'
+    +'<div style="font-size:14px;line-height:1.7;color:#ccc">Ứng dụng này là tài sản trí tuệ riêng và chỉ hoạt động trên trang chính thức:<br><b style="color:#fff">tamanplaybook.github.io</b></div>'
+    +'<div style="margin-top:18px;font-size:12px;color:#8a8a8a;line-height:1.7">&#169; 2026 Hồ Tấn Huy. Bản quyền &amp; sở hữu trí tuệ được bảo lưu.<br>Nghiêm cấm sao chép, phân phối hoặc sử dụng lại khi chưa được phép.</div>'
+    +'<a href="https://tamanplaybook.github.io/taman-playbook/TamAn_Master.html" style="display:inline-block;margin-top:18px;color:#C8A84B;font-size:13px;text-decoration:none">&rarr; Mở trang chính thức</a>'
+    +'</div></div>';
+}
 window.addEventListener('load',function(){
+  if(!isOfficialHost()){showCopyrightBlock();return;} // bản sao mở ở miền lạ → chặn, hiện thông báo bản quyền
   bindStatic();
   // Preload Firebase ngầm — form vẫn hiện ngay
   loadFirebase().catch(function(e){
