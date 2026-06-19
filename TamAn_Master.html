@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1.2-connector-bold-truc-he-vs-khach -->
+<!-- VERSION: v4.1.3-legend-chu-thich-admin-toggle-xuat-nhanh -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -439,6 +439,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
       <button class="tbtn green" id="btn-tfit">&#9974; Cả cây</button>
       <button class="tbtn gold" id="btn-fullscreen">&#x26F6; Toàn trang</button>
+      <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn" id="btn-add-root">+ Gốc</button>
       <button class="tbtn green" id="btn-export">&#128228; Xuất</button>
       <button class="tbtn blue" id="btn-import">&#128229; Import</button>
@@ -535,6 +536,17 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
 </div>
 
+<!-- LEGEND / CHÚ THÍCH MÀU -->
+<div class="nmod-ov" id="legend-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#10067; Chú thích sơ đồ nhị phân</div>
+      <button class="nmod-x" id="legend-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="legend-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 // ================================================================
@@ -593,6 +605,7 @@ var F_COLORS=['#E53935','#8E24AA','#1565C0','#00897B','#F4511E','#6D4C41','#3949
 // STATE
 // ================================================================
 var NS='',members=[],treeNodes=[];
+var branchExportEnabled=true; // BẬT/TẮT chức năng Xuất nhánh — do QTV chính chỉnh ở Quản trị (appConfig/registration.branchEnabled)
 var currentDay=new Date(),currentMonth={y:new Date().getFullYear(),m:new Date().getMonth()};
 var filterMode='all',modalMid=null,modalType=null;
 var activeNodeModal=null,selectedHighlight=null;
@@ -688,7 +701,7 @@ async function fsSetGlobal(docName,data){
   if(!fbReady)await loadFirebase();
   var m=await import(FB_STORE);
   data.updatedAt=new Date().toISOString();
-  await m.setDoc(m.doc(fbDb,'appConfig',docName),data);
+  await m.setDoc(m.doc(fbDb,'appConfig',docName),data,{merge:true});
 }
 
 // ================================================================
@@ -788,6 +801,19 @@ function enterAppFirebase(user){
   updateDateDisplay();updateMonthDisplay();
   document.getElementById('tb-date').textContent=fmtDate(now);
   renderAll();updateStats();populateBcSel();renderMonthPage();renderGuide();
+  loadBranchFeature();
+}
+function applyBranchFeatureUI(){
+  // Ẩn/hiện nút "Xuất nhánh" theo cấu hình QTV chính
+  var b=document.getElementById('btn-export-branch');
+  if(b)b.style.display=branchExportEnabled?'':'none';
+}
+function loadBranchFeature(){
+  // Mặc định BẬT; chỉ TẮT khi QTV chính đặt branchEnabled===false
+  fsGetGlobal('registration').then(function(reg){
+    branchExportEnabled=!(reg&&reg.branchEnabled===false);
+    applyBranchFeatureUI();
+  }).catch(function(){applyBranchFeatureUI();});
 }
 function doLogout(){
   fbSignOut().then(function(){
@@ -2639,6 +2665,18 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Người mới phải nhập đúng mã này khi tạo tài khoản. Để trống = ai cũng đăng ký được. Đổi mã = chặn người chưa có mã mới.</div>';
       h+='<div style="display:flex;gap:8px"><input id="adm-code" class="nmod-inp" style="flex:1" value="'+escHtml(code)+'" placeholder="VD: TAMAN2026">';
       h+='<button class="btn btn-g btn-sm" id="btn-adm-savecode">\u2713 Lưu mã</button></div></div>';
+      // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
+      var isMainAdmin=(admins.emails[0]===myEmail);
+      var branchOn=!(reg&&reg.branchEnabled===false);
+      h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Xuất nhánh (tách nhánh)</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> để chặn tách/chuyển nhánh (ẩn nút "Xuất nhánh" của mọi người).</div>';
+      if(isMainAdmin){
+        h+='<div class="nmod-row"><div class="nmod-lbl">Trạng thái: <b style="color:'+(branchOn?'#1A7A5E':'#E53935')+'">'+(branchOn?'Đang BẬT':'Đang TẮT')+'</b></div>';
+        h+='<button class="btn '+(branchOn?'btn-r':'btn-g')+' btn-sm" data-toggle-branch="'+(branchOn?'0':'1')+'">'+(branchOn?'Tắt chức năng':'Bật chức năng')+'</button></div>';
+      }else{
+        h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(branchOn?'#1A7A5E':'#E53935')+'">'+(branchOn?'Đang BẬT':'Đang TẮT')+'</b> · Chỉ <b>quản trị viên chính</b> ('+escHtml(admins.emails[0]||'')+') được điều chỉnh.</div>';
+      }
+      h+='</div>';
       h+='<div class="adm-box"><div class="adm-title">\uD83D\uDC65 Quản trị viên</div>';
       admins.emails.forEach(function(em){
         h+='<div class="nmod-row"><div class="nmod-lbl">'+escHtml(em)+(em===myEmail?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+'</div>';
@@ -2729,6 +2767,7 @@ function collectMemberData(midSet){
   return out;
 }
 function exportSubtree(){
+  if(!branchExportEnabled){showToast('Chức năng Xuất nhánh đang TẮT (do quản trị viên chính)');return;}
   if(!treeNodes.length){showToast('Chưa có dữ liệu cây');return;}
   var rootNode=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
   // Xuất đúng theo nhánh ĐANG HIỂN THỊ: tab Mặt trời → tuyến BẢO TRỢ (f1of); tab Nhị phân → VỊ TRÍ ĐẶT (parentId)
@@ -3212,6 +3251,17 @@ document.addEventListener('click',function(e){
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
+  // Bật/Tắt chức năng Xuất nhánh — chỉ QTV chính thấy nút này
+  t=e.target.closest('[data-toggle-branch]');
+  if(t){
+    var _bv=t.getAttribute('data-toggle-branch')==='1'; // 1 = bật
+    fsSetGlobal('registration',{branchEnabled:_bv}).then(function(){
+      branchExportEnabled=_bv;applyBranchFeatureUI();
+      showToast(_bv?'✓ Đã BẬT Xuất nhánh':'✓ Đã TẮT Xuất nhánh');
+      renderAdminPage();
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
   // Admin: gỡ QTV
   t=e.target.closest('[data-rmadmin]');
   if(t){
@@ -3401,6 +3451,51 @@ function closeFullscreen(){
   setTimeout(function(){if(currentTreeMode==='binary')treeFit();else starFit();},80);
 }
 // ================================================================
+// CHÚ THÍCH MÀU / DÂY — sinh từ chính các hằng màu của app để luôn khớp
+// ================================================================
+function buildLegendHtml(){
+  function sw(color,border){ // ô vuông màu nền
+    return '<span style="display:inline-block;width:20px;height:20px;border-radius:5px;background:'+color+';border:'+(border||'1px solid rgba(0,0,0,.18)')+';vertical-align:middle;flex-shrink:0"></span>';
+  }
+  function bd(color,dash){ // ô viền (thẻ ID)
+    return '<span style="display:inline-block;width:20px;height:20px;border-radius:5px;background:white;border:3px '+(dash?'dashed':'solid')+' '+color+';vertical-align:middle;flex-shrink:0"></span>';
+  }
+  function ln(color,dash){ // dây nối minh hoạ
+    return '<svg width="36" height="16" style="vertical-align:middle;flex-shrink:0"><line x1="2" y1="8" x2="34" y2="8" stroke="'+color+'" stroke-width="4" stroke-linecap="round"'+(dash?' stroke-dasharray="7,5"':'')+'/></svg>';
+  }
+  function row(icon,txt){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;line-height:1.5"><span style="width:46px;display:flex;justify-content:center;flex-shrink:0">'+icon+'</span><span style="flex:1">'+txt+'</span></div>';
+  }
+  function sec(t){return '<div style="font-weight:700;font-size:13px;color:#1A1A1A;margin:14px 0 2px;border-bottom:1.5px solid #ECECEC;padding-bottom:4px">'+t+'</div>';}
+  var h='';
+  // ── VIỀN Ô ──
+  h+=sec('🔲 Viền thẻ ID');
+  h+=row(bd('#C8A84B'),'<b>Vàng</b> + chữ "ID GỐC": gốc cây (bạn).');
+  h+=row(bd(F_COLORS[0])+bd(F_COLORS[1])+bd(F_COLORS[2]),'<b>Mỗi màu = 1 đầu nhánh.</b> Thẻ viền cùng màu → cùng team đầu nhánh (F1 trực hệ của gốc / nhánh phả hệ tuyến trên).');
+  h+=row(bd(RANKS[1].color),'<b>Viền theo màu cấp bậc</b> + huy hiệu ở góc ('+RANKS.map(function(r){return r.short;}).join(' · ')+'): ID đã đạt cấp bậc đó.');
+  // ── NỀN Ô ──
+  h+=sec('🎨 Nền thẻ ID');
+  h+=row(sw('white'),'<b>Trắng</b>: ID bình thường.');
+  h+=row(sw(BIN_HL.GREEN),'<b>Xanh lá</b>: ID vào <b>sớm nhất</b> của tầng/nhánh đó.');
+  h+=row(sw(BIN_HL.PURPLE),'<b>Tím</b>: "ID NN" thuộc cặp cân nhánh nhỏ (Tầng ≥4).');
+  h+=row(sw(BIN_HL.BLUE),'<b>Xanh dương</b>: "ID NN" còn lại (Tầng ≥4).');
+  h+=row('<span class="nn-blink" style="display:inline-block;width:20px;height:20px;border-radius:5px;background:'+BIN_HL.BLUE+'"></span>','<b>Nền nhấp nháy + nhãn NN=số</b>: ID ở nhánh đang nhiều hơn, cần cân; số = chênh lệch NN giữa 2 bên.');
+  h+=row('<span class="near-rank" style="display:inline-block;width:20px;height:20px;border-radius:5px;background:white;border:2.5px solid #FF8F00"></span>','<b>Viền sáng nhấp nháy</b>: ID đã đạt ≥50% tiêu chí cấp kế tiếp (sắp lên cấp).');
+  // ── DÂY NỐI ──
+  h+=sec('➰ Dây nối');
+  h+=row(ln(F_COLORS[0])+ln(F_COLORS[2]),'<b>Màu dây = màu team.</b> Dây cùng màu thuộc cùng nhánh đầu → nhìn ra ngay ID thuộc nhánh nào.');
+  h+=row(ln('#555',false),'<b>Nét LIỀN</b>: <b>trực hệ</b> — người bảo trợ chính là người đặt phía trên.');
+  h+=row(ln('#555',true),'<b>Nét ĐỨT</b>: <b>khách / phả hệ</b> — đặt dưới một người khác với người bảo trợ.');
+  h+=row(ln('#2979FF',true),'<b>Vạch xanh dương đứt (dọc)</b>: ranh giới nhánh <b>Trái / Phải</b>.');
+  h+=row(ln('#FFD600',true),'<b>Vạch vàng đứt (ngang)</b>: ranh giới <b>Tầng 3 / Tầng 4</b>.');
+  return h;
+}
+function openLegend(){
+  document.getElementById('legend-body').innerHTML=buildLegendHtml();
+  document.getElementById('legend-ov').classList.add('open');
+}
+function closeLegend(){document.getElementById('legend-ov').classList.remove('open');}
+// ================================================================
 // SEARCH FILTER cho select dài — gõ từ khóa lọc danh sách tên
 // ================================================================
 function attachSelFilter(inputEl,selEl){
@@ -3491,6 +3586,9 @@ function bindStatic(){
   document.getElementById('btn-import-branch').addEventListener('click',importSubtree);
   document.getElementById('btn-fullscreen').addEventListener('click',openFullscreen);
   document.getElementById('btn-fs-close').addEventListener('click',closeFullscreen);
+  document.getElementById('btn-legend').addEventListener('click',openLegend);
+  document.getElementById('legend-close').addEventListener('click',closeLegend);
+  document.getElementById('legend-ov').addEventListener('click',function(e){if(e.target===this)closeLegend();});
 
   // Cum calc (delegated vì render động)
   document.addEventListener('click',function(e){
