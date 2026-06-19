@@ -1,4 +1,4 @@
-<!-- VERSION: v4.1.4-block-login-admin-tab-sodo-first -->
+<!-- VERSION: v4.1.5-sodo-first-pos-default-diemdanh -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -341,8 +341,8 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <button class="tb-out" id="btn-logout">Thoát</button>
   </div>
   <div class="main-tabs">
-    <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
-    <button class="mtab" data-main="dd">&#128203; Điểm danh</button>
+    <button class="mtab" data-main="tree">&#127795; Sơ đồ</button>
+    <button class="mtab on" data-main="dd">&#128203; Điểm danh</button>
     <button class="mtab" data-main="month">&#128197; Tháng</button>
     <button class="mtab" data-main="nhatky">&#128211; Nhật ký</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
@@ -369,7 +369,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div id="dd-branch-bar" style="display:none;background:#FFF8E1;border-bottom:1px solid #FFE082;padding:6px 12px;font-size:12.5px;align-items:center;gap:8px"></div>
 
   <!-- ĐIỂM DANH -->
-  <div class="page" id="page-dd">
+  <div class="page on" id="page-dd">
     <div class="content">
       <div class="stabs">
         <button class="stab on" data-sub="dd:sang">&#127749; Sáng</button>
@@ -431,7 +431,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
 
   <!-- SƠ ĐỒ -->
-  <div class="page on" id="page-tree">
+  <div class="page" id="page-tree">
     <div class="tb-row">
       <button class="stab on" data-treemode="binary">&#127795; Nhị phân</button>
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
@@ -821,10 +821,6 @@ function enterAppFirebase(user){
   document.getElementById('tb-date').textContent=fmtDate(now);
   renderAll();updateStats();populateBcSel();renderMonthPage();renderGuide();
   loadBranchFeature();
-  // Mặc định mở tab Sơ đồ (tab đầu tiên): ẩn thanh ngày/thống kê + vẽ cây
-  document.getElementById('app').classList.add('hide-topbars');
-  if(currentTreeMode==='binary')renderTree();else renderStarChart();
-  showAndFitTree();
 }
 function applyBranchFeatureUI(){
   // Ẩn/hiện nút "Xuất nhánh" theo cấu hình QTV chính
