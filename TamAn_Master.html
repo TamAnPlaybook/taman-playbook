@@ -1,4 +1,4 @@
-<!-- VERSION: v4.5-admin-viewaccounts -->
+<!-- VERSION: v4.6-admin-tab-hidden -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -379,7 +379,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <button class="mtab" data-main="month">&#128197; Tháng</button>
     <button class="mtab" data-main="nhatky">&#128211; Nhật ký</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
-    <button class="mtab" data-main="admin">&#9881;&#65039; Quản trị</button>
+    <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
   </div>
   <div class="date-bar">
     <button class="db-btn" id="btn-day-prev">&lsaquo;</button>
@@ -665,6 +665,7 @@ var NS='',members=[],treeNodes=[];
 var branchExportEnabled=true; // BẬT/TẮT "Xuất nhánh" cho THÀNH VIÊN — QTV chính chỉnh (appConfig/registration.branchEnabled)
 var branchImportEnabled=true; // BẬT/TẮT "Nhập nhánh" cho THÀNH VIÊN — QTV chính chỉnh (appConfig/registration.branchImportEnabled)
 var isBranchAdmin=false;      // user hiện tại là QTV? → LUÔN thấy cả Xuất/Nhập nhánh bất kể cấu hình
+var canSeeAdminTab=false;     // chỉ QTV (hoặc khi chưa có QTV nào — để nhận quyền lần đầu) mới thấy tab Quản trị
 var currentDay=new Date(),currentMonth={y:new Date().getFullYear(),m:new Date().getMonth()};
 var filterMode='all',modalMid=null,modalType=null;
 var activeNodeModal=null,selectedHighlight=null;
@@ -923,6 +924,9 @@ function applyBranchFeatureUI(){
   if(be)be.style.display=(isBranchAdmin||branchExportEnabled)?'':'none';
   var bi=document.getElementById('btn-import-branch');
   if(bi)bi.style.display=(isBranchAdmin||branchImportEnabled)?'':'none';
+  // Tab Quản trị: chỉ QTV (hoặc khi chưa có QTV nào) mới thấy
+  var at=document.getElementById('tab-admin');
+  if(at)at.style.display=canSeeAdminTab?'':'none';
 }
 function loadBranchFeature(){
   // Mặc định BẬT; chỉ TẮT khi QTV chính đặt false. QTV (trong admins.emails) LUÔN thấy cả 2 nút.
@@ -932,6 +936,8 @@ function loadBranchFeature(){
   ]).then(function(r){
     var admins=r[0],reg=r[1];
     isBranchAdmin=!!(admins&&admins.emails&&fbUser&&admins.emails.indexOf(fbUser.email)>=0);
+    var noAdmins=!(admins&&admins.emails&&admins.emails.length);
+    canSeeAdminTab=isBranchAdmin||noAdmins; // chưa có QTV nào → cho thấy tab để nhận quyền lần đầu
     branchExportEnabled=!(reg&&reg.branchEnabled===false);
     branchImportEnabled=!(reg&&reg.branchImportEnabled===false);
     applyBranchFeatureUI();
