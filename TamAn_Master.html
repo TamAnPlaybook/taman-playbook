@@ -1,4 +1,4 @@
-<!-- VERSION: v4.4-copyright-domainlock -->
+<!-- VERSION: v4.5-admin-viewaccounts -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -593,6 +593,17 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
 </div>
 
+<!-- XEM TÀI KHOẢN — QTV xem nội dung (cây + thành viên) của 1 tài khoản, chỉ ĐỌC -->
+<div class="nmod-ov" id="acctview-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title" id="acctview-title">👁️ Xem tài khoản</div>
+      <button class="nmod-x" id="acctview-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="acctview-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 // ================================================================
@@ -739,6 +750,13 @@ async function fsGet(docName){
   if(!fbDb||!fbUser)return null;
   var m=await import(FB_STORE);
   var s=await m.getDoc(m.doc(fbDb,'users',fbUser.uid,'data',docName));
+  return s.exists()?s.data():null;
+}
+async function fsGetUser(uid,docName){
+  // QTV đọc 1 document dữ liệu của tài khoản khác (chỉ ĐỌC — Rules chặn ghi).
+  if(!fbDb||!fbUser||!uid)return null;
+  var m=await import(FB_STORE);
+  var s=await m.getDoc(m.doc(fbDb,'users',uid,'data',docName));
   return s.exists()?s.data():null;
 }
 async function fsGetGlobal(docName){
@@ -2787,7 +2805,12 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "service cloud.firestore {\n"+
 "  match /databases/{database}/documents {\n"+
 "    match /users/{userId}/{document=**} {\n"+
-"      allow read, write: if request.auth != null && request.auth.uid == userId;\n"+
+"      allow write: if request.auth != null && request.auth.uid == userId;\n"+
+"      allow read: if request.auth != null && (\n"+
+"        request.auth.uid == userId\n"+
+"        || (exists(/databases/$(database)/documents/appConfig/admins)\n"+
+"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails)\n"+
+"      );\n"+
 "    }\n"+
 "    match /appConfig/registration {\n"+
 "      allow read: if true;\n"+
@@ -2859,11 +2882,16 @@ function renderAdminPage(){
         }
         h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-blockmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
         h+='<button class="btn btn-r btn-sm" id="btn-block-add">🔒 Khoá đăng nhập</button></div></div>';
+        // CAP NHAT RULES v4.5 — bat buoc Publish 1 lan de nut "Xem" doc duoc du lieu tai khoan khac
+        h+='<div class="adm-box"><div class="adm-title">🔑 Bật quyền XEM tài khoản (cập nhật Rules — làm 1 lần)</div>';
+        h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Để nút <b>👁️ Xem</b> đọc được dữ liệu bên trong tài khoản thành viên, cần cập nhật <b>Firestore Rules</b> (bản v4.5) <u>một lần</u>:<br>1. Mở <b>console.firebase.google.com</b> → project <b>taman-playbook</b> → <b>Firestore Database</b> → tab <b>Rules</b>.<br>2. Xóa hết, dán nội dung dưới đây → bấm <b>Publish</b>. (Rules mới chỉ cho QTV <b>ĐỌC</b>, không sửa được dữ liệu người khác — an toàn.)</div>';
+        h+='<textarea id="adm-rules2" readonly style="width:100%;height:140px;font-family:monospace;font-size:11px;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px;background:#FAFAFA">'+escHtml(FIRESTORE_RULES)+'</textarea>';
+        h+='<button class="btn btn-d btn-sm" id="btn-copy-rules" style="margin-top:8px">📋 Copy Rules v4.5</button></div>';
         // DANH SACH TAI KHOAN DA DANG KY + Tat/Mo quyen truy cap (QTV chinh)
         var adminEmailsLc=admins.emails.map(function(x){return String(x).toLowerCase();});
         var blockedNow=(reg&&reg.blockedEmails)||[];
         h+='<div class="adm-box"><div class="adm-title">👤 Tài khoản đã đăng ký</div>';
-        h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây. Bấm <b>Tắt quyền</b> để chặn đăng nhập, <b>Mở quyền</b> để cho phép lại.</div>';
+        h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây. Bấm <b>👁️ Xem</b> để xem nội dung bên trong (sơ đồ + thành viên), <b>Tắt quyền</b> để chặn đăng nhập, <b>Mở quyền</b> để cho phép lại.</div>';
         if(accounts&&accounts.length){
           accounts.sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
           accounts.forEach(function(ac){
@@ -2876,10 +2904,12 @@ function renderAdminPage(){
             h+='<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(ac.email||'(chưa có email)')+'</div>';
             h+='<div style="font-size:10px;color:#AAA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ID: '+escHtml(ac.uid)+'</div>';
             h+='</div>';
-            if(isAdm){ h+='<span style="font-size:12px;color:#1A7A5E;font-weight:700;flex:none">Quản trị</span>'; }
-            else if(isBlk){ h+='<button class="btn btn-g btn-sm" style="flex:none" data-unblock-email="'+escHtml(em)+'">Mở quyền</button>'; }
-            else{ h+='<button class="btn btn-r btn-sm" style="flex:none" data-block-email="'+escHtml(em)+'">Tắt quyền</button>'; }
-            h+='</div>';
+            h+='<div style="display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end">';
+            h+='<button class="btn btn-d btn-sm" data-view-uid="'+escHtml(ac.uid)+'" data-view-name="'+escHtml(ac.name||ac.email||'')+'">👁️ Xem</button>';
+            if(isAdm){ h+='<span style="font-size:12px;color:#1A7A5E;font-weight:700;align-self:center">Quản trị</span>'; }
+            else if(isBlk){ h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">Mở quyền</button>'; }
+            else{ h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(em)+'">Tắt quyền</button>'; }
+            h+='</div></div>';
           });
         }else{
           h+='<div style="font-size:13px;color:#999;padding:4px 0">Chưa ghi nhận tài khoản nào. Nếu trống dù đã có người đăng nhập → cần cập nhật <b>Firestore Rules</b> (thêm mục accounts) rồi Publish lại:</div>';
@@ -3551,6 +3581,12 @@ document.addEventListener('click',function(e){
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
+  // QTV: XEM nội dung 1 tài khoản (cây + thành viên) — chỉ đọc
+  t=e.target.closest('[data-view-uid]');
+  if(t){
+    openAccountView(t.getAttribute('data-view-uid'),t.getAttribute('data-view-name')||'');
+    return;
+  }
   // Admin: gỡ QTV
   t=e.target.closest('[data-rmadmin]');
   if(t){
@@ -3818,6 +3854,83 @@ function closeLegend(){document.getElementById('legend-ov').classList.remove('op
 function openThangTien(){renderRankAlert();document.getElementById('tt-ov').classList.add('open');}
 function closeThangTien(){document.getElementById('tt-ov').classList.remove('open');}
 // ================================================================
+// XEM TÀI KHOẢN (QTV) — đọc cây + thành viên của 1 tài khoản, CHỈ XEM
+// Tự chứa: không đụng tới members/treeNodes toàn cục, không ghi gì.
+// ================================================================
+function avEsc(s){return escHtml(String(s==null?'':s));}
+function buildAccountViewHtml(nodes,members){
+  nodes=Array.isArray(nodes)?nodes:[];
+  members=Array.isArray(members)?members:[];
+  var byId={},byName={},childrenOf={};
+  nodes.forEach(function(n){if(n&&n.id)byId[n.id]=n;});
+  nodes.forEach(function(n){if(n&&n.name&&!byName[n.name])byName[n.name]=n;});
+  nodes.forEach(function(n){if(!n)return;var p=(n.parentId&&byId[n.parentId])?n.parentId:'__root__';(childrenOf[p]=childrenOf[p]||[]).push(n);});
+  function lvlOf(n){var l=0,c=n,g=0;while(c&&c.parentId&&byId[c.parentId]&&g<80){l++;c=byId[c.parentId];g++;}return l;}
+  function fNumOf(n){var d=0,c=n,g=0;while(c&&c.f1of&&byName[c.f1of]&&byName[c.f1of].id!==c.id&&g<80){d++;c=byName[c.f1of];g++;}return d;}
+  function sortKids(a,b){var sa=a.side==='L'?0:(a.side==='R'?1:2),sb=b.side==='L'?0:(b.side==='R'?1:2);return sa-sb;}
+  var out=[],seen={};
+  function walk(n,depth){
+    if(!n||(n.id&&seen[n.id])||depth>80)return;
+    if(n.id)seen[n.id]=true;
+    var pad=8+depth*16;
+    var badges='<span style="background:#EEE;color:#555;border-radius:6px;padding:1px 6px;font-size:10px;margin-left:6px">Tầng '+lvlOf(n)+'</span>';
+    var fn=fNumOf(n);
+    if(fn>0)badges+='<span style="background:#EAF3FF;color:#1565C0;border-radius:6px;padding:1px 6px;font-size:10px;margin-left:4px">F'+fn+'</span>';
+    if(n.side)badges+='<span style="color:#AAA;font-size:10px;margin-left:4px">'+(n.side==='L'?'Trái':'Phải')+'</span>';
+    var sub=[];
+    if(n.idCode)sub.push('ID: '+avEsc(n.idCode));
+    if(n.phone)sub.push('☎ '+avEsc(n.phone));
+    if(n.joinDate)sub.push('📅 '+avEsc(n.joinDate));
+    if(n.f1of)sub.push('bảo trợ: '+avEsc(n.f1of));
+    out.push('<div style="padding:5px 0 5px '+pad+'px;border-bottom:1px solid #F5F5F5">'+
+      '<div style="font-weight:700;font-size:13px">'+avEsc(n.name||'(chưa đặt tên)')+badges+'</div>'+
+      (sub.length?'<div style="font-size:11px;color:#888;margin-top:2px">'+sub.join(' · ')+'</div>':'')+'</div>');
+    (childrenOf[n.id]||[]).slice().sort(sortKids).forEach(function(c){walk(c,depth+1);});
+  }
+  (childrenOf['__root__']||[]).slice().sort(sortKids).forEach(function(r){walk(r,0);});
+  nodes.forEach(function(n){if(n&&n.id&&!seen[n.id])walk(n,0);}); // node mồ côi vẫn hiển thị
+  var h='';
+  h+='<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:90px;background:#FAFAFA;border:1px solid #EEE;border-radius:10px;padding:9px;text-align:center"><div style="font-size:20px;font-weight:800;color:#1A7A5E">'+nodes.length+'</div><div style="font-size:11px;color:#888">Nút sơ đồ</div></div>';
+  h+='<div style="flex:1;min-width:90px;background:#FAFAFA;border:1px solid #EEE;border-radius:10px;padding:9px;text-align:center"><div style="font-size:20px;font-weight:800;color:#1565C0">'+members.length+'</div><div style="font-size:11px;color:#888">Thành viên</div></div>';
+  h+='</div>';
+  h+='<div class="adm-title" style="font-size:14px;margin:6px 0 4px">🌳 Sơ đồ tuyến (cây bảo trợ)</div>';
+  if(out.length)h+='<div style="border:1px solid #EEE;border-radius:10px;overflow:hidden">'+out.join('')+'</div>';
+  else h+='<div style="font-size:13px;color:#999;padding:8px 0">Tài khoản này chưa có dữ liệu sơ đồ.</div>';
+  h+='<div class="adm-title" style="font-size:14px;margin:16px 0 4px">👥 Danh sách thành viên</div>';
+  if(members.length){
+    h+='<div style="border:1px solid #EEE;border-radius:10px;overflow:hidden">';
+    members.forEach(function(mb){
+      if(!mb)return;
+      h+='<div style="display:flex;gap:8px;padding:7px 10px;border-bottom:1px solid #F5F5F5">'+
+        '<div style="flex:1;font-size:13px;font-weight:600">'+avEsc(mb.name||'(chưa đặt tên)')+'</div>'+
+        '<div style="font-size:11px;color:#888">'+avEsc(mb.role||'')+'</div></div>';
+    });
+    h+='</div>';
+  }else{
+    h+='<div style="font-size:13px;color:#999;padding:8px 0">Chưa có thành viên.</div>';
+  }
+  return h;
+}
+function openAccountView(uid,name){
+  var ov=document.getElementById('acctview-ov');if(!ov)return;
+  document.getElementById('acctview-title').innerHTML='👁️ '+avEsc(name||'Tài khoản');
+  document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải dữ liệu tài khoản...</div>';
+  ov.classList.add('open');
+  Promise.all([
+    fsGetUser(uid,'tree').catch(function(){return null;}),
+    fsGetUser(uid,'members').catch(function(){return null;})
+  ]).then(function(r){
+    if(!ov.classList.contains('open'))return;
+    var nodes=(r[0]&&r[0].nodes)||[];
+    var mems=(r[1]&&r[1].members)||[];
+    document.getElementById('acctview-body').innerHTML=buildAccountViewHtml(nodes,mems);
+  }).catch(function(err){
+    document.getElementById('acctview-body').innerHTML='<div style="color:#E53935;padding:16px">Lỗi tải dữ liệu: '+avEsc(err&&err.message)+'<br><br>Nếu là lỗi quyền (permission), hãy cập nhật lại <b>Firestore Rules</b> (bản v4.5) rồi Publish.</div>';
+  });
+}
+function closeAccountView(){var ov=document.getElementById('acctview-ov');if(ov)ov.classList.remove('open');}
+// ================================================================
 // SEARCH FILTER cho select dài — gõ từ khóa lọc danh sách tên
 // ================================================================
 function attachSelFilter(inputEl,selEl){
@@ -3914,6 +4027,8 @@ function bindStatic(){
   document.getElementById('btn-thangtien').addEventListener('click',openThangTien);
   document.getElementById('tt-close').addEventListener('click',closeThangTien);
   document.getElementById('tt-ov').addEventListener('click',function(e){if(e.target===this)closeThangTien();});
+  document.getElementById('acctview-close').addEventListener('click',closeAccountView);
+  document.getElementById('acctview-ov').addEventListener('click',function(e){if(e.target===this)closeAccountView();});
 
   // Cum calc (delegated vì render động)
   document.addEventListener('click',function(e){
