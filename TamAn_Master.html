@@ -1,4 +1,4 @@
-<!-- VERSION: v4.8-crownframe-contrast-disc-thany-ketqua -->
+<!-- VERSION: v4.9-emailverify-onetimecode -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -367,10 +367,17 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 
     <div id="form-verify" style="display:none">
       <div style="text-align:center;font-size:40px;margin-bottom:10px">&#128231;</div>
-      <div style="font-size:14px;color:#888;text-align:center;line-height:1.7;margin-bottom:16px">
-        Đã gửi email xác minh.<br>Kiểm tra hộp thư và bấm vào link xác nhận.
+      <div style="font-size:14px;color:#888;text-align:center;line-height:1.7;margin-bottom:4px">
+        Đã gửi email xác minh tới<br><b id="verify-email" style="color:#1A1A1A"></b>
       </div>
-      <button class="setup-btn" data-show-form="login">&larr; Quay lại đăng nhập</button>
+      <div style="font-size:13px;color:#999;text-align:center;line-height:1.6;margin-bottom:14px">Mở hộp thư, bấm link xác nhận, rồi quay lại bấm nút bên dưới.</div>
+      <div class="setup-err" id="verify-status"></div>
+      <button class="setup-btn" id="btn-verify-check">&#10003; Tôi đã xác minh — Vào app</button>
+      <div style="text-align:center;margin-top:12px">
+        <span class="flink" id="btn-verify-resend">Gửi lại email xác minh</span>
+        &nbsp;&middot;&nbsp;
+        <span class="flink" data-show-form="login">Quay lại đăng nhập</span>
+      </div>
     </div>
 
     <div class="setup-note">Bảo mật bởi Firebase (Google)<br>Quên mật khẩu &rarr; dùng chức năng khôi phục email<br><span style="color:#C8A84B">&#169; 2026 Hồ Tấn Huy &middot; Bản quyền được bảo lưu</span></div>
@@ -760,6 +767,55 @@ async function fbResetPassword(email){
   var m=await import(FB_AUTH);
   await m.sendPasswordResetEmail(fbAuth,email);
 }
+// ── #1 Xác minh email + #2 Mã mời 1 lần ──
+async function fbResendVerify(){
+  if(!fbReady)await loadFirebase();
+  var m=await import(FB_AUTH);
+  if(fbAuth.currentUser)await m.sendEmailVerification(fbAuth.currentUser);
+}
+async function fbReloadUser(){
+  if(!fbReady)await loadFirebase();
+  if(fbAuth.currentUser){await fbAuth.currentUser.reload();fbUser=fbAuth.currentUser;}
+  return fbUser;
+}
+async function isInviteUsed(code){ // fail-open: lỗi đọc → coi như chưa dùng (không chặn oan)
+  try{
+    if(!code)return false;
+    if(!fbReady)await loadFirebase();
+    var m=await import(FB_STORE);
+    var s=await m.getDoc(m.doc(fbDb,'usedInvites',code));
+    return s.exists();
+  }catch(e){return false;}
+}
+async function consumeInvite(code){ // đánh dấu mã đã dùng (fail-open nếu chưa cập nhật Rules)
+  try{
+    if(!code||!fbDb)return;
+    var m=await import(FB_STORE);
+    await m.setDoc(m.doc(fbDb,'usedInvites',code),{usedAt:new Date().toISOString(),by:(fbUser&&fbUser.email)||''});
+  }catch(e){}
+}
+// Hàm thuần (test được không cần Firebase)
+function inviteMatches(reg,entered){
+  entered=(entered||'').trim();
+  var staticCode=(reg&&reg.inviteCode)||'';
+  var codes=(reg&&reg.codes)||[];
+  if(!staticCode&&!codes.length)return {ok:true,oneTime:null};          // chưa đặt mã = mở tự do
+  if(staticCode&&entered&&entered===staticCode)return {ok:true,oneTime:null};
+  if(entered&&codes.indexOf(entered)>=0)return {ok:true,oneTime:entered};
+  return {ok:false,oneTime:null};
+}
+function genInviteCode(){
+  var ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';
+  for(var i=0;i<7;i++)s+=ch.charAt(Math.floor(Math.random()*ch.length));
+  return s;
+}
+function needEmailVerify(reg,user,admins){
+  if(!reg||!reg.requireEmailVerify)return false;      // mặc định TẮT → không đổi hành vi
+  if(!user||user.emailVerified)return false;          // đã xác minh (gồm Google) → cho vào
+  var email=(user.email||'').toLowerCase();
+  var isAdm=!!(admins&&admins.emails&&admins.emails.some(function(x){return String(x).toLowerCase()===email;}));
+  return !isAdm;                                       // QTV không bao giờ bị chặn
+}
 async function fbGoogleSignIn(){
   if(!fbReady)await loadFirebase();
   var m=await import(FB_AUTH);
@@ -882,12 +938,20 @@ async function doRegister(){
   try{
     var reg=null;
     try{reg=await fsGetGlobal('registration');}catch(e2){}
-    if(reg&&reg.inviteCode&&reg.inviteCode!==invite){
+    var mt=inviteMatches(reg,invite);
+    if(!mt.ok){
       showLoginErr('register','Mã mời không đúng. Liên hệ quản trị viên để nhận mã.');
       btn.textContent='Tạo tài khoản \u2192';btn.disabled=false;return;
     }
+    if(mt.oneTime){
+      var used=await isInviteUsed(mt.oneTime);
+      if(used){showLoginErr('register','Mã mời này đã được dùng. Liên hệ quản trị viên để nhận mã khác.');btn.textContent='Tạo tài khoản →';btn.disabled=false;return;}
+    }
     btn.textContent='Đang tạo...';
-    await fbSignUp(email,pwd,name);showFbForm('verify');
+    await fbSignUp(email,pwd,name);
+    if(mt.oneTime)consumeInvite(mt.oneTime); // khoá mã 1 lần (fail-open nếu chưa cập nhật Rules)
+    showFbForm('verify');
+    var ve=document.getElementById('verify-email');if(ve)ve.textContent=email;
   }
   catch(e){showLoginErr('register',FB_ERRS[e.code]||e.message);}
   btn.textContent='Tạo tài khoản \u2192';btn.disabled=false;
@@ -915,8 +979,12 @@ async function doGoogle(){
 }
 
 function gateLogin(user){
-  // QTV chính có thể khoá đăng nhập 1 email → kiểm tra trước khi cho vào app
-  fsGetGlobal('registration').then(function(reg){
+  // QTV chính có thể khoá đăng nhập 1 email; và (tuỳ chọn) bắt buộc xác minh email
+  Promise.all([
+    fsGetGlobal('registration').catch(function(){return null;}),
+    fsGetGlobal('admins').catch(function(){return null;})
+  ]).then(function(r){
+    var reg=r[0],admins=r[1];
     var blocked=(reg&&reg.blockedEmails)||[];
     var email=(user.email||'').toLowerCase();
     var isBlocked=!!email&&blocked.some(function(x){return String(x).toLowerCase()===email;});
@@ -926,12 +994,20 @@ function gateLogin(user){
       document.getElementById('app').style.display='none';
       showFbForm('login');
       showLoginErr('login','Tài khoản này đã bị khoá đăng nhập. Vui lòng liên hệ quản trị viên.');
-    }else{
-      enterAppFirebase(user);
+      return;
     }
+    if(needEmailVerify(reg,user,admins)){ showVerifyGate(user); return; }
+    enterAppFirebase(user);
   }).catch(function(){
     enterAppFirebase(user); // lỗi đọc cấu hình → vẫn cho vào, không khoá oan
   });
+}
+function showVerifyGate(user){
+  document.getElementById('app').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+  showFbForm('verify');
+  var ve=document.getElementById('verify-email');if(ve)ve.textContent=(user&&user.email)||'';
+  var vs=document.getElementById('verify-status');if(vs)vs.textContent='';
 }
 function enterAppFirebase(user){
   NS=user.uid.slice(0,16);
@@ -2987,6 +3063,13 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
 "      allow write: if request.auth != null && request.auth.uid == uid;\n"+
 "    }\n"+
+"    match /usedInvites/{code} {\n"+
+"      allow read: if true;\n"+
+"      allow create: if request.auth != null;\n"+
+"      allow update, delete: if request.auth != null\n"+
+"        && exists(/databases/$(database)/documents/appConfig/admins)\n"+
+"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
+"    }\n"+
 "  }\n"+
 "}";
 function renderAdminPage(){
@@ -3021,12 +3104,34 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Người mới phải nhập đúng mã này khi tạo tài khoản. Để trống = ai cũng đăng ký được. Đổi mã = chặn người chưa có mã mới.</div>';
       h+='<div style="display:flex;gap:8px"><input id="adm-code" class="nmod-inp" style="flex:1" value="'+escHtml(code)+'" placeholder="VD: TAMAN2026">';
       h+='<button class="btn btn-g btn-sm" id="btn-adm-savecode">\u2713 Lưu mã</button></div></div>';
+      // #2 MA MOI 1 LAN (single-use) — moi QTV deu tao/xoa duoc
+      var oneCodes=(reg&&reg.codes)||[];
+      h+='<div class="adm-box"><div class="adm-title">🎟️ Mã mời 1 lần (single-use)</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Mỗi mã chỉ dùng được <b>1 lần</b> để tạo tài khoản, dùng xong tự khoá. Tạo mã rồi gửi riêng cho từng người. Muốn chặt nhất: <b>xoá trống mã cố định</b> ở trên, chỉ phát mã 1 lần.</div>';
+      h+='<button class="btn btn-g btn-sm" id="btn-gen-codes">➕ Tạo 5 mã mới</button>';
+      if(oneCodes.length){
+        h+='<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
+        oneCodes.forEach(function(c){
+          h+='<div class="nmod-row" style="padding:6px 0;gap:6px"><div class="nmod-lbl" style="font-family:monospace;font-weight:700;letter-spacing:1px;font-size:15px">'+escHtml(c)+'</div>';
+          h+='<button class="btn btn-d btn-sm" data-copy-code="'+escHtml(c)+'">📋</button>';
+          h+='<button class="btn btn-r btn-sm" data-del-code="'+escHtml(c)+'">Xoá</button></div>';
+        });
+        h+='</div>';
+      }else{
+        h+='<div style="font-size:13px;color:#999;padding:6px 0">Chưa có mã 1 lần nào. Bấm "Tạo 5 mã mới".</div>';
+      }
+      h+='<div style="font-size:12px;color:#E65100;line-height:1.6;margin-top:8px">⚠️ Để mã tự khoá sau khi dùng, cần cập nhật <b>Firestore Rules</b> bản mới (mục Rules bên dưới, dành cho QTV chính). Chưa cập nhật thì mã vẫn dùng được nhưng <u>chưa tự khoá 1 lần</u>.</div></div>';
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
       var isMainAdmin=(admins.emails[0]===myEmail);
       var branchOn=!(reg&&reg.branchEnabled===false);
       var importOn=!(reg&&reg.branchImportEnabled===false);
       // KHOA DANG NHAP TAI KHOAN - chi QTV CHINH duoc lam
       if(isMainAdmin){
+        var verifyOn=!!(reg&&reg.requireEmailVerify);
+        h+='<div class="adm-box"><div class="adm-title">📧 Bắt buộc xác minh email</div>';
+        h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">BẬT = người mới phải bấm link xác minh trong email mới vào được app (đăng nhập Google đã tự xác minh; quản trị viên không bị chặn). Chống tài khoản email ảo.</div>';
+        h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(verifyOn?'#1A7A5E':'#E53935')+'">'+(verifyOn?'Đang BẬT':'Đang TẮT')+'</b></div>';
+        h+='<button class="btn '+(verifyOn?'btn-r':'btn-g')+' btn-sm" id="btn-toggle-verify" style="margin-top:8px">'+(verifyOn?'Tắt xác minh email':'Bật xác minh email')+'</button></div>';
         var blockedList=(reg&&reg.blockedEmails)||[];
         h+='<div class="adm-box"><div class="adm-title">🔒 Khoá đăng nhập tài khoản</div>';
         h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Nhập email tài khoản để <b>chặn đăng nhập</b>. Tài khoản bị khoá sẽ bị đăng xuất ở lần tải trang kế tiếp và không vào lại được tới khi mở khoá. Không khoá được tài khoản quản trị viên.</div>';
@@ -3638,6 +3743,20 @@ document.addEventListener('click',function(e){
     if(pm){pm.pinned=!pm.pinned;saveMembers();renderAll();}
     return;
   }
+  // #1 Xác minh email: gửi lại / kiểm tra đã xác minh
+  if(e.target.id==='btn-verify-resend'){
+    fbResendVerify().then(function(){var vs=document.getElementById('verify-status');if(vs){vs.style.color='#1A7A5E';vs.textContent='✓ Đã gửi lại email xác minh.';}})
+    .catch(function(err){var vs=document.getElementById('verify-status');if(vs){vs.style.color='#E53935';vs.textContent='Lỗi gửi lại: '+(err.message||err);}});
+    return;
+  }
+  if(e.target.id==='btn-verify-check'){
+    var _vs=document.getElementById('verify-status');if(_vs){_vs.style.color='#888';_vs.textContent='Đang kiểm tra...';}
+    fbReloadUser().then(function(u){
+      if(u&&u.emailVerified){gateLogin(u);}
+      else if(_vs){_vs.style.color='#E53935';_vs.textContent='Chưa xác minh. Hãy bấm link trong email rồi thử lại.';}
+    }).catch(function(){if(_vs){_vs.style.color='#E53935';_vs.textContent='Không kiểm tra được, thử lại.';}});
+    return;
+  }
   // Admin: nhận quyền lần đầu
   if(e.target.id==='btn-admin-claim'){
     fsSetGlobal('admins',{emails:[fbUser.email]}).then(function(){
@@ -3651,6 +3770,34 @@ document.addEventListener('click',function(e){
     fsSetGlobal('registration',{inviteCode:code}).then(function(){
       showToast(code?'\u2713 Đã lưu mã mời':'\u2713 Đã mở đăng ký tự do');
     }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // #2 Mã mời 1 lần: tạo / xoá / copy + bật/tắt xác minh email
+  if(e.target.id==='btn-gen-codes'){
+    fsGetGlobal('registration').then(function(rg){
+      var codes=(rg&&rg.codes)||[];for(var i=0;i<5;i++)codes.push(genInviteCode());
+      return fsSetGlobal('registration',{codes:codes});
+    }).then(function(){showToast('✓ Đã tạo 5 mã mời 1 lần');renderAdminPage();})
+    .catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  t=e.target.closest('[data-del-code]');
+  if(t){
+    var _dc=t.getAttribute('data-del-code');
+    fsGetGlobal('registration').then(function(rg){
+      var codes=((rg&&rg.codes)||[]).filter(function(x){return x!==_dc;});
+      return fsSetGlobal('registration',{codes:codes});
+    }).then(function(){showToast('✓ Đã xoá mã');renderAdminPage();})
+    .catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  t=e.target.closest('[data-copy-code]');
+  if(t){copyText(t.getAttribute('data-copy-code'));showToast('✓ Đã copy mã');return;}
+  if(e.target.id==='btn-toggle-verify'){
+    fsGetGlobal('registration').then(function(rg){
+      return fsSetGlobal('registration',{requireEmailVerify:!(rg&&rg.requireEmailVerify)});
+    }).then(function(){showToast('✓ Đã đổi cài đặt xác minh email');renderAdminPage();})
+    .catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
   // Admin: thêm QTV
