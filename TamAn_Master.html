@@ -1,4 +1,4 @@
-<!-- VERSION: v4.6-admin-tab-hidden -->
+<!-- VERSION: v4.7-rootcrown-goldinfo -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -100,6 +100,12 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .nmod-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5;gap:10px}
 .nmod-row:last-child{border-bottom:none}
 .nmod-lbl{flex:1;font-size:14px;font-weight:500}
+/* v4.7: vương miện ID gốc + tông vàng kim cho popup xem thông tin node */
+.root-crown{position:absolute;z-index:6;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.tnode .root-crown{top:-17px;left:50%;transform:translateX(-50%)}
+.nview{background:linear-gradient(180deg,#FFFCF2,#FAF1D7);border:1px solid #E6D391;border-radius:14px;padding:0 14px;margin:2px 0 8px}
+.nview .nmod-row{border-bottom:1px solid #EAD9A0}
+.nview .nmod-lbl{color:#8A6A12;font-weight:600}
 .nmod-inp{border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 12px;font-size:14px;font-family:Arial;outline:none;background:white}
 .nmod-inp:focus{border-color:#1A7A5E}
 .tg{display:flex;border-radius:9px;overflow:hidden;border:1.5px solid #E0E0E0;flex-shrink:0}
@@ -2070,6 +2076,20 @@ function computeBinaryHighlights(pos,rootId){
   }
   return out;
 }
+function rootCrownSVG(w,sfx){
+  w=w||30;var id='rcG_'+(sfx||'x');
+  return '<svg width="'+w+'" height="'+(w*0.74).toFixed(1)+'" viewBox="0 0 34 25" xmlns="http://www.w3.org/2000/svg" style="display:block">'+
+    '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="#FCEFA1"/><stop offset="0.45" stop-color="#E6C24A"/><stop offset="1" stop-color="#B8860B"/>'+
+    '</linearGradient></defs>'+
+    '<path d="M3 9 L9 4 L13 9 L17 2 L21 9 L25 4 L31 9 L28.5 22 L5.5 22 Z" fill="url(#'+id+')" stroke="#8A6510" stroke-width="0.9" stroke-linejoin="round"/>'+
+    '<circle cx="17" cy="3.4" r="2.1" fill="#1E9E55" stroke="#0E6B38" stroke-width="0.5"/>'+
+    '<circle cx="9" cy="5" r="1.4" fill="#1E9E55"/>'+
+    '<circle cx="25" cy="5" r="1.4" fill="#1E9E55"/>'+
+    '<rect x="5.5" y="19.3" width="23" height="3" rx="1.5" fill="#E8C766"/>'+
+    '<circle cx="11" cy="20.8" r="0.95" fill="#C62828"/><circle cx="17" cy="20.8" r="0.95" fill="#C62828"/><circle cx="23" cy="20.8" r="0.95" fill="#C62828"/>'+
+    '</svg>';
+}
 function renderTree(){
   clearRankMemo();
   syncTreeToMembers(false);
@@ -2145,6 +2165,7 @@ function renderTree(){
     var hasL=kids.some(function(k){return k.side==='L';});
     var hasR=kids.some(function(k){return k.side==='R';});
     h+='<div class="tnode" style="left:'+(p.x+NW/2)+'px;top:'+(p.y+NH/2)+'px;width:'+NW+'px;height:'+NH+'px">';
+    if(!n.parentId)h+='<div class="root-crown">'+rootCrownSVG(32,'b')+'</div>';
     var _bg=(hl[n.id]&&hl[n.id].bg)||'white';
     var _blink=(hl[n.id]&&hl[n.id].blink)?' nn-blink':'';
     h+='<div class="tnode-box'+(near?' near-rank':'')+_blink+'" data-node-id="'+n.id+'" data-lvl="'+lvl+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden">';
@@ -2390,13 +2411,14 @@ function buildNodeView(n){
   var par=n.parentId?treeNodes.find(function(x){return x.id===n.parentId;}):null;
   var spKids=sponsorKids(n);
   var plKids=treeNodes.filter(function(x){return x.parentId===n.id;});
-  var h='';
+  var h='<div class="nview">';
   h+='<div class="nmod-row"><div class="nmod-lbl">T\u1ea7ng (v\u1ecb tr\u00ed \u0111\u1eb7t)</div><div style="font-weight:700">T\u1ea7ng '+lvl+'</div></div>';
   if(si.depth>0){
     h+='<div class="nmod-row"><div class="nmod-lbl">F-s\u1ed1 (b\u1ea3o tr\u1ee3)</div><div style="font-weight:700;color:'+branchColor(n.id)+'">F'+si.depth+' c\u1ee7a '+escHtml(si.root.name)+'</div></div>';
     h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 tr\u1ef1c ti\u1ebfp</div><div style="font-weight:700">'+escHtml(n.f1of)+'</div></div>';
   }else{
-    h+='<div class="nmod-row"><div class="nmod-lbl">Vai tr\u00f2</div><div style="font-weight:700;color:#C8A84B">ID G\u1ed0C</div></div>';
+    var _rc=(!n.parentId)?rootCrownSVG(18,'v'):'';
+    h+='<div class="nmod-row"><div class="nmod-lbl">Vai tr\u00f2</div><div style="font-weight:700;color:#C8A84B;display:flex;align-items:center;gap:5px;justify-content:flex-end">'+_rc+'ID G\u1ed0C</div></div>';
   }
   if(n.joinDate)h+='<div class="nmod-row"><div class="nmod-lbl">V\u00e0o ID</div><div style="font-weight:700">'+escHtml(n.joinDate)+'</div></div>';
   if(n.idCode)h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID</div><div style="font-weight:700">'+escHtml(n.idCode)+'</div></div>';
@@ -2413,6 +2435,7 @@ function buildNodeView(n){
     h+='<div class="nmod-row"><div class="nmod-lbl">Tiến độ lên '+rp.next.name+'</div><div style="font-weight:700;color:'+(rp.pct>=0.5?'#E65100':'#999')+'">'+rp.have+'/'+rp.need+' nhánh ('+Math.round(rp.pct*100)+'%)</div></div>';
   }
   if(n.note)h+='<div class="nmod-row" style="flex-direction:column;align-items:flex-start"><div class="nmod-lbl">Ghi ch\u00fa</div><div style="font-size:13px;color:#666;white-space:pre-wrap">'+escHtml(n.note)+'</div></div>';
+  h+='</div>';
   h+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
   h+='<button class="btn btn-g btn-sm nmod-edit-btn" data-nid="'+n.id+'">\u270F\uFE0F S\u1eeda</button>';
   if(n.side){
@@ -2745,6 +2768,7 @@ function renderStarChart(){
     var _fLbl=_fd===0?'GỐC':'F'+_fd;
     h+='<div style="font-size:9px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">'+_fLbl+(n.joinDate?' · '+escHtml(n.joinDate):'')+'</div>';
     h+='</div>';
+    if(!n.parentId)h+='<div class="root-crown" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-16)+'px;transform:translateX(-50%)">'+rootCrownSVG(28,'s')+'</div>';
   });
   box.innerHTML=h;
   applyStarTransform();
