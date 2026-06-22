@@ -1,4 +1,4 @@
-<!-- VERSION: v5.4-invite-docs -->
+<!-- VERSION: v5.5-appcheck -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -678,6 +678,8 @@ var FIREBASE_CONFIG={
 var FB_APP='https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 var FB_AUTH='https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 var FB_STORE='https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+var FB_APPCHECK='https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js';
+var APPCHECK_KEY='6Lec3i0tAAAAAOHp4IvoGTbQTi2qP3-9cLOy0uvk'; // reCAPTCHA v3 Site key (công khai — chống bot/lạm dụng API)
 
 var SKILLS=[
   {id:'disc',lbl:'DISC — Nhận diện tính cách'},
@@ -769,6 +771,14 @@ async function loadFirebase(){
   var mods=await Promise.all([import(FB_APP),import(FB_AUTH),import(FB_STORE)]);
   var appM=mods[0],authM=mods[1],storeM=mods[2];
   fbApp=appM.initializeApp(FIREBASE_CONFIG);
+  // App Check (reCAPTCHA v3) — gắn token vào mọi request Firestore/Auth để chống bot/lạm dụng API.
+  // Phải khởi tạo NGAY sau initializeApp, trước khi dùng Firestore. Bọc try/catch để không gãy app nếu reCAPTCHA chưa tải.
+  if(APPCHECK_KEY){
+    try{
+      var acM=await import(FB_APPCHECK);
+      acM.initializeAppCheck(fbApp,{provider:new acM.ReCaptchaV3Provider(APPCHECK_KEY),isTokenAutoRefreshEnabled:true});
+    }catch(e){console.warn('App Check init lỗi:',e);}
+  }
   fbAuth=authM.getAuth(fbApp);
   fbDb=storeM.getFirestore(fbApp);
   fbReady=true;
