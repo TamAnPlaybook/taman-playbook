@@ -1,4 +1,4 @@
-<!-- VERSION: v5.1-acctlist-stt-verify-step -->
+<!-- VERSION: v5.2-joindate-validate-skilltitle -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1497,7 +1497,7 @@ function buildModalBody(m,type){
     h+='</div></div></div>';
   }
   if(type==='kn'){
-    h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng đã đạt ('+countSkills(m.id)+'/'+SKILLS.length+')</div>';
+    h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng Thần Tài phát triển hệ thống ('+countSkills(m.id)+'/'+SKILLS.length+')</div>';
     h+='<div class="skill-grid">';
     SKILLS.forEach(function(s){
       var done=pGet(m.id,'sk_'+s.id)==='1';
@@ -2748,6 +2748,15 @@ function openAddMemberModal(){
   document.getElementById('nmod-del-btn').style.display='none';
   document.getElementById('nmod-ov').classList.add('open');
 }
+// Đổi "Vào ID" dạng tháng.năm (vd 5.25 = T5/2025) → số so sánh được (năm*12+tháng). Trả null nếu trống/sai.
+function parseVaoID(s){
+  s=(s||'').trim();if(!s)return null;
+  var p=s.split('.');if(p.length<2)return null;
+  var mo=parseInt(p[0],10),yr=parseInt(p[1],10);
+  if(isNaN(mo)||isNaN(yr)||mo<1||mo>12)return null;
+  if(yr<100)yr+=2000;
+  return yr*12+mo;
+}
 function saveNodeModal(){
   if(!activeNodeModal)return;
   if(activeNodeModal.mode==='lk-add'){
@@ -2783,6 +2792,23 @@ function saveNodeModal(){
     note:(document.getElementById('nf-note')||{}).value||''
   };
   var _saveMsg='✓ Đã lưu';
+  // KIỂM TRA ngày Vào ID: ID tuyến dưới KHÔNG được vào TRƯỚC ID tuyến trên (đặt trên) hoặc người bảo trợ — kể cả phả hệ hay trực hệ
+  var _ndate=parseVaoID(data.joinDate);
+  if(_ndate!=null){
+    var _vpid=(activeNodeModal.mode==='add')?(activeNodeModal.parentId||null):((treeNodes.find(function(x){return x.id===activeNodeModal.nodeId;})||{}).parentId||null);
+    var _vpar=_vpid?treeNodes.find(function(x){return x.id===_vpid;}):null;
+    if(_vpar){
+      var _pd=parseVaoID(_vpar.joinDate);
+      if(_pd!=null&&_ndate<_pd){showToast('⛔ Ngày Vào ID "'+data.joinDate+'" TRƯỚC ID tuyến trên "'+_vpar.name+'" ('+_vpar.joinDate+'). Hãy nhập lại ngày Vào ID ≥ tuyến trên.');return;}
+    }
+    if(data.f1of){
+      var _vsp=treeNodes.find(function(x){return x.name===data.f1of;});
+      if(_vsp&&(!_vpar||_vsp.id!==_vpar.id)){
+        var _sd=parseVaoID(_vsp.joinDate);
+        if(_sd!=null&&_ndate<_sd){showToast('⛔ Ngày Vào ID "'+data.joinDate+'" TRƯỚC người bảo trợ "'+_vsp.name+'" ('+_vsp.joinDate+'). Hãy nhập lại ngày Vào ID ≥ người bảo trợ.');return;}
+      }
+    }
+  }
   if(activeNodeModal.mode==='add'){
     data.id=uid();
     data.parentId=activeNodeModal.parentId||null;
