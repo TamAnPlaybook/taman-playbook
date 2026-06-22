@@ -1,4 +1,4 @@
-<!-- VERSION: v5.3.1-star-white -->
+<!-- VERSION: v5.4-invite-docs -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -843,6 +843,53 @@ function genInviteCode(){
   for(var i=0;i<7;i++)s+=ch.charAt(Math.floor(Math.random()*ch.length));
   return s;
 }
+// ── v5.4: MÃ MỜI lưu MỖI MÃ 1 DOCUMENT (invites/{code}) — Rules cấm 'list' nên KHÔNG ai dump được cả danh sách ──
+// checkInvite: ưu tiên chỗ MỚI an toàn (invites), fallback chỗ CŨ (registration.codes[]) để tương thích ngược khi đang chuyển đổi.
+async function checkInvite(entered){
+  entered=(entered||'').trim();
+  if(!entered)return {ok:false,reason:'empty'};
+  // 1) Chỗ MỚI: invites/{code} — chỉ GET đúng mã mình gõ (không liệt kê được)
+  try{
+    if(!fbReady)await loadFirebase();
+    var m=await import(FB_STORE);
+    var s=await m.getDoc(m.doc(fbDb,'invites',entered));
+    if(s.exists()){
+      var d=s.data()||{};
+      return {ok:!d.used,used:!!d.used,reason:d.used?'used':null,source:'doc',oneTime:entered};
+    }
+  }catch(e){}
+  // 2) Fallback chỗ CŨ: registration.codes[] (còn hiệu lực tới khi migrate xong)
+  try{
+    var reg=await fsGetGlobal('registration');
+    var mt=inviteMatches(reg,entered);
+    if(mt.ok){
+      var used=await isInviteUsed(mt.oneTime);
+      return {ok:!used,used:used,reason:used?'used':null,source:'legacy',oneTime:mt.oneTime};
+    }
+  }catch(e2){}
+  return {ok:false,reason:'invalid'};
+}
+async function consumeInviteAny(code,source){ // khoá mã đã dùng đúng theo nơi lưu
+  try{
+    if(!code||!fbDb)return;
+    var m=await import(FB_STORE);
+    if(source==='doc'){
+      await m.updateDoc(m.doc(fbDb,'invites',code),{used:true,usedAt:new Date().toISOString(),by:(fbUser&&fbUser.email)||''});
+    }else{
+      await m.setDoc(m.doc(fbDb,'usedInvites',code),{usedAt:new Date().toISOString(),by:(fbUser&&fbUser.email)||''});
+    }
+  }catch(e){}
+}
+async function fetchInvites(){ // QTV liệt kê mã (Rules: list chỉ cho QTV)
+  try{
+    if(!fbDb||!fbUser)return [];
+    var m=await import(FB_STORE);
+    var qs=await m.getDocs(m.collection(fbDb,'invites'));
+    var arr=[];qs.forEach(function(dc){var v=dc.data()||{};arr.push({code:dc.id,used:!!v.used,by:v.by||''});});
+    arr.sort(function(a,b){return a.code<b.code?-1:a.code>b.code?1:0;});
+    return arr;
+  }catch(e){return [];}
+}
 function needEmailVerify(reg,user,admins){
   if(!reg||!reg.requireEmailVerify)return false;      // mặc định TẮT → không đổi hành vi
   if(!user||user.emailVerified)return false;          // đã xác minh (gồm Google) → cho vào
@@ -981,18 +1028,18 @@ async function doRegister(){
   try{
     var reg=null;
     try{reg=await fsGetGlobal('registration');}catch(e2){}
-    var mt=inviteMatches(reg,invite);
+    var chk=await checkInvite(invite);var mt={ok:(chk.ok||chk.reason==='used'),oneTime:chk.oneTime};var _src=chk.source;
     if(!mt.ok){
       showLoginErr('register','Mã mời không đúng. Liên hệ quản trị viên để nhận mã.');
       btn.textContent='Tạo tài khoản \u2192';btn.disabled=false;return;
     }
     if(mt.oneTime){
-      var used=await isInviteUsed(mt.oneTime);
+      var used=chk.used;
       if(used){showLoginErr('register','Mã mời này đã được dùng. Liên hệ quản trị viên để nhận mã khác.');btn.textContent='Tạo tài khoản →';btn.disabled=false;return;}
     }
     btn.textContent='Đang tạo...';
     var nu=await fbSignUp(email,pwd,name);
-    if(mt.oneTime)consumeInvite(mt.oneTime); // khoá mã 1 lần (fail-open nếu chưa cập nhật Rules)
+    if(mt.oneTime)consumeInviteAny(mt.oneTime,_src); // khoá mã 1 lần (đúng nơi lưu; fail-open nếu lỗi)
     recordAccount(nu,{entered:false}); // ghi nhận ngay khi đăng ký (đang chờ xác minh email)
     showFbForm('verify');
     var ve=document.getElementById('verify-email');if(ve)ve.textContent=email;
@@ -3214,38 +3261,40 @@ function showStarCriteria(nid){
 var FIRESTORE_RULES="rules_version = '2';\n"+
 "service cloud.firestore {\n"+
 "  match /databases/{database}/documents {\n"+
+"    function isAdmin() {\n"+
+"      return request.auth != null\n"+
+"        && exists(/databases/$(database)/documents/appConfig/admins)\n"+
+"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
+"    }\n"+
 "    match /users/{userId}/{document=**} {\n"+
 "      allow write: if request.auth != null && request.auth.uid == userId;\n"+
-"      allow read: if request.auth != null && (\n"+
-"        request.auth.uid == userId\n"+
-"        || (exists(/databases/$(database)/documents/appConfig/admins)\n"+
-"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails)\n"+
-"      );\n"+
+"      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());\n"+
 "    }\n"+
 "    match /appConfig/registration {\n"+
 "      allow read: if true;\n"+
-"      allow write: if request.auth != null\n"+
-"        && exists(/databases/$(database)/documents/appConfig/admins)\n"+
-"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
+"      allow write: if isAdmin();\n"+
 "    }\n"+
 "    match /appConfig/admins {\n"+
 "      allow read: if request.auth != null;\n"+
-"      allow create: if request.auth != null;\n"+
-"      allow update: if request.auth != null\n"+
-"        && request.auth.token.email in resource.data.emails;\n"+
+"      allow create: if request.auth != null && !exists(/databases/$(database)/documents/appConfig/admins);\n"+
+"      allow update: if request.auth != null && request.auth.token.email in resource.data.emails;\n"+
 "    }\n"+
 "    match /accounts/{uid} {\n"+
-"      allow read: if request.auth != null\n"+
-"        && exists(/databases/$(database)/documents/appConfig/admins)\n"+
-"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
+"      allow read: if isAdmin();\n"+
 "      allow write: if request.auth != null && request.auth.uid == uid;\n"+
+"    }\n"+
+"    match /invites/{code} {\n"+
+"      allow get: if true;\n"+
+"      allow list: if isAdmin();\n"+
+"      allow create, delete: if isAdmin();\n"+
+"      allow update: if isAdmin() || (request.auth != null\n"+
+"        && resource.data.used == false && request.resource.data.used == true\n"+
+"        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used','usedAt','by']));\n"+
 "    }\n"+
 "    match /usedInvites/{code} {\n"+
 "      allow read: if true;\n"+
 "      allow create: if request.auth != null;\n"+
-"      allow update, delete: if request.auth != null\n"+
-"        && exists(/databases/$(database)/documents/appConfig/admins)\n"+
-"        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
+"      allow update, delete: if isAdmin();\n"+
 "    }\n"+
 "  }\n"+
 "}";
@@ -3256,9 +3305,10 @@ function renderAdminPage(){
   Promise.all([
     fsGetGlobal('admins').catch(function(){return null;}),
     fsGetGlobal('registration').catch(function(){return null;}),
-    fetchAccounts().catch(function(){return [];})
+    fetchAccounts().catch(function(){return [];}),
+    fetchInvites().catch(function(){return [];})
   ]).then(function(res){
-    var admins=res[0],reg=res[1],accounts=res[2];
+    var admins=res[0],reg=res[1],accounts=res[2],invitesArr=res[3]||[];
     var myEmail=fbUser.email||'';
     var isAdmin=admins&&admins.emails&&admins.emails.indexOf(myEmail)>=0;
     var h='';
@@ -3277,20 +3327,27 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.7">Chỉ quản trị viên truy cập được mục này.<br>QTV hiện tại: <b>'+admins.emails.map(escHtml).join(', ')+'</b></div></div>';
     }else{
       // #2 MA MOI 1 LAN (single-use) — moi QTV deu tao/xoa duoc
-      var oneCodes=(reg&&reg.codes)||[];
+      var invArr=invitesArr||[];var legacyCodes=(reg&&reg.codes)||[];
       h+='<div class="adm-box"><div class="adm-title">🎟️ Mã mời 1 lần (single-use)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Mỗi mã chỉ dùng được <b>1 lần</b> để tạo tài khoản, dùng xong tự khoá. Tạo mã rồi gửi riêng cho từng người. Muốn chặt nhất: <b>xoá trống mã cố định</b> ở trên, chỉ phát mã 1 lần.</div>';
       h+='<button class="btn btn-g btn-sm" id="btn-gen-codes">➕ Tạo 5 mã mới</button>';
-      if(oneCodes.length){
+      var unusedInv=invArr.filter(function(x){return !x.used;});
+      var usedInvN=invArr.length-unusedInv.length;
+      if(unusedInv.length){
         h+='<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
-        oneCodes.forEach(function(c){
-          h+='<div class="nmod-row" style="padding:6px 0;gap:6px"><div class="nmod-lbl" style="font-family:monospace;font-weight:700;letter-spacing:1px;font-size:15px">'+escHtml(c)+'</div>';
-          h+='<button class="btn btn-d btn-sm" data-copy-code="'+escHtml(c)+'">📋</button>';
-          h+='<button class="btn btn-r btn-sm" data-del-code="'+escHtml(c)+'">Xoá</button></div>';
+        unusedInv.forEach(function(o){
+          h+='<div class="nmod-row" style="padding:6px 0;gap:6px"><div class="nmod-lbl" style="font-family:monospace;font-weight:700;letter-spacing:1px;font-size:15px">'+escHtml(o.code)+'</div>';
+          h+='<button class="btn btn-d btn-sm" data-copy-code="'+escHtml(o.code)+'">📋</button>';
+          h+='<button class="btn btn-r btn-sm" data-del-invite="'+escHtml(o.code)+'">Xoá</button></div>';
         });
         h+='</div>';
-      }else{
-        h+='<div style="font-size:13px;color:#999;padding:6px 0">Chưa có mã 1 lần nào. Bấm "Tạo 5 mã mới".</div>';
+      }else if(!legacyCodes.length){
+        h+='<div style="font-size:13px;color:#999;padding:6px 0">Chưa có mã chưa dùng. Bấm "Tạo 5 mã mới".</div>';
+      }
+      if(usedInvN)h+='<div style="font-size:12px;color:#999;margin-top:6px">Đã dùng: '+usedInvN+' mã.</div>';
+      if(legacyCodes.length){
+        h+='<div style="margin-top:12px;border-top:1px dashed #E0E0E0;padding-top:10px"><div style="font-size:12px;color:#C62828;font-weight:700;margin-bottom:6px">⚠️ '+legacyCodes.length+' mã CŨ đang nằm ở chỗ bị lộ (registration.codes). Bấm nút dưới để chuyển sang chỗ an toàn rồi khoá lỗ rò:</div>';
+        h+='<button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-migrate-codes">🔐 Chuyển mã cũ sang chỗ an toàn + khoá lỗ rò</button></div>';
       }
       h+='<div style="font-size:12px;color:#E65100;line-height:1.6;margin-top:8px">⚠️ Để mã tự khoá sau khi dùng, cần cập nhật <b>Firestore Rules</b> bản mới (mục Rules bên dưới, dành cho QTV chính). Chưa cập nhật thì mã vẫn dùng được nhưng <u>chưa tự khoá 1 lần</u>.</div></div>';
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
@@ -3976,21 +4033,45 @@ document.addEventListener('click',function(e){
   }
   // #2 Mã mời 1 lần: tạo / xoá / copy + bật/tắt xác minh email
   if(e.target.id==='btn-gen-codes'){
-    fsGetGlobal('registration').then(function(rg){
-      var codes=(rg&&rg.codes)||[];for(var i=0;i<5;i++)codes.push(genInviteCode());
-      return fsSetGlobal('registration',{codes:codes});
-    }).then(function(){showToast('✓ Đã tạo 5 mã mời 1 lần');renderAdminPage();})
-    .catch(function(err){showToast('Lỗi: '+err.message);});
+    (async function(){
+      try{
+        var m=await import(FB_STORE);
+        for(var i=0;i<5;i++){
+          var code=genInviteCode();
+          await m.setDoc(m.doc(fbDb,'invites',code),{used:false,createdAt:new Date().toISOString(),by:(fbUser&&fbUser.email)||''});
+        }
+        showToast('✓ Đã tạo 5 mã mới');renderAdminPage();
+      }catch(err){showToast('Lỗi tạo mã (đã publish Rules mới chưa?): '+((err&&err.message)||err));}
+    })();
     return;
   }
-  t=e.target.closest('[data-del-code]');
+  t=e.target.closest('[data-del-invite]');
   if(t){
-    var _dc=t.getAttribute('data-del-code');
-    fsGetGlobal('registration').then(function(rg){
-      var codes=((rg&&rg.codes)||[]).filter(function(x){return x!==_dc;});
-      return fsSetGlobal('registration',{codes:codes});
-    }).then(function(){showToast('✓ Đã xoá mã');renderAdminPage();})
-    .catch(function(err){showToast('Lỗi: '+err.message);});
+    var _di=t.getAttribute('data-del-invite');
+    (async function(){
+      try{var m=await import(FB_STORE);await m.deleteDoc(m.doc(fbDb,'invites',_di));showToast('✓ Đã xoá mã');renderAdminPage();}
+      catch(err){showToast('Lỗi xoá mã: '+((err&&err.message)||err));}
+    })();
+    return;
+  }
+  if(e.target.id==='btn-migrate-codes'){
+    (async function(){
+      try{
+        var rg=await fsGetGlobal('registration');
+        var codes=(rg&&rg.codes)||[];
+        var m=await import(FB_STORE);
+        for(var i=0;i<codes.length;i++){
+          var c=codes[i];
+          var ex=await m.getDoc(m.doc(fbDb,'invites',c));
+          if(!ex.exists()){
+            var u=await m.getDoc(m.doc(fbDb,'usedInvites',c));
+            await m.setDoc(m.doc(fbDb,'invites',c),{used:u.exists(),createdAt:new Date().toISOString(),migrated:true,by:(fbUser&&fbUser.email)||''});
+          }
+        }
+        await fsSetGlobal('registration',{codes:m.deleteField(),inviteCode:m.deleteField()});
+        showToast('✓ Đã chuyển '+codes.length+' mã + khoá lỗ rò');renderAdminPage();
+      }catch(err){showToast('Lỗi chuyển mã (publish Rules mới chưa?): '+((err&&err.message)||err));}
+    })();
     return;
   }
   t=e.target.closest('[data-copy-code]');
