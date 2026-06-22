@@ -1,4 +1,4 @@
-<!-- VERSION: v5.3-uiux-tasks-goals -->
+<!-- VERSION: v5.3.1-star-white -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -137,7 +137,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .tnode{position:absolute;transform:translate(-50%,-50%)}
 .tn-add{position:absolute;width:22px;height:22px;border-radius:50%;color:white;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;bottom:-11px;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);z-index:10;line-height:1}
 .tn-add-l{left:18%}.tn-add-r{right:18%;left:auto}
-#star-canvas-wrap{overflow:hidden;width:100%;height:calc(100vh - 230px);height:calc(100dvh - 230px);background:#0D1117;position:relative;cursor:grab;user-select:none}
+#star-canvas-wrap{overflow:hidden;width:100%;height:calc(100vh - 230px);height:calc(100dvh - 230px);background:#FFFFFF;position:relative;cursor:grab;user-select:none}
 .btn{padding:12px 16px;border-radius:10px;font-size:14px;font-weight:700;font-family:Arial;cursor:pointer;border:none;flex:1;text-align:center}
 .btn-g{background:#1A7A5E;color:white}
 .btn-d{background:#1A1A1A;color:white}
@@ -3060,7 +3060,7 @@ function renderStarChart(){
   var svg=document.getElementById('star-svg');
   var box=document.getElementById('star-nodes');
   if(!treeNodes.length){
-    box.innerHTML='<div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:14px;text-align:center;width:260px">Chưa có dữ liệu sơ đồ</div>';
+    box.innerHTML='<div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);color:#999;font-size:14px;text-align:center;width:260px">Chưa có dữ liệu sơ đồ</div>';
     svg.innerHTML='';return;
   }
   var tree=buildSponsorTree(focusNodeId);
@@ -3106,7 +3106,7 @@ function renderStarChart(){
     var x1=p.x+NWs/2+ox, y1=p.y+NHs+oy;
     var x2=cc.x+NWs/2+ox, y2=cc.y+oy;
     var midY=(y1+y2)/2;
-    lines+='<path d="M'+x1+' '+y1+' V'+midY+' H'+x2+' V'+y2+'" stroke="'+col+'" stroke-width="1.8" fill="none" opacity="0.6"/>';
+    lines+='<path d="M'+x1+' '+y1+' V'+midY+' H'+x2+' V'+y2+'" stroke="'+col+'" stroke-width="1.8" fill="none" opacity="0.85"/>';
   });
   // Đường mốc tầng F: hiện ở MỌI màn hình (kể cả khi chọn ID khác làm gốc), lệch khỏi khuỷu dây nối cho dễ phân biệt
   var maxD=0;Object.keys(pos).forEach(function(k){if(pos[k].depth>maxD)maxD=pos[k].depth;});
