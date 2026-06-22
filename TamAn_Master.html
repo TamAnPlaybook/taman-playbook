@@ -1,4 +1,4 @@
-<!-- VERSION: v5.2-joindate-validate-skilltitle -->
+<!-- VERSION: v5.3-uiux-tasks-goals -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -193,7 +193,7 @@ input[type=range]{flex:1;height:6px;accent-color:#1A7A5E;cursor:pointer}
 .tbtn.green{background:#1A7A5E;color:white;border-color:#1A7A5E}
 .tbtn.blue{background:#1565C0;color:white;border-color:#1565C0}
 .tbtn.gold{background:#C8A84B;color:#1A1A1A;border-color:#C8A84B}
-#fs-overlay{display:none;position:fixed;inset:0;z-index:900;background:#F8F7F4;flex-direction:column}
+#fs-overlay{display:none;position:fixed;inset:0;z-index:900;background:#FFFFFF;flex-direction:column}
 #fs-overlay.open{display:flex}
 #fs-head{background:#1A1A1A;color:#C8A84B;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 #fs-host{flex:1;overflow:hidden;display:flex;flex-direction:column}
@@ -299,6 +299,35 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .tt-badge{display:inline-block;min-width:17px;height:17px;line-height:17px;padding:0 4px;border-radius:9px;background:#E53935;color:white;font-size:10px;font-weight:700;text-align:center;vertical-align:middle;margin-left:2px}
 .tt-badge:empty{display:none}
 .tt-card:active{background:#FAFAFA}
+
+/* ===== Nhắc việc (task reminders) — v5.3 ===== */
+.rm-add{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:12px}
+.rm-add .rm-lbl{font-size:12px;font-weight:700;color:#666;margin:0 0 4px}
+.rm-inp{width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px 11px;font-size:14px;font-family:Arial;outline:none;background:white;margin-bottom:8px;box-sizing:border-box}
+.rm-row{background:white;border:1px solid #E8E8E8;border-left-width:5px;border-radius:12px;padding:11px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.rm-row.done{opacity:.55}
+.rm-row.done .rm-desc{text-decoration:line-through}
+.rm-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.rm-desc{font-size:14px;font-weight:700;color:#1A1A1A;font-family:Arial}
+.rm-meta{font-size:12px;color:#777;margin-top:2px;font-family:Arial}
+.rm-note{font-size:12px;color:#555;margin-top:3px;font-family:Arial;white-space:pre-wrap}
+.rm-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:1px 9px;font-family:Arial}
+.rm-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.rm-mini{border:none;border-radius:7px;padding:5px 8px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
+
+/* ===== Đo lường mục tiêu (goal progress) — v5.3 ===== */
+.goal-row{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:8px}
+.goal-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.goal-name{flex:1;font-size:14px;font-weight:800;color:#1A1A1A;font-family:Arial}
+.goal-fields{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.goal-fld{flex:1;min-width:90px}
+.goal-fld .gf-lbl{font-size:11px;font-weight:700;color:#888;margin-bottom:3px;font-family:Arial}
+.goal-fld input{width:100%;border:1.5px solid #E0E0E0;border-radius:8px;padding:7px 9px;font-size:15px;font-weight:700;font-family:Arial;outline:none;box-sizing:border-box}
+.prog-track{height:16px;border-radius:9px;background:#EDEDED;overflow:hidden;position:relative}
+.prog-fill{height:100%;border-radius:9px;transition:width .35s ease}
+.prog-line{display:flex;align-items:center;gap:8px;margin-top:4px}
+.prog-pct{font-size:13px;font-weight:800;font-family:Arial;min-width:44px}
+.goal-status{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 10px;font-family:Arial}
 </style>
 </head>
 <body>
@@ -396,7 +425,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="dd">&#128203; Điểm danh</button>
     <button class="mtab" data-main="month">&#127919; Mục tiêu - kết quả</button>
-    <button class="mtab" data-main="nhatky">&#128211; Nhật ký</button>
+    <button class="mtab" data-main="nhatky">&#128197; Kế hoạch ngày</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
   </div>
@@ -464,12 +493,14 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div class="page" id="page-nhatky">
     <div class="content">
       <div class="stabs">
-        <button class="stab on" data-sub="nhatky:kh">&#128101; Kế hoạch ngày</button>
+        <button class="stab on" data-sub="nhatky:remind">&#9200; Nhắc việc</button>
+        <button class="stab" data-sub="nhatky:kh">&#128101; Kế hoạch ngày</button>
         <button class="stab" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
         <button class="stab" data-sub="nhatky:person">&#128100; Cá nhân</button>
         <button class="stab" data-sub="nhatky:cum">&#127942; Tổng hợp cụm</button>
       </div>
-      <div class="spg on" id="nhatky-kh"><div id="list-kh"></div></div>
+      <div class="spg on" id="nhatky-remind"><div id="remind-content"></div></div>
+      <div class="spg" id="nhatky-kh"><div id="list-kh"></div></div>
       <div class="spg" id="nhatky-chart"><div id="chart-kh"></div></div>
       <div class="spg" id="nhatky-person">
         <div style="margin-bottom:12px">
@@ -514,7 +545,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <div id="disc-bar"></div>
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="tree-binary">
-      <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#F8F7F4;position:relative;cursor:grab;user-select:none">
+      <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
           <div id="tree-nodes" style="position:absolute;top:0;left:0"></div>
@@ -725,7 +756,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={dd:'sang',nhatky:'kh'};
+var currentSubTab={dd:'sang',nhatky:'remind'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -1029,13 +1060,13 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();
+  loadMembers();loadTree2();loadTasksCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   updateDateDisplay();updateMonthDisplay();
   document.getElementById('tb-date').textContent=fmtDate(now);
-  renderAll();updateStats();populateBcSel();renderMonthPage();renderGuide();
+  renderAll();updateStats();populateBcSel();renderMonthPage();renderReminders();renderGuide();
   loadBranchFeature();
   recordAccount(user,{entered:true}); // ghi nhận tài khoản + đánh dấu đã vào app (bước cuối)
   // Mặc định mở tab Sơ đồ: ẩn thanh ngày/thống kê + vẽ cây
@@ -1558,10 +1589,110 @@ function updateMonthDisplay(){
   var pt=document.getElementById('period-tabs');
   if(pt)pt.innerHTML=PERIODS.map(function(p){return '<button class="stab'+(periodType===p.type?' on':'')+'" data-period="'+p.type+'">'+p.lbl+'</button>';}).join('');
 }
+// ================================================================
+// NHẮC VIỆC (task reminders) — v5.3  (lưu localStorage + sync Firestore)
+// ================================================================
+function loadTasks(){try{var s=nmGet('tasks_v1');return s?JSON.parse(s):[];}catch(e){return [];}}
+function saveTasks(arr){nmSet('tasks_v1',JSON.stringify(arr));if(fbDb&&fbUser)fsSet('tasks',{tasks:arr}).catch(function(){});}
+function loadTasksCloud(){ // kéo nhắc việc từ Firestore khi đăng nhập (đồng bộ đa thiết bị)
+  if(!fbDb||!fbUser)return;
+  fsGet('tasks').then(function(d){
+    if(d&&d.tasks&&d.tasks.length){nmSet('tasks_v1',JSON.stringify(d.tasks));renderReminders();}
+  }).catch(function(){});
+}
+function fmtDMY(s){var p=(s||'').split('-');return p.length===3?(p[2]+'/'+p[1]+'/'+p[0]):s;}
+function taskDaysLeft(dateStr){ // số ngày còn lại tới hạn (âm = quá hạn)
+  if(!dateStr)return null;
+  var d=new Date(dateStr+'T00:00:00');if(isNaN(d.getTime()))return null;
+  var t=new Date();t.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
+}
+function taskLight(dateStr){ // {color,bg,label} — 🟢 >2 tuần · 🟡 ≤2 tuần · 🔴 ≤1 ngày/quá hạn
+  var n=taskDaysLeft(dateStr);
+  if(n===null)return {color:'#9E9E9E',bg:'#F0F0F0',label:'Chưa đặt ngày'};
+  if(n<0)return {color:'#C62828',bg:'#FFEBEE',label:'Quá hạn '+(-n)+' ngày'};
+  if(n<=1)return {color:'#E53935',bg:'#FFEBEE',label:n===0?'Hôm nay':'Còn 1 ngày'};
+  if(n<=14)return {color:'#F9A825',bg:'#FFF8E1',label:'Còn '+n+' ngày'};
+  return {color:'#2E7D32',bg:'#E8F5E9',label:'Còn '+n+' ngày'};
+}
+function renderReminders(){
+  var el=document.getElementById('remind-content');if(!el)return;
+  var tasks=loadTasks();
+  var h='<div class="rm-add">'
+    +'<div class="rm-lbl">➕ Thêm việc cần làm</div>'
+    +'<input id="rm-desc" class="rm-inp" placeholder="Việc cần làm (vd: Gọi lại khách A)">'
+    +'<input id="rm-date" class="rm-inp" type="date">'
+    +'<input id="rm-note" class="rm-inp" placeholder="Ghi chú (không bắt buộc)">'
+    +'<button class="btn btn-g" data-act="add-task" style="width:100%">Thêm nhắc việc</button>'
+    +'</div>';
+  h+='<div style="font-size:11px;color:#888;margin:0 0 8px;font-family:Arial">🟢 Còn >2 tuần · 🟡 trong 2 tuần · 🔴 còn ≤1 ngày / quá hạn</div>';
+  tasks.sort(function(a,b){
+    if(!!a.done!==!!b.done)return a.done?1:-1;
+    var da=a.date||'9999',db=b.date||'9999';
+    return da<db?-1:da>db?1:0;
+  });
+  if(!tasks.length){
+    h+='<div style="text-align:center;color:#BBB;padding:24px 0;font-family:Arial">Chưa có việc nào. Thêm ở trên.</div>';
+  }else{
+    tasks.forEach(function(tk){
+      var lt=taskLight(tk.date);
+      h+='<div class="rm-row'+(tk.done?' done':'')+'" style="border-left-color:'+lt.color+'">';
+      h+='<div class="rm-dot" style="background:'+lt.color+'"></div>';
+      h+='<div style="flex:1;min-width:0">';
+      h+='<div class="rm-desc">'+escHtml(tk.desc||'(không tên)')+'</div>';
+      h+='<div class="rm-meta">'+(tk.date?('📅 '+fmtDMY(tk.date)+' · '):'')+'<span class="rm-tag" style="color:'+lt.color+';background:'+lt.bg+'">'+escHtml(lt.label)+'</span></div>';
+      if(tk.note)h+='<div class="rm-note">📝 '+escHtml(tk.note)+'</div>';
+      h+='</div>';
+      h+='<div class="rm-actions">';
+      h+='<button class="rm-mini" data-task-done="'+tk.id+'" style="background:'+(tk.done?'#F0F0F0':'#E8F5F0')+';color:'+(tk.done?'#666':'#1A7A5E')+'">'+(tk.done?'↩ Mở':'✓ Xong')+'</button>';
+      h+='<button class="rm-mini" data-del-task="'+tk.id+'" style="background:#FFEBEE;color:#C62828">Xoá</button>';
+      h+='</div></div>';
+    });
+  }
+  el.innerHTML=h;
+}
+// ================================================================
+// ĐO LƯỜNG MỤC TIÊU (goal progress) — v5.3  (theo kỳ đo pkey)
+// ================================================================
+function loadGoals(){try{var s=nmGet('goals_'+pkey());return s?JSON.parse(s):[];}catch(e){return [];}}
+function saveGoals(arr){nmSet('goals_'+pkey(),JSON.stringify(arr));}
+function goalPct(g){var t=parseFloat(g.target),c=parseFloat(g.current);if(!t||t<=0)return 0;if(isNaN(c))c=0;return Math.round(c/t*100);}
+function goalStatus(pct){
+  if(pct>=100)return {label:'✅ Đạt',color:'#1A7A5E',bg:'#E8F5F0',bar:'#1A7A5E'};
+  if(pct>=70) return {label:'🟡 Gần đạt',color:'#E65100',bg:'#FFF3E0',bar:'#F9A825'};
+  if(pct>=30) return {label:'🟠 Đang làm',color:'#EF6C00',bg:'#FFF3E0',bar:'#FB8C00'};
+  return {label:'🔴 Còn xa',color:'#C62828',bg:'#FFEBEE',bar:'#E53935'};
+}
+function goalsSectionHtml(){
+  var goals=loadGoals();
+  var h='<div class="chart-wrap"><div class="chart-title">🎯 Đo lường mục tiêu — '+escHtml(periodLabel())+'</div>';
+  if(!goals.length)h+='<div style="text-align:center;color:#BBB;padding:14px 0;font-family:Arial">Chưa có mục tiêu cho kỳ này.</div>';
+  goals.forEach(function(g){
+    var pct=goalPct(g),st=goalStatus(pct),w=Math.max(0,Math.min(100,pct));
+    h+='<div class="goal-row">';
+    h+='<div class="goal-top"><div class="goal-name">'+escHtml(g.name||'(mục tiêu)')+'</div>';
+    h+='<span class="goal-status" style="color:'+st.color+';background:'+st.bg+'">'+st.label+'</span>';
+    h+='<button class="rm-mini" data-del-goal="'+g.id+'" style="background:#FFEBEE;color:#C62828">Xoá</button></div>';
+    h+='<div class="goal-fields">';
+    h+='<div class="goal-fld"><div class="gf-lbl">Chỉ tiêu</div><input type="number" inputmode="decimal" class="goal-inp" data-goal-id="'+g.id+'" data-goal-field="target" value="'+escHtml(g.target||'')+'" placeholder="0"></div>';
+    h+='<div class="goal-fld"><div class="gf-lbl">Đã đạt</div><input type="number" inputmode="decimal" class="goal-inp" data-goal-id="'+g.id+'" data-goal-field="current" value="'+escHtml(g.current||'')+'" placeholder="0"></div>';
+    h+='</div>';
+    h+='<div class="prog-track"><div class="prog-fill" style="width:'+w+'%;background:'+st.bar+'"></div></div>';
+    h+='<div class="prog-line"><span class="prog-pct" style="color:'+st.bar+'">'+pct+'%</span><span style="font-size:12px;color:#888;font-family:Arial">'+escHtml(String(g.current||0))+' / '+escHtml(String(g.target||0))+'</span></div>';
+    h+='</div>';
+  });
+  h+='<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+    +'<input id="goal-new-name" class="rm-inp" style="flex:2;min-width:140px;margin:0" placeholder="Tên mục tiêu mới">'
+    +'<input id="goal-new-target" type="number" inputmode="decimal" class="rm-inp" style="flex:1;min-width:90px;margin:0" placeholder="Chỉ tiêu">'
+    +'<button class="btn btn-g" data-act="add-goal" style="flex-shrink:0">➕ Thêm</button>'
+    +'</div>';
+  h+='</div>';
+  return h;
+}
 function renderMonthPage(){
   var el=document.getElementById('month-content');if(!el)return;
   updateMonthDisplay();
-  var h='';
+  var h=goalsSectionHtml();
   var totals={};
   MONTH_KPI.forEach(function(k){totals[k.id]=0;});
   members.forEach(function(m){
@@ -2333,8 +2464,15 @@ function renderTree(){
     // Dây nối ĐẬM + màu team đậm rõ (dễ phân biệt nhánh khi nhìn toàn cây):
     //  • Trực hệ (bảo trợ = người đặt trên)  → nét LIỀN dày
     //  • Khách / phả hệ (đặt dưới người khác bảo trợ) → nét ĐỨT (vẫn giữ màu team để biết thuộc nhánh nào)
-    var _dash=isPhaHe(n)?' stroke-dasharray="11,7"':'';
+    var _ph=isPhaHe(n);
+    var _dash=_ph?' stroke-dasharray="11,7"':'';
     lines+='<path d="M'+x1+' '+y1+' C'+x1+' '+my+','+x2+' '+my+','+x2+' '+y2+'" stroke="'+col+'" stroke-width="4" fill="none" stroke-linecap="round" opacity="1"'+_dash+'/>';
+    if(_ph){ // nhãn "PH" dọc (P trên, H dưới) đặt giữa dây nối đứt
+      var _mx=(x1+x2)/2;
+      lines+='<g><rect x="'+(_mx-8)+'" y="'+(my-15)+'" width="16" height="30" rx="6" fill="#FFFFFF" stroke="#8E24AA" stroke-width="1.4"/>'
+        +'<text x="'+_mx+'" y="'+(my-2)+'" text-anchor="middle" font-family="Arial" font-size="11" font-weight="800" fill="#8E24AA">P</text>'
+        +'<text x="'+_mx+'" y="'+(my+11)+'" text-anchor="middle" font-family="Arial" font-size="11" font-weight="800" fill="#8E24AA">H</text></g>';
+    }
   });
   var hl=computeBinaryHighlights(pos,_rb);
   // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
@@ -2383,6 +2521,7 @@ function renderTree(){
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
     h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;font-weight:600;color:'+_tSub+';margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
+    if(n.idCode)h+='<div style="font-family:Arial;font-size:8.5px;font-weight:700;letter-spacing:.3px;color:'+(_onColor?'rgba(255,255,255,.92)':'#6B4FA0')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">M\u00e3: '+escHtml(n.idCode)+'</div>';
     if(_isRoot){
       h+='<div style="font-size:9.5px;color:'+(_onColor?'#fff':'#8A6A12')+';font-weight:800">ID G\u1ed0C</div>';
       if(n.f1of)h+='<div style="font-size:9px;font-weight:600;color:'+_tSub+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">BT: '+escHtml(n.f1of)+' (tuy\u1ebfn tr\u00ean)</div>';
@@ -2393,10 +2532,7 @@ function renderTree(){
       h+='<div style="font-size:9.5px;color:'+_tRole+';font-weight:800">Nh\u00e1nh PH tuy\u1ebfn tr\u00ean</div>';
       if(n.f1of)h+='<div style="font-size:9px;font-weight:600;color:'+_tSub+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">BT: '+escHtml(n.f1of)+' (ngo\u00e0i s\u01a1 \u0111\u1ed3)</div>';
     }
-    if(ph){
-      var par=treeNodes.find(function(x){return x.id===n.parentId;});
-      h+='<div style="font-size:9px;font-weight:600;color:'+(_onColor?'#fff':'#8E24AA')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">PH d\u01b0\u1edbi: '+escHtml(par?par.name:'')+'</div>';
-    }
+    // PH (ph\u1ea3 h\u1ec7) gi\u1edd hi\u1ec3n th\u1ecb b\u1eb1ng nh\u00e3n d\u1ecdc tr\u00ean d\u00e2y n\u1ed1i \u0111\u1ee9t \u2014 kh\u00f4ng in ch\u1eef "PH d\u01b0\u1edbi" trong node n\u1eefa
     if(_discU)h+='<div style="position:absolute;bottom:3px;left:5px;display:flex;gap:2px">'+_discU.split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-size:8.5px;font-weight:800;border-radius:4px;padding:0 4px;line-height:1.45">'+ch+'</span>':'';}).join('')+'</div>';
     h+='</div>';
     if(!hasL&&!viewOnlyMode)h+='<div class="tn-add tn-add-l" data-add-pid="'+n.id+'" data-add-side="L" style="background:'+col+'">+</div>';
@@ -3741,7 +3877,7 @@ document.addEventListener('click',function(e){
       showAndFitTree();
     }
     if(pg==='month')renderMonthPage();
-    if(pg==='nhatky'){renderChartKH();renderCumReport();}
+    if(pg==='nhatky'){renderReminders();renderChartKH();renderCumReport();}
     if(pg==='admin')renderAdminPage();
     return;
   }
@@ -3758,8 +3894,35 @@ document.addEventListener('click',function(e){
     var pgEl=document.getElementById(grp+'-'+sub);
     if(pgEl)pgEl.classList.add('on');
     if(grp==='nhatky'&&sub==='cum')renderCumReport();
+    if(grp==='nhatky'&&sub==='remind')renderReminders();
     return;
   }
+
+  // v5.3 — Nhắc việc (task reminders)
+  t=e.target.closest('[data-act="add-task"]');
+  if(t){
+    var _td=((document.getElementById('rm-desc')||{}).value||'').trim();
+    if(!_td){showToast('Nhập việc cần làm');return;}
+    var _tdt=(document.getElementById('rm-date')||{}).value||'';
+    var _tnt=((document.getElementById('rm-note')||{}).value||'').trim();
+    var _ts=loadTasks();_ts.push({id:'tk'+Date.now().toString(36),desc:_td,date:_tdt,note:_tnt,done:false});
+    saveTasks(_ts);renderReminders();showToast('✓ Đã thêm nhắc việc');return;
+  }
+  t=e.target.closest('[data-task-done]');
+  if(t){var _id=t.getAttribute('data-task-done');var _ts=loadTasks();_ts.forEach(function(x){if(x.id===_id)x.done=!x.done;});saveTasks(_ts);renderReminders();return;}
+  t=e.target.closest('[data-del-task]');
+  if(t){var _id2=t.getAttribute('data-del-task');var _ts2=loadTasks().filter(function(x){return x.id!==_id2;});saveTasks(_ts2);renderReminders();return;}
+  // v5.3 — Đo lường mục tiêu (goal progress)
+  t=e.target.closest('[data-act="add-goal"]');
+  if(t){
+    var _gn=((document.getElementById('goal-new-name')||{}).value||'').trim();
+    if(!_gn){showToast('Nhập tên mục tiêu');return;}
+    var _gt=(document.getElementById('goal-new-target')||{}).value||'';
+    var _gs=loadGoals();_gs.push({id:'gl'+Date.now().toString(36),name:_gn,target:_gt,current:''});
+    saveGoals(_gs);renderMonthPage();showToast('✓ Đã thêm mục tiêu');return;
+  }
+  t=e.target.closest('[data-del-goal]');
+  if(t){var _gid=t.getAttribute('data-del-goal');var _gs2=loadGoals().filter(function(x){return x.id!==_gid;});saveGoals(_gs2);renderMonthPage();return;}
 
   // Tree mode switch
   t=e.target.closest('[data-treemode]');
@@ -4122,6 +4285,12 @@ document.addEventListener('change',function(e){
   if(t.classList.contains('mo-kpi')){
     mSet(t.getAttribute('data-mo-mid'),t.getAttribute('data-mo-field'),t.value);
     renderMonthPage();
+    return;
+  }
+  if(t.classList.contains('goal-inp')){
+    var _gid=t.getAttribute('data-goal-id'),_gf=t.getAttribute('data-goal-field');
+    var _gs=loadGoals();_gs.forEach(function(x){if(x.id===_gid)x[_gf]=t.value;});
+    saveGoals(_gs);renderMonthPage();
     return;
   }
   if(t.id==='bc-sel'){renderBcContent(t.value);return;}
