@@ -1,4 +1,4 @@
-<!-- VERSION: v5.5-appcheck -->
+<!-- VERSION: v5.6-hardening -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -667,6 +667,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 // CONFIG
 // ================================================================
 var HUY_SHEET_URL='https://script.google.com/macros/s/AKfycbyV-DJvMSPCUvioId9Dzk4-XOolSL5nms5j158J2mBQE_Bk5U4h0VNd6fyBT4v3TeE2Hw/exec';
+var SHEET_TOKEN='ta_s9K2xLp7Qm4Rv8Nc3Wf6Hb1Yt5'; // token chung gửi kèm báo cáo — Apps Script kiểm, sai thì bỏ (chặn spam endpoint)
 var FIREBASE_CONFIG={
   apiKey:"AIzaSyCqbzVL4AmUL4CBV39IR7cbBnyY8BLfgdM",
   authDomain:"taman-playbook.firebaseapp.com",
@@ -3277,8 +3278,10 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "        && request.auth.token.email in get(/databases/$(database)/documents/appConfig/admins).data.emails;\n"+
 "    }\n"+
 "    match /users/{userId}/{document=**} {\n"+
-"      allow write: if request.auth != null && request.auth.uid == userId;\n"+
-"      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());\n"+
+"      allow write: if request.auth != null && request.auth.uid == userId\n"+
+"        && (request.auth.token.email_verified == true || isAdmin());\n"+
+"      allow read: if isAdmin()\n"+
+"        || (request.auth != null && request.auth.uid == userId && request.auth.token.email_verified == true);\n"+
 "    }\n"+
 "    match /appConfig/registration {\n"+
 "      allow read: if true;\n"+
@@ -3788,6 +3791,7 @@ function buildTableText(){
 }
 function sendToHuy(){
   var payload={
+    token:SHEET_TOKEN,
     date:dk(),
     leader:fbUser?(fbUser.displayName||fbUser.email):'',
     summary:buildSummaryText(),
