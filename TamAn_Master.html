@@ -1,4 +1,4 @@
-<!-- VERSION: v5.7-map-clubs -->
+<!-- VERSION: v5.8-workflow-tabs -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -446,9 +446,9 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
-    <button class="mtab" data-main="dd">&#128203; Điểm danh</button>
+    <button class="mtab" data-main="dd">&#128203; Theo dõi ngày</button>
     <button class="mtab" data-main="month">&#127919; Mục tiêu - kết quả</button>
-    <button class="mtab" data-main="nhatky">&#128197; Kế hoạch ngày</button>
+    <button class="mtab" data-main="nhatky">&#128200; Phân tích</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
@@ -480,13 +480,17 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
         <button class="stab on" data-sub="dd:sang">&#127749; Sáng</button>
         <button class="stab" data-sub="dd:trua">&#9728;&#65039; Trưa</button>
         <button class="stab" data-sub="dd:toi">&#127769; Tối</button>
+        <button class="stab" data-sub="dd:kh">&#128101; Kế hoạch ngày</button>
         <button class="stab" data-sub="dd:kn">&#11088; Kỹ năng</button>
-        <button class="stab" data-sub="dd:ov">&#128202; Tổng</button>
+        <button class="stab" data-sub="dd:remind">&#9200; Việc cần làm</button>
+        <button class="stab" data-sub="dd:ov">&#128202; Tổng kết</button>
       </div>
       <div class="spg on" id="dd-sang"><div id="list-sang"></div></div>
       <div class="spg" id="dd-trua"><div id="list-trua"></div></div>
       <div class="spg" id="dd-toi"><div id="list-toi"></div></div>
+      <div class="spg" id="dd-kh"><div id="list-kh"></div></div>
       <div class="spg" id="dd-kn"><div id="list-kn"></div></div>
+      <div class="spg" id="dd-remind"><div id="remind-content"></div></div>
       <div class="spg" id="dd-ov">
         <div id="lk-activity"></div>
         <div id="ov-table"></div>
@@ -513,19 +517,15 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
   </div>
 
-  <!-- NHẬT KÝ -->
+  <!-- PHÂN TÍCH -->
   <div class="page" id="page-nhatky">
     <div class="content">
       <div class="stabs">
-        <button class="stab on" data-sub="nhatky:remind">&#9200; Nhắc việc</button>
-        <button class="stab" data-sub="nhatky:kh">&#128101; Kế hoạch ngày</button>
-        <button class="stab" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
+        <button class="stab on" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
         <button class="stab" data-sub="nhatky:person">&#128100; Cá nhân</button>
         <button class="stab" data-sub="nhatky:cum">&#127942; Tổng hợp cụm</button>
       </div>
-      <div class="spg on" id="nhatky-remind"><div id="remind-content"></div></div>
-      <div class="spg" id="nhatky-kh"><div id="list-kh"></div></div>
-      <div class="spg" id="nhatky-chart"><div id="chart-kh"></div></div>
+      <div class="spg on" id="nhatky-chart"><div id="chart-kh"></div></div>
       <div class="spg" id="nhatky-person">
         <div style="margin-bottom:12px">
           <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
@@ -804,7 +804,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={dd:'sang',nhatky:'remind',map:'mine'};
+var currentSubTab={dd:'sang',nhatky:'chart',map:'mine'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -1812,6 +1812,7 @@ function renderAll(){
   renderList('kh','list-kh');
   renderOverview();
   renderChartKH();
+  renderReminders();
   renderDdBranchBar();
 }
 function renderDdBranchBar(){
@@ -4111,7 +4112,7 @@ function renderGuide(){
     {icon:'\uD83D\uDD11',title:'Đăng nhập & Tài khoản',color:'#E8F5F0',body:'Mỗi người đăng ký 1 tài khoản riêng (email hoặc Google).\u2022 Dữ liệu của bạn hoàn toàn riêng biệt, tự động đồng bộ lên cloud.\u2022 Quên mật khẩu: dùng chức năng "Quên mật khẩu" để nhận email khôi phục.'},
     {icon:'\uD83D\uDCCB',title:'Điểm danh hàng ngày',color:'#E3F2FD',body:'Bấm vào tên thành viên để mở bảng điểm danh.\u2022 Chọn Có / Trễ / Vắng cho từng buổi (Sáng - Trưa - Tối).\u2022 Đánh dấu Camera ON nếu bật cam trong Zoom.\u2022 Dùng nút mũi tên \u25B2\u25BC để sắp xếp thứ tự.'},
     {icon:'\u2B50',title:'Kỹ năng',color:'#FFF8E1',body:'Tab Kỹ năng: bấm vào tên \u2192 tick các kỹ năng đã đạt.\u2022 11 kỹ năng từ DISC đến Điều phối Zoom.\u2022 Đạt đủ 11/11 sẽ được tính vào chỉ số "Đủ kỹ năng".'},
-    {icon:'\uD83D\uDC65',title:'Kế hoạch ngày',color:'#F3E5F5',body:'Tab Nhật ký \u2192 Kế hoạch ngày: theo dõi hoạt động mỗi TV.\u2022 Bài đăng Zalo/FB/TikTok, cuộc gọi, follow-up, bảo trợ TV mới.\u2022 Cuối ngày tự đánh giá % hoàn thành.'},
+    {icon:'\uD83D\uDC65',title:'Kế hoạch ngày',color:'#F3E5F5',body:'Tab Theo dõi ngày \u2192 Kế hoạch ngày: theo dõi hoạt động mỗi TV.\u2022 Bài đăng Zalo/FB/TikTok, cuộc gọi, follow-up, bảo trợ TV mới.\u2022 Cuối ngày tự đánh giá % hoàn thành.'},
     {icon:'\uD83D\uDCC5',title:'KPI Tháng',color:'#E8F5F0',body:'Tab Tháng: nhập 4 chỉ số mỗi TV.\u2022 Học viên đến lớp, người vào Zoom, ID mới, buổi CLB.\u2022 Tổng cả team hiện tự động ở trên cùng.'},
     {icon:'\uD83C\uDF33',title:'Sơ đồ nhị phân',color:'#E3F2FD',body:'Bấm nút + trên mỗi ô để thêm nhánh Trái/Phải.\u2022 Bấm vào ô để xem chi tiết, sửa, đổi bên.\u2022 Màu dây theo nhánh F1. Đường vàng = ranh giới T3\u2194T4. M\u1EB7t tr\u1EDDi: \u0111\u01B0\u1EDDng xanh=F6\u2194F7, v\u00E0ng=F9\u2194F10.\u2022 \u2B50 = đạt tiêu chí sao Prife (2 F1, mỗi F1 \u22654 ID trong 2 tháng liên tiếp).'},
     {icon:'\uD83C\uDFC6',title:'Cấp bậc & Cảnh báo',color:'#FFF8E1',body:'10 cấp: Future Star \u2192 1\u2605 \u2192 2\u2605 \u2192 3\u2605 \u2192 Sapphire \u2192 Ruby \u2192 Pearl \u2192 Emerald \u2192 Diamond \u2192 Crown Ambassador.\u2022 ID đạt cấp có huy hiệu màu trên sơ đồ.\u2022 ID đạt \u226550% tiêu chí cấp kế tiếp sẽ NHẤP NHÁY + hiện trong bảng cảnh báo vàng phía trên sơ đồ.\u2022 Bấm vào ID trong Hệ mặt trời để xem chi tiết tiêu chí.'},
@@ -4243,8 +4244,9 @@ document.addEventListener('click',function(e){
       if(currentTreeMode==='binary')renderTree();else renderStarChart();
       showAndFitTree();
     }
+    if(pg==='dd')renderReminders();
     if(pg==='month')renderMonthPage();
-    if(pg==='nhatky'){renderReminders();renderChartKH();renderCumReport();}
+    if(pg==='nhatky'){renderChartKH();renderCumReport();}
     if(pg==='admin')renderAdminPage();
     if(pg==='map')renderMapPage();
     return;
@@ -4262,7 +4264,7 @@ document.addEventListener('click',function(e){
     var pgEl=document.getElementById(grp+'-'+sub);
     if(pgEl)pgEl.classList.add('on');
     if(grp==='nhatky'&&sub==='cum')renderCumReport();
-    if(grp==='nhatky'&&sub==='remind')renderReminders();
+    if(grp==='dd'&&sub==='remind')renderReminders();
     if(grp==='map')ensureMapSub(sub);
     return;
   }
