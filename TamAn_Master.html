@@ -1,4 +1,4 @@
-<!-- VERSION: v6.1-tasks-performance -->
+<!-- VERSION: v6.2-unified-workspace -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -338,6 +338,29 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .ac-add{display:flex;gap:6px;margin-top:8px}
 .ac-inp{flex:1;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px 11px;font-size:13px;font-family:Arial;outline:none;box-sizing:border-box}
 .ac-addbtn{background:#1A7A5E;color:white;border:none;border-radius:9px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0}
+/* Điểm danh gộp 1 bảng (v6.2) */
+.att-legend{font-size:11.5px;color:#777;background:#FAFAFA;border:1px solid #EEE;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-family:Arial;line-height:1.6}
+.att-sec{font-size:13px;font-weight:800;font-family:Arial;margin:13px 0 5px}
+.att-row{display:flex;align-items:center;gap:8px;background:white;border:1px solid #EEE;border-radius:9px;padding:6px 9px;margin-bottom:5px}
+.att-head{background:#F5F5F5;border-color:#E8E8E8}
+.att-head .att-name,.att-head .att-cells span{font-size:10.5px;color:#999;font-weight:700}
+.att-name{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#1A1A1A;font-family:Arial;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-cells{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.att-cells>span{width:30px;text-align:center;display:inline-block;font-family:Arial}
+.att-cell{width:30px;height:30px;border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial;padding:0}
+.att-cam{width:30px;text-align:center;font-size:14px;color:#bbb;cursor:pointer;flex-shrink:0}
+/* So sánh TV (v6.2) */
+.cmp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #E8E8E8;border-radius:12px;background:white}
+.cmpt{border-collapse:collapse;width:100%;font-family:Arial;font-size:12.5px;white-space:nowrap}
+.cmpt th{background:#FAFAFA;color:#555;font-weight:700;font-size:11.5px;padding:9px 8px;border-bottom:2px solid #EEE;position:sticky;top:0;cursor:pointer;text-align:center}
+.cmpt th.cmp-th-name{text-align:left;position:sticky;left:0;z-index:2;background:#FAFAFA}
+.cmpt th.on{color:#1A7A5E}
+.cmpt td{padding:8px;border-bottom:1px solid #F2F2F2;text-align:center}
+.cmpt td.cmp-name{text-align:left;font-weight:700;color:#1A1A1A;position:sticky;left:0;background:white;z-index:1}
+.cmpt tr.cmp-avg td{background:#FFF8E1;font-weight:800}
+.cmpt tr.cmp-avg td.cmp-name{background:#FFF8E1}
+.cmp-pill{display:inline-block;min-width:34px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;font-size:11.5px}
+.cmp-hint{font-size:11.5px;color:#888;margin:8px 2px 0;font-family:Arial;line-height:1.6}
 
 /* ===== Đo lường mục tiêu (goal progress) — v5.3 ===== */
 .goal-row{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:8px}
@@ -470,8 +493,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
-    <button class="mtab" data-main="dd">&#128203; Theo dõi ngày</button>
-    <button class="mtab" data-main="tp">&#127919; Việc &amp; Hiệu suất</button>
+    <button class="mtab" data-main="tp">&#128202; Theo dõi &amp; Hiệu suất</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
@@ -496,53 +518,51 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
   <div id="dd-branch-bar" style="display:none;background:#FFF8E1;border-bottom:1px solid #FFE082;padding:6px 12px;font-size:12.5px;align-items:center;gap:8px"></div>
 
-  <!-- ĐIỂM DANH -->
-  <div class="page" id="page-dd">
-    <div class="content">
-      <div class="stabs">
-        <button class="stab on" data-sub="dd:sang">&#127749; Sáng</button>
-        <button class="stab" data-sub="dd:trua">&#9728;&#65039; Trưa</button>
-        <button class="stab" data-sub="dd:toi">&#127769; Tối</button>
-        <button class="stab" data-sub="dd:kh">&#128101; Kế hoạch ngày</button>
-        <button class="stab" data-sub="dd:kn">&#11088; Kỹ năng</button>
-        <button class="stab" data-sub="dd:ov">&#128202; Tổng kết</button>
-      </div>
-      <div class="spg on" id="dd-sang"><div id="list-sang"></div></div>
-      <div class="spg" id="dd-trua"><div id="list-trua"></div></div>
-      <div class="spg" id="dd-toi"><div id="list-toi"></div></div>
-      <div class="spg" id="dd-kh"><div id="list-kh"></div></div>
-      <div class="spg" id="dd-kn"><div id="list-kn"></div></div>
-      <div class="spg" id="dd-ov">
-        <div id="lk-activity"></div>
-        <div id="ov-table"></div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-          <button class="btn btn-g btn-sm" id="btn-copy-summary">&#128203; Copy báo cáo</button>
-          <button class="btn btn-d btn-sm" id="btn-copy-table">&#128202; Copy bảng</button>
-          <button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-send-huy">&#128228; Gửi lên Huy</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- VIỆC & HIỆU SUẤT (Phase 3 v6.1 — hợp nhất Hiệu suất + Mục tiêu + Phân tích + Action Center) -->
+  <!-- THEO DÕI & HIỆU SUẤT (Phase 3 v6.2 — gộp "Theo dõi ngày" + "Hiệu suất"; 4 nhóm theo công việc) -->
   <div class="page" id="page-tp">
     <div class="content">
       <div class="stabs">
         <button class="stab on" data-sub="tp:today">&#128203; Hôm nay</button>
-        <button class="stab" data-sub="tp:perf">&#128202; Hiệu suất</button>
-        <button class="stab" data-sub="tp:month">&#127919; Mục tiêu</button>
-        <button class="stab" data-sub="tp:nhatky">&#128200; Phân tích</button>
+        <button class="stab" data-sub="tp:track">&#9989; Theo dõi TV</button>
+        <button class="stab" data-sub="tp:perf">&#128202; Hiệu suất &amp; So sánh</button>
+        <button class="stab" data-sub="tp:goal">&#127919; Mục tiêu &amp; Phân tích</button>
       </div>
 
-      <!-- HÔM NAY: Action Center (Sáng/Trưa/Tối) + Lịch quan trọng -->
+      <!-- 1) HÔM NAY: Action Center + Lịch quan trọng -->
       <div class="spg on" id="tp-today">
         <div id="action-center"></div>
         <div class="tp-sec-title">&#128197; Lịch quan trọng</div>
         <div id="remind-content"></div>
       </div>
 
-      <!-- HIỆU SUẤT -->
+      <!-- 2) THEO DÕI TV: Điểm danh + Kế hoạch + Kỹ năng + Tổng kết -->
+      <div class="spg" id="tp-track">
+        <div class="stabs">
+          <button class="stab on" data-sub="trk:diemdanh">&#9989; Điểm danh</button>
+          <button class="stab" data-sub="trk:kh">&#128101; Kế hoạch ngày</button>
+          <button class="stab" data-sub="trk:kn">&#11088; Kỹ năng</button>
+          <button class="stab" data-sub="trk:ov">&#128202; Tổng kết</button>
+        </div>
+        <div class="spg on" id="trk-diemdanh"><div id="list-diemdanh"></div></div>
+        <div class="spg" id="trk-kh"><div id="list-kh"></div></div>
+        <div class="spg" id="trk-kn"><div id="list-kn"></div></div>
+        <div class="spg" id="trk-ov">
+          <div id="lk-activity"></div>
+          <div id="ov-table"></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" id="btn-copy-summary">&#128203; Copy báo cáo</button>
+            <button class="btn btn-d btn-sm" id="btn-copy-table">&#128202; Copy bảng</button>
+            <button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-send-huy">&#128228; Gửi lên Huy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3) HIỆU SUẤT & SO SÁNH: Tổng quan (dashboard) + So sánh TV -->
       <div class="spg" id="tp-perf">
+        <div class="stabs">
+          <button class="stab on" data-sub="hsx:overview">&#128200; Tổng quan</button>
+          <button class="stab" data-sub="hsx:compare">&#9878;&#65039; So sánh TV</button>
+        </div>
         <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
           <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
@@ -550,30 +570,30 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
           <button class="db-today" data-perfnav="cur">Hiện tại</button>
           <button class="db-btn" data-perfnav="next">&rsaquo;</button>
         </div>
-        <div id="perf-content"></div>
+        <div class="spg on" id="hsx-overview"><div id="perf-content"></div></div>
+        <div class="spg" id="hsx-compare"><div id="compare-content"></div></div>
       </div>
 
-      <!-- MỤC TIÊU -->
-      <div class="spg" id="tp-month">
-        <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
-          <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
-          <button class="db-today" id="btn-month-cur">Hiện tại</button>
-          <button class="db-btn" id="btn-month-next">&rsaquo;</button>
-        </div>
-        <div id="month-content"></div>
-      </div>
-
-      <!-- PHÂN TÍCH (sub-tab lồng) -->
-      <div class="spg" id="tp-nhatky">
+      <!-- 4) MỤC TIÊU & PHÂN TÍCH: KPI + biểu đồ (7 ngày / cá nhân / cụm) -->
+      <div class="spg" id="tp-goal">
         <div class="stabs">
-          <button class="stab on" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
-          <button class="stab" data-sub="nhatky:person">&#128100; Cá nhân</button>
-          <button class="stab" data-sub="nhatky:cum">&#127942; Tổng hợp cụm</button>
+          <button class="stab on" data-sub="mpt:month">&#127919; Mục tiêu</button>
+          <button class="stab" data-sub="mpt:chart">&#128200; Biểu đồ 7 ngày</button>
+          <button class="stab" data-sub="mpt:person">&#128100; Cá nhân</button>
+          <button class="stab" data-sub="mpt:cum">&#127942; Tổng hợp cụm</button>
         </div>
-        <div class="spg on" id="nhatky-chart"><div id="chart-kh"></div></div>
-        <div class="spg" id="nhatky-person">
+        <div class="spg on" id="mpt-month">
+          <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
+            <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
+            <button class="db-today" id="btn-month-cur">Hiện tại</button>
+            <button class="db-btn" id="btn-month-next">&rsaquo;</button>
+          </div>
+          <div id="month-content"></div>
+        </div>
+        <div class="spg" id="mpt-chart"><div id="chart-kh"></div></div>
+        <div class="spg" id="mpt-person">
           <div style="margin-bottom:12px">
             <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
             <input id="bc-filter" class="sel-filter" placeholder="&#128269; Gõ tìm tên...">
@@ -581,7 +601,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
           </div>
           <div id="bc-content"></div>
         </div>
-        <div class="spg" id="nhatky-cum"><div id="cum-content"></div></div>
+        <div class="spg" id="mpt-cum"><div id="cum-content"></div></div>
       </div>
     </div>
   </div>
@@ -852,7 +872,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={dd:'sang',tp:'today',nhatky:'chart',map:'mine'};
+var currentSubTab={tp:'today',trk:'diemdanh',hsx:'overview',mpt:'month',map:'mine'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -1795,6 +1815,58 @@ function renderList(type,elId){
   h+='</div>';
   el.innerHTML=h;
 }
+// ĐIỂM DANH GỘP 1 BẢNG (v6.2) — mỗi TV 1 dòng, 3 buổi Sáng/Trưa/Tối + camera; chạm ô để đổi nhanh
+var ATT_STATE={'':{t:'—',bg:'#F0F0F0',c:'#BBB'},'yes':{t:'✓',bg:'#E8F5E9',c:'#1A7A5E'},'late':{t:'⏰',bg:'#FFF8E1',c:'#F9A825'},'no':{t:'✗',bg:'#FFEBEE',c:'#C62828'}};
+function attCell(mid,ses){
+  var st=ATT_STATE[dGet(mid,ses)||'']||ATT_STATE[''];
+  return '<button class="att-cell" data-att-cycle="'+mid+':'+ses+'" style="background:'+st.bg+';color:'+st.c+'">'+st.t+'</button>';
+}
+function attRow(m){
+  var tn=treeNodes.find(function(t){return t.name===m.name;});
+  var rk=tn?nodeRank(tn.id):0;
+  var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
+  var h='<div class="att-row">';
+  h+='<div class="att-name" data-open-mid="'+m.id+'" data-open-type="sang">';
+  if(m.pinned)h+='★ ';
+  h+=escHtml(m.name);
+  if(rk>0)h+=' <span class="badge" style="background:'+RANKS[rk-1].color+';color:#fff;vertical-align:middle">'+RANKS[rk-1].short+'</span>';
+  h+='</div>';
+  h+='<div class="att-cells">'+attCell(m.id,'sang')+attCell(m.id,'trua')+attCell(m.id,'toi');
+  h+='<span class="att-cam" data-open-mid="'+m.id+'" data-open-type="sang" title="Camera — bấm để sửa chi tiết">'+(camOn?'📷':'·')+'</span>';
+  h+='</div></div>';
+  return h;
+}
+function renderAttendanceTable(){
+  var el=document.getElementById('list-diemdanh');if(!el)return;
+  var center=ddKeyNode();
+  if(!members.length||!center){el.innerHTML='<div style="text-align:center;color:#BBB;padding:30px 0;font-size:14px">Chưa có thành viên nào</div>';return;}
+  var vis={};getFiltered().forEach(function(m){vis[m.id]=1;});
+  var ckids=placementChildren(center.id);
+  var Lc=ckids.find(function(k){return k.side==='L';});
+  var Rc=ckids.find(function(k){return k.side==='R';});
+  var Ln=Lc?placementSubtreeNames(Lc.id):{};
+  var Rn=Rc?placementSubtreeNames(Rc.id):{};
+  var leftArr=[],rightArr=[];
+  members.forEach(function(m){
+    if(!vis[m.id]||m.name===center.name)return;
+    if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
+  });
+  function srt(a,b){var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});}
+  leftArr.sort(srt);rightArr.sort(srt);
+  var head='<div class="att-row att-head"><div class="att-name">Thành viên</div><div class="att-cells"><span>Sáng</span><span>Trưa</span><span>Tối</span><span>📷</span></div></div>';
+  var h='<div class="att-legend">Chạm ô để đổi: <b>—</b> → <b style="color:#1A7A5E">✓ Có</b> → <b style="color:#F9A825">⏰ Trễ</b> → <b style="color:#C62828">✗ Vắng</b>. Bấm tên để mở chi tiết / camera từng buổi.</div>';
+  var centerMember=members.find(function(m){return m.name===center.name;});
+  function section(arr,label,color){
+    var act=arr.filter(memberActive).length;
+    var hh='<div class="att-sec" style="color:'+color+'">'+label+' <span style="font-weight:800">'+act+'/'+arr.length+'</span></div>';
+    if(!arr.length){hh+='<div class="dd-empty">— Trống</div>';return hh;}
+    hh+=head;arr.forEach(function(m){hh+=attRow(m);});return hh;
+  }
+  if(centerMember)h+='<div class="att-sec" style="color:#C8A84B">👑 '+escHtml(center.name)+' (Leader Key)</div>'+head+attRow(centerMember);
+  h+=section(leftArr,'⬅️ Trái','#1A7A5E');
+  h+=section(rightArr,'➡️ Phải','#1565C0');
+  el.innerHTML=h;
+}
 function renderLkActivity(){
   var el=document.getElementById('lk-activity');if(!el)return;
   var roots=treeNodes.filter(function(x){return !x.parentId;});
@@ -1853,9 +1925,7 @@ function renderOverview(){
 function renderAll(){
   var dl=document.getElementById('srch-list');
   if(dl){var dh='';members.forEach(function(m){dh+='<option value="'+escHtml(m.name)+'">';});dl.innerHTML=dh;}
-  renderList('sang','list-sang');
-  renderList('trua','list-trua');
-  renderList('toi','list-toi');
+  renderAttendanceTable();
   renderList('kn','list-kn');
   renderList('kh','list-kh');
   renderOverview();
@@ -2111,13 +2181,81 @@ function renderActionCenter(){
   });
   el.innerHTML=h;
 }
-// Render đúng nội dung sub-tab đang mở của tab "Việc & Hiệu suất"
+// Dispatch render theo sub-tab đang mở của tab gộp "Theo dõi & Hiệu suất" (v6.2)
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'today';
   if(sub==='today'){renderActionCenter();renderReminders();}
-  else if(sub==='perf')renderPerfPage();
-  else if(sub==='month')renderMonthPage();
-  else if(sub==='nhatky'){renderChartKH();renderCumReport();}
+  else if(sub==='track')renderTrkSub(currentSubTab.trk||'diemdanh');
+  else if(sub==='perf')renderHsxSub(currentSubTab.hsx||'overview');
+  else if(sub==='goal')renderMptSub(currentSubTab.mpt||'month');
+}
+function renderTrkSub(s){
+  if(s==='kh')renderList('kh','list-kh');
+  else if(s==='kn')renderList('kn','list-kn');
+  else if(s==='ov')renderOverview();
+  else renderAttendanceTable();
+}
+function renderHsxSub(s){
+  if(s==='compare')renderCompare();
+  else renderPerfPage();
+}
+function renderMptSub(s){
+  if(s==='chart')renderChartKH();
+  else if(s==='cum')renderCumReport();
+  else if(s==='person')populateBcSel();
+  else renderMonthPage();
+}
+// ================================================================
+// SO SÁNH TV (v6.2) — xếp hạng TV cạnh nhau + hàng TB đội để đối chiếu
+// Dùng chung kỳ đo với Hiệu suất (periodType/periodRef). Bấm cột để sắp xếp.
+// ================================================================
+var compareSort={key:'action',dir:-1};
+function renderCompare(){
+  var el=document.getElementById('compare-content');if(!el)return;
+  var pt=document.getElementById('perf-period-tabs');
+  if(pt)pt.innerHTML=PERIODS.map(function(p){return '<button class="stab'+(periodType===p.type?' on':'')+'" data-perfperiod="'+p.type+'">'+p.lbl+'</button>';}).join('');
+  var pd=document.getElementById('perf-period-display');if(pd)pd.textContent=periodLabel();
+  if(!members.length){el.innerHTML='<div style="text-align:center;color:#BBB;padding:30px 0">Chưa có thành viên</div>';return;}
+  var range=perfPeriodRange(),agg=perfScanDaily(range);
+  var rows=members.map(function(m){
+    var mt=perfMemberMetrics(m.id,m.name,agg,range),a=agg[m.id]||{present:0};
+    var tn=treeNodes.find(function(t){return t.name===m.name;});
+    return {name:m.name,rank:tn?nodeRank(tn.id):0,action:mt.actionIndex,commit:mt.commitment,care:mt.care,
+      att:Math.min(1,(a.present||0)/Math.max(1,range.days*3)),skill:countAllSkills(m.id),
+      idnew:mt.outcome.m_id_new||0,zoom:mt.outcome.m_zoom||0,hocvien:mt.outcome.m_lophoc||0,income:mt.outcome.m_income||0,
+      producing:mt.producing};
+  });
+  var avg={name:'TB đội',rank:0,producing:false};
+  ['action','commit','care','att','skill','idnew','zoom','hocvien','income'].forEach(function(k){
+    avg[k]=rows.length?rows.reduce(function(s,r){return s+(r[k]||0);},0)/rows.length:0;
+  });
+  var k=compareSort.key,dir=compareSort.dir;
+  rows.sort(function(a,b){
+    if(k==='name')return -dir*noAccent(a.name).localeCompare(noAccent(b.name));
+    return dir*((a[k]||0)-(b[k]||0));
+  });
+  var cols=[{k:'rank',lbl:'Cấp'},{k:'action',lbl:'Action',pct:1},{k:'commit',lbl:'KH%',pct:1},
+    {k:'care',lbl:'Chăm sóc',pct:1},{k:'att',lbl:'Điểm danh',pct:1},{k:'skill',lbl:'KN/20'},
+    {k:'idnew',lbl:'ID mới'},{k:'zoom',lbl:'Zoom'},{k:'hocvien',lbl:'Học viên'},{k:'income',lbl:'Thu nhập'}];
+  function cellHtml(r,c){
+    if(c.k==='rank')return r.rank>0?'<span class="badge" style="background:'+RANKS[r.rank-1].color+';color:#fff">'+RANKS[r.rank-1].short+'</span>':'—';
+    if(c.pct){var v=r[c.k]||0;return '<span class="cmp-pill" style="background:'+perfColor(v)+'">'+Math.round(v*100)+'%</span>';}
+    var n=Math.round(r[c.k]||0);return n>0?'<b>'+n+'</b>':'<span style="color:#CCC">0</span>';
+  }
+  function rowHtml(r,isAvg){
+    var hh='<tr'+(isAvg?' class="cmp-avg"':'')+'><td class="cmp-name">'+(isAvg?'📊 ':(r.producing?'🟢 ':''))+escHtml(r.name)+'</td>';
+    cols.forEach(function(c){hh+='<td>'+cellHtml(r,c)+'</td>';});
+    return hh+'</tr>';
+  }
+  var h='<div class="cmp-wrap"><table class="cmpt"><thead><tr>';
+  h+='<th class="cmp-th-name'+(k==='name'?' on':'')+'" data-cmpsort="name">TV'+(k==='name'?(dir<0?' ▼':' ▲'):'')+'</th>';
+  cols.forEach(function(c){h+='<th class="'+(k===c.k?'on':'')+'" data-cmpsort="'+c.k+'">'+c.lbl+(k===c.k?(dir<0?' ▼':' ▲'):'')+'</th>';});
+  h+='</tr></thead><tbody>';
+  h+=rowHtml(avg,true);
+  rows.forEach(function(r){h+=rowHtml(r,false);});
+  h+='</tbody></table></div>';
+  h+='<div class="cmp-hint">Bấm tên cột để xếp hạng. 🟢 = đang tạo kết quả. Hàng <b>📊 TB đội</b> = trung bình để đối chiếu mình &amp; từng TV. Action = Kỹ năng 70% + Cam kết 15% + Chăm sóc 15%. KH% = % hoàn thành kế hoạch ngày. Điểm danh = buổi có mặt / tổng buổi trong kỳ. ID mới/Zoom/Học viên/Thu nhập theo kỳ đang chọn.</div>';
+  el.innerHTML=h;
 }
 // ================================================================
 // ĐO LƯỜNG MỤC TIÊU (goal progress) — v5.3  (theo kỳ đo pkey)
@@ -2334,7 +2472,7 @@ function perfPeriodRange(){ // [start,end] cho kỳ đo hiện tại (theo perio
 }
 function perfScanDaily(range){ // 1 lượt quét localStorage -> gộp dữ liệu ngày theo TV trong kỳ
   var agg={},prefix='ta_'+NS+'_d_';
-  function rec(mid){if(!agg[mid])agg[mid]={activeDays:0,leading:0,pctSum:0,pctCnt:0,care:0,_days:{}};return agg[mid];}
+  function rec(mid){if(!agg[mid])agg[mid]={activeDays:0,leading:0,pctSum:0,pctCnt:0,care:0,present:0,_days:{}};return agg[mid];}
   try{
     for(var i=0;i<localStorage.length;i++){
       var key=localStorage.key(i);
@@ -2344,7 +2482,7 @@ function perfScanDaily(range){ // 1 lượt quét localStorage -> gộp dữ li�
       var datePart=after.slice(0,u2),field=after.slice(u2+1),dp=datePart.split('-');if(dp.length!==3)continue;
       var dt=new Date(+dp[0],(+dp[1])-1,+dp[2]);if(dt<range.start||dt>range.end)continue;
       var val=localStorage.getItem(key),a=rec(mid);
-      if(field==='sang'||field==='trua'||field==='toi'){if(val==='yes')a._days[datePart]=1;}
+      if(field==='sang'||field==='trua'||field==='toi'){if(val==='yes'){a._days[datePart]=1;a.present++;}}
       else if(field==='kh_pct'){if(val!==''&&val!==null){a.pctSum+=parseInt(val)||0;a.pctCnt++;}}
       else if(field.indexOf('kh_')===0){
         var fid=field.slice(3),num=parseInt(val)||0;
@@ -2763,6 +2901,15 @@ function curMonthAbs(){
   var d=new Date();
   return d.getFullYear()*12+(d.getMonth()+1);
 }
+function monthDeadline(){
+  // Mốc thời gian: cuối tháng hiện tại (kỳ qualify chạy theo tháng) + số ngày còn lại + màu khẩn
+  var now=new Date();
+  var end=new Date(now.getFullYear(),now.getMonth()+1,0);
+  var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var days=Math.round((end-today)/86400000);
+  var color=days<=5?'#C62828':days<=12?'#F9A825':'#2E7D32';
+  return {days:days,color:color,dstr:end.getDate()+'/'+(end.getMonth()+1)+'/'+end.getFullYear()};
+}
 function branchCountInWindow(f1node,winStartAbs,winMonths){
   // Đếm ID trong nhánh (kể cả head) vào trong [winStartAbs, winStartAbs+winMonths-1]
   var all=[f1node].concat(sponsorDescendants(f1node));
@@ -2813,7 +2960,11 @@ function rankAlertInfo(nid){
   }
   if(pct>=1||pct<0.5)return null;
   var html='\u26A1 <b>'+escHtml(n.name)+'</b>: <b style="color:'+nextDef.color+'">'+Math.round(pct*100)+'%</b> l\u00ean <b style="color:'+nextDef.color+'">'+nextDef.name+'</b> \u2014 '+detail.join('; ');
-  return {pct:pct,html:html,nid:nid,color:nextDef.color};
+  // M\u1ed1c th\u1eddi gian: c\u1eeda s\u1ed5 qualify ch\u1ea1y theo th\u00e1ng \u2192 c\u1ea7n ho\u00e0n th\u00e0nh tr\u01b0\u1edbc cu\u1ed1i th\u00e1ng
+  var dl=monthDeadline(),timeWindowed=(nextId===1||nextId===2);
+  var dlLabel=timeWindowed?'H\u1ea1n c\u1eeda s\u1ed5 th\u00e1ng n\u00e0y':'M\u1ed1c ch\u1ed1t th\u00e1ng';
+  var deadlineHtml='<div style="margin-top:5px;font-size:12px;font-weight:700;color:'+dl.color+'">\u23f3 '+dlLabel+': '+dl.dstr+' \u2014 c\u00f2n '+dl.days+' ng\u00e0y'+(timeWindowed&&dl.days<=10?' (kh\u1ea9n!)':'')+'</div>';
+  return {pct:pct,html:html,nid:nid,color:nextDef.color,deadlineHtml:deadlineHtml};
 }
 function renderRankAlert(){
   // Tiến độ thăng tiến — render vào TAB RIÊNG "Thăng tiến" (đã tách khỏi sơ đồ cho gọn)
@@ -2831,9 +2982,9 @@ function renderRankAlert(){
     el.innerHTML='<div style="text-align:center;color:#BBB;font-size:14px;padding:40px 12px;border:1px dashed #E4E4E4;border-radius:12px">Chưa có ID nào đạt &ge;50% tiêu chí cấp bậc kế tiếp.</div>';
     return;
   }
-  var h='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#7A5C00;line-height:1.6">Có <b>'+items.length+'</b> ID đang tiến gần cấp bậc kế tiếp. Bấm vào một dòng để nhảy tới ID đó trên sơ đồ.</div>';
+  var h='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#7A5C00;line-height:1.6">Có <b>'+items.length+'</b> ID đang tiến gần cấp bậc kế tiếp. ⏳ = mốc thời gian cần hoàn thành. Bấm vào một dòng để nhảy tới ID đó trên sơ đồ.</div>';
   items.forEach(function(it){
-    h+='<div class="tt-card" data-tt-nid="'+it.nid+'" style="background:white;border:1px solid #E8E8E8;border-left:4px solid '+it.color+';border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.7;cursor:pointer">'+it.html+'</div>';
+    h+='<div class="tt-card" data-tt-nid="'+it.nid+'" style="background:white;border:1px solid #E8E8E8;border-left:4px solid '+it.color+';border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.7;cursor:pointer">'+it.html+(it.deadlineHtml||'')+'</div>';
   });
   el.innerHTML=h;
 }
@@ -4625,8 +4776,10 @@ document.addEventListener('click',function(e){
       pgEl.classList.add('on');
     }
     if(grp==='tp')renderTpSub(sub);
-    if(grp==='nhatky'&&sub==='cum')renderCumReport();
-    if(grp==='map')ensureMapSub(sub);
+    else if(grp==='trk')renderTrkSub(sub);
+    else if(grp==='hsx')renderHsxSub(sub);
+    else if(grp==='mpt')renderMptSub(sub);
+    else if(grp==='map')ensureMapSub(sub);
     return;
   }
 
@@ -4694,6 +4847,25 @@ document.addEventListener('click',function(e){
   }
 
   // Member card open
+  // v6.2 — Điểm danh gộp: chạm ô để đổi nhanh (— → Có → Trễ → Vắng)
+  t=e.target.closest('[data-att-cycle]');
+  if(t){
+    var _ac=t.getAttribute('data-att-cycle').split(':'),_amid=_ac[0],_ases=_ac[1];
+    var _cv=dGet(_amid,_ases)||'';
+    var _nv=_cv===''?'yes':_cv==='yes'?'late':_cv==='late'?'no':'';
+    dSet(_amid,_ases,_nv);
+    renderAttendanceTable();updateStats();
+    return;
+  }
+  // v6.2 — So sánh TV: bấm cột để sắp xếp
+  t=e.target.closest('[data-cmpsort]');
+  if(t){
+    var _ck=t.getAttribute('data-cmpsort');
+    if(compareSort.key===_ck)compareSort.dir*=-1;else{compareSort.key=_ck;compareSort.dir=-1;}
+    renderCompare();
+    return;
+  }
+
   t=e.target.closest('[data-open-mid]');
   if(t&&!e.target.closest('.sb')){
     openModal(t.getAttribute('data-open-mid'),t.getAttribute('data-open-type'));
@@ -4924,13 +5096,13 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-period]');
   if(t){periodType=t.getAttribute('data-period');updateMonthDisplay();renderMonthPage();return;}
   t=e.target.closest('[data-perfperiod]');
-  if(t){periodType=t.getAttribute('data-perfperiod');renderPerfPage();return;}
+  if(t){periodType=t.getAttribute('data-perfperiod');renderHsxSub(currentSubTab.hsx||'overview');return;}
   t=e.target.closest('[data-perfnav]');
   if(t){var _pn=t.getAttribute('data-perfnav');
     if(_pn==='prev')stepPeriod(-1);
     else if(_pn==='next')stepPeriod(1);
     else{periodRef=new Date();currentMonth={y:periodRef.getFullYear(),m:periodRef.getMonth()};}
-    renderPerfPage();return;}
+    renderHsxSub(currentSubTab.hsx||'overview');return;}
 
 
   // Nút TẦNG (rail trái cây nhị phân) → làm sáng toàn bộ ID ở tầng đó (bấm lại = tắt)
