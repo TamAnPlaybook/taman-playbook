@@ -1,4 +1,4 @@
-<!-- VERSION: v6.0-coaching-engine -->
+<!-- VERSION: v6.1-tasks-performance -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -314,6 +314,30 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .rm-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:1px 9px;font-family:Arial}
 .rm-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
 .rm-mini{border:none;border-radius:7px;padding:5px 8px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
+/* Action Center (Phase 3 v6.1) */
+.tp-sec-title{font-size:14px;font-weight:800;color:#1A1A1A;font-family:Arial;margin:20px 0 10px;display:flex;align-items:center;gap:6px}
+.ac-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;flex-wrap:wrap;gap:6px}
+.ac-title{font-size:15px;font-weight:800;color:#1A1A1A;font-family:Arial}
+.ac-date{font-size:12px;font-weight:600;color:#999;margin-left:5px}
+.ac-prog{font-size:12px;font-weight:700;color:#1A7A5E;background:#E8F5F0;border-radius:20px;padding:3px 12px;font-family:Arial;white-space:nowrap}
+.ac-slot{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:11px 12px;margin-bottom:12px}
+.ac-slot-hd{font-size:13px;font-weight:800;font-family:Arial;margin-bottom:6px}
+.ac-cnt{font-size:11px;color:#AAA;font-weight:700;margin-left:3px}
+.ac-empty{font-size:12px;color:#BBB;font-family:Arial;padding:3px 0 6px}
+.ac-task{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-top:1px solid #F2F2F2}
+.ac-task.done{opacity:.5}
+.ac-task.done .ac-text{text-decoration:line-through}
+.ac-task.prio .ac-text{color:#E65100}
+.ac-chk{background:none;border:none;cursor:pointer;font-size:18px;line-height:1;padding:0;flex-shrink:0}
+.ac-body{flex:1;min-width:0}
+.ac-text{font-size:14px;font-weight:600;color:#1A1A1A;font-family:Arial;word-break:break-word}
+.ac-note{font-size:12px;color:#666;margin-top:2px;font-family:Arial;white-space:pre-wrap}
+.ac-tools{display:flex;gap:3px;flex-shrink:0}
+.ac-mini{background:#F5F5F5;border:none;border-radius:6px;padding:4px 7px;font-size:12px;cursor:pointer;line-height:1}
+.ac-del{background:#FFEBEE;color:#C62828}
+.ac-add{display:flex;gap:6px;margin-top:8px}
+.ac-inp{flex:1;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px 11px;font-size:13px;font-family:Arial;outline:none;box-sizing:border-box}
+.ac-addbtn{background:#1A7A5E;color:white;border:none;border-radius:9px;padding:0 18px;font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0}
 
 /* ===== Đo lường mục tiêu (goal progress) — v5.3 ===== */
 .goal-row{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:8px}
@@ -447,9 +471,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="dd">&#128203; Theo dõi ngày</button>
-    <button class="mtab" data-main="perf">&#128202; Hiệu suất</button>
-    <button class="mtab" data-main="month">&#127919; Mục tiêu - kết quả</button>
-    <button class="mtab" data-main="nhatky">&#128200; Phân tích</button>
+    <button class="mtab" data-main="tp">&#127919; Việc &amp; Hiệu suất</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
@@ -483,7 +505,6 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
         <button class="stab" data-sub="dd:toi">&#127769; Tối</button>
         <button class="stab" data-sub="dd:kh">&#128101; Kế hoạch ngày</button>
         <button class="stab" data-sub="dd:kn">&#11088; Kỹ năng</button>
-        <button class="stab" data-sub="dd:remind">&#128197; Lịch quan trọng</button>
         <button class="stab" data-sub="dd:ov">&#128202; Tổng kết</button>
       </div>
       <div class="spg on" id="dd-sang"><div id="list-sang"></div></div>
@@ -491,7 +512,6 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <div class="spg" id="dd-toi"><div id="list-toi"></div></div>
       <div class="spg" id="dd-kh"><div id="list-kh"></div></div>
       <div class="spg" id="dd-kn"><div id="list-kn"></div></div>
-      <div class="spg" id="dd-remind"><div id="remind-content"></div></div>
       <div class="spg" id="dd-ov">
         <div id="lk-activity"></div>
         <div id="ov-table"></div>
@@ -504,52 +524,65 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
   </div>
 
-  <!-- THÁNG -->
-  <div class="page" id="page-month">
-    <div class="content">
-      <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
-        <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
-        <button class="db-today" id="btn-month-cur">Hiện tại</button>
-        <button class="db-btn" id="btn-month-next">&rsaquo;</button>
-      </div>
-      <div id="month-content"></div>
-    </div>
-  </div>
-
-  <!-- PHÂN TÍCH -->
-  <div class="page" id="page-nhatky">
+  <!-- VIỆC & HIỆU SUẤT (Phase 3 v6.1 — hợp nhất Hiệu suất + Mục tiêu + Phân tích + Action Center) -->
+  <div class="page" id="page-tp">
     <div class="content">
       <div class="stabs">
-        <button class="stab on" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
-        <button class="stab" data-sub="nhatky:person">&#128100; Cá nhân</button>
-        <button class="stab" data-sub="nhatky:cum">&#127942; Tổng hợp cụm</button>
+        <button class="stab on" data-sub="tp:today">&#128203; Hôm nay</button>
+        <button class="stab" data-sub="tp:perf">&#128202; Hiệu suất</button>
+        <button class="stab" data-sub="tp:month">&#127919; Mục tiêu</button>
+        <button class="stab" data-sub="tp:nhatky">&#128200; Phân tích</button>
       </div>
-      <div class="spg on" id="nhatky-chart"><div id="chart-kh"></div></div>
-      <div class="spg" id="nhatky-person">
-        <div style="margin-bottom:12px">
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
-          <input id="bc-filter" class="sel-filter" placeholder="&#128269; Gõ tìm tên...">
-          <select class="sel" id="bc-sel"><option value="">— Chọn tên —</option></select>
-        </div>
-        <div id="bc-content"></div>
-      </div>
-      <div class="spg" id="nhatky-cum"><div id="cum-content"></div></div>
-    </div>
-  </div>
 
-  <!-- HIỆU SUẤT (Phase 1 v5.9) -->
-  <div class="page" id="page-perf">
-    <div class="content">
-      <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
-        <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="perf-period-display"></div>
-        <button class="db-today" data-perfnav="cur">Hiện tại</button>
-        <button class="db-btn" data-perfnav="next">&rsaquo;</button>
+      <!-- HÔM NAY: Action Center (Sáng/Trưa/Tối) + Lịch quan trọng -->
+      <div class="spg on" id="tp-today">
+        <div id="action-center"></div>
+        <div class="tp-sec-title">&#128197; Lịch quan trọng</div>
+        <div id="remind-content"></div>
       </div>
-      <div id="perf-content"></div>
+
+      <!-- HIỆU SUẤT -->
+      <div class="spg" id="tp-perf">
+        <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
+          <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="perf-period-display"></div>
+          <button class="db-today" data-perfnav="cur">Hiện tại</button>
+          <button class="db-btn" data-perfnav="next">&rsaquo;</button>
+        </div>
+        <div id="perf-content"></div>
+      </div>
+
+      <!-- MỤC TIÊU -->
+      <div class="spg" id="tp-month">
+        <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
+          <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
+          <button class="db-today" id="btn-month-cur">Hiện tại</button>
+          <button class="db-btn" id="btn-month-next">&rsaquo;</button>
+        </div>
+        <div id="month-content"></div>
+      </div>
+
+      <!-- PHÂN TÍCH (sub-tab lồng) -->
+      <div class="spg" id="tp-nhatky">
+        <div class="stabs">
+          <button class="stab on" data-sub="nhatky:chart">&#128200; Biểu đồ 7 ngày</button>
+          <button class="stab" data-sub="nhatky:person">&#128100; Cá nhân</button>
+          <button class="stab" data-sub="nhatky:cum">&#127942; Tổng hợp cụm</button>
+        </div>
+        <div class="spg on" id="nhatky-chart"><div id="chart-kh"></div></div>
+        <div class="spg" id="nhatky-person">
+          <div style="margin-bottom:12px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
+            <input id="bc-filter" class="sel-filter" placeholder="&#128269; Gõ tìm tên...">
+            <select class="sel" id="bc-sel"><option value="">— Chọn tên —</option></select>
+          </div>
+          <div id="bc-content"></div>
+        </div>
+        <div class="spg" id="nhatky-cum"><div id="cum-content"></div></div>
+      </div>
     </div>
   </div>
 
@@ -819,7 +852,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={dd:'sang',nhatky:'chart',map:'mine'};
+var currentSubTab={dd:'sang',tp:'today',nhatky:'chart',map:'mine'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -1429,7 +1462,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -1828,6 +1861,7 @@ function renderAll(){
   renderOverview();
   renderChartKH();
   renderReminders();
+  renderActionCenter();
   renderDdBranchBar();
 }
 function renderDdBranchBar(){
@@ -2020,6 +2054,70 @@ function renderReminders(){
     });
   }
   el.innerHTML=h;
+}
+// ================================================================
+// ACTION CENTER — "Hôm nay tôi làm gì?" (Phase 3 v6.1)
+// Task CRUD của leader theo buổi Sáng/Trưa/Tối, keyed theo ngày (dk()).
+// Lưu act_v1 (localStorage) + sync Firestore actplans (mirror tasks_v1).
+// ================================================================
+var AC_SLOTS=[
+  {id:'sang',lbl:'🌅 Sáng',c:'#F9A825'},
+  {id:'trua',lbl:'☀️ Trưa',c:'#FB8C00'},
+  {id:'toi', lbl:'🌙 Tối', c:'#5E35B1'}
+];
+function loadActs(){try{var s=nmGet('act_v1');return s?JSON.parse(s):{};}catch(e){return {};}}
+function saveActs(o){nmSet('act_v1',JSON.stringify(o));if(fbDb&&fbUser)fsSet('actplans',{acts:o}).catch(function(){});}
+function loadActsCloud(){ // kéo Action Center từ Firestore khi đăng nhập
+  if(!fbDb||!fbUser)return;
+  fsGet('actplans').then(function(d){
+    if(d&&d.acts){nmSet('act_v1',JSON.stringify(d.acts));renderActionCenter();}
+  }).catch(function(){});
+}
+function dayActs(){var o=loadActs();return o[dk()]||[];}
+function setDayActs(arr){var o=loadActs();o[dk()]=arr;saveActs(o);}
+function addAct(slot,text){
+  text=(text||'').trim();if(!text){showToast('Nhập việc cần làm');return;}
+  var arr=dayActs();arr.push({id:'ac'+Date.now().toString(36),slot:slot,text:text,note:'',done:false,prio:false});
+  setDayActs(arr);renderActionCenter();
+}
+function renderActionCenter(){
+  var el=document.getElementById('action-center');if(!el)return;
+  var acts=dayActs();
+  var doneCnt=acts.filter(function(x){return x.done;}).length;
+  var h='<div class="ac-head"><div class="ac-title">🎯 Hôm nay tôi làm gì?<span class="ac-date">'+fmtDate(currentDay)+'</span></div>';
+  h+='<div class="ac-prog">'+doneCnt+'/'+acts.length+' xong</div></div>';
+  AC_SLOTS.forEach(function(s){
+    var list=acts.filter(function(x){return x.slot===s.id;});
+    list.sort(function(a,b){if(!!a.done!==!!b.done)return a.done?1:-1;if(!!a.prio!==!!b.prio)return a.prio?-1:1;return 0;});
+    h+='<div class="ac-slot" style="border-top:3px solid '+s.c+'">';
+    h+='<div class="ac-slot-hd" style="color:'+s.c+'">'+s.lbl+'<span class="ac-cnt">'+list.length+'</span></div>';
+    if(!list.length)h+='<div class="ac-empty">Chưa có việc</div>';
+    list.forEach(function(a){
+      h+='<div class="ac-task'+(a.done?' done':'')+(a.prio?' prio':'')+'">';
+      h+='<button class="ac-chk" data-ac-done="'+a.id+'">'+(a.done?'✅':'⬜')+'</button>';
+      h+='<div class="ac-body"><div class="ac-text">'+(a.prio?'⭐ ':'')+escHtml(a.text)+'</div>';
+      if(a.note)h+='<div class="ac-note">📝 '+escHtml(a.note)+'</div>';
+      h+='</div>';
+      h+='<div class="ac-tools">';
+      h+='<button class="ac-mini" data-ac-prio="'+a.id+'" title="Ưu tiên">'+(a.prio?'⭐':'☆')+'</button>';
+      h+='<button class="ac-mini" data-ac-note="'+a.id+'" title="Ghi chú">📝</button>';
+      h+='<button class="ac-mini" data-ac-edit="'+a.id+'" title="Sửa">✏️</button>';
+      h+='<button class="ac-mini ac-del" data-ac-del="'+a.id+'" title="Xoá">✕</button>';
+      h+='</div></div>';
+    });
+    var ph=s.lbl.replace(/^\S+\s/,'').toLowerCase();
+    h+='<div class="ac-add"><input class="ac-inp" data-ac-input="'+s.id+'" placeholder="Thêm việc buổi '+ph+'..."><button class="ac-addbtn" data-ac-add="'+s.id+'">+</button></div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+// Render đúng nội dung sub-tab đang mở của tab "Việc & Hiệu suất"
+function renderTpSub(sub){
+  sub=sub||currentSubTab.tp||'today';
+  if(sub==='today'){renderActionCenter();renderReminders();}
+  else if(sub==='perf')renderPerfPage();
+  else if(sub==='month')renderMonthPage();
+  else if(sub==='nhatky'){renderChartKH();renderCumReport();}
 }
 // ================================================================
 // ĐO LƯỜNG MỤC TIÊU (goal progress) — v5.3  (theo kỳ đo pkey)
@@ -4369,6 +4467,7 @@ function sendToHuy(){
 function renderGuide(){
   var el=document.getElementById('guide-content');if(!el)return;
   var secs=[
+    {icon:'🎯',title:'Việc & Hiệu suất (tab gộp)',color:'#FFF3E0',body:'Tab gộp 4 mục theo 1 nhịp làm việc.• 📋 Hôm nay — "Action Center": ghi việc cần làm theo buổi Sáng/Trưa/Tối (thêm/sửa/ghi chú/ưu tiên ⭐/đánh dấu xong), kèm Lịch quan trọng. Việc theo NGÀY — đổi ngày ở thanh ngày trên cùng.• 📊 Hiệu suất: chỉ số tự động (Action Index, Lãnh đạo, Nhân bản) + gợi ý coaching.• 🎯 Mục tiêu: nhập KPI + đo lường mục tiêu theo kỳ.• 📈 Phân tích: biểu đồ 7 ngày, cá nhân, tổng hợp cụm.'},
     {icon:'\uD83D\uDD11',title:'Đăng nhập & Tài khoản',color:'#E8F5F0',body:'Mỗi người đăng ký 1 tài khoản riêng (email hoặc Google).\u2022 Dữ liệu của bạn hoàn toàn riêng biệt, tự động đồng bộ lên cloud.\u2022 Quên mật khẩu: dùng chức năng "Quên mật khẩu" để nhận email khôi phục.'},
     {icon:'\uD83D\uDCCB',title:'Điểm danh hàng ngày',color:'#E3F2FD',body:'Bấm vào tên thành viên để mở bảng điểm danh.\u2022 Chọn Có / Trễ / Vắng cho từng buổi (Sáng - Trưa - Tối).\u2022 Đánh dấu Camera ON nếu bật cam trong Zoom.\u2022 Dùng nút mũi tên \u25B2\u25BC để sắp xếp thứ tự.'},
     {icon:'\u2B50',title:'Kỹ năng',color:'#FFF8E1',body:'Tab Kỹ năng: bấm vào tên \u2192 tick các kỹ năng đã đạt.\u2022 11 kỹ năng từ DISC đến Điều phối Zoom.\u2022 Đạt đủ 11/11 sẽ được tính vào chỉ số "Đủ kỹ năng".'},
@@ -4504,10 +4603,7 @@ document.addEventListener('click',function(e){
       if(currentTreeMode==='binary')renderTree();else renderStarChart();
       showAndFitTree();
     }
-    if(pg==='dd')renderReminders();
-    if(pg==='perf')renderPerfPage();
-    if(pg==='month')renderMonthPage();
-    if(pg==='nhatky'){renderChartKH();renderCumReport();}
+    if(pg==='tp')renderTpSub(currentSubTab.tp||'today');
     if(pg==='admin')renderAdminPage();
     if(pg==='map')renderMapPage();
     return;
@@ -4521,11 +4617,15 @@ document.addEventListener('click',function(e){
     currentSubTab[grp]=sub;
     t.parentElement.querySelectorAll('.stab').forEach(function(b){b.classList.remove('on');});
     t.classList.add('on');
-    document.querySelectorAll('#page-'+grp+' .spg').forEach(function(p){p.classList.remove('on');});
     var pgEl=document.getElementById(grp+'-'+sub);
-    if(pgEl)pgEl.classList.add('on');
+    if(pgEl){
+      // chỉ tắt các .spg cùng cấp (con trực tiếp của cùng cha) — hỗ trợ sub-tab lồng
+      var par=pgEl.parentElement;
+      for(var _i=0;_i<par.children.length;_i++){if(par.children[_i].classList.contains('spg'))par.children[_i].classList.remove('on');}
+      pgEl.classList.add('on');
+    }
+    if(grp==='tp')renderTpSub(sub);
     if(grp==='nhatky'&&sub==='cum')renderCumReport();
-    if(grp==='dd'&&sub==='remind')renderReminders();
     if(grp==='map')ensureMapSub(sub);
     return;
   }
@@ -4554,6 +4654,20 @@ document.addEventListener('click',function(e){
   if(t){var _id=t.getAttribute('data-task-done');var _ts=loadTasks();_ts.forEach(function(x){if(x.id===_id)x.done=!x.done;});saveTasks(_ts);renderReminders();return;}
   t=e.target.closest('[data-del-task]');
   if(t){var _id2=t.getAttribute('data-del-task');var _ts2=loadTasks().filter(function(x){return x.id!==_id2;});saveTasks(_ts2);renderReminders();return;}
+
+  // v6.1 — Action Center (Hôm nay tôi làm gì?)
+  t=e.target.closest('[data-ac-add]');
+  if(t){var _as=t.getAttribute('data-ac-add');var _ai=document.querySelector('[data-ac-input="'+_as+'"]');addAct(_as,_ai?_ai.value:'');return;}
+  t=e.target.closest('[data-ac-done]');
+  if(t){var _aid=t.getAttribute('data-ac-done');var _aa=dayActs();_aa.forEach(function(x){if(x.id===_aid)x.done=!x.done;});setDayActs(_aa);renderActionCenter();return;}
+  t=e.target.closest('[data-ac-prio]');
+  if(t){var _aid2=t.getAttribute('data-ac-prio');var _aa2=dayActs();_aa2.forEach(function(x){if(x.id===_aid2)x.prio=!x.prio;});setDayActs(_aa2);renderActionCenter();return;}
+  t=e.target.closest('[data-ac-del]');
+  if(t){var _aid3=t.getAttribute('data-ac-del');var _aa3=dayActs().filter(function(x){return x.id!==_aid3;});setDayActs(_aa3);renderActionCenter();return;}
+  t=e.target.closest('[data-ac-edit]');
+  if(t){var _aid4=t.getAttribute('data-ac-edit');var _aa4=dayActs();var _ce=null;_aa4.forEach(function(x){if(x.id===_aid4)_ce=x;});var _nv=prompt('Sửa việc:',_ce?_ce.text:'');if(_nv!==null){_aa4.forEach(function(x){if(x.id===_aid4&&_nv.trim())x.text=_nv.trim();});setDayActs(_aa4);renderActionCenter();}return;}
+  t=e.target.closest('[data-ac-note]');
+  if(t){var _aid5=t.getAttribute('data-ac-note');var _aa5=dayActs();var _cn=null;_aa5.forEach(function(x){if(x.id===_aid5)_cn=x;});var _nn=prompt('Ghi chú:',_cn?_cn.note:'');if(_nn!==null){_aa5.forEach(function(x){if(x.id===_aid5)x.note=_nn.trim();});setDayActs(_aa5);renderActionCenter();}return;}
   // v5.3 — Đo lường mục tiêu (goal progress)
   t=e.target.closest('[data-act="add-goal"]');
   if(t){
@@ -5161,7 +5275,7 @@ function exitViewMode(){
   document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id===savedPage);});
   document.getElementById('app').classList.toggle('hide-topbars',savedTab==='tree');
   if(savedPage==='page-admin')renderAdminPage();
-  else if(savedPage==='page-month')renderMonthPage();
+  else if(savedPage==='page-tp')renderTpSub(currentSubTab.tp);
   else if(savedPage==='page-tree'){ if(currentTreeMode==='binary')renderTree(); else renderStarChart(); showAndFitTree(); }
   else { renderAll(); updateStats(); }
 }
@@ -5219,6 +5333,13 @@ function bindStatic(){
   document.getElementById('btn-month-prev').addEventListener('click',function(){stepPeriod(-1);updateMonthDisplay();renderMonthPage();});
   document.getElementById('btn-month-next').addEventListener('click',function(){stepPeriod(1);updateMonthDisplay();renderMonthPage();});
   document.getElementById('btn-month-cur').addEventListener('click',function(){periodRef=new Date();currentMonth={y:periodRef.getFullYear(),m:periodRef.getMonth()};updateMonthDisplay();renderMonthPage();});
+
+  // v6.1 — Enter để thêm việc nhanh trong Action Center
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    var inp=e.target&&e.target.closest&&e.target.closest('[data-ac-input]');
+    if(inp){addAct(inp.getAttribute('data-ac-input'),inp.value);}
+  });
 
 
   document.getElementById('srch').addEventListener('keydown',function(e){
