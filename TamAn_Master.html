@@ -1,4 +1,4 @@
-<!-- VERSION: v5.8-workflow-tabs -->
+<!-- VERSION: v5.9-performance-engine -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -447,6 +447,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="dd">&#128203; Theo dõi ngày</button>
+    <button class="mtab" data-main="perf">&#128202; Hiệu suất</button>
     <button class="mtab" data-main="month">&#127919; Mục tiêu - kết quả</button>
     <button class="mtab" data-main="nhatky">&#128200; Phân tích</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
@@ -535,6 +536,20 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
         <div id="bc-content"></div>
       </div>
       <div class="spg" id="nhatky-cum"><div id="cum-content"></div></div>
+    </div>
+  </div>
+
+  <!-- HIỆU SUẤT (Phase 1 v5.9) -->
+  <div class="page" id="page-perf">
+    <div class="content">
+      <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
+        <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="perf-period-display"></div>
+        <button class="db-today" data-perfnav="cur">Hiện tại</button>
+        <button class="db-btn" data-perfnav="next">&rsaquo;</button>
+      </div>
+      <div id="perf-content"></div>
     </div>
   </div>
 
@@ -2180,6 +2195,162 @@ function calcCum(){
     h+='</tr>';
   });
   h+='</table></div>';
+  el.innerHTML=h;
+}
+
+// ================================================================
+// HIỆU SUẤT — Phase 1 (v5.9): chỉ số phái sinh + Replication Index
+// Triết lý: Hành động -> Kết quả -> Lãnh đạo -> Nhân bản.
+// MỌI chỉ số tính TỰ ĐỘNG từ dữ liệu đã có (cây + điểm danh + KH + KPI),
+// KHÔNG nhập trùng. Action Index = TRUNG BÌNH NHÂN (geometric mean) của
+// Cam kết×Chăm sóc×Tốc độ → phạt điểm yếu mà không "về 0" oan; Kỹ năng
+// tách riêng làm "Năng lực" (là vốn, không phải thực thi).
+// ================================================================
+var PERF_CFG={
+  velTargetPerDay:5,        // hành động dẫn dắt/ngày để Tốc độ = 100%
+  careTargetMonth:20,       // việc chăm sóc/tháng để Chăm sóc = 100% (scale theo độ dài kỳ)
+  indepActiveDaysMonth:8,   // ngày hoạt động/tháng để coi là "tự tạo kết quả"
+  classThreshold:4          // Học viên đến lớp >= ngưỡng => có kết quả
+};
+var LEADING_KH=['post_zalo','post_fb','post_tt','call_new','followup2','care_sys','baotroTV'];
+var CARE_KH=['followup2','care_sys','baotroTV'];
+var SKILL_TOTAL=SKILLS.length+SKILLS_THANY.length;
+function countAllSkills(mid){return SKILLS.concat(SKILLS_THANY).filter(function(s){return pGet(mid,'sk_'+s.id)==='1';}).length;}
+function geoMean(arr){
+  var vals=arr.filter(function(v){return v!==null&&v!==undefined&&!isNaN(v);});
+  if(!vals.length)return 0;
+  var prod=1;for(var i=0;i<vals.length;i++){prod*=Math.max(0,vals[i]);}
+  return Math.pow(prod,1/vals.length);
+}
+function perfPeriodRange(){ // [start,end] cho kỳ đo hiện tại (theo periodType/periodRef)
+  var d=new Date(periodRef),y=d.getFullYear(),m=d.getMonth(),s,e;
+  if(periodType==='week'){var day=(d.getDay()||7);s=new Date(d);s.setDate(d.getDate()-(day-1));e=new Date(s);e.setDate(s.getDate()+6);}
+  else if(periodType==='quarter'){var q=Math.floor(m/3);s=new Date(y,q*3,1);e=new Date(y,q*3+3,0);}
+  else if(periodType==='half'){var hh=m<6?0:6;s=new Date(y,hh,1);e=new Date(y,hh+6,0);}
+  else if(periodType==='year'){s=new Date(y,0,1);e=new Date(y,11,31);}
+  else{s=new Date(y,m,1);e=new Date(y,m+1,0);}
+  s.setHours(0,0,0,0);e.setHours(23,59,59,999);
+  return {start:s,end:e,days:Math.floor((e-s)/86400000)+1};
+}
+function perfScanDaily(range){ // 1 lượt quét localStorage -> gộp dữ liệu ngày theo TV trong kỳ
+  var agg={},prefix='ta_'+NS+'_d_';
+  function rec(mid){if(!agg[mid])agg[mid]={activeDays:0,leading:0,pctSum:0,pctCnt:0,care:0,_days:{}};return agg[mid];}
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var key=localStorage.key(i);
+      if(!key||key.indexOf(prefix)!==0)continue;
+      var rest=key.slice(prefix.length),u1=rest.indexOf('_');if(u1<0)continue;
+      var mid=rest.slice(0,u1),after=rest.slice(u1+1),u2=after.indexOf('_');if(u2<0)continue;
+      var datePart=after.slice(0,u2),field=after.slice(u2+1),dp=datePart.split('-');if(dp.length!==3)continue;
+      var dt=new Date(+dp[0],(+dp[1])-1,+dp[2]);if(dt<range.start||dt>range.end)continue;
+      var val=localStorage.getItem(key),a=rec(mid);
+      if(field==='sang'||field==='trua'||field==='toi'){if(val==='yes')a._days[datePart]=1;}
+      else if(field==='kh_pct'){if(val!==''&&val!==null){a.pctSum+=parseInt(val)||0;a.pctCnt++;}}
+      else if(field.indexOf('kh_')===0){
+        var fid=field.slice(3),num=parseInt(val)||0;
+        if(LEADING_KH.indexOf(fid)>=0)a.leading+=num;
+        if(CARE_KH.indexOf(fid)>=0)a.care+=num;
+        if(num>0)a._days[datePart]=1;
+      }
+    }
+  }catch(e){}
+  Object.keys(agg).forEach(function(mid){agg[mid].activeDays=Object.keys(agg[mid]._days).length;});
+  return agg;
+}
+function perfOutcome(mid){var o={};MONTH_KPI.forEach(function(k){o[k.id]=parseInt(mGet(mid,k.id)||'0')||0;});return o;}
+function perfMemberMetrics(mid,agg,range){
+  var a=agg[mid]||{activeDays:0,leading:0,pctSum:0,pctCnt:0,care:0};
+  var scale=Math.max(range.days/30,0.2);
+  var commitment=a.pctCnt?(a.pctSum/a.pctCnt/100):0;
+  var velocity=Math.min(1,(a.activeDays?a.leading/a.activeDays:0)/PERF_CFG.velTargetPerDay);
+  var care=Math.min(1,a.care/Math.max(1,PERF_CFG.careTargetMonth*scale));
+  var capability=countAllSkills(mid)/SKILL_TOTAL;
+  var actionIndex=geoMean([commitment,care,velocity]);
+  var o=perfOutcome(mid),indepDays=Math.max(2,Math.round(PERF_CFG.indepActiveDaysMonth*scale));
+  var producing=(o.m_id_new>0)||(o.m_income>0)||(o.m_lophoc>=PERF_CFG.classThreshold)||(a.activeDays>=indepDays);
+  return {commitment:commitment,care:care,velocity:velocity,capability:capability,actionIndex:actionIndex,producing:producing,activeDays:a.activeDays,leading:a.leading,outcome:o};
+}
+function perfSponsorChildren(name){return treeNodes.filter(function(x){return x.f1of===name;});}
+function perfRepLevels(prodByName){ // name -> level 0..4 (cấp nhân bản lãnh đạo)
+  var level={},visiting={};
+  function lv(name){
+    if(level[name]!==undefined)return level[name];
+    if(visiting[name])return 0;
+    visiting[name]=true;var res;
+    if(!prodByName[name]){res=0;}
+    else{
+      var kids=perfSponsorChildren(name),k1=0,k2=0,k3=0;
+      kids.forEach(function(c){var l=lv(c.name);if(l>=1)k1++;if(l>=2)k2++;if(l>=3)k3++;});
+      if(k3>=2)res=4;else if(k2>=2)res=3;else if(k1>=1)res=2;else res=1;
+    }
+    visiting[name]=false;level[name]=res;return res;
+  }
+  treeNodes.forEach(function(n){lv(n.name);});
+  return level;
+}
+function perfPct(x){return Math.round(x*100);}
+function perfColor(x){return x>=0.8?'#1A7A5E':x>=0.5?'#FB8C00':'#E53935';}
+function perfCard(title,big,sub,color){
+  return '<div class="kpib" style="text-align:left"><div class="kpilbl">'+title+'</div>'
+    +'<div style="font-size:24px;font-weight:700;color:'+(color||'#1A7A5E')+'">'+big+'</div>'
+    +'<div style="font-size:11px;color:#888;line-height:1.4;margin-top:2px">'+sub+'</div></div>';
+}
+function renderPerfPage(){
+  var el=document.getElementById('perf-content');if(!el)return;
+  var pt=document.getElementById('perf-period-tabs');
+  if(pt)pt.innerHTML=PERIODS.map(function(p){return '<button class="stab'+(periodType===p.type?' on':'')+'" data-perfperiod="'+p.type+'">'+p.lbl+'</button>';}).join('');
+  var pd=document.getElementById('perf-period-display');if(pd)pd.textContent=periodLabel();
+  var range=perfPeriodRange(),agg=perfScanDaily(range);
+  var rows=members.map(function(m){return {m:m,x:perfMemberMetrics(m.id,agg,range)};});
+  var prodByName={};
+  rows.forEach(function(r){prodByName[r.m.name]=r.x.producing;});
+  treeNodes.forEach(function(n){if(prodByName[n.name]===undefined)prodByName[n.name]=false;});
+  var levels=perfRepLevels(prodByName);
+  var n=rows.length||1;
+  var teamAction=rows.reduce(function(s,r){return s+r.x.actionIndex;},0)/n;
+  var teamCap=rows.reduce(function(s,r){return s+r.x.capability;},0)/n;
+  var producingCount=rows.filter(function(r){return r.x.producing;}).length;
+  var indepPct=members.length?producingCount/members.length:0;
+  var leadTotal=rows.reduce(function(s,r){return s+r.x.leading;},0);
+  var lag={};MONTH_KPI.forEach(function(k){lag[k.id]=rows.reduce(function(s,r){return s+(r.x.outcome[k.id]||0);},0);});
+  var goals=loadGoals();
+  var succ=goals.length?Math.round(goals.reduce(function(s,g){return s+Math.min(100,goalPct(g));},0)/goals.length):null;
+  var L=[0,0,0,0,0];treeNodes.forEach(function(nd){L[levels[nd.name]||0]++;});
+  var repNames=['Chưa tự chủ','L1 · Tự tạo kết quả','L2 · Giúp người khác có kết quả','L3 · Tạo ra lãnh đạo','L4 · Lãnh đạo tạo lãnh đạo'];
+  var repCols=['#BDBDBD','#42A5F5','#26A69A','#FB8C00','#7E57C2'];
+  var totN=treeNodes.length||1;
+  var h='';
+  h+='<div class="chart-wrap"><div class="chart-title">🧭 Chỉ huy hiệu suất — '+escHtml(periodLabel())+'</div>';
+  h+='<div class="kpi-grid">';
+  h+=perfCard('⚡ Action Index','<b>'+perfPct(teamAction)+'%</b>','Chất lượng thực thi (TB nhân Cam kết×Chăm sóc×Tốc độ)',perfColor(teamAction));
+  h+=perfCard('🎓 Năng lực',perfPct(teamCap)+'%','Kỹ năng đã đạt / '+SKILL_TOTAL,perfColor(teamCap));
+  h+=perfCard('🎯 Tỉ lệ đạt mục tiêu',(succ===null?'—':succ+'%'),(succ===null?'Chưa đặt mục tiêu kỳ này':'Theo tab Mục tiêu - kết quả'),succ===null?'#999':perfColor((succ||0)/100));
+  h+=perfCard('👑 Tự chủ 90 ngày',perfPct(indepPct)+'%',producingCount+'/'+members.length+' TV tự tạo kết quả',perfColor(indepPct));
+  h+='</div></div>';
+  h+='<div class="chart-wrap"><div class="chart-title">🌱 Chỉ số nhân bản lãnh đạo (Replication)</div>';
+  h+='<div style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.5">Câu hỏi cốt lõi: <b>Nếu bạn vắng 90 ngày, bao nhiêu phần hệ thống vẫn tự chạy?</b></div>';
+  for(var li=4;li>=1;li--){
+    var c=L[li],w=Math.round(c/totN*100);
+    h+='<div class="goal-row"><div class="goal-top"><div class="goal-name" style="color:'+repCols[li]+'">'+repNames[li]+'</div><span style="font-weight:700;font-size:13px">'+c+' ID</span></div>';
+    h+='<div class="prog-track"><div class="prog-fill" style="width:'+Math.max(2,w)+'%;background:'+repCols[li]+'"></div></div></div>';
+  }
+  h+='<div style="font-size:11px;color:#999;margin-top:6px">L0 chưa tự chủ: '+L[0]+' ID. "Tự tạo kết quả" = có ID mới / thu nhập / '+PERF_CFG.classThreshold+'+ học viên, hoặc hoạt động đều trong kỳ.</div></div>';
+  h+='<div class="chart-wrap"><div class="chart-title">🔁 Nhân (dẫn dắt) vs Quả (kết quả)</div><div class="kpi-grid">';
+  h+='<div class="kpib"><div class="kpilbl">➡️ Hành động dẫn dắt</div><div style="font-size:22px;font-weight:700;color:#1565C0">'+leadTotal+'</div><div style="font-size:11px;color:#888">Bài đăng·Gọi·Follow-up·Chăm sóc·Bảo trợ</div></div>';
+  MONTH_KPI.forEach(function(k){h+='<div class="kpib"><div class="kpilbl">'+k.icon+' '+k.lbl+'</div><div style="font-size:22px;font-weight:700;color:#1A7A5E">'+lag[k.id]+'</div></div>';});
+  h+='</div></div>';
+  h+='<div class="chart-wrap"><div class="chart-title">👥 Hiệu suất từng thành viên</div>';
+  h+='<div class="ov-wrap"><table class="ovt"><tr><th>Tên</th><th>Action</th><th>Cam kết</th><th>Chăm sóc</th><th>Tốc độ</th><th>Năng lực</th><th>Cấp NB</th></tr>';
+  rows.sort(function(a,b){return b.x.actionIndex-a.x.actionIndex;});
+  rows.forEach(function(r){
+    var x=r.x,lvl=levels[r.m.name]||0;
+    h+='<tr><td>'+escHtml(r.m.name)+(x.producing?' 🟢':'')+'</td>';
+    h+='<td><b style="color:'+perfColor(x.actionIndex)+'">'+perfPct(x.actionIndex)+'%</b></td>';
+    h+='<td>'+perfPct(x.commitment)+'%</td><td>'+perfPct(x.care)+'%</td><td>'+perfPct(x.velocity)+'%</td><td>'+perfPct(x.capability)+'%</td>';
+    h+='<td><b style="color:'+repCols[lvl]+'">'+(lvl?('L'+lvl):'—')+'</b></td></tr>';
+  });
+  h+='</table></div></div>';
+  if(!members.length)h+='<div style="text-align:center;color:#BBB;padding:24px 0">Chưa có thành viên</div>';
   el.innerHTML=h;
 }
 </script>
@@ -4245,6 +4416,7 @@ document.addEventListener('click',function(e){
       showAndFitTree();
     }
     if(pg==='dd')renderReminders();
+    if(pg==='perf')renderPerfPage();
     if(pg==='month')renderMonthPage();
     if(pg==='nhatky'){renderChartKH();renderCumReport();}
     if(pg==='admin')renderAdminPage();
@@ -4548,6 +4720,14 @@ document.addEventListener('click',function(e){
   // Kỳ đo lường (tab Mục tiêu - kết quả): Tuần / Tháng / Quý / 6 tháng / Năm
   t=e.target.closest('[data-period]');
   if(t){periodType=t.getAttribute('data-period');updateMonthDisplay();renderMonthPage();return;}
+  t=e.target.closest('[data-perfperiod]');
+  if(t){periodType=t.getAttribute('data-perfperiod');renderPerfPage();return;}
+  t=e.target.closest('[data-perfnav]');
+  if(t){var _pn=t.getAttribute('data-perfnav');
+    if(_pn==='prev')stepPeriod(-1);
+    else if(_pn==='next')stepPeriod(1);
+    else{periodRef=new Date();currentMonth={y:periodRef.getFullYear(),m:periodRef.getMonth()};}
+    renderPerfPage();return;}
 
 
   // Nút TẦNG (rail trái cây nhị phân) → làm sáng toàn bộ ID ở tầng đó (bấm lại = tắt)
