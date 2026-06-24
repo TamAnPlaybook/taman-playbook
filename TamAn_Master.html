@@ -1,4 +1,4 @@
-<!-- VERSION: v6.2-unified-workspace -->
+<!-- VERSION: v6.3-goals-actions-results -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -361,6 +361,20 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .cmpt tr.cmp-avg td.cmp-name{background:#FFF8E1}
 .cmp-pill{display:inline-block;min-width:34px;padding:2px 7px;border-radius:20px;font-weight:700;color:#fff;font-size:11.5px}
 .cmp-hint{font-size:11.5px;color:#888;margin:8px 2px 0;font-family:Arial;line-height:1.6}
+/* Bánh xe cuộc đời (v6.3) */
+.lw-card{background:white;border:1px solid #E8E8E8;border-radius:14px;padding:14px;margin-bottom:14px}
+.lw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;flex-wrap:wrap;gap:4px}
+.lw-title{font-size:16px;font-weight:800;color:#1A1A1A;font-family:Arial}
+.lw-date{font-size:12px;color:#999;font-weight:600}
+.lw-body{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.lw-chart{flex:1 1 300px;min-width:260px;text-align:center}
+.lw-bal{font-size:12.5px;font-weight:700;font-family:Arial;margin-top:4px}
+.lw-sliders{flex:1 1 260px;min-width:240px}
+.lw-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.lw-lbl{flex:1.2;min-width:0;font-size:12.5px;font-weight:600;color:#333;font-family:Arial;display:flex;align-items:center;gap:6px}
+.lw-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.lw-range{flex:1 1 80px;min-width:70px;accent-color:#C62828;height:22px}
+.lw-val{width:22px;text-align:center;font-weight:800;font-size:13px;color:#C62828;font-family:Arial;flex-shrink:0}
 
 /* ===== Đo lường mục tiêu (goal progress) — v5.3 ===== */
 .goal-row{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:8px}
@@ -493,7 +507,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
-    <button class="mtab" data-main="tp">&#128202; Theo dõi &amp; Hiệu suất</button>
+    <button class="mtab" data-main="tp">&#127919; Mục tiêu - Hành động - Kết quả</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
@@ -518,50 +532,55 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   </div>
   <div id="dd-branch-bar" style="display:none;background:#FFF8E1;border-bottom:1px solid #FFE082;padding:6px 12px;font-size:12.5px;align-items:center;gap:8px"></div>
 
-  <!-- THEO DÕI & HIỆU SUẤT (Phase 3 v6.2 — gộp "Theo dõi ngày" + "Hiệu suất"; 4 nhóm theo công việc) -->
+  <!-- MỤC TIÊU - HÀNH ĐỘNG - KẾT QUẢ (v6.3 — Goals → Actions → Results) -->
   <div class="page" id="page-tp">
     <div class="content">
       <div class="stabs">
-        <button class="stab on" data-sub="tp:today">&#128203; Hôm nay</button>
-        <button class="stab" data-sub="tp:track">&#9989; Theo dõi TV</button>
-        <button class="stab" data-sub="tp:perf">&#128202; Hiệu suất &amp; So sánh</button>
-        <button class="stab" data-sub="tp:goal">&#127919; Mục tiêu &amp; Phân tích</button>
+        <button class="stab on" data-sub="tp:goals">&#127919; Mục tiêu</button>
+        <button class="stab" data-sub="tp:actions">&#9889; Hành động</button>
+        <button class="stab" data-sub="tp:results">&#128202; Kết quả</button>
       </div>
 
-      <!-- 1) HÔM NAY: Action Center + Lịch quan trọng -->
-      <div class="spg on" id="tp-today">
-        <div id="action-center"></div>
-        <div class="tp-sec-title">&#128197; Lịch quan trọng</div>
-        <div id="remind-content"></div>
-      </div>
-
-      <!-- 2) THEO DÕI TV: Điểm danh + Kế hoạch + Kỹ năng + Tổng kết -->
-      <div class="spg" id="tp-track">
-        <div class="stabs">
-          <button class="stab on" data-sub="trk:diemdanh">&#9989; Điểm danh</button>
-          <button class="stab" data-sub="trk:kh">&#128101; Kế hoạch ngày</button>
-          <button class="stab" data-sub="trk:kn">&#11088; Kỹ năng</button>
-          <button class="stab" data-sub="trk:ov">&#128202; Tổng kết</button>
+      <!-- A. MỤC TIÊU (Goals): Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
+      <div class="spg on" id="tp-goals">
+        <div id="life-wheel-content"></div>
+        <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu</div>
+        <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
+          <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
+          <button class="db-today" id="btn-month-cur">Hiện tại</button>
+          <button class="db-btn" id="btn-month-next">&rsaquo;</button>
         </div>
-        <div class="spg on" id="trk-diemdanh"><div id="list-diemdanh"></div></div>
-        <div class="spg" id="trk-kh"><div id="list-kh"></div></div>
-        <div class="spg" id="trk-kn"><div id="list-kn"></div></div>
-        <div class="spg" id="trk-ov">
-          <div id="lk-activity"></div>
-          <div id="ov-table"></div>
-          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-            <button class="btn btn-g btn-sm" id="btn-copy-summary">&#128203; Copy báo cáo</button>
-            <button class="btn btn-d btn-sm" id="btn-copy-table">&#128202; Copy bảng</button>
-            <button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-send-huy">&#128228; Gửi lên Huy</button>
-          </div>
-        </div>
+        <div id="goals-content"></div>
       </div>
 
-      <!-- 3) HIỆU SUẤT & SO SÁNH: Tổng quan (dashboard) + So sánh TV -->
-      <div class="spg" id="tp-perf">
+      <!-- B. HÀNH ĐỘNG (Actions): việc hằng ngày để đạt mục tiêu -->
+      <div class="spg" id="tp-actions">
         <div class="stabs">
-          <button class="stab on" data-sub="hsx:overview">&#128200; Tổng quan</button>
-          <button class="stab" data-sub="hsx:compare">&#9878;&#65039; So sánh TV</button>
+          <button class="stab on" data-sub="act:today">&#128203; Hôm nay</button>
+          <button class="stab" data-sub="act:diemdanh">&#9989; Điểm danh</button>
+          <button class="stab" data-sub="act:kh">&#128101; Kế hoạch ngày</button>
+          <button class="stab" data-sub="act:kn">&#11088; Kỹ năng</button>
+        </div>
+        <div class="spg on" id="act-today">
+          <div id="action-center"></div>
+          <div class="tp-sec-title">&#128197; Lịch quan trọng</div>
+          <div id="remind-content"></div>
+        </div>
+        <div class="spg" id="act-diemdanh"><div id="list-diemdanh"></div></div>
+        <div class="spg" id="act-kh"><div id="list-kh"></div></div>
+        <div class="spg" id="act-kn"><div id="list-kn"></div></div>
+      </div>
+
+      <!-- C. KẾT QUẢ (Results): đo lường — thực đạt vs mục tiêu -->
+      <div class="spg" id="tp-results">
+        <div class="stabs">
+          <button class="stab on" data-sub="res:tongquan">&#128200; Tổng quan</button>
+          <button class="stab" data-sub="res:sosanh">&#9878;&#65039; So sánh TV</button>
+          <button class="stab" data-sub="res:kpi">&#127919; KPI thực đạt</button>
+          <button class="stab" data-sub="res:phantich">&#128202; Phân tích</button>
+          <button class="stab" data-sub="res:tongket">&#128203; Tổng kết</button>
         </div>
         <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
@@ -570,38 +589,35 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
           <button class="db-today" data-perfnav="cur">Hiện tại</button>
           <button class="db-btn" data-perfnav="next">&rsaquo;</button>
         </div>
-        <div class="spg on" id="hsx-overview"><div id="perf-content"></div></div>
-        <div class="spg" id="hsx-compare"><div id="compare-content"></div></div>
-      </div>
-
-      <!-- 4) MỤC TIÊU & PHÂN TÍCH: KPI + biểu đồ (7 ngày / cá nhân / cụm) -->
-      <div class="spg" id="tp-goal">
-        <div class="stabs">
-          <button class="stab on" data-sub="mpt:month">&#127919; Mục tiêu</button>
-          <button class="stab" data-sub="mpt:chart">&#128200; Biểu đồ 7 ngày</button>
-          <button class="stab" data-sub="mpt:person">&#128100; Cá nhân</button>
-          <button class="stab" data-sub="mpt:cum">&#127942; Tổng hợp cụm</button>
-        </div>
-        <div class="spg on" id="mpt-month">
-          <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-            <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
-            <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="month-display"></div>
-            <button class="db-today" id="btn-month-cur">Hiện tại</button>
-            <button class="db-btn" id="btn-month-next">&rsaquo;</button>
+        <div class="spg on" id="res-tongquan"><div id="perf-content"></div></div>
+        <div class="spg" id="res-sosanh"><div id="compare-content"></div></div>
+        <div class="spg" id="res-kpi"><div id="month-content"></div></div>
+        <div class="spg" id="res-phantich">
+          <div class="stabs">
+            <button class="stab on" data-sub="pt:chart">&#128200; Biểu đồ 7 ngày</button>
+            <button class="stab" data-sub="pt:person">&#128100; Cá nhân</button>
+            <button class="stab" data-sub="pt:cum">&#127942; Tổng hợp cụm</button>
           </div>
-          <div id="month-content"></div>
-        </div>
-        <div class="spg" id="mpt-chart"><div id="chart-kh"></div></div>
-        <div class="spg" id="mpt-person">
-          <div style="margin-bottom:12px">
-            <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
-            <input id="bc-filter" class="sel-filter" placeholder="&#128269; Gõ tìm tên...">
-            <select class="sel" id="bc-sel"><option value="">— Chọn tên —</option></select>
+          <div class="spg on" id="pt-chart"><div id="chart-kh"></div></div>
+          <div class="spg" id="pt-person">
+            <div style="margin-bottom:12px">
+              <div style="font-size:13px;font-weight:700;margin-bottom:8px">Chọn thành viên:</div>
+              <input id="bc-filter" class="sel-filter" placeholder="&#128269; Gõ tìm tên...">
+              <select class="sel" id="bc-sel"><option value="">— Chọn tên —</option></select>
+            </div>
+            <div id="bc-content"></div>
           </div>
-          <div id="bc-content"></div>
+          <div class="spg" id="pt-cum"><div id="cum-content"></div></div>
         </div>
-        <div class="spg" id="mpt-cum"><div id="cum-content"></div></div>
+        <div class="spg" id="res-tongket">
+          <div id="lk-activity"></div>
+          <div id="ov-table"></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <button class="btn btn-g btn-sm" id="btn-copy-summary">&#128203; Copy báo cáo</button>
+            <button class="btn btn-d btn-sm" id="btn-copy-table">&#128202; Copy bảng</button>
+            <button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-send-huy">&#128228; Gửi lên Huy</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -872,7 +888,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={tp:'today',trk:'diemdanh',hsx:'overview',mpt:'month',map:'mine'};
+var currentSubTab={tp:'goals',act:'today',res:'tongquan',pt:'chart',map:'mine'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -1099,6 +1115,11 @@ async function fetchAccounts(){
   var out=[];
   snap.forEach(function(d){var v=d.data()||{};out.push({uid:d.id,name:v.name||'',email:v.email||'',createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp});});
   return out;
+}
+async function deleteAccountDoc(uid){ // QTV xoá bản ghi accounts/{uid} (v6.3)
+  if(!fbReady)await loadFirebase();
+  var m=await import(FB_STORE);
+  await m.deleteDoc(m.doc(fbDb,'accounts',uid));
 }
 
 // ================================================================
@@ -1482,7 +1503,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -1932,6 +1953,7 @@ function renderAll(){
   renderChartKH();
   renderReminders();
   renderActionCenter();
+  renderLifeWheel();
   renderDdBranchBar();
 }
 function renderDdBranchBar(){
@@ -2181,29 +2203,93 @@ function renderActionCenter(){
   });
   el.innerHTML=h;
 }
-// Dispatch render theo sub-tab đang mở của tab gộp "Theo dõi & Hiệu suất" (v6.2)
+// Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
-  sub=sub||currentSubTab.tp||'today';
-  if(sub==='today'){renderActionCenter();renderReminders();}
-  else if(sub==='track')renderTrkSub(currentSubTab.trk||'diemdanh');
-  else if(sub==='perf')renderHsxSub(currentSubTab.hsx||'overview');
-  else if(sub==='goal')renderMptSub(currentSubTab.mpt||'month');
+  sub=sub||currentSubTab.tp||'goals';
+  if(sub==='goals'){renderLifeWheel();renderGoalsMeasure();}
+  else if(sub==='actions')renderActSub(currentSubTab.act||'today');
+  else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
-function renderTrkSub(s){
-  if(s==='kh')renderList('kh','list-kh');
+function renderActSub(s){ // B. Hành động
+  if(s==='diemdanh')renderAttendanceTable();
+  else if(s==='kh')renderList('kh','list-kh');
   else if(s==='kn')renderList('kn','list-kn');
-  else if(s==='ov')renderOverview();
-  else renderAttendanceTable();
+  else {renderActionCenter();renderReminders();} // today
 }
-function renderHsxSub(s){
-  if(s==='compare')renderCompare();
-  else renderPerfPage();
+function renderPerfPeriodBar(){
+  var pt=document.getElementById('perf-period-tabs');
+  if(pt)pt.innerHTML=PERIODS.map(function(p){return '<button class="stab'+(periodType===p.type?' on':'')+'" data-perfperiod="'+p.type+'">'+p.lbl+'</button>';}).join('');
+  var pd=document.getElementById('perf-period-display');if(pd)pd.textContent=periodLabel();
 }
-function renderMptSub(s){
-  if(s==='chart')renderChartKH();
+function renderResSub(s){ // C. Kết quả
+  renderPerfPeriodBar();
+  if(s==='sosanh')renderCompare();
+  else if(s==='kpi')renderKpiActuals();
+  else if(s==='phantich')renderPtSub(currentSubTab.pt||'chart');
+  else if(s==='tongket')renderOverview();
+  else renderPerfPage(); // tongquan
+}
+function renderPtSub(s){ // Phân tích (lồng trong Kết quả)
+  if(s==='person')populateBcSel();
   else if(s==='cum')renderCumReport();
-  else if(s==='person')populateBcSel();
-  else renderMonthPage();
+  else renderChartKH();
+}
+// ===== BÁNH XE CUỘC ĐỜI (Life Wheel) — tự chấm hằng ngày (v6.3) =====
+var WHEEL_CATS=[
+  {id:'health',lbl:'Sức khỏe',c:'#E53935'},
+  {id:'spirit',lbl:'Tinh thần',c:'#1565C0'},
+  {id:'growth',lbl:'Phát triển bản thân',c:'#F9A825'},
+  {id:'relation',lbl:'Mối quan hệ',c:'#6A1B9A'},
+  {id:'career',lbl:'Sự nghiệp',c:'#00897B'},
+  {id:'finance',lbl:'Tài chính',c:'#455A64'},
+  {id:'travel',lbl:'Du lịch & Giải trí',c:'#7CB342'},
+  {id:'contribution',lbl:'Đóng góp',c:'#EF6C00'}
+];
+function loadWheel(){try{var s=nmGet('wheel_v1');return s?JSON.parse(s):{};}catch(e){return {};}}
+function loadWheelCloud(){if(!fbDb||!fbUser)return;fsGet('wheel').then(function(d){if(d&&d.wheel){nmSet('wheel_v1',JSON.stringify(d.wheel));renderLifeWheel();}}).catch(function(){});}
+function dayWheel(){var o=loadWheel();return o[dk()]||{};}
+function setWheelScore(cat,v){var o=loadWheel();var d=o[dk()]||{};d[cat]=v;o[dk()]=d;nmSet('wheel_v1',JSON.stringify(o));}
+function wheelBalance(sc){
+  var vals=WHEEL_CATS.map(function(c){return sc[c.id]||0;});
+  var rated=vals.filter(function(v){return v>0;});
+  if(rated.length<WHEEL_CATS.length)return {t:'Chấm đủ 8 lĩnh vực để xem độ cân bằng',c:'#999',avg:0};
+  var avg=rated.reduce(function(a,b){return a+b;},0)/rated.length;
+  var mx=Math.max.apply(null,vals),mn=Math.min.apply(null,vals);
+  return (mx-mn<=3)?{t:'⚖️ Khá cân bằng — duy trì nhé!',c:'#1A7A5E',avg:avg}:{t:'⚠️ Đang lệch — chú ý lĩnh vực điểm thấp',c:'#E65100',avg:avg};
+}
+function wheelRadarSVG(sc){
+  var n=WHEEL_CATS.length,cx=170,cy=150,R=98,s='';
+  for(var g=2;g<=10;g+=2){s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*g/10)+'" fill="none" stroke="#EFEFEF" stroke-width="1"/>';}
+  var pts=[];
+  WHEEL_CATS.forEach(function(cat,i){
+    var ang=(i/n)*2*Math.PI-Math.PI/2;
+    var ex=cx+R*Math.cos(ang),ey=cy+R*Math.sin(ang);
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)+'" stroke="#E4E4E4" stroke-width="1"/>';
+    var v=sc[cat.id]||0,vr=R*v/10;
+    pts.push((cx+vr*Math.cos(ang)).toFixed(1)+','+(cy+vr*Math.sin(ang)).toFixed(1));
+    var lr=R+13,lx=cx+lr*Math.cos(ang),ly=cy+lr*Math.sin(ang);
+    var anc=Math.abs(Math.cos(ang))<0.35?'middle':(Math.cos(ang)>0?'start':'end');
+    s+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="9" fill="'+cat.c+'" text-anchor="'+anc+'" dominant-baseline="middle" font-weight="700">'+escHtml(cat.lbl)+'</text>';
+  });
+  s+='<polygon points="'+pts.join(' ')+'" fill="rgba(198,40,40,0.16)" stroke="#C62828" stroke-width="2" stroke-linejoin="round"/>';
+  WHEEL_CATS.forEach(function(cat,i){var ang=(i/n)*2*Math.PI-Math.PI/2,v=sc[cat.id]||0;if(v>0){var vr=R*v/10;s+='<circle cx="'+(cx+vr*Math.cos(ang)).toFixed(1)+'" cy="'+(cy+vr*Math.sin(ang)).toFixed(1)+'" r="2.5" fill="#C62828"/>';}});
+  return '<svg viewBox="0 0 340 300" width="100%" style="max-width:360px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+}
+function lwChartHtml(sc){var b=wheelBalance(sc);return wheelRadarSVG(sc)+'<div class="lw-bal" style="color:'+b.c+'">'+b.t+(b.avg?(' · TB '+b.avg.toFixed(1)+'/10'):'')+'</div>';}
+function renderLifeWheel(){
+  var el=document.getElementById('life-wheel-content');if(!el)return;
+  var sc=dayWheel();
+  var h='<div class="lw-card"><div class="lw-head"><div class="lw-title">🛞 Bánh xe cuộc đời</div><div class="lw-date">'+fmtDate(currentDay)+'</div></div>';
+  h+='<div style="font-size:11.5px;color:#888;margin-bottom:10px;font-family:Arial">Tự chấm mỗi lĩnh vực 1–10 cho hôm nay. Bánh xe càng tròn &amp; đầy = cuộc sống càng cân bằng.</div>';
+  h+='<div class="lw-body"><div class="lw-chart">'+lwChartHtml(sc)+'</div><div class="lw-sliders">';
+  WHEEL_CATS.forEach(function(cat){
+    var v=sc[cat.id]||0;
+    h+='<div class="lw-row"><div class="lw-lbl"><span class="lw-dot" style="background:'+cat.c+'"></span>'+cat.lbl+'</div>';
+    h+='<input type="range" min="0" max="10" step="1" value="'+v+'" data-wheel-cat="'+cat.id+'" class="lw-range">';
+    h+='<div class="lw-val">'+(v||'–')+'</div></div>';
+  });
+  h+='</div></div></div>';
+  el.innerHTML=h;
 }
 // ================================================================
 // SO SÁNH TV (v6.2) — xếp hạng TV cạnh nhau + hàng TB đội để đối chiếu
@@ -2295,10 +2381,17 @@ function goalsSectionHtml(){
   h+='</div>';
   return h;
 }
-function renderMonthPage(){
+// v6.3: tách Mục tiêu (đo lường — nhóm GOALS) khỏi KPI thực đạt (nhóm RESULTS)
+function renderMonthPage(){ renderGoalsMeasure(); renderKpiActuals(); }
+function renderGoalsMeasure(){
+  var el=document.getElementById('goals-content');if(!el)return;
+  updateMonthDisplay();
+  el.innerHTML=goalsSectionHtml();
+}
+function renderKpiActuals(){
   var el=document.getElementById('month-content');if(!el)return;
   updateMonthDisplay();
-  var h=goalsSectionHtml();
+  var h='';
   var totals={};
   MONTH_KPI.forEach(function(k){totals[k.id]=0;});
   members.forEach(function(m){
@@ -2920,6 +3013,32 @@ function branchCountInWindow(f1node,winStartAbs,winMonths){
   });
   return cnt;
 }
+function branchCloseToRank(f1node,needR){
+  // ID trong nhánh đang tiến gần needR nhất (đang ở needR-1, tiến >=40% lên needR) — để gợi ý nơi cần tập trung
+  var all=[f1node].concat(sponsorDescendants(f1node)),best=null;
+  all.forEach(function(n){
+    if(nodeRank(n.id)===needR-1){
+      var p=rankProgress(n.id);
+      if(p.next&&p.next.id===needR&&p.pct>=0.4&&(!best||p.pct>best.pct))best={node:n,pct:p.pct};
+    }
+  });
+  return best;
+}
+function rankAchievedHtml(){
+  // Danh sách ID đã đạt cấp 1★ trở lên, gom theo cấp (cao → thấp)
+  var byRank={};
+  treeNodes.forEach(function(n){var r=nodeRank(n.id);if(r>=2)(byRank[r]=byRank[r]||[]).push(n.name);});
+  var rs=Object.keys(byRank).map(Number).sort(function(a,b){return b-a;});
+  if(!rs.length)return '<div style="font-size:13px;color:#999;padding:6px 2px">Chưa có ID nào đạt cấp 1★ trở lên.</div>';
+  var h='';
+  rs.forEach(function(r){
+    var def=RANKS[r-1],names=byRank[r].slice().sort(function(a,b){return noAccent(a).localeCompare(noAccent(b));});
+    h+='<div style="margin-bottom:7px;padding:8px 10px;background:#fff;border:1px solid #EEE;border-left:4px solid '+def.color+';border-radius:9px">';
+    h+='<span style="display:inline-block;background:'+def.color+';color:#fff;font-weight:800;font-size:11px;border-radius:20px;padding:1px 9px;margin-right:6px">'+def.name+'</span>';
+    h+='<b>'+names.length+'</b> ID: <span style="font-size:12.5px;color:#444">'+names.map(escHtml).join(', ')+'</span></div>';
+  });
+  return h;
+}
 function rankAlertInfo(nid){
   // Cảnh báo tiềm năng THEO THỜI GIAN THỰC cho FS/1★; structure cho 2★+
   // Trả về null hoặc {pct, html}
@@ -2956,6 +3075,9 @@ function rankAlertInfo(nid){
     if(okBranches.length<needC){
       detail.push('c\u1ea7n th\u00eam <b>'+(needC-okBranches.length)+'</b> nh\u00e1nh c\u00f3 ID \u0111\u1ea1t <b>'+RANKS[needR-1].name+'</b>');
       if(okBranches.length)detail.push('\u0111\u00e3 \u0111\u1ea1t: '+okBranches.map(function(f){return escHtml(f.name);}).join(', '));
+      var closeL=[];
+      f1s.forEach(function(f){if(branchMaxRank(f)>=needR)return;var cc=branchCloseToRank(f,needR);if(cc)closeL.push('nh\u00e1nh <b>'+escHtml(f.name)+'</b> (ID <b>'+escHtml(cc.node.name)+'</b> '+Math.round(cc.pct*100)+'% l\u00ean '+RANKS[needR-1].name+')');});
+      if(closeL.length)detail.push('\ud83d\udd25 s\u1eafp \u0111\u1ea1t: '+closeL.join('; '));
     }
   }
   if(pct>=1||pct<0.5)return null;
@@ -2978,14 +3100,17 @@ function renderRankAlert(){
   items.sort(function(a,b){return b.pct-a.pct;}); // gần đạt nhất lên đầu
   if(badge)badge.textContent=items.length?String(items.length):'';
   if(!el)return;
+  var h='<div style="font-size:14px;font-weight:800;margin:2px 0 8px">🎯 Tiềm năng thăng tiến</div>';
   if(!items.length){
-    el.innerHTML='<div style="text-align:center;color:#BBB;font-size:14px;padding:40px 12px;border:1px dashed #E4E4E4;border-radius:12px">Chưa có ID nào đạt &ge;50% tiêu chí cấp bậc kế tiếp.</div>';
-    return;
+    h+='<div style="text-align:center;color:#BBB;font-size:13px;padding:18px 12px;border:1px dashed #E4E4E4;border-radius:12px;margin-bottom:8px">Chưa có ID nào đạt &ge;50% tiêu chí cấp kế tiếp.</div>';
+  }else{
+    h+='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#7A5C00;line-height:1.6">Có <b>'+items.length+'</b> ID đang tiến gần cấp kế tiếp. ⏳ = mốc thời gian · 🔥 = nhánh sắp đạt (nên tập trung hỗ trợ/đào tạo). Bấm 1 dòng để nhảy tới ID trên sơ đồ.</div>';
+    items.forEach(function(it){
+      h+='<div class="tt-card" data-tt-nid="'+it.nid+'" style="background:white;border:1px solid #E8E8E8;border-left:4px solid '+it.color+';border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.7;cursor:pointer">'+it.html+(it.deadlineHtml||'')+'</div>';
+    });
   }
-  var h='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#7A5C00;line-height:1.6">Có <b>'+items.length+'</b> ID đang tiến gần cấp bậc kế tiếp. ⏳ = mốc thời gian cần hoàn thành. Bấm vào một dòng để nhảy tới ID đó trên sơ đồ.</div>';
-  items.forEach(function(it){
-    h+='<div class="tt-card" data-tt-nid="'+it.nid+'" style="background:white;border:1px solid #E8E8E8;border-left:4px solid '+it.color+';border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;line-height:1.7;cursor:pointer">'+it.html+(it.deadlineHtml||'')+'</div>';
-  });
+  h+='<div style="font-size:14px;font-weight:800;margin:16px 0 8px">🏆 Đã đạt cấp bậc (1★ trở lên)</div>';
+  h+=rankAchievedHtml();
   el.innerHTML=h;
 }
 // ================================================================
@@ -4201,7 +4326,7 @@ function renderAdminPage(){
         var adminEmailsLc=admins.emails.map(function(x){return String(x).toLowerCase();});
         var blockedNow=(reg&&reg.blockedEmails)||[];
         h+='<div class="adm-box"><div class="adm-title">👤 Tài khoản đã đăng ký</div>';
-        h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây. Bấm <b>👁️ Xem</b> để xem nội dung bên trong (sơ đồ + thành viên), <b>Tắt quyền</b> để chặn đăng nhập, <b>Mở quyền</b> để cho phép lại.</div>';
+        h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây. Bấm <b>👁️ Xem</b> để xem nội dung bên trong (sơ đồ + thành viên), <b>🔒 Khoá</b> để chặn đăng nhập, <b>🔓 Mở khoá</b> để cho phép lại, <b>🗑️ Xoá</b> để xoá hẳn khỏi danh sách (có xác nhận).</div>';
         if(accounts&&accounts.length){
           accounts.sort(function(a,b){return String(a.createdAt||a.updatedAt||'9999').localeCompare(String(b.createdAt||b.updatedAt||'9999'));}); // theo thời gian tạo: cũ → mới
           accounts.forEach(function(ac,idx){
@@ -4226,8 +4351,11 @@ function renderAdminPage(){
             h+='<div style="display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end">';
             h+='<button class="btn btn-d btn-sm" data-view-uid="'+escHtml(ac.uid)+'" data-view-name="'+escHtml(ac.name||ac.email||'')+'">👁️ Xem</button>';
             if(isAdm){ h+='<span style="font-size:12px;color:#1A7A5E;font-weight:700;align-self:center">Quản trị</span>'; }
-            else if(isBlk){ h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">Mở quyền</button>'; }
-            else{ h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(em)+'">Tắt quyền</button>'; }
+            else{
+              if(isBlk){ h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">🔓 Mở khoá</button>'; }
+              else{ h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(em)+'">🔒 Khoá</button>'; }
+              h+='<button class="btn btn-sm" style="background:#7A1212;color:#fff" data-del-acct-uid="'+escHtml(ac.uid)+'" data-del-acct-email="'+escHtml(em)+'" data-del-acct-name="'+escHtml(ac.name||ac.email||'')+'">🗑️ Xoá</button>';
+            }
             h+='</div></div>';
           });
         }else{
@@ -4754,7 +4882,7 @@ document.addEventListener('click',function(e){
       if(currentTreeMode==='binary')renderTree();else renderStarChart();
       showAndFitTree();
     }
-    if(pg==='tp')renderTpSub(currentSubTab.tp||'today');
+    if(pg==='tp')renderTpSub(currentSubTab.tp||'goals');
     if(pg==='admin')renderAdminPage();
     if(pg==='map')renderMapPage();
     return;
@@ -4776,9 +4904,9 @@ document.addEventListener('click',function(e){
       pgEl.classList.add('on');
     }
     if(grp==='tp')renderTpSub(sub);
-    else if(grp==='trk')renderTrkSub(sub);
-    else if(grp==='hsx')renderHsxSub(sub);
-    else if(grp==='mpt')renderMptSub(sub);
+    else if(grp==='act')renderActSub(sub);
+    else if(grp==='res')renderResSub(sub);
+    else if(grp==='pt')renderPtSub(sub);
     else if(grp==='map')ensureMapSub(sub);
     return;
   }
@@ -5013,6 +5141,7 @@ document.addEventListener('click',function(e){
   if(t){
     var be2=String(t.getAttribute('data-block-email')||'').toLowerCase();
     if(!be2){return;}
+    if(!confirm('Khoá đăng nhập tài khoản này?\nHọ sẽ KHÔNG vào được app cho tới khi bạn mở khoá.'))return;
     fsGetGlobal('admins').then(function(ad){
       var adminEmails=((ad&&ad.emails)||[]).map(function(x){return String(x).toLowerCase();});
       if(adminEmails.indexOf(be2)>=0){showToast('Không thể tắt quyền tài khoản quản trị viên');return;}
@@ -5036,6 +5165,26 @@ document.addEventListener('click',function(e){
       return fsSetGlobal('registration',{blockedEmails:blocked}).then(function(){
         showToast('✓ Đã mở khoá: '+ue);renderAdminPage();
       });
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // QTV chính: XOÁ 1 tài khoản đã đăng ký (xoá bản ghi accounts + khoá email; có xác nhận)
+  t=e.target.closest('[data-del-acct-uid]');
+  if(t){
+    var duid=t.getAttribute('data-del-acct-uid');
+    var dem=String(t.getAttribute('data-del-acct-email')||'').toLowerCase();
+    var dnm=t.getAttribute('data-del-acct-name')||dem||'(không tên)';
+    if(!confirm('XOÁ tài khoản "'+dnm+'" khỏi danh sách đã đăng ký?\n\n• Xoá bản ghi tài khoản (accounts) + KHOÁ đăng nhập email này.\n• KHÔNG hoàn tác được.\n• Dữ liệu cây/thành viên của họ trên cloud KHÔNG bị xoá ở đây (cần Firebase Console nếu muốn xoá hẳn).'))return;
+    fsGetGlobal('admins').then(function(ad){
+      var adminEmails=((ad&&ad.emails)||[]).map(function(x){return String(x).toLowerCase();});
+      if(dem&&adminEmails.indexOf(dem)>=0){showToast('Không thể xoá tài khoản quản trị viên');return;}
+      return deleteAccountDoc(duid).then(function(){
+        return fsGetGlobal('registration').then(function(reg){
+          var blocked=(reg&&reg.blockedEmails)||[];
+          if(dem&&!blocked.some(function(x){return String(x).toLowerCase()===dem;}))blocked.push(dem);
+          return fsSetGlobal('registration',{blockedEmails:blocked});
+        });
+      }).then(function(){showToast('✓ Đã xoá tài khoản');renderAdminPage();});
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
@@ -5096,13 +5245,13 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-period]');
   if(t){periodType=t.getAttribute('data-period');updateMonthDisplay();renderMonthPage();return;}
   t=e.target.closest('[data-perfperiod]');
-  if(t){periodType=t.getAttribute('data-perfperiod');renderHsxSub(currentSubTab.hsx||'overview');return;}
+  if(t){periodType=t.getAttribute('data-perfperiod');renderResSub(currentSubTab.res||'tongquan');return;}
   t=e.target.closest('[data-perfnav]');
   if(t){var _pn=t.getAttribute('data-perfnav');
     if(_pn==='prev')stepPeriod(-1);
     else if(_pn==='next')stepPeriod(1);
     else{periodRef=new Date();currentMonth={y:periodRef.getFullYear(),m:periodRef.getMonth()};}
-    renderHsxSub(currentSubTab.hsx||'overview');return;}
+    renderResSub(currentSubTab.res||'tongquan');return;}
 
 
   // Nút TẦNG (rail trái cây nhị phân) → làm sáng toàn bộ ID ở tầng đó (bấm lại = tắt)
@@ -5511,6 +5660,18 @@ function bindStatic(){
     if(e.key!=='Enter')return;
     var inp=e.target&&e.target.closest&&e.target.closest('[data-ac-input]');
     if(inp){addAct(inp.getAttribute('data-ac-input'),inp.value);}
+  });
+  // v6.3 — Bánh xe cuộc đời: kéo thanh để chấm điểm (cập nhật biểu đồ realtime)
+  document.addEventListener('input',function(e){
+    var r=e.target&&e.target.closest&&e.target.closest('[data-wheel-cat]');
+    if(!r)return;
+    setWheelScore(r.getAttribute('data-wheel-cat'),parseInt(r.value)||0);
+    var val=r.parentElement.querySelector('.lw-val');if(val)val.textContent=r.value;
+    var chart=document.querySelector('#life-wheel-content .lw-chart');if(chart)chart.innerHTML=lwChartHtml(dayWheel());
+  });
+  document.addEventListener('change',function(e){
+    var r=e.target&&e.target.closest&&e.target.closest('[data-wheel-cat]');
+    if(r&&fbDb&&fbUser)fsSet('wheel',{wheel:loadWheel()}).catch(function(){});
   });
 
 
