@@ -1,4 +1,4 @@
-<!-- VERSION: v6.5-topdown-goals-wheelcompare-banner-announce-celebrate -->
+<!-- VERSION: v6.6-subtree-root-leftright-count -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -3860,9 +3860,24 @@ function getCustomLks(){
 }
 function setCustomLks(arr){nmSet('custom_lks',JSON.stringify(arr));}
 function renderBranchStats(){
-  var rootCnt=treeNodes.filter(function(x){return !x.parentId;}).length;
+  var _allRoots=treeNodes.filter(function(x){return !x.parentId;});
+  var rootCnt=_allRoots.length;
   var tt=document.getElementById('tree-total');
-  if(tt)tt.textContent='T\u1ed5ng: '+Math.max(0,treeNodes.length-rootCnt)+' ID (kh\u00f4ng g\u1ed1c)';
+  if(tt){
+    // G\u1ed1c \u0110ANG HI\u1ec2N TH\u1eca: focus 1 ID \u2192 ID \u0111\u00f3 l\u00e0 g\u1ed1c t\u1ea1m; n\u1ebfu kh\u00f4ng focus & ch\u1ec9 1 g\u1ed1c \u2192 g\u1ed1c th\u1eadt.
+    // Hi\u1ec7n th\u00eam s\u1ed1 ID nh\u00e1nh Tr\u00e1i / Ph\u1ea3i c\u1ee7a g\u1ed1c \u0111ang hi\u1ec3n th\u1ecb (c\u1eadp nh\u1eadt theo th\u1eddi gian th\u1ef1c m\u1ed7i l\u1ea7n render c\u00e2y).
+    var _dispRoot=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):(rootCnt===1?_allRoots[0]:null);
+    if(_dispRoot&&currentTreeMode==='binary'){
+      var _cL=placementChildren(_dispRoot.id).find(function(x){return x.side==='L';});
+      var _cR=placementChildren(_dispRoot.id).find(function(x){return x.side==='R';});
+      var _nL=_cL?1+subtreeCount(_cL.id):0;
+      var _nR=_cR?1+subtreeCount(_cR.id):0;
+      var _lead=focusNodeId?('Nh\u00e1nh '+escHtml(_dispRoot.name)):'T\u1ed5ng';
+      tt.innerHTML=_lead+': <b>'+(_nL+_nR)+'</b> ID (kh\u00f4ng g\u1ed1c) \u00b7 \u2b05\ufe0f Tr\u00e1i <b style="color:#1A7A5E">'+_nL+'</b> \u00b7 \u27a1\ufe0f Ph\u1ea3i <b style="color:#1565C0">'+_nR+'</b>';
+    }else{
+      tt.textContent='T\u1ed5ng: '+Math.max(0,treeNodes.length-rootCnt)+' ID (kh\u00f4ng g\u1ed1c)';
+    }
+  }
   var el=document.getElementById('branch-stats');if(!el)return;
   if(!treeNodes.length){el.innerHTML='';renderFocusBar();return;}
   var heads=teamHeads();
@@ -4467,6 +4482,10 @@ function buildNodeView(n){
   }
   if(n.note)h+='<div class="nmod-row" style="flex-direction:column;align-items:flex-start"><div class="nmod-lbl">Ghi ch\u00fa</div><div style="font-size:13px;color:#666;white-space:pre-wrap">'+escHtml(n.note)+'</div></div>';
   h+='</div>';
+  // \uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y \u2014 l\u1EA5y ID n\u00E0y l\u00E0m G\u1ED0C T\u1EA0M (focus), \u0111\u1EE7 t\u00EDnh n\u0103ng nh\u01B0 g\u1ED1c th\u1EADt (zoom/pan/t\u00ECm/\u0111\u1ED5i nh\u00E1nh...). Hi\u1EC7n \u1EDF c\u1EA3 ch\u1EBF \u0111\u1ED9 xem (view-only).
+  if(placementChildren(n.id).length||sponsorKids(n).length){
+    h+='<div style="margin-top:12px"><button class="btn btn-d btn-sm nmod-focus-sub" data-focus-sub="'+n.id+'" style="width:100%">\uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y</button></div>';
+  }
   if(!viewOnlyMode){
   h+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
   h+='<button class="btn btn-g btn-sm nmod-edit-btn" data-nid="'+n.id+'">\u270F\uFE0F S\u1eeda</button>';
@@ -6186,6 +6205,10 @@ document.addEventListener('click',function(e){
   t=e.target.closest('.nmod-side-btn');
   if(t){moveNodeSide(t.getAttribute('data-nid'),t.getAttribute('data-newside'));return;}
 
+  // Xem cả cây từ ID này: lấy ID làm gốc tạm (focus) rồi đóng popup
+  t=e.target.closest('[data-focus-sub]');
+  if(t){focusSubtree(t.getAttribute('data-focus-sub'));return;}
+
   // Copy Firestore Rules
   if(e.target.id==='btn-copy-rules'){copyText(FIRESTORE_RULES);return;}
 
@@ -6671,6 +6694,17 @@ function renderCurrentTree(){
   // render lại đúng tab đang xem (nhị phân / mặt trời) rồi fit khung
   if(currentTreeMode==='binary'){renderTree();setTimeout(treeFit,50);}
   else{renderStarChart();setTimeout(starFit,50);}
+}
+function focusSubtree(nid){
+  // Lấy ID này làm GỐC TẠM của sơ đồ: layoutTree/computeBinaryHighlights/renderStarChart đều
+  // coi focusNodeId là gốc → đủ tính năng như gốc thật (zoom, pan, tìm, đổi nhánh, rail Tầng/F...).
+  // Quay lại cây đầy đủ bằng nút "✕ Xem toàn bộ" trên thanh focus.
+  var node=treeNodes.find(function(x){return x.id===nid;});if(!node)return;
+  focusNodeId=nid;
+  closeNodeModal();
+  renderCurrentTree();
+  flashNode(nid);
+  showToast('🌳 Đang xem cả cây từ: '+node.name);
 }
 function treeViewActive(){
   return document.getElementById('fs-overlay').classList.contains('open')
