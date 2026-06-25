@@ -1,4 +1,4 @@
-<!-- VERSION: v6.4-newmember-daily-merge-multiclub-admin -->
+<!-- VERSION: v6.5-topdown-goals-wheelcompare-banner-announce-celebrate -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -450,6 +450,81 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .cd-acts{display:flex;gap:5px;flex-shrink:0}
 .cd-sub{font-size:11.5px;color:#888;margin-top:2px;line-height:1.45}
 @media(max-width:600px){#global-map{height:56vh}#myclub-map{height:260px}.map-inp{font-size:16px}}
+
+/* ===== v6.5 — Banner chạy chữ (động lực / thông báo / chúc mừng) ===== */
+#ticker-bar{position:sticky;top:52px;z-index:250;height:34px;overflow:hidden;display:flex;align-items:center;
+  background:linear-gradient(90deg,#15110A,#241B0E);color:#F4E4BC;border-bottom:1px solid #3A2E16}
+#ticker-bar.tk-announce{background:linear-gradient(90deg,#0D3B66,#155FA0);color:#EAF4FF;border-bottom-color:#0A2E52}
+#ticker-bar.tk-celebrate{background:linear-gradient(90deg,#7A1F8F,#C0287A,#E0531F);background-size:200% 100%;color:#FFF;border-bottom-color:#5A1468;animation:tkglow 6s linear infinite}
+@keyframes tkglow{0%{background-position:0 0}100%{background-position:200% 0}}
+.tk-ico{flex-shrink:0;padding:0 8px 0 10px;font-size:15px;line-height:1}
+.tk-vp{flex:1;overflow:hidden;position:relative;height:100%}
+.tk-track{position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;white-space:nowrap;
+  font-family:Arial;font-size:13px;font-weight:600;will-change:transform;animation:tkscroll linear infinite}
+#ticker-bar:hover .tk-track{animation-play-state:paused}
+.tk-track span{padding:0 4px}
+.tk-sep{color:#C8A84B;font-weight:800;padding:0 14px}
+.tk-announce .tk-sep{color:#9FD0FF}
+.tk-celebrate .tk-sep{color:#FFE08A}
+@keyframes tkscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:600px){#ticker-bar{top:52px;height:32px}.tk-track{font-size:12.5px}}
+
+/* ===== v6.5 — Pháo hoa / hiệu ứng chúc mừng ===== */
+#fx-canvas{position:fixed;inset:0;z-index:6000;pointer-events:none}
+#fx-flash{position:fixed;inset:0;z-index:5999;pointer-events:none;background:#fff;opacity:0;animation:fxflash 1.1s ease-out forwards}
+@keyframes fxflash{0%{opacity:.55}100%{opacity:0}}
+.celebrate-toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:6001;max-width:90%;
+  background:linear-gradient(135deg,#7A1F8F,#C0287A,#E0531F);color:#fff;font-family:Arial;font-weight:800;
+  font-size:15px;text-align:center;padding:13px 22px;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.35);
+  border:2px solid rgba(255,255,255,.35);animation:celebpop .5s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes celebpop{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+
+/* ===== v6.5 — Kế hoạch năm (Top-down Goals) ===== */
+.ann-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ann-year-pill{font-size:12px;font-weight:800;color:#7A5A0C;background:#FFF3D6;border:1px solid #F0D89A;border-radius:20px;padding:4px 12px}
+.ann-dash{background:linear-gradient(135deg,#1A1A1A,#2A2A2A);border-radius:14px;padding:16px;margin-bottom:12px;color:#fff}
+.ann-dash-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ann-dash-title{font-size:14px;font-weight:800;color:#C8A84B;font-family:Arial}
+.ann-dash-pct{font-size:30px;font-weight:800;line-height:1;color:#fff}
+.ann-dash-track{height:12px;background:rgba(255,255,255,.14);border-radius:8px;overflow:hidden}
+.ann-dash-fill{height:100%;background:linear-gradient(90deg,#C8A84B,#E8C969);border-radius:8px;min-width:4px;transition:width .4s}
+.ann-dash-sub{font-size:11.5px;color:rgba(255,255,255,.6);margin-top:7px;font-family:Arial;line-height:1.5}
+.ann-item{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:10px}
+.ann-it-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ann-it-name{flex:1;font-size:14px;font-weight:800;color:#1A1A1A;font-family:Arial}
+.ann-it-annual{display:flex;align-items:center;gap:8px;background:#FAFAFA;border:1px solid #EEE;border-radius:9px;padding:8px;margin-bottom:9px;flex-wrap:wrap}
+.ann-it-annual .lbl{font-size:12px;font-weight:700;color:#7A5A0C}
+.ann-inp{border:1.5px solid #E0E0E0;border-radius:8px;padding:7px 9px;font-size:14px;font-family:Arial;outline:none;width:100%}
+.ann-inp:focus{border-color:#C8A84B}
+.ann-inp-sm{width:88px;flex:none;text-align:right}
+.ann-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.ann-cell{border:1px solid #EEE;border-radius:9px;padding:7px 6px;background:#FCFCFC;text-align:center}
+.ann-cell-lbl{font-size:10.5px;font-weight:800;color:#666;margin-bottom:5px;font-family:Arial}
+.ann-cell .mini{font-size:10px;color:#999;margin-bottom:2px;font-family:Arial}
+.ann-cell input{width:100%;border:1px solid #E2E2E2;border-radius:6px;padding:4px 3px;font-size:12px;text-align:center;font-family:Arial;outline:none}
+.ann-cell input:focus{border-color:#C8A84B}
+.ann-cell input.ann-auto{color:#999;background:#F7F7F7}
+.ann-cell-pct{font-size:12px;font-weight:800;margin-top:5px}
+.ann-cell-track{height:5px;background:#EFEFEF;border-radius:4px;overflow:hidden;margin-top:4px}
+.ann-cell-fill{height:100%;border-radius:4px;min-width:2px}
+.ann-presets{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 10px}
+.ann-preset{font-size:11.5px;font-weight:700;color:#1A7A5E;background:#E8F5F0;border:1px solid #C8E6D9;border-radius:20px;padding:5px 11px;cursor:pointer}
+.ann-preset:active{background:#D6EEE6}
+@media(max-width:600px){.ann-grid{grid-template-columns:repeat(5,1fr);gap:3px}.ann-cell{padding:5px 2px}.ann-cell-lbl{font-size:9px}.ann-cell input{font-size:11px}}
+
+/* ===== v6.5 — So sánh Bánh xe cuộc đời ===== */
+.wc-card{background:white;border:1px solid #E8E8E8;border-radius:14px;padding:14px;margin-bottom:14px}
+.wc-pick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.wc-pick .wc-leg{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;font-family:Arial}
+.wc-swatch{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+.wc-sel{border:1.5px solid #E0E0E0;border-radius:8px;padding:6px 8px;font-size:13px;font-family:Arial;outline:none;background:#fff;flex:1;min-width:120px}
+.wc-sel:focus{border-color:#C8A84B}
+.wc-deltas{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.wc-drow{display:flex;align-items:center;gap:8px;font-family:Arial}
+.wc-dname{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#333;display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-dval{font-size:12px;font-weight:700;color:#666;white-space:nowrap}
+.wc-dpct{width:74px;text-align:right;font-size:12.5px;font-weight:800;white-space:nowrap}
+.wc-summary{font-size:12px;font-weight:700;font-family:Arial;margin-top:10px;padding-top:9px;border-top:1px solid #F0F0F0;line-height:1.7}
 </style>
 </head>
 <body>
@@ -543,6 +618,11 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <div class="tb-date" id="tb-date"></div>
     <button class="tb-out" id="btn-logout">Thoát</button>
   </div>
+  <!-- v6.5 — Banner chạy chữ: động lực / thông báo QTV / chúc mừng đội nhóm -->
+  <div id="ticker-bar" style="display:none">
+    <div class="tk-ico" id="tk-ico">&#10024;</div>
+    <div class="tk-vp"><div class="tk-track" id="tk-track"></div></div>
+  </div>
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="tp">&#127919; Mục tiêu - Hành động - Kết quả</button>
@@ -581,8 +661,12 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 
       <!-- A. MỤC TIÊU (Goals): Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
       <div class="spg on" id="tp-goals">
+        <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)</div>
+        <div id="annplan-content"></div>
+        <div class="tp-sec-title">&#128722; Bánh xe cuộc đời</div>
         <div id="life-wheel-content"></div>
-        <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu</div>
+        <div id="wheel-compare-content"></div>
+        <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu (theo kỳ)</div>
         <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
           <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
@@ -1743,7 +1827,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -1756,6 +1840,7 @@ function enterAppFirebase(user){
   document.getElementById('app').classList.add('hide-topbars');
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
   showAndFitTree();
+  startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -1785,6 +1870,7 @@ function loadBranchFeature(){
 function doLogout(){
   fbSignOut().then(function(){
     NS='';members=[];treeNodes=[];
+    stopBanner(); // v6.5 — dừng banner khi thoát
     document.getElementById('setup-screen').style.display='flex';
     document.getElementById('app').style.display='none';
   }).catch(function(){});
@@ -2272,7 +2358,9 @@ function renderAll(){
   renderChartKH();
   renderReminders();
   renderActionCenter();
+  renderAnnPlan();
   renderLifeWheel();
+  renderWheelCompare();
   renderDdBranchBar();
 }
 function renderDdBranchBar(){
@@ -2525,7 +2613,7 @@ function renderActionCenter(){
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'goals';
-  if(sub==='goals'){renderLifeWheel();renderGoalsMeasure();}
+  if(sub==='goals'){renderAnnPlan();renderLifeWheel();renderWheelCompare();renderGoalsMeasure();}
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
@@ -2608,6 +2696,287 @@ function renderLifeWheel(){
   });
   h+='</div></div></div>';
   el.innerHTML=h;
+}
+// ===== v6.5 — SO SÁNH BÁNH XE CUỘC ĐỜI (2 mốc thời gian) =====
+var wheelCmpA=null,wheelCmpB=null; // khoá dk() của 2 ngày được chọn
+function wheelAvg(sc){var s=0,n=0;WHEEL_CATS.forEach(function(c){var v=sc[c.id]||0;if(v>0){s+=v;n++;}});return n?s/n:0;}
+function wheelDayKeys(){ // các NGÀY đã chấm (có ít nhất 1 lĩnh vực >0), sắp tăng dần theo thời gian
+  var o=loadWheel(),arr=[];
+  Object.keys(o).forEach(function(k){
+    var d=o[k]||{},any=WHEEL_CATS.some(function(c){return (d[c.id]||0)>0;});
+    if(any){
+      var p=String(k).split('-');
+      var dt=new Date(parseInt(p[0],10),(parseInt(p[1],10)||1)-1,parseInt(p[2],10)||1);
+      arr.push({key:k,t:dt.getTime(),lbl:(parseInt(p[2],10)||1)+'/'+(parseInt(p[1],10)||1)+'/'+p[0]});
+    }
+  });
+  arr.sort(function(a,b){return a.t-b.t;});
+  return arr;
+}
+function wheelDualSVG(scA,scB){
+  var n=WHEEL_CATS.length,cx=170,cy=150,R=98,s='';
+  for(var g=2;g<=10;g+=2){s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*g/10)+'" fill="none" stroke="#EFEFEF" stroke-width="1"/>';}
+  var ptsA=[],ptsB=[];
+  WHEEL_CATS.forEach(function(cat,i){
+    var ang=(i/n)*2*Math.PI-Math.PI/2;
+    var ex=cx+R*Math.cos(ang),ey=cy+R*Math.sin(ang);
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)+'" stroke="#E4E4E4" stroke-width="1"/>';
+    var va=scA[cat.id]||0,vb=scB[cat.id]||0;
+    ptsA.push((cx+R*va/10*Math.cos(ang)).toFixed(1)+','+(cy+R*va/10*Math.sin(ang)).toFixed(1));
+    ptsB.push((cx+R*vb/10*Math.cos(ang)).toFixed(1)+','+(cy+R*vb/10*Math.sin(ang)).toFixed(1));
+    var lr=R+13,lx=cx+lr*Math.cos(ang),ly=cy+lr*Math.sin(ang);
+    var anc=Math.abs(Math.cos(ang))<0.35?'middle':(Math.cos(ang)>0?'start':'end');
+    s+='<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" font-size="9" fill="'+cat.c+'" text-anchor="'+anc+'" dominant-baseline="middle" font-weight="700">'+escHtml(cat.lbl)+'</text>';
+  });
+  s+='<polygon points="'+ptsA.join(' ')+'" fill="rgba(21,101,192,0.13)" stroke="#1565C0" stroke-width="2" stroke-linejoin="round"/>';
+  s+='<polygon points="'+ptsB.join(' ')+'" fill="rgba(200,168,75,0.18)" stroke="#C8A84B" stroke-width="2.3" stroke-linejoin="round"/>';
+  return '<svg viewBox="0 0 340 300" width="100%" style="max-width:360px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
+}
+function renderWheelCompare(){
+  var el=document.getElementById('wheel-compare-content');if(!el)return;
+  var days=wheelDayKeys();
+  if(days.length<2){
+    el.innerHTML='<div class="wc-card"><div class="lw-title" style="margin-bottom:6px">📊 So sánh tiến bộ</div>'+
+      '<div style="font-size:12.5px;color:#999;font-family:Arial;line-height:1.6">Cần chấm Bánh xe ít nhất <b>2 ngày khác nhau</b> để so sánh tiến bộ theo thời gian. Hãy chấm điểm mỗi ngày để theo dõi sự thay đổi.</div></div>';
+    return;
+  }
+  var keys=days.map(function(d){return d.key;});
+  if(!wheelCmpA||keys.indexOf(wheelCmpA)<0)wheelCmpA=days[0].key;                 // mặc định: ngày sớm nhất
+  if(!wheelCmpB||keys.indexOf(wheelCmpB)<0)wheelCmpB=days[days.length-1].key;     // mặc định: ngày mới nhất
+  var o=loadWheel(),scA=o[wheelCmpA]||{},scB=o[wheelCmpB]||{};
+  function opts(sel){return days.map(function(d){return '<option value="'+d.key+'"'+(d.key===sel?' selected':'')+'>'+d.lbl+'</option>';}).join('');}
+  var h='<div class="wc-card"><div class="lw-title" style="margin-bottom:10px">📊 So sánh tiến bộ theo thời gian</div>';
+  h+='<div class="wc-pick"><span class="wc-leg"><span class="wc-swatch" style="background:#1565C0"></span>Mốc trước</span>';
+  h+='<select class="wc-sel" data-wheelcmp="a">'+opts(wheelCmpA)+'</select></div>';
+  h+='<div class="wc-pick"><span class="wc-leg"><span class="wc-swatch" style="background:#C8A84B"></span>Mốc sau</span>';
+  h+='<select class="wc-sel" data-wheelcmp="b">'+opts(wheelCmpB)+'</select></div>';
+  h+='<div class="lw-chart">'+wheelDualSVG(scA,scB)+'</div>';
+  var up=0,down=0,same=0;
+  h+='<div class="wc-deltas">';
+  WHEEL_CATS.forEach(function(cat){
+    var a=scA[cat.id]||0,b=scB[cat.id]||0,diff=b-a,pct;
+    if(a>0)pct=Math.round(diff/a*100); else pct=(b>0?null:0); // a=0 & b>0 → "Mới"
+    var col,ico;
+    if(diff>0){col='#1A7A5E';ico='▲';up++;}
+    else if(diff<0){col='#C62828';ico='▼';down++;}
+    else{col='#999';ico='▬';same++;}
+    var pctTxt=(diff===0)?'—':(pct===null?'Mới':((pct>0?'+':'')+pct+'%'));
+    h+='<div class="wc-drow"><div class="wc-dname"><span class="lw-dot" style="background:'+cat.c+'"></span>'+escHtml(cat.lbl)+'</div>';
+    h+='<div class="wc-dval">'+a+' → '+b+'</div>';
+    h+='<div class="wc-dpct" style="color:'+col+'">'+ico+' '+pctTxt+'</div></div>';
+  });
+  h+='</div>';
+  var avgA=wheelAvg(scA),avgB=wheelAvg(scB),da=avgB-avgA;
+  var sumCol=da>0?'#1A7A5E':da<0?'#C62828':'#666';
+  h+='<div class="wc-summary">TB tổng: <b style="color:#1565C0">'+avgA.toFixed(1)+'</b> → <b style="color:#C8A84B">'+avgB.toFixed(1)+'</b> '+
+     '<span style="color:'+sumCol+'">('+(da>0?'+':'')+da.toFixed(1)+')</span><br>'+
+     '<span style="color:#1A7A5E">▲ '+up+' tiến bộ</span> · <span style="color:#C62828">▼ '+down+' giảm</span> · <span style="color:#999">▬ '+same+' giữ nguyên</span></div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ===== v6.5 — KẾ HOẠCH NĂM (Top-down: mục tiêu 12 tháng → tự chia 6th/3th/1th/tuần) =====
+var ANN_RATIO={week:1/52,month:1/12,quarter:1/4,half:1/2,year:1};
+var ANN_PERIODS=[{k:'week',lbl:'1 Tuần'},{k:'month',lbl:'1 Tháng'},{k:'quarter',lbl:'3 Tháng'},{k:'half',lbl:'6 Tháng'},{k:'year',lbl:'12 Tháng'}];
+var ANN_PRESETS=[
+  {name:'Doanh số',unit:'đ'},{name:'Thu nhập',unit:'đ'},{name:'Quy mô đội nhóm',unit:'người'},
+  {name:'Khách hàng',unit:'KH'},{name:'Chứng nhận kỹ năng',unit:'cái'},{name:'Mục tiêu cá nhân',unit:''}
+];
+function loadAnn(){try{var s=nmGet('anngoals_v1');var o=s?JSON.parse(s):null;if(!o||typeof o!=='object')o={};if(!Array.isArray(o.items))o.items=[];if(!o.year)o.year=new Date().getFullYear();return o;}catch(e){return {year:new Date().getFullYear(),items:[]};}}
+function saveAnn(o){nmSet('anngoals_v1',JSON.stringify(o));if(fbDb&&fbUser)fsSet('anngoals',{ann:o}).catch(function(){});}
+function loadAnnCloud(){if(!fbDb||!fbUser)return;fsGet('anngoals').then(function(d){if(d&&d.ann){nmSet('anngoals_v1',JSON.stringify(d.ann));renderAnnPlan();}}).catch(function(){});}
+function annNum(v){if(v===undefined||v===null||v==='')return 0;var n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n;}
+function annTargetOf(it,pk){
+  if(pk==='year')return annNum(it.annual);
+  var ov=it.tgt&&it.tgt[pk];
+  if(ov!==undefined&&ov!==''&&ov!==null)return annNum(ov);  // người dùng sửa tay
+  return annNum(it.annual)*ANN_RATIO[pk];                    // tự chia theo tỉ lệ
+}
+function annIsAuto(it,pk){if(pk==='year')return false;var ov=it.tgt&&it.tgt[pk];return !(ov!==undefined&&ov!==''&&ov!==null);}
+function annRound(n){return Math.round(n*100)/100;}
+function annPct(act,tgt){if(!tgt||tgt<=0)return 0;return Math.round(annNum(act)/tgt*100);}
+function annBarColor(pct){return pct>=100?'#1A7A5E':pct>=70?'#F9A825':pct>=30?'#FB8C00':'#E53935';}
+function annFindItem(o,id){for(var i=0;i<o.items.length;i++)if(o.items[i].id===id)return o.items[i];return null;}
+function renderAnnPlan(){
+  var el=document.getElementById('annplan-content');if(!el)return;
+  var o=loadAnn();
+  var h='<div class="ann-head"><span class="ann-year-pill">📅 Năm '+o.year+'</span>';
+  h+='<span style="font-size:11.5px;color:#888;font-family:Arial;flex:1;min-width:160px">Nhập <b>mục tiêu 12 tháng</b> (con số cụ thể: doanh số, thu nhập, đội nhóm, khách hàng...). Hệ thống tự chia mốc 6th/3th/1th/tuần — bạn sửa tay được. Nhập <b>thực đạt</b> để xem % hoàn thành từng mốc.</span></div>';
+  var pcts=o.items.filter(function(it){return annNum(it.annual)>0;}).map(function(it){return Math.min(100,annPct(it.act&&it.act.year,annNum(it.annual)));});
+  var ypct=pcts.length?Math.round(pcts.reduce(function(a,b){return a+b;},0)/pcts.length):0;
+  h+='<div class="ann-dash"><div class="ann-dash-top"><div class="ann-dash-title">🎯 Tiến độ năm '+o.year+'</div><div class="ann-dash-pct">'+ypct+'%</div></div>';
+  h+='<div class="ann-dash-track"><div class="ann-dash-fill" style="width:'+Math.min(100,ypct)+'%"></div></div>';
+  h+='<div class="ann-dash-sub">'+(pcts.length?('Trung bình hoàn thành của '+pcts.length+' mục tiêu năm — theo dõi cả mốc ngắn hạn (tuần/tháng) lẫn dài hạn (năm) cùng lúc.'):'Chưa có mục tiêu năm nào. Thêm mục tiêu bên dưới để bắt đầu lập kế hoạch.')+'</div></div>';
+  o.items.forEach(function(it){
+    h+='<div class="ann-item"><div class="ann-it-top"><input class="ann-inp ann-it-name" data-anng-id="'+it.id+'" data-anng-field="name" value="'+escHtml(it.name||'')+'" placeholder="Tên mục tiêu">';
+    h+='<button class="rm-mini" data-del-anngoal="'+it.id+'" style="background:#FFEBEE;color:#C62828">Xoá</button></div>';
+    h+='<div class="ann-it-annual"><span class="lbl">🎯 Mục tiêu 12 tháng</span>';
+    h+='<input class="ann-inp ann-inp-sm" data-anng-id="'+it.id+'" data-anng-field="annual" value="'+escHtml(it.annual||'')+'" placeholder="0" inputmode="decimal">';
+    h+='<input class="ann-inp ann-inp-sm" style="width:66px;text-align:left" data-anng-id="'+it.id+'" data-anng-field="unit" value="'+escHtml(it.unit||'')+'" placeholder="đơn vị"></div>';
+    h+='<div class="ann-grid">';
+    ANN_PERIODS.forEach(function(p){
+      var tgt=annTargetOf(it,p.k),auto=annIsAuto(it,p.k);
+      var actv=(it.act&&it.act[p.k]!==undefined&&it.act[p.k]!==null)?it.act[p.k]:'';
+      var pct=annPct(actv,tgt),col=annBarColor(pct);
+      h+='<div class="ann-cell"><div class="ann-cell-lbl">'+p.lbl+'</div>';
+      h+='<div class="mini">Chỉ tiêu</div>';
+      h+='<input data-anng-tgt="'+it.id+'" data-anng-pk="'+p.k+'" value="'+escHtml(tgt?String(annRound(tgt)):'')+'"'+(p.k==='year'?' readonly':'')+' class="'+(auto?'ann-auto':'')+'" inputmode="decimal" placeholder="0">';
+      h+='<div class="mini" style="margin-top:5px">Đã đạt</div>';
+      h+='<input data-anng-act="'+it.id+'" data-anng-pk="'+p.k+'" value="'+escHtml(String(actv))+'" inputmode="decimal" placeholder="0">';
+      h+='<div class="ann-cell-pct" style="color:'+col+'">'+pct+'%</div>';
+      h+='<div class="ann-cell-track"><div class="ann-cell-fill" style="width:'+Math.min(100,pct)+'%;background:'+col+'"></div></div>';
+      h+='</div>';
+    });
+    h+='</div></div>';
+  });
+  h+='<div class="ann-presets">';
+  ANN_PRESETS.forEach(function(p,i){h+='<span class="ann-preset" data-anng-preset="'+i+'">+ '+escHtml(p.name)+'</span>';});
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="anng-new-name" class="ann-inp" style="flex:2;min-width:140px" placeholder="Tên mục tiêu mới">';
+  h+='<input id="anng-new-annual" class="ann-inp" style="flex:1;min-width:100px" placeholder="Mục tiêu năm" inputmode="decimal">';
+  h+='<button class="btn btn-g" data-act="add-anngoal" style="flex-shrink:0">➕ Thêm</button></div>';
+  el.innerHTML=h;
+}
+
+// ===== v6.5 — BANNER chạy chữ: động lực / thông báo QTV / chúc mừng đội nhóm =====
+// Câu động lực là PARAPHRASE nguyên gốc (không trích nguyên văn có bản quyền), cảm hứng từ các tác giả.
+var MOTIVATION=[
+  "Thu nhập của bạn lớn lên đúng bằng mức bạn tự lớn lên mỗi ngày. — cảm hứng Jim Rohn",
+  "Đừng ước việc dễ hơn, hãy rèn cho mình giỏi hơn. — cảm hứng Jim Rohn",
+  "Kỷ luật là cây cầu nối giữa mục tiêu và kết quả. — cảm hứng Jim Rohn",
+  "Quyết định của hôm nay quan trọng hơn hoàn cảnh của hôm qua. — cảm hứng Tony Robbins",
+  "Chất lượng câu hỏi bạn tự đặt quyết định chất lượng cuộc đời bạn. — cảm hứng Tony Robbins",
+  "Hành động nhất quán mỗi ngày tạo nên thay đổi phi thường. — cảm hứng Tony Robbins",
+  "Quản trị thời gian thật ra là quản trị chính mình. — cảm hứng Brian Tracy",
+  "Hãy làm việc khó và quan trọng nhất ngay từ buổi sáng. — cảm hứng Brian Tracy",
+  "Người lãnh đạo lớn lên trước, đội nhóm lớn lên sau. — cảm hứng John Maxwell",
+  "Lãnh đạo là tầm ảnh hưởng, không phải chức danh. — cảm hứng John Maxwell",
+  "Mọi thành bại đều bắt đầu từ người dẫn đầu. — cảm hứng John Maxwell",
+  "Hãy để tư duy về tiền bạc rộng bằng giấc mơ của bạn. — cảm hứng T. Harv Eker",
+  "Thói quen nhỏ về tài chính tạo nên khác biệt lớn về tự do. — cảm hứng T. Harv Eker",
+  "Bán hàng là phục vụ trước, kết quả đến sau. — cảm hứng Blair Singer",
+  "Làm chủ cảm xúc khi bị từ chối, bạn sẽ làm chủ cuộc chơi. — cảm hứng Blair Singer",
+  "Người kiên trì mời thêm một người nữa sẽ là người chiến thắng. — cảm hứng Eric Worre",
+  "Hãy trở thành chuyên gia kết nối, đừng chỉ là người bán. — cảm hứng Eric Worre",
+  "Mỗi sáng hãy nuôi dưỡng tâm trí như nuôi dưỡng cơ thể. — cảm hứng Jack Canfield",
+  "Chịu trách nhiệm 100% cho cuộc đời mình là bước đầu của tự do. — cảm hứng Jack Canfield",
+  "Người giàu học cách kiếm tiền, rồi để tiền làm việc cho mình. — cảm hứng Robert Kiyosaki",
+  "Tài sản nuôi bạn, tiêu sản nuốt bạn — hãy chọn đúng. — cảm hứng Robert Kiyosaki",
+  "Học là để hành: kiến thức chỉ có giá trị khi bạn dùng nó. — cảm hứng Phạm Thành Long",
+  "Dám nghĩ lớn, dám bắt đầu nhỏ, dám đi đường dài. — cảm hứng Phạm Thành Long",
+  "Gốc rễ vững thì cây đời mới xanh: sống tử tế trước, thành công theo sau. — cảm hứng Trần Việt Quân",
+  "Rèn đạo đức, trí tuệ và nghị lực mỗi ngày một chút. — cảm hứng Trần Việt Quân",
+  "Bình an không nằm ở nơi đến, mà ở cách ta đi. — cảm hứng Thích Minh Niệm",
+  "Hiểu mình thương mình, rồi mới hiểu và thương người. — cảm hứng Thích Minh Niệm",
+  "Mỗi ID mới là một cuộc đời bạn có thể chạm tới và nâng đỡ.",
+  "Đội nhóm mạnh không nhờ một người quá giỏi, mà nhờ nhiều người cùng tiến.",
+  "Gieo hành động hôm nay, gặt kết quả ngày mai — cứ bền bỉ là sẽ tới."
+];
+var bannerCfg=null,_bannerTimer=null,_lastCelebId='',_bannerSig='',_motShuffled=null,_fxActive=false,_fxToken=0;
+function _shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=(Math.random()*(i+1))|0,t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function loadBannerCloud(){
+  fsGetGlobal('banner').then(function(d){bannerCfg=d||{};renderBanner();}).catch(function(){if(!bannerCfg)bannerCfg={};renderBanner();});
+}
+function _bnActive(item){
+  if(!item||item.enabled===false)return false;
+  var now=Date.now();
+  if(item.start){var s=new Date(item.start).getTime();if(!isNaN(s)&&now<s)return false;}
+  if(item.end){var e=new Date(item.end).getTime();if(!isNaN(e)&&now>e)return false;}
+  return true;
+}
+function activeBanner(){ // ưu tiên: priority cao nhất; hoà → chúc mừng trước; rồi mới nhất
+  var cfg=bannerCfg||{},cands=[];
+  (cfg.announcements||[]).forEach(function(a){if(a&&a.text&&_bnActive(a))cands.push({kind:'announce',item:a,prio:(a.priority!==undefined?+a.priority:1)});});
+  var c=cfg.celebration;
+  if(c&&c.text&&_bnActive(c))cands.push({kind:'celebrate',item:c,prio:(c.priority!==undefined?+c.priority:5)});
+  if(!cands.length)return null;
+  cands.sort(function(a,b){
+    if(b.prio!==a.prio)return b.prio-a.prio;
+    if(a.kind!==b.kind)return a.kind==='celebrate'?-1:1;
+    return String(b.item.updatedAt||'').localeCompare(String(a.item.updatedAt||''));
+  });
+  return cands[0];
+}
+function _tkTrack(text,reps){var seg='<span>'+escHtml(text)+'</span><span class="tk-sep">✦</span>',one='';for(var i=0;i<(reps||1);i++)one+=seg;return one+one;}
+function _tkSpeed(track,chars){track.style.animationDuration=Math.max(14,Math.round(chars*0.075))+'s';}
+function renderBanner(){
+  var bar=document.getElementById('ticker-bar');if(!bar)return;
+  var app=document.getElementById('app');
+  if(!app||app.style.display==='none'){bar.style.display='none';_bannerSig='';return;}
+  bar.style.display='flex';
+  var act=activeBanner();
+  if(act&&act.kind==='celebrate'&&act.item.effects!==false&&act.item.id&&act.item.id!==_lastCelebId){
+    _lastCelebId=act.item.id;playCelebration(act.item.effectType||'confetti',act.item.text);
+  }
+  var sig=act?(act.kind+'|'+(act.item.id||'')+'|'+(act.item.updatedAt||'')+'|'+act.item.text):'mot';
+  if(sig===_bannerSig)return; // nội dung không đổi → giữ nguyên animation, không giật
+  _bannerSig=sig;
+  var track=document.getElementById('tk-track'),ico=document.getElementById('tk-ico');
+  bar.classList.remove('tk-announce','tk-celebrate');
+  if(act&&act.kind==='celebrate'){bar.classList.add('tk-celebrate');ico.innerHTML='🎉';track.innerHTML=_tkTrack(act.item.text,3);_tkSpeed(track,(act.item.text.length+18)*3);return;}
+  if(act&&act.kind==='announce'){bar.classList.add('tk-announce');ico.innerHTML='📢';track.innerHTML=_tkTrack(act.item.text,3);_tkSpeed(track,(act.item.text.length+18)*3);return;}
+  ico.innerHTML='✨';
+  var msgs=_motShuffled||MOTIVATION;
+  var seg='';msgs.forEach(function(m){seg+='<span>'+escHtml(m)+'</span><span class="tk-sep">✦</span>';});
+  track.innerHTML=seg+seg;
+  _tkSpeed(track,msgs.join('   ').length);
+}
+function startBanner(){
+  _motShuffled=_shuffle(MOTIVATION);_bannerSig='';
+  renderBanner();
+  if(_bannerTimer)clearInterval(_bannerTimer);
+  var ticks=0;
+  _bannerTimer=setInterval(function(){ticks++;if(ticks%10===0)loadBannerCloud();else renderBanner();},30000); // 30s eval lịch; 5 phút fetch lại
+}
+function stopBanner(){if(_bannerTimer){clearInterval(_bannerTimer);_bannerTimer=null;}_bannerSig='';var b=document.getElementById('ticker-bar');if(b)b.style.display='none';}
+// Hiệu ứng chúc mừng (confetti / fireworks / sparkles / flash) — nhẹ, mượt trên cả mobile
+function playCelebration(type,text){
+  try{
+    if(text){
+      var old=document.getElementById('celeb-toast');if(old&&old.parentNode)old.parentNode.removeChild(old);
+      var ct=document.createElement('div');ct.id='celeb-toast';ct.className='celebrate-toast';ct.innerHTML='🎉 '+escHtml(text);
+      document.body.appendChild(ct);
+      setTimeout(function(){if(ct.parentNode){ct.style.transition='opacity .6s';ct.style.opacity='0';setTimeout(function(){if(ct.parentNode)ct.parentNode.removeChild(ct);},650);}},5200);
+    }
+    if(type==='flash'){var fl=document.createElement('div');fl.id='fx-flash';document.body.appendChild(fl);setTimeout(function(){if(fl.parentNode)fl.parentNode.removeChild(fl);},1200);}
+    runFx(type||'confetti');
+  }catch(e){}
+}
+function runFx(type){
+  if(_fxActive)return;
+  var canvas=document.getElementById('fx-canvas');
+  if(!canvas){canvas=document.createElement('canvas');canvas.id='fx-canvas';document.body.appendChild(canvas);}
+  var dpr=Math.min(2,window.devicePixelRatio||1),W=window.innerWidth,H=window.innerHeight;
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  var cols=['#C8A84B','#E53935','#1565C0','#1A7A5E','#F9A825','#8E24AA','#E0531F','#ffffff'];
+  function rnd(a,b){return a+Math.random()*(b-a);}
+  function col(){return cols[(Math.random()*cols.length)|0];}
+  var parts=[],fireworks=(type==='fireworks'),spark=(type==='sparkles');
+  if(!fireworks&&!spark){for(var i=0;i<140;i++)parts.push({x:rnd(0,W),y:rnd(-H*0.25,0),vx:rnd(-1.3,1.3),vy:rnd(2,5),s:rnd(5,10),rot:rnd(0,6.28),vr:rnd(-0.2,0.2),c:col()});}
+  if(spark){for(var j=0;j<80;j++)parts.push({x:rnd(0,W),y:rnd(0,H),vx:rnd(-0.4,0.4),vy:rnd(-0.5,0.2),s:rnd(2,4.5),c:col(),life:rnd(0.5,1),decay:rnd(0.004,0.012),spark:true});}
+  function burst(cx,cy){var c=col();for(var k=0;k<46;k++){var a=Math.random()*6.28,sp=rnd(1.5,5.5);parts.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,s:rnd(2,4),c:c,life:1,decay:rnd(0.008,0.02),grav:0.03,spark:true});}}
+  var start=Date.now(),DUR=spark?3500:5000,lastFw=0;_fxActive=true;
+  var _tk=++_fxToken,_myCanvas=canvas; // watchdog: đảm bảo dọn dẹp dù rAF bị tab nền tạm dừng
+  setTimeout(function(){if(_fxToken===_tk){_fxActive=false;if(_myCanvas&&_myCanvas.parentNode)_myCanvas.parentNode.removeChild(_myCanvas);}},DUR+1800);
+  function frame(){
+    var t=Date.now()-start;ctx.clearRect(0,0,W,H);
+    if(fireworks&&t<DUR-900&&Date.now()-lastFw>rnd(330,640)){lastFw=Date.now();burst(rnd(W*0.15,W*0.85),rnd(H*0.12,H*0.5));}
+    for(var i=parts.length-1;i>=0;i--){
+      var p=parts[i];p.x+=p.vx;p.y+=p.vy;
+      if(p.grav)p.vy+=p.grav;else if(!p.spark)p.vy+=0.05;
+      if(p.spark){p.life-=p.decay||0.01;if(p.life<=0){parts.splice(i,1);continue;}}
+      if(p.rot!==undefined)p.rot+=p.vr;
+      if(!p.spark&&p.y>H+24){parts.splice(i,1);continue;}
+      ctx.globalAlpha=p.spark?Math.max(0,p.life):1;ctx.fillStyle=p.c;
+      if(p.spark){ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.28);ctx.fill();}
+      else{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot||0);ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62);ctx.restore();}
+    }
+    ctx.globalAlpha=1;
+    if(t<DUR||parts.length)requestAnimationFrame(frame);
+    else{_fxActive=false;if(canvas.parentNode)canvas.parentNode.removeChild(canvas);}
+  }
+  requestAnimationFrame(frame);
 }
 // ================================================================
 // SO SÁNH TV (v6.2) — xếp hạng TV cạnh nhau + hàng TB đội để đối chiếu
@@ -4551,6 +4920,10 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "      allow read: if true;\n"+
 "      allow write: if isAdmin();\n"+
 "    }\n"+
+"    match /appConfig/banner {\n"+
+"      allow read: if true;\n"+
+"      allow write: if isAdmin();\n"+
+"    }\n"+
 "    match /appConfig/admins {\n"+
 "      allow read: if request.auth != null;\n"+
 "      allow create: if request.auth != null && !exists(/databases/$(database)/documents/appConfig/admins);\n"+
@@ -4576,6 +4949,69 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "    }\n"+
 "  }\n"+
 "}";
+// ===== v6.5 — Quản trị: Bảng thông báo + Chúc mừng đội nhóm =====
+var _admAnnEdit=null; // id thông báo đang sửa (null = thêm mới)
+function dtLocalVal(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d.getTime()))return '';var p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());}
+var ANN_PRIOS=[{v:0,l:'Thấp'},{v:1,l:'Bình thường'},{v:2,l:'Cao'},{v:3,l:'Khẩn'}];
+function announceBoxHtml(banner){
+  var list=(banner&&banner.announcements)||[];
+  var editing=_admAnnEdit?(list.filter(function(x){return x.id===_admAnnEdit;})[0]||null):null;
+  var h='<div class="adm-box"><div class="adm-title">📢 Bảng thông báo (chạy chữ trên đầu)</div>';
+  h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Tạo thông báo chạy ở <b>banner trên cùng</b>. Khi có thông báo đang hiệu lực, nó <b>thay thế</b> các câu động lực mặc định. Đặt lịch bắt đầu/kết thúc và mức ưu tiên (ưu tiên cao hơn hiện trước).</div>';
+  if(list.length){
+    list.slice().sort(function(a,b){return String(b.updatedAt||'').localeCompare(String(a.updatedAt||''));}).forEach(function(a){
+      var on=_bnActive(a),plbl=(ANN_PRIOS.filter(function(p){return p.v===(+a.priority||0);})[0]||{l:'BT'}).l;
+      var when=(a.start?('từ '+fmtDT(a.start)):'ngay')+(a.end?(' → '+fmtDT(a.end)):' → không hạn');
+      h+='<div style="border:1px solid #EEE;border-radius:9px;padding:9px;margin-bottom:7px;background:'+(on?'#F1FBF6':'#FAFAFA')+'">';
+      h+='<div style="font-size:13px;font-weight:700;color:#1A1A1A;line-height:1.5">'+(a.enabled===false?'⏸️ ':(on?'🟢 ':'🕒 '))+escHtml(a.text)+'</div>';
+      h+='<div style="font-size:11px;color:#888;margin-top:3px">⏱️ '+escHtml(when)+' · Ưu tiên: <b>'+plbl+'</b>'+(on?' · <span style="color:#1A7A5E;font-weight:700">đang hiển thị</span>':(a.enabled===false?' · đã tắt':' · ngoài lịch'))+'</div>';
+      h+='<div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">';
+      h+='<button class="btn btn-d btn-sm" data-ann-edit="'+escHtml(a.id)+'">✏️ Sửa</button>';
+      h+='<button class="btn '+(a.enabled===false?'btn-g':'btn-o')+' btn-sm" data-ann-toggle="'+escHtml(a.id)+'">'+(a.enabled===false?'Bật':'Tắt')+'</button>';
+      h+='<button class="btn btn-r btn-sm" data-ann-del="'+escHtml(a.id)+'">Xoá</button></div></div>';
+    });
+  }else{
+    h+='<div style="font-size:13px;color:#999;padding:2px 0 8px">Chưa có thông báo nào. Banner đang chạy các câu động lực mặc định.</div>';
+  }
+  h+='<div style="border-top:1px dashed #E0E0E0;padding-top:10px;margin-top:6px">';
+  h+='<div style="font-size:12.5px;font-weight:700;color:#1A7A5E;margin-bottom:7px">'+(editing?'✏️ Sửa thông báo':'➕ Thông báo mới')+'</div>';
+  h+='<textarea id="ann-text" class="nmod-inp" style="width:100%;min-height:54px;resize:vertical" placeholder="Nội dung thông báo...">'+escHtml(editing?editing.text:'')+'</textarea>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">';
+  h+='<div style="flex:1;min-width:150px"><div style="font-size:11px;color:#888;margin-bottom:3px">Bắt đầu (để trống = ngay)</div><input type="datetime-local" id="ann-start" class="nmod-inp" style="width:100%" value="'+escHtml(editing?dtLocalVal(editing.start):'')+'"></div>';
+  h+='<div style="flex:1;min-width:150px"><div style="font-size:11px;color:#888;margin-bottom:3px">Kết thúc (để trống = không hạn)</div><input type="datetime-local" id="ann-end" class="nmod-inp" style="width:100%" value="'+escHtml(editing?dtLocalVal(editing.end):'')+'"></div>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><div style="font-size:11px;color:#888">Ưu tiên</div><select id="ann-prio" class="nmod-inp" style="flex:none;width:130px">';
+  ANN_PRIOS.forEach(function(p){h+='<option value="'+p.v+'"'+((editing&&(+editing.priority||0)===p.v)?' selected':(!editing&&p.v===1?' selected':''))+'>'+p.l+'</option>';});
+  h+='</select>';
+  h+='<button class="btn btn-g btn-sm" data-act="ann-save" style="margin-left:auto">'+(editing?'💾 Lưu thay đổi':'➕ Tạo thông báo')+'</button>';
+  if(editing)h+='<button class="btn btn-o btn-sm" data-act="ann-cancel">Hủy</button>';
+  h+='</div></div>';
+  h+='<div style="font-size:11.5px;color:#E65100;margin-top:8px;line-height:1.5">⚠️ Cần Publish <b>Firestore Rules v6.5</b> (mục Rules nâng cao bên dưới) để thông báo hiển thị cho mọi thành viên.</div>';
+  h+='</div>';
+  return h;
+}
+function celebrateBoxHtml(banner){
+  var c=(banner&&banner.celebration)||{};
+  var on=_bnActive(c)&&!!c.text;
+  var FX=[{v:'confetti',l:'🎊 Hoa giấy (Confetti)'},{v:'fireworks',l:'🎆 Pháo hoa'},{v:'sparkles',l:'✨ Lấp lánh'},{v:'flash',l:'⚡ Chớp sáng + hoa giấy'}];
+  var h='<div class="adm-box" style="border:2px solid #E0C2F0;background:linear-gradient(135deg,#fff,#FBF3FF)"><div class="adm-title">🎉 Chúc mừng đội nhóm</div>';
+  h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Công bố tin vui toàn đội (thăng cấp, đạt mốc doanh số, sự kiện...). Khi đang hiệu lực, banner hiện thông điệp chúc mừng kèm <b>hiệu ứng</b> và <b>ưu tiên hơn</b> thông báo thường.</div>';
+  if(on)h+='<div style="background:#F3E8FB;border:1px solid #E0C2F0;border-radius:9px;padding:9px;margin-bottom:9px;font-size:13px;color:#6A1B9A;font-weight:700">🟢 Đang chúc mừng: '+escHtml(c.text)+(c.end?(' · đến '+fmtDT(c.end)):'')+'</div>';
+  h+='<textarea id="celeb-text" class="nmod-inp" style="width:100%;min-height:54px;resize:vertical" placeholder="VD: Chúc mừng anh A thăng cấp 1★! 🎉">'+escHtml(c.text||'')+'</textarea>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:flex-end">';
+  h+='<div style="flex:1;min-width:160px"><div style="font-size:11px;color:#888;margin-bottom:3px">Hiệu ứng</div><select id="celeb-fx" class="nmod-inp" style="width:100%">';
+  FX.forEach(function(f){h+='<option value="'+f.v+'"'+((c.effectType||'confetti')===f.v?' selected':'')+'>'+f.l+'</option>';});
+  h+='</select></div>';
+  h+='<div style="flex:1;min-width:120px"><div style="font-size:11px;color:#888;margin-bottom:3px">Thời lượng (phút)</div><input type="number" id="celeb-dur" class="nmod-inp" style="width:100%" min="1" value="'+escHtml(String(c.durMin||60))+'"></div>';
+  h+='</div>';
+  h+='<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:13px;color:#444;cursor:pointer"><input type="checkbox" id="celeb-fxon" '+(c.effects!==false?'checked':'')+' style="width:17px;height:17px">Bật hiệu ứng hình ảnh (pháo hoa / hoa giấy)</label>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">';
+  h+='<button class="btn btn-sm" style="background:#8E24AA;color:#fff" data-act="celeb-publish">🎉 Công bố chúc mừng</button>';
+  h+='<button class="btn btn-d btn-sm" data-act="celeb-preview">👁️ Xem thử hiệu ứng</button>';
+  if(on)h+='<button class="btn btn-r btn-sm" data-act="celeb-stop">⏹️ Tắt chúc mừng</button>';
+  h+='</div></div>';
+  return h;
+}
 function renderAdminPage(){
   var el=document.getElementById('admin-content');if(!el)return;
   if(!fbUser){el.innerHTML='<div style="color:#999;text-align:center;padding:30px">Cần đăng nhập</div>';return;}
@@ -4584,9 +5020,10 @@ function renderAdminPage(){
     fsGetGlobal('admins').catch(function(){return null;}),
     fsGetGlobal('registration').catch(function(){return null;}),
     fetchAccounts().catch(function(){return [];}),
-    fetchInvites().catch(function(){return [];})
+    fetchInvites().catch(function(){return [];}),
+    fsGetGlobal('banner').catch(function(){return null;})
   ]).then(function(res){
-    var admins=res[0],reg=res[1],accounts=res[2],invitesArr=res[3]||[];
+    var admins=res[0],reg=res[1],accounts=res[2],invitesArr=res[3]||[],banner=res[4]||{};
     var myEmail=fbUser.email||'';
     var isAdmin=admins&&admins.emails&&admins.emails.indexOf(myEmail)>=0;
     var h='';
@@ -4628,6 +5065,9 @@ function renderAdminPage(){
         h+='<button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-migrate-codes">🔐 Chuyển mã cũ sang chỗ an toàn + khoá lỗ rò</button></div>';
       }
       h+='<div style="font-size:12px;color:#E65100;line-height:1.6;margin-top:8px">⚠️ Để mã tự khoá sau khi dùng, cần cập nhật <b>Firestore Rules</b> bản mới (mục Rules bên dưới, dành cho QTV chính). Chưa cập nhật thì mã vẫn dùng được nhưng <u>chưa tự khoá 1 lần</u>.</div></div>';
+      // v6.5 — Bảng thông báo + Chúc mừng đội nhóm (mọi QTV dùng được)
+      h+=announceBoxHtml(banner);
+      h+=celebrateBoxHtml(banner);
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
       var isMainAdmin=(admins.emails[0]===myEmail);
       var branchOn=!(reg&&reg.branchEnabled===false);
@@ -5310,6 +5750,88 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-del-goal]');
   if(t){var _gid=t.getAttribute('data-del-goal');var _gs2=loadGoals().filter(function(x){return x.id!==_gid;});saveGoals(_gs2);renderMonthPage();return;}
 
+  // v6.5 — Kế hoạch năm (top-down goals)
+  t=e.target.closest('[data-act="add-anngoal"]');
+  if(t){
+    var _nn=((document.getElementById('anng-new-name')||{}).value||'').trim();
+    if(!_nn){showToast('Nhập tên mục tiêu');return;}
+    var _na=(document.getElementById('anng-new-annual')||{}).value||'';
+    var _ann=loadAnn();_ann.items.push({id:'an'+Date.now().toString(36),name:_nn,annual:_na,unit:'',tgt:{},act:{}});
+    saveAnn(_ann);renderAnnPlan();showToast('✓ Đã thêm mục tiêu năm');return;
+  }
+  t=e.target.closest('[data-anng-preset]');
+  if(t){
+    var _pi=parseInt(t.getAttribute('data-anng-preset'),10)||0,_pp=ANN_PRESETS[_pi];
+    if(_pp){var _a2=loadAnn();_a2.items.push({id:'an'+Date.now().toString(36),name:_pp.name,annual:'',unit:_pp.unit||'',tgt:{},act:{}});saveAnn(_a2);renderAnnPlan();}
+    return;
+  }
+  t=e.target.closest('[data-del-anngoal]');
+  if(t){var _di=t.getAttribute('data-del-anngoal');var _a3=loadAnn();_a3.items=_a3.items.filter(function(x){return x.id!==_di;});saveAnn(_a3);renderAnnPlan();return;}
+
+  // v6.5 — Bảng thông báo (QTV) — ghi appConfig/banner
+  t=e.target.closest('[data-ann-edit]');
+  if(t){_admAnnEdit=t.getAttribute('data-ann-edit');renderAdminPage();return;}
+  t=e.target.closest('[data-act="ann-cancel"]');
+  if(t){_admAnnEdit=null;renderAdminPage();return;}
+  t=e.target.closest('[data-ann-del]');
+  if(t){
+    var _adid=t.getAttribute('data-ann-del');
+    if(!confirm('Xoá thông báo này?'))return;
+    fsGetGlobal('banner').then(function(b){b=b||{};var arr=((b&&b.announcements)||[]).filter(function(x){return x.id!==_adid;});return fsSetGlobal('banner',{announcements:arr});})
+      .then(function(){if(_admAnnEdit===_adid)_admAnnEdit=null;showToast('✓ Đã xoá thông báo');renderAdminPage();loadBannerCloud();})
+      .catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  t=e.target.closest('[data-ann-toggle]');
+  if(t){
+    var _atid=t.getAttribute('data-ann-toggle');
+    fsGetGlobal('banner').then(function(b){b=b||{};var arr=((b&&b.announcements)||[]).map(function(x){if(x.id===_atid){x.enabled=(x.enabled===false);x.updatedAt=new Date().toISOString();}return x;});return fsSetGlobal('banner',{announcements:arr});})
+      .then(function(){renderAdminPage();loadBannerCloud();})
+      .catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  t=e.target.closest('[data-act="ann-save"]');
+  if(t){
+    var _txt=((document.getElementById('ann-text')||{}).value||'').trim();
+    if(!_txt){showToast('Nhập nội dung thông báo');return;}
+    var _st=(document.getElementById('ann-start')||{}).value||'';
+    var _en=(document.getElementById('ann-end')||{}).value||'';
+    var _pr=parseInt((document.getElementById('ann-prio')||{}).value,10)||0;
+    var _eid=_admAnnEdit;
+    fsGetGlobal('banner').then(function(b){
+      b=b||{};var arr=((b&&b.announcements)||[]).slice();
+      if(_eid)arr=arr.map(function(x){if(x.id===_eid){x.text=_txt;x.start=_st;x.end=_en;x.priority=_pr;x.updatedAt=new Date().toISOString();}return x;});
+      else arr.push({id:'tb'+Date.now().toString(36),text:_txt,start:_st,end:_en,priority:_pr,enabled:true,updatedAt:new Date().toISOString()});
+      return fsSetGlobal('banner',{announcements:arr});
+    }).then(function(){_admAnnEdit=null;showToast('✓ Đã lưu thông báo');renderAdminPage();loadBannerCloud();})
+      .catch(function(err){showToast('Lỗi: '+err.message+' — cần Publish Rules v6.5');});
+    return;
+  }
+
+  // v6.5 — Chúc mừng đội nhóm (QTV)
+  t=e.target.closest('[data-act="celeb-preview"]');
+  if(t){var _ft=(document.getElementById('celeb-fx')||{}).value||'confetti';var _tx=((document.getElementById('celeb-text')||{}).value||'').trim();playCelebration(_ft,_tx||'Xem thử hiệu ứng chúc mừng 🎉');return;}
+  t=e.target.closest('[data-act="celeb-stop"]');
+  if(t){
+    fsGetGlobal('banner').then(function(b){b=b||{};var c=(b&&b.celebration)||{};c.enabled=false;c.updatedAt=new Date().toISOString();return fsSetGlobal('banner',{celebration:c});})
+      .then(function(){showToast('✓ Đã tắt chúc mừng');renderAdminPage();loadBannerCloud();})
+      .catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  t=e.target.closest('[data-act="celeb-publish"]');
+  if(t){
+    var _ctx=((document.getElementById('celeb-text')||{}).value||'').trim();
+    if(!_ctx){showToast('Nhập nội dung chúc mừng');return;}
+    var _cfx=(document.getElementById('celeb-fx')||{}).value||'confetti';
+    var _cdur=parseInt((document.getElementById('celeb-dur')||{}).value,10)||60;
+    var _cfxon=!!((document.getElementById('celeb-fxon')||{}).checked);
+    var _cnow=new Date(),_cend=new Date(_cnow.getTime()+_cdur*60000);
+    var _cel={id:'cb'+Date.now().toString(36),text:_ctx,effectType:_cfx,effects:_cfxon,durMin:_cdur,start:_cnow.toISOString(),end:_cend.toISOString(),enabled:true,priority:5,updatedAt:new Date().toISOString()};
+    fsSetGlobal('banner',{celebration:_cel}).then(function(){_lastCelebId='';showToast('🎉 Đã công bố chúc mừng toàn đội');renderAdminPage();loadBannerCloud();if(_cfxon)playCelebration(_cfx,_ctx);})
+      .catch(function(err){showToast('Lỗi: '+err.message+' — cần Publish Rules v6.5');});
+    return;
+  }
+
   // Tree mode switch
   t=e.target.closest('[data-treemode]');
   if(t){
@@ -5753,6 +6275,33 @@ document.addEventListener('change',function(e){
     saveGoals(_gs);renderMonthPage();
     return;
   }
+  // v6.5 — Kế hoạch năm: sửa tên/mục tiêu/đơn vị
+  if(t.hasAttribute&&t.hasAttribute('data-anng-field')){
+    var _ai=t.getAttribute('data-anng-id'),_af=t.getAttribute('data-anng-field');
+    var _ao=loadAnn(),_ait=annFindItem(_ao,_ai);
+    if(_ait){_ait[_af]=t.value;saveAnn(_ao);renderAnnPlan();}
+    return;
+  }
+  // v6.5 — Kế hoạch năm: sửa chỉ tiêu mốc (override; để trống = tự chia lại)
+  if(t.hasAttribute&&t.hasAttribute('data-anng-tgt')){
+    var _ti=t.getAttribute('data-anng-tgt'),_tpk=t.getAttribute('data-anng-pk');
+    var _to=loadAnn(),_tit=annFindItem(_to,_ti);
+    if(_tit){if(!_tit.tgt)_tit.tgt={};var _tv=String(t.value).trim();if(_tv==='')delete _tit.tgt[_tpk];else _tit.tgt[_tpk]=_tv;saveAnn(_to);renderAnnPlan();}
+    return;
+  }
+  // v6.5 — Kế hoạch năm: nhập thực đạt mốc
+  if(t.hasAttribute&&t.hasAttribute('data-anng-act')){
+    var _ci=t.getAttribute('data-anng-act'),_cpk=t.getAttribute('data-anng-pk');
+    var _co=loadAnn(),_cit=annFindItem(_co,_ci);
+    if(_cit){if(!_cit.act)_cit.act={};var _cv=String(t.value).trim();if(_cv==='')delete _cit.act[_cpk];else _cit.act[_cpk]=_cv;saveAnn(_co);renderAnnPlan();}
+    return;
+  }
+  // v6.5 — So sánh bánh xe: chọn mốc thời gian
+  if(t.hasAttribute&&t.hasAttribute('data-wheelcmp')){
+    if(t.getAttribute('data-wheelcmp')==='a')wheelCmpA=t.value;else wheelCmpB=t.value;
+    renderWheelCompare();
+    return;
+  }
   if(t.id==='bc-sel'){renderBcContent(t.value);return;}
   if(t.id==='lk-sel'){lkSelected=t.value;renderBranchStats();return;}
   if(t.id==='nf-f1of-sel'){
@@ -6024,7 +6573,9 @@ function bindStatic(){
   });
   document.addEventListener('change',function(e){
     var r=e.target&&e.target.closest&&e.target.closest('[data-wheel-cat]');
-    if(r&&fbDb&&fbUser)fsSet('wheel',{wheel:loadWheel()}).catch(function(){});
+    if(!r)return;
+    if(fbDb&&fbUser)fsSet('wheel',{wheel:loadWheel()}).catch(function(){});
+    renderWheelCompare(); // cập nhật danh sách mốc so sánh khi chấm điểm hôm nay
   });
 
 
