@@ -1,4 +1,4 @@
-<!-- VERSION: v6.11-radius-smalls-disc-beside-thangtien-smartsearch -->
+<!-- VERSION: v6.12-life-compass-wheel-2-mirror -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -543,6 +543,40 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .wc-dpct{width:74px;text-align:right;font-size:12.5px;font-weight:800;white-space:nowrap}
 .wc-summary{font-size:12px;font-weight:700;font-family:Arial;margin-top:10px;padding-top:9px;border-top:1px solid #F0F0F0;line-height:1.7}
 
+/* ===== v6.12 — La bàn + Tấm gương cuộc đời (Life Compass / Life Mirror) ===== */
+.lm-card{background:#fff;border:1px solid #E8E8E8;border-radius:14px;padding:14px;margin-bottom:12px}
+.lm-title{font-size:15px;font-weight:800;color:#1A1A1A;font-family:Arial;margin-bottom:8px}
+.lm-sub{font-size:12.5px;color:#777;font-family:Arial;line-height:1.6}
+.lm-empty{background:linear-gradient(135deg,#F4F8FF,#FFF8F0);border-color:#E0E8F5}
+.lm-stagecard{background:linear-gradient(135deg,#1A1A1A,#2E2A20);border:none;color:#fff}
+.lm-stage-row{display:flex;align-items:center;gap:12px}
+.lm-stage-ico{font-size:30px;flex-shrink:0}
+.lm-stage-name{font-size:16px;font-weight:800;color:#C8A84B;font-family:Arial}
+.lm-stage-q{font-size:13px;color:rgba(255,255,255,.82);font-style:italic;margin-top:2px}
+.lm-stage-dots{display:flex;align-items:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+.lm-dot{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.22)}
+.lm-dot.on{background:#C8A84B;box-shadow:0 0 0 3px rgba(200,168,75,.25)}
+.lm-next{font-size:11px;color:rgba(255,255,255,.55);font-family:Arial;margin-left:6px}
+.lm-prog-row{display:flex;gap:8px;flex-wrap:wrap}
+.lm-prog-box{flex:1;min-width:80px;text-align:center;background:#F7F9F8;border-radius:10px;padding:10px 6px}
+.lm-prog-num{font-size:24px;font-weight:800;font-family:Arial;line-height:1}
+.lm-prog-lbl{font-size:10.5px;color:#888;margin-top:4px;font-family:Arial}
+.lm-progmsg{font-size:12.5px;font-weight:700;font-family:Arial;margin-top:9px;line-height:1.5}
+.lm-pain{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #F3F3F3}
+.lm-pain-lbl{font-size:12px;color:#888;font-family:Arial}
+.lm-pain-area{font-size:13.5px;font-weight:800;font-family:Arial;text-align:right}
+.lm-leverage{font-size:12px;color:#1565C0;background:#EEF4FF;border-radius:9px;padding:8px 10px;margin-top:8px;line-height:1.5;font-family:Arial}
+.lm-action{background:linear-gradient(135deg,#1A7A5E,#22936F);border-radius:12px;padding:13px 14px;margin-top:12px}
+.lm-action-cap{font-size:11px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:.5px;font-family:Arial}
+.lm-action-txt{font-size:15px;font-weight:800;color:#fff;margin-top:5px;line-height:1.45;font-family:Arial}
+.lm-mrow{display:flex;gap:10px;padding:6px 0;align-items:baseline}
+.lm-mlbl{font-size:12.5px;font-weight:800;font-family:Arial;flex-shrink:0;min-width:96px}
+.lm-mval{font-size:12.5px;color:#444;font-family:Arial;line-height:1.5}
+.lm-why{font-size:12.5px;color:#5E4A1E;background:#FFF8E8;border-radius:9px;padding:9px 11px;margin-top:9px;line-height:1.55;font-family:Arial}
+.lm-mile{font-size:12.5px;color:#444;background:#F4FBF7;border-radius:9px;padding:9px 11px;margin-bottom:6px;line-height:1.55;font-family:Arial}
+.lm-becoming{font-size:13px;color:#1A7A5E;font-weight:700;margin-top:8px;font-family:Arial;line-height:1.5}
+.lm-purpose-q{font-size:14px;font-weight:700;color:#6A1B9A;font-style:italic;margin-top:8px;line-height:1.55;font-family:Arial}
+
 /* ===== v6.9 — Tiềm năng & Theo dõi (Prospect Management) ===== */
 .pf-list{display:flex;flex-direction:column;gap:8px;margin-bottom:80px}
 .pf-card{background:white;border-radius:12px;border:1px solid #E8E8E8;overflow:hidden;display:flex;align-items:stretch}
@@ -743,6 +777,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
         <div id="annplan-content"></div>
         <div class="tp-sec-title">&#128722; Bánh xe cuộc đời</div>
         <div id="life-wheel-content"></div>
+        <div id="life-mirror-content"></div>
         <div id="wheel-compare-content"></div>
         <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu (theo kỳ)</div>
         <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
@@ -3151,7 +3186,7 @@ function renderActionCenter(){
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'goals';
-  if(sub==='goals'){renderAnnPlan();renderLifeWheel();renderWheelCompare();renderGoalsMeasure();}
+  if(sub==='goals'){renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
@@ -3190,7 +3225,7 @@ var WHEEL_CATS=[
   {id:'contribution',lbl:'Đóng góp',c:'#EF6C00'}
 ];
 function loadWheel(){try{var s=nmGet('wheel_v1');return s?JSON.parse(s):{};}catch(e){return {};}}
-function loadWheelCloud(){if(!fbDb||!fbUser)return;fsGet('wheel').then(function(d){if(d&&d.wheel){nmSet('wheel_v1',JSON.stringify(d.wheel));renderLifeWheel();}}).catch(function(){});}
+function loadWheelCloud(){if(!fbDb||!fbUser)return;fsGet('wheel').then(function(d){if(d&&d.wheel){nmSet('wheel_v1',JSON.stringify(d.wheel));renderLifeWheel();renderLifeMirror();}}).catch(function(){});}
 function dayWheel(){var o=loadWheel();return o[dk()]||{};}
 function setWheelScore(cat,v){var o=loadWheel();var d=o[dk()]||{};d[cat]=v;o[dk()]=d;nmSet('wheel_v1',JSON.stringify(o));}
 function wheelBalance(sc){
@@ -3310,6 +3345,182 @@ function renderWheelCompare(){
      '<span style="color:'+sumCol+'">('+(da>0?'+':'')+da.toFixed(1)+')</span><br>'+
      '<span style="color:#1A7A5E">▲ '+up+' tiến bộ</span> · <span style="color:#C62828">▼ '+down+' giảm</span> · <span style="color:#999">▬ '+same+' giữ nguyên</span></div>';
   h+='</div>';
+  el.innerHTML=h;
+}
+
+// ================================================================
+// v6.12 — LIFE COMPASS WHEEL 2.0: La bàn + Tấm gương cuộc đời
+//   Lớp insight trên Bánh xe: 5 giai đoạn tiến hoá, phân tích điểm-đau-trước,
+//   "một hành động", điểm tiến bộ, tấm gương, cột mốc, sứ mệnh. Tất cả rule-based.
+// ================================================================
+var WHEEL_STAGES=[
+  {id:1,name:'Nhận thức',q:'Tôi đang ở đâu?',ico:'🧭',need:'Bắt đầu chấm Bánh xe'},
+  {id:2,name:'Thấu hiểu',q:'Vì sao tôi có kết quả này?',ico:'🔍',need:'Chấm ≥3 ngày trong ≥1 tuần'},
+  {id:3,name:'Bứt phá',q:'Điều gì đang kìm hãm tôi?',ico:'🚀',need:'Chấm ≥7 ngày trong ≥3 tuần'},
+  {id:4,name:'Bản sắc',q:'Tôi đang trở thành ai?',ico:'🌱',need:'Chấm ≥21 ngày trong ≥6 tuần'},
+  {id:5,name:'Sứ mệnh',q:'Tôi đang xây cuộc đời thế nào?',ico:'⭐',need:'Chấm ≥45 ngày trong ≥90 ngày'}
+];
+var WHEEL_ACTIONS={
+  health:'Ngủ trước 22:30 tối nay — một đêm ngủ đủ kéo theo năng lượng cả ngày mai.',
+  spirit:'Dành 10 phút tĩnh lặng/thiền hôm nay, tắt điện thoại.',
+  growth:'Học 20 phút về một kỹ năng bạn đang theo đuổi.',
+  relation:'Dành 30 phút trọn vẹn cho người thân — không màn hình.',
+  career:'Liên hệ 3 tiềm năng trong tab Tiềm năng ngay hôm nay.',
+  finance:'Hoàn tất các lần theo dõi (follow-up) đang chờ với khách hàng.',
+  travel:'Lên lịch một trải nghiệm/nghỉ ngơi bạn mong chờ trong tuần này.',
+  contribution:'Giúp một người trong đội nhóm tiến thêm một bước hôm nay.'
+};
+var WHEEL_LEVERAGE={health:1,spirit:1}; // lĩnh vực nền tảng — đòn bẩy cao, cải thiện kéo theo nhiều lĩnh vực
+function wheelStreak(){
+  var o=loadWheel();
+  var d=new Date(currentDay.getFullYear(),currentDay.getMonth(),currentDay.getDate());
+  var cnt=0;
+  for(var i=0;i<4000;i++){
+    var key=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var sc=o[key]||{};
+    if(WHEEL_CATS.some(function(c){return (sc[c.id]||0)>0;})){cnt++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return cnt;
+}
+function recentPlanCompletion(){
+  // tín hiệu hành vi thật cho "vì sao": tỉ lệ hoàn thành Kế hoạch ngày 7 ngày gần nhất
+  var acts=loadActs();var keys=Object.keys(acts);if(!keys.length)return null;
+  var withDate=keys.map(function(k){var p=k.split('-');return {k:k,t:new Date(+p[0],(+p[1]||1)-1,+p[2]||1).getTime()};})
+    .sort(function(a,b){return b.t-a.t;}).slice(0,7);
+  var done=0,total=0;
+  withDate.forEach(function(d){var arr=acts[d.k]||[];if(Array.isArray(arr))arr.forEach(function(x){total++;if(x&&x.done)done++;});});
+  if(total<3)return null;
+  return {done:done,total:total,pct:Math.round(done/total*100)};
+}
+function wheelStats(){
+  var days=wheelDayKeys();var n=days.length;if(!n)return null;
+  var o=loadWheel();
+  var latest=o[days[n-1].key]||{};
+  var half=Math.max(1,Math.floor(n/2));
+  var earlierDays=(n-half)>0?days.slice(0,n-half):[days[0]];
+  var recentDays=days.slice(n-half);
+  function avgArea(keys,cat){var s=0,c=0;keys.forEach(function(k){var v=(o[k.key]||{})[cat]||0;if(v>0){s+=v;c++;}});return c?s/c:0;}
+  var areas=WHEEL_CATS.map(function(cat){
+    var rec=avgArea(recentDays,cat.id),ear=avgArea(earlierDays,cat.id);
+    var first=(o[days[0].key]||{})[cat.id]||0;
+    return {id:cat.id,lbl:cat.lbl,c:cat.c,latest:latest[cat.id]||0,recent:rec,earlier:ear,first:first,
+      delta:(rec>0&&ear>0)?(rec-ear):0,leverage:!!WHEEL_LEVERAGE[cat.id]};
+  });
+  return {days:days,n:n,latest:latest,areas:areas,firstLbl:days[0].lbl,lastLbl:days[n-1].lbl,
+    spanDays:Math.round((days[n-1].t-days[0].t)/86400000)+1};
+}
+function wheelStage(st){
+  if(!st||!st.n)return 0;
+  var n=st.n,s=st.spanDays;
+  if(n>=45&&s>=90)return 5;
+  if(n>=21&&s>=45)return 4;
+  if(n>=7&&s>=21)return 3;
+  if(n>=3&&s>=7)return 2;
+  return 1;
+}
+function lowestArea(areas,useRecent){
+  var rated=areas.filter(function(a){return (useRecent?a.recent:a.latest)>0;});
+  if(!rated.length)return null;
+  return rated.slice().sort(function(a,b){return (useRecent?a.recent:a.latest)-(useRecent?b.recent:b.latest);})[0];
+}
+function bottleneckArea(areas){
+  var lev=areas.filter(function(a){return a.leverage&&a.latest>0&&a.latest<6;}).sort(function(a,b){return a.latest-b.latest;});
+  if(lev.length)return lev[0];
+  return lowestArea(areas,false)||lowestArea(areas,true);
+}
+function renderLifeMirror(){
+  var el=document.getElementById('life-mirror-content');if(!el)return;
+  var st=wheelStats();
+  if(!st){
+    el.innerHTML='<div class="lm-card lm-empty"><div class="lm-title">🧭 La bàn cuộc đời</div>'+
+      '<div class="lm-sub">Chấm Bánh xe hôm nay để mở <b>La bàn cuộc đời</b> — biết bạn đang ở đâu, điều gì đang kìm hãm, và <b>một hành động</b> quan trọng nhất hôm nay.</div></div>';
+    return;
+  }
+  var stage=wheelStage(st),sdef=WHEEL_STAGES[stage-1],streak=wheelStreak();
+  var pain=lowestArea(st.areas,false)||lowestArea(st.areas,true);
+  var bott=bottleneckArea(st.areas);
+  var improving=st.areas.filter(function(a){return a.delta>=0.5;}).sort(function(a,b){return b.delta-a.delta;});
+  var declining=st.areas.filter(function(a){return a.delta<=-0.5;}).sort(function(a,b){return a.delta-b.delta;});
+  var momentum=st.areas.slice().sort(function(a,b){return b.delta-a.delta;})[0];
+  var oR=0,oE=0,cR=0,cE=0;
+  st.areas.forEach(function(a){if(a.recent>0){oR+=a.recent;cR++;}if(a.earlier>0){oE+=a.earlier;cE++;}});
+  oR=cR?oR/cR:0;oE=cE?oE/cE:0;
+  var progPct=oE>0?Math.round((oR-oE)/oE*100):null;
+  var h='';
+  // Header giai đoạn
+  h+='<div class="lm-card lm-stagecard">';
+  h+='<div class="lm-stage-row"><span class="lm-stage-ico">'+sdef.ico+'</span>';
+  h+='<div style="flex:1"><div class="lm-stage-name">Giai đoạn '+stage+': '+escHtml(sdef.name)+'</div>';
+  h+='<div class="lm-stage-q">"'+escHtml(sdef.q)+'"</div></div></div>';
+  h+='<div class="lm-stage-dots">';
+  WHEEL_STAGES.forEach(function(s){h+='<span class="lm-dot'+(s.id<=stage?' on':'')+'" title="'+escHtml(s.name)+'"></span>';});
+  if(stage<5)h+='<span class="lm-next">Mở khoá kế: '+escHtml(WHEEL_STAGES[stage].need)+'</span>';
+  h+='</div></div>';
+  // Điểm tiến bộ
+  h+='<div class="lm-card"><div class="lm-title">📈 Điểm tiến bộ</div><div class="lm-prog-row">';
+  h+='<div class="lm-prog-box"><div class="lm-prog-num" style="color:#1A7A5E">'+streak+'</div><div class="lm-prog-lbl">ngày liên tục</div></div>';
+  h+='<div class="lm-prog-box"><div class="lm-prog-num" style="color:#1565C0">'+st.n+'</div><div class="lm-prog-lbl">ngày đã chấm</div></div>';
+  if(stage>=2&&progPct!==null){var pc=progPct>0?'#1A7A5E':progPct<0?'#C62828':'#666';
+    h+='<div class="lm-prog-box"><div class="lm-prog-num" style="color:'+pc+'">'+(progPct>0?'+':'')+progPct+'%</div><div class="lm-prog-lbl">so với trước</div></div>';}
+  h+='</div>';
+  if(stage>=2&&progPct!==null){
+    if(progPct>0)h+='<div class="lm-progmsg" style="color:#1A7A5E">🎉 Bạn đã tiến bộ '+progPct+'% so với giai đoạn trước. Hãy giữ đà này!</div>';
+    else if(progPct<0)h+='<div class="lm-progmsg" style="color:#E65100">Tổng điểm giảm nhẹ — đừng nản, chỉ cần tập trung 1 việc bên dưới.</div>';
+    else h+='<div class="lm-progmsg" style="color:#666">Bạn đang giữ ổn định. Một thay đổi nhỏ mỗi ngày tạo khác biệt lớn.</div>';
+  }
+  if(streak>=3)h+='<div class="lm-progmsg" style="color:#1A7A5E">🔥 Bạn đã giữ lời hứa với chính mình '+streak+' ngày liên tục.</div>';
+  h+='</div>';
+  // Pain-first + ONE ACTION
+  if(pain){
+    h+='<div class="lm-card"><div class="lm-title">🎯 Điều quan trọng nhất lúc này</div>';
+    h+='<div class="lm-pain"><span class="lm-pain-lbl">Điểm đau lớn nhất</span><span class="lm-pain-area" style="color:'+pain.c+'">'+escHtml(pain.lbl)+' · '+(pain.latest||pain.recent).toFixed(0)+'/10</span></div>';
+    if(stage>=3&&bott){
+      h+='<div class="lm-pain"><span class="lm-pain-lbl">Điểm nghẽn (đòn bẩy)</span><span class="lm-pain-area" style="color:'+bott.c+'">'+escHtml(bott.lbl)+'</span></div>';
+      if(bott.leverage)h+='<div class="lm-leverage">💡 '+escHtml(bott.lbl)+' là lĩnh vực nền tảng — cải thiện nó có thể kéo theo nhiều lĩnh vực khác cùng lên.</div>';
+      if(momentum&&momentum.delta>0)h+='<div class="lm-pain"><span class="lm-pain-lbl">Cơ hội (đang lên)</span><span class="lm-pain-area" style="color:#1A7A5E">'+escHtml(momentum.lbl)+' ▲</span></div>';
+    }
+    var actArea=(stage>=3&&bott)?bott:pain;
+    var act=WHEEL_ACTIONS[actArea.id]||('Chọn 1 việc nhỏ cho '+actArea.lbl+' và làm ngay hôm nay.');
+    h+='<div class="lm-action"><div class="lm-action-cap">⚡ NẾU HÔM NAY CHỈ LÀM 1 VIỆC</div><div class="lm-action-txt">'+escHtml(act)+'</div></div>';
+    h+='</div>';
+  }
+  // Tấm gương (stage≥2)
+  if(stage>=2){
+    h+='<div class="lm-card lm-mirror"><div class="lm-title">🪞 Tấm gương cuộc đời</div>';
+    if(improving.length)h+='<div class="lm-mrow"><span class="lm-mlbl" style="color:#1A7A5E">▲ Đang cải thiện</span><span class="lm-mval">'+improving.slice(0,3).map(function(a){return escHtml(a.lbl)+' (+'+a.delta.toFixed(1)+')';}).join(' · ')+'</span></div>';
+    if(declining.length)h+='<div class="lm-mrow"><span class="lm-mlbl" style="color:#C62828">▼ Đang giảm</span><span class="lm-mval">'+declining.slice(0,3).map(function(a){return escHtml(a.lbl)+' ('+a.delta.toFixed(1)+')';}).join(' · ')+'</span></div>';
+    if(pain)h+='<div class="lm-mrow"><span class="lm-mlbl" style="color:#E65100">⚠ Cần chú ý</span><span class="lm-mval">'+escHtml(pain.lbl)+'</span></div>';
+    var why=[];
+    if(declining.length)why.push(escHtml(declining[0].lbl)+' giảm '+Math.abs(declining[0].delta).toFixed(1)+' điểm trong '+st.spanDays+' ngày gần đây');
+    var pcmp=recentPlanCompletion();
+    if(pcmp&&pcmp.pct<50)why.push('tỉ lệ hoàn thành Kế hoạch ngày gần đây chỉ '+pcmp.pct+'% — hành động chưa theo kịp mục tiêu');
+    else if(pcmp&&pcmp.pct>=80)why.push('bạn hoàn thành '+pcmp.pct+'% Kế hoạch ngày gần đây — hành động bám sát mục tiêu 👏');
+    if(why.length)h+='<div class="lm-why">🔎 '+why.join('; ')+'.</div>';
+    h+='</div>';
+  }
+  // Cột mốc cảm xúc (stage≥4)
+  if(stage>=4){
+    var miles=st.areas.filter(function(a){return a.first>0&&(a.latest-a.first)>=2;}).sort(function(a,b){return (b.latest-b.first)-(a.latest-a.first);});
+    if(miles.length){
+      h+='<div class="lm-card lm-miles"><div class="lm-title">🏆 Cột mốc cảm xúc</div>';
+      miles.slice(0,3).forEach(function(a){
+        h+='<div class="lm-mile">'+escHtml(st.firstLbl)+' điểm <b>'+escHtml(a.lbl)+'</b> là <b style="color:#C62828">'+a.first+'</b> — hôm nay là <b style="color:#1A7A5E">'+a.latest+'</b>. Bạn đã đi rất xa! ✨</div>';
+      });
+      var becoming=[];
+      if(streak>=7)becoming.push('kỷ luật');
+      if(improving.length&&improving.length>=declining.length)becoming.push('hướng tăng trưởng');
+      if(st.areas.filter(function(a){return a.leverage&&a.latest>=7;}).length)becoming.push('vững nền tảng');
+      if(becoming.length)h+='<div class="lm-becoming">🌱 Bạn đang trở thành một người <b>'+becoming.join(', ')+'</b>.</div>';
+      h+='</div>';
+    }
+  }
+  // Sứ mệnh (stage 5)
+  if(stage>=5){
+    h+='<div class="lm-card lm-purpose"><div class="lm-title">⭐ Sứ mệnh & hướng đi</div>';
+    h+='<div class="lm-sub">Bạn đã đồng hành '+st.spanDays+' ngày và '+st.n+' lần soi gương cuộc đời. Hãy tự hỏi:</div>';
+    h+='<div class="lm-purpose-q">"Cuộc đời tôi đang xây dựng để lại điều gì? Tôi muốn được nhớ đến vì điều gì?"</div></div>';
+  }
   el.innerHTML=h;
 }
 
@@ -7183,6 +7394,7 @@ function bindStatic(){
     if(!r)return;
     if(fbDb&&fbUser)fsSet('wheel',{wheel:loadWheel()}).catch(function(){});
     renderWheelCompare(); // cập nhật danh sách mốc so sánh khi chấm điểm hôm nay
+    renderLifeMirror();   // cập nhật La bàn / Tấm gương cuộc đời theo điểm mới
   });
 
 
