@@ -1,4 +1,4 @@
-<!-- VERSION: v6.9-prospect-management-remove-fullscreen-dir-minimize -->
+<!-- VERSION: v6.9.1-restore-fullscreen-branchstats-bymode -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -823,7 +823,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
       <button class="tbtn" id="btn-tzoom-in">+</button>
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
-      <button class="tbtn green" id="btn-tfit">&#9974; Cả cây</button>
+      <button class="tbtn gold" id="btn-fullscreen">&#x26F6; Toàn trang</button>
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn" id="btn-add-root">+ Gốc</button>
       <button class="tbtn green" id="btn-export">&#128228; Xuất</button>
@@ -4353,28 +4353,22 @@ function renderBranchStats(){
   h+='<span class="lk-pill" id="btn-add-lk" style="border-color:#BBB;color:#888">+ Leader Key</span>';
   h+='</div>';
   // Đếm theo TẦNG (trực hệ + phả hệ, không tính gốc) và theo F (bảo trợ, không tính gốc)
-  var byLvl={},byF={};
-  treeNodes.forEach(function(n){
-    if(!n.parentId)return;
-    var l=computeLevel2(n.id);
-    byLvl[l]=(byLvl[l]||0)+1;
-    var d=sponsorInfo(n).depth;
-    if(d>0)byF[d]=(byF[d]||0)+1;
-  });
-  var lvls=Object.keys(byLvl).map(Number).sort(function(a,b){return a-b;});
-  var fds=Object.keys(byF).map(Number).sort(function(a,b){return a-b;});
-  if(lvls.length){
-    h+='<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:2px"><b>Theo t\u1ea7ng:</b>';
-    lvls.forEach(function(l){
-      h+='<span style="background:#F0F0F0;border-radius:11px;padding:1px 9px">T'+l+': <b>'+byLvl[l]+'</b></span>';
+  // v6.9.1 \u2014 Nh\u1ecb ph\u00e2n: \u1ea9n c\u1ea3 "Theo t\u1ea7ng" & "Theo F". M\u1eb7t tr\u1eddi: ch\u1ec9 hi\u1ec7n "Theo F".
+  if(currentTreeMode!=='binary'){
+    var byF={};
+    treeNodes.forEach(function(n){
+      if(!n.parentId)return;
+      var d=sponsorInfo(n).depth;
+      if(d>0)byF[d]=(byF[d]||0)+1;
     });
+    var fds=Object.keys(byF).map(Number).sort(function(a,b){return a-b;});
     if(fds.length){
-      h+='<span style="margin-left:8px"><b>Theo F:</b></span>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:2px"><b>Theo F:</b>';
       fds.forEach(function(d){
         h+='<span style="background:#E8F5F0;border-radius:11px;padding:1px 9px">F'+d+': <b>'+byF[d]+'</b></span>';
       });
+      h+='</div>';
     }
-    h+='</div>';
   }
   el.innerHTML=h;
   renderFocusBar();
@@ -7123,10 +7117,6 @@ function bindStatic(){
   document.getElementById('btn-tzoom-out').addEventListener('click',function(){
     if(currentTreeMode==='binary'){treeScale=Math.max(treeScale/1.2,MINZ);applyTreeTransform();}
     else{starScale=Math.max(starScale/1.2,MINZ);applyStarTransform();}
-  });
-  document.getElementById('btn-tfit').addEventListener('click',function(){
-    resizeTreeCanvas();
-    if(currentTreeMode==='binary')treeFit();else starFit();
   });
   document.getElementById('btn-add-root').addEventListener('click',function(){
     openAddNodeModal2(null,null);
