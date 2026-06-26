@@ -1,4 +1,4 @@
-<!-- VERSION: v6.8-banner-colors-allclubs-public-directions-mappicker -->
+<!-- VERSION: v6.9-prospect-management-remove-fullscreen-dir-minimize -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -533,6 +533,66 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .wc-dval{font-size:12px;font-weight:700;color:#666;white-space:nowrap}
 .wc-dpct{width:74px;text-align:right;font-size:12.5px;font-weight:800;white-space:nowrap}
 .wc-summary{font-size:12px;font-weight:700;font-family:Arial;margin-top:10px;padding-top:9px;border-top:1px solid #F0F0F0;line-height:1.7}
+
+/* ===== v6.9 — Tiềm năng & Theo dõi (Prospect Management) ===== */
+.pf-list{display:flex;flex-direction:column;gap:8px;margin-bottom:80px}
+.pf-card{background:white;border-radius:12px;border:1px solid #E8E8E8;overflow:hidden;display:flex;align-items:stretch}
+.pf-ind{width:6px;flex-shrink:0}
+.pf-ind.pf-green{background:#2E7D32}
+.pf-ind.pf-yellow{background:#F9A825}
+.pf-ind.pf-orange{background:#E65100}
+.pf-ind.pf-red{background:#C62828}
+.pf-ind.pf-darkred{background:#4A0000;animation:pfblink 1.2s ease-in-out infinite}
+.pf-ind.pf-none{background:#E0E0E0}
+@keyframes pfblink{0%,100%{background:#4A0000;opacity:1}50%{background:#B71C1C;opacity:.5}}
+.pf-body{flex:1;padding:10px 12px;min-width:0}
+.pf-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.pf-name-btn{font-size:15px;font-weight:800;color:#1565C0;cursor:pointer;border:none;background:none;padding:0;text-align:left;font-family:Arial;text-decoration:underline}
+.pf-score{background:#FFF3E0;color:#E65100;border-radius:20px;font-size:11px;font-weight:800;padding:2px 9px;white-space:nowrap;flex-shrink:0}
+.pf-meta{font-size:12px;color:#777;line-height:1.7}
+.pf-stages{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.pf-stage{font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px}
+.pf-stage.biz{background:#E3F2FD;color:#1565C0}
+.pf-stage.hlth{background:#E8F5E9;color:#2E7D32}
+.pf-stage.mem{background:#F3E5F5;color:#6A1B9A}
+.pf-act{padding:7px 10px 9px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #F5F5F5}
+.pf-fu-row{background:#F5F5F5;border-radius:7px;padding:5px 9px;margin-top:5px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px}
+.pf-fu-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pf-filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.pf-search{flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #E0E0E0;border-radius:10px;font-size:14px;font-family:Arial;outline:none}
+.pf-search:focus{border-color:#1A7A5E}
+.pf-filter{padding:7px 11px;border:1px solid #E0E0E0;border-radius:8px;background:#F8F8F8;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
+.pf-filter.on{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+.pf-empty{text-align:center;padding:48px 20px;color:#BBB;font-size:15px;line-height:1.8}
+/* Prospect detail/edit modal */
+.pm-section{margin-bottom:14px}
+.pm-sec-title{font-size:12px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid #F0F0F0}
+.pm-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.pm-fld{flex:1;min-width:120px}
+.pm-fld label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:3px}
+.pm-fld input,.pm-fld select,.pm-fld textarea{width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 10px;font-size:14px;font-family:Arial;outline:none;background:#fff;box-sizing:border-box}
+.pm-fld input:focus,.pm-fld select:focus,.pm-fld textarea:focus{border-color:#1A7A5E}
+.pm-fu-list{margin-bottom:6px;display:flex;flex-direction:column;gap:6px}
+.pm-fu-item{background:#F5F5F5;border-radius:9px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start}
+.pm-fu-date{font-size:12px;font-weight:800;color:#555;white-space:nowrap}
+.pm-fu-note{flex:1;font-size:13px;color:#333;line-height:1.5}
+.pm-fu-del{border:none;background:none;cursor:pointer;color:#C62828;font-size:15px;flex-shrink:0;padding:0;line-height:1}
+.pm-add-fu{background:#F5F5F5;border-radius:10px;padding:10px;margin-top:4px}
+.pm-add-fu-title{font-size:12px;font-weight:700;color:#555;margin-bottom:7px}
+.pm-score-wrap{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.pm-score-num{font-size:22px;font-weight:800;color:#E65100;min-width:28px;text-align:center}
+.pm-score-inp{flex:1;-webkit-appearance:none;appearance:none;height:22px;border-radius:11px;accent-color:#E65100;background:#F0F0F0;border:none;outline:none}
+/* Action center prospect section */
+.ac-prospect-hd{font-size:13px;font-weight:800;color:#E65100;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
+.ac-prospect-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F5F5F5;cursor:pointer}
+.ac-prospect-item:last-child{border-bottom:none}
+.ac-prospect-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ac-prospect-name{font-size:13px;font-weight:700;color:#1A1A1A;flex:1}
+.ac-prospect-since{font-size:11px;color:#999;white-space:nowrap}
+/* v6.9 — LRM directions panel minimize button */
+.lrm-min-btn{position:absolute;top:7px;right:7px;z-index:10;background:#1565C0;color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
+.leaflet-routing-container{position:relative!important}
+.leaflet-routing-container.lrm-collapsed .leaflet-routing-alt,.leaflet-routing-container.lrm-collapsed .leaflet-routing-geocoders,.leaflet-routing-container.lrm-collapsed h2{display:none!important}
 </style>
 </head>
 <body>
@@ -634,6 +694,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="tp">&#127919; Mục tiêu - Hành động - Kết quả</button>
+    <button class="mtab" data-main="prospect">&#128101; Tiềm năng</button>
     <button class="mtab" data-main="map">&#128506;&#65039; Bản đồ</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
@@ -763,7 +824,6 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <button class="tbtn" id="btn-tzoom-in">+</button>
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
       <button class="tbtn green" id="btn-tfit">&#9974; Cả cây</button>
-      <button class="tbtn gold" id="btn-fullscreen">&#x26F6; Toàn trang</button>
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn" id="btn-add-root">+ Gốc</button>
       <button class="tbtn green" id="btn-export">&#128228; Xuất</button>
@@ -812,6 +872,13 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
   </div>
 
+  <!-- TIỀM NĂNG & THEO DÕI -->
+  <div class="page" id="page-prospect">
+    <div class="content">
+      <div id="prospect-content"></div>
+    </div>
+  </div>
+
   <!-- HƯỚNG DẪN -->
   <div class="page" id="page-guide">
     <div class="content" id="guide-content"></div>
@@ -820,6 +887,22 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
   <!-- QUẢN TRỊ -->
   <div class="page" id="page-admin">
     <div class="content" id="admin-content"></div>
+  </div>
+</div>
+
+<!-- PROSPECT MODAL -->
+<div class="modal-ov" id="prosp-ov">
+  <div class="modal" id="prosp-modal">
+    <div class="modal-hd">
+      <div class="modal-av" style="background:#1565C0;font-size:20px">&#128101;</div>
+      <div class="modal-name" id="prosp-modal-title">Tiềm năng</div>
+      <button class="modal-x" id="prosp-modal-x">&#10005;</button>
+    </div>
+    <div class="modal-body" id="prosp-modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" id="prosp-modal-save" style="flex:1">&#128190; Lưu</button>
+      <button class="btn btn-r" id="prosp-modal-del" style="display:none">&#128465;&#65039; Xoá</button>
+    </div>
   </div>
 </div>
 
@@ -1891,6 +1974,21 @@ function _ensureDirClear(map){
   b.onclick=function(e){e.stopPropagation();clearDirections();};
   cont.appendChild(b);
 }
+function _ensureLrmMinBtn(map){
+  // Inject minimize button into the LRM routing panel after a short delay (panel renders async)
+  setTimeout(function(){
+    var cont=map.getContainer();if(!cont)return;
+    var panel=cont.querySelector('.leaflet-routing-container');
+    if(!panel||panel.querySelector('.lrm-min-btn'))return;
+    var mb=document.createElement('button');mb.type='button';mb.className='lrm-min-btn';mb.textContent='− Thu gọn';
+    mb.onclick=function(e){
+      e.stopPropagation();
+      var collapsed=panel.classList.toggle('lrm-collapsed');
+      mb.textContent=collapsed?'+ Chỉ đường':'− Thu gọn';
+    };
+    panel.appendChild(mb);
+  },800);
+}
 function _setRoute(map,a,b){
   if(!map||!window.L||!L.Routing)return;
   if(_routeCtrl){try{_routeCtrl.setWaypoints([L.latLng(a[0],a[1]),L.latLng(b[0],b[1])]);}catch(e){}}
@@ -1904,6 +2002,7 @@ function _setRoute(map,a,b){
     }).addTo(map);
   }
   _ensureDirClear(map);
+  _ensureLrmMinBtn(map);
 }
 function clearDirections(){
   var map=_activeMap();
@@ -2165,7 +2264,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -2947,6 +3046,7 @@ function renderActionCenter(){
     h+='<div class="ac-add"><input class="ac-inp" data-ac-input="'+s.id+'" placeholder="Thêm việc buổi '+ph+'..."><button class="ac-addbtn" data-ac-add="'+s.id+'">+</button></div>';
     h+='</div>';
   });
+  h+=_prospectAttentionHtml();
   el.innerHTML=h;
 }
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
@@ -6042,6 +6142,7 @@ document.addEventListener('click',function(e){
     if(pg==='tp')renderTpSub(currentSubTab.tp||'goals');
     if(pg==='admin')renderAdminPage();
     if(pg==='map')renderMapPage();
+    if(pg==='prospect')renderProspectPage();
     return;
   }
 
@@ -6091,6 +6192,26 @@ document.addEventListener('click',function(e){
     else if(ma==='dir-to')startDirections(t.getAttribute('data-club-lat'),t.getAttribute('data-club-lng'),t.getAttribute('data-club-name'));
     else if(ma==='dir-clear')clearDirections();
     else if(ma==='extra-geo-here')extraMapUseGeolocation();
+    return;
+  }
+
+  // v6.9 — Tiềm năng
+  t=e.target.closest('[data-prospect-action]');
+  if(t){
+    var pa=t.getAttribute('data-prospect-action');
+    if(pa==='add')openProspectModal(null);
+    else if(pa==='add-fu')_addProspectFollowup();
+    return;
+  }
+  t=e.target.closest('[data-prospect-open]');
+  if(t){openProspectModal(t.getAttribute('data-prospect-open'));return;}
+  t=e.target.closest('[data-pf-color]');
+  if(t){_prospectFilter.color=t.getAttribute('data-pf-color');renderProspectPage();return;}
+  t=e.target.closest('[data-pm-del-fu]');
+  if(t){
+    var fi=parseInt(t.getAttribute('data-pm-del-fu'));
+    _prospectModalFus.splice(fi,1);
+    _renderModalFuList();
     return;
   }
 
@@ -7015,7 +7136,7 @@ function bindStatic(){
   document.getElementById('btn-import').addEventListener('click',importData);
   document.getElementById('btn-export-branch').addEventListener('click',exportSubtree);
   document.getElementById('btn-import-branch').addEventListener('click',importSubtree);
-  document.getElementById('btn-fullscreen').addEventListener('click',openFullscreen);
+  var _bfs=document.getElementById('btn-fullscreen');if(_bfs)_bfs.addEventListener('click',openFullscreen);
   document.getElementById('btn-fs-close').addEventListener('click',closeFullscreen);
   document.getElementById('btn-legend').addEventListener('click',openLegend);
   document.getElementById('legend-close').addEventListener('click',closeLegend);
@@ -7025,6 +7146,11 @@ function bindStatic(){
   document.getElementById('tt-ov').addEventListener('click',function(e){if(e.target===this)closeThangTien();});
   document.getElementById('acctview-close').addEventListener('click',closeAccountView);
   document.getElementById('acctview-ov').addEventListener('click',function(e){if(e.target===this)closeAccountView();});
+  document.getElementById('prosp-modal-x').addEventListener('click',closeProspectModal);
+  document.getElementById('prosp-ov').addEventListener('click',function(e){if(e.target===this)closeProspectModal();});
+  document.getElementById('prosp-modal-save').addEventListener('click',saveProspectModal);
+  document.getElementById('prosp-modal-del').addEventListener('click',function(){if(_prospectEditId)deleteProspect(_prospectEditId);});
+  document.getElementById('pm-score')&&document.getElementById('pm-score').addEventListener('input',function(){var n=document.getElementById('pm-score-num');if(n)n.textContent=this.value;});
 
   // Cum calc (delegated vì render động)
   document.addEventListener('click',function(e){
@@ -7208,6 +7334,300 @@ function setupPan(wrapId,getOffset,setOffset){
       up();
     }
   });
+}
+
+// ================================================================
+// v6.9 — TIỀM NĂNG & THEO DÕI (Prospect Management)
+// ================================================================
+var BSTAGES=['','Quan tâm ban đầu','Đã mời Zoom','Đã dự Zoom','Đã mời gặp trực tiếp','Đã dự buổi trực tiếp','Đang cân nhắc','Sẵn sàng đăng ký'];
+var HSTAGES=['','Quan tâm sức khoẻ','Đã mời trải nghiệm CLB','Đã trải nghiệm CLB','Đã mời lớp học','Đã học lớp','Đăng ký 5 ngày chuyên sâu','Đã học xong','Sẵn sàng đăng ký'];
+var MSTATUS={none:'Chưa đăng ký',registered:'Đã đăng ký ID',existing:'Thành viên cũ'};
+var _prospectsAll=[];
+var _prospectFilter={q:'',color:''};
+var _prospectEditId=null;
+var _prospectModalFus=[];
+
+var _PROSPECT_COLORS={green:'#2E7D32',yellow:'#F9A825',orange:'#E65100',red:'#C62828',darkred:'#4A0000'};
+
+function _todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function loadProspects(){
+  try{var s=nmGet('prospects_v1');_prospectsAll=s?JSON.parse(s):[];}catch(e){_prospectsAll=[];}
+  if(fbDb&&fbUser){
+    fsGet('prospects').then(function(d){
+      if(d&&d.list&&d.list.length){
+        _prospectsAll=d.list;nmSet('prospects_v1',JSON.stringify(_prospectsAll));
+        if(document.getElementById('page-prospect').classList.contains('on'))renderProspectPage();
+        renderActionCenter();
+      }
+    }).catch(function(){});
+  }
+}
+function saveProspects(){
+  nmSet('prospects_v1',JSON.stringify(_prospectsAll));
+  if(fbDb&&fbUser)fsSet('prospects',{list:_prospectsAll}).catch(function(){});
+}
+
+function _prospectLastDate(p){
+  var dates=[p.contactDate].concat((p.followups||[]).map(function(f){return f.date;})).filter(Boolean);
+  if(!dates.length)return null;
+  return dates.reduce(function(a,b){return a>b?a:b;});
+}
+function _prospectDaysSince(p){
+  var d=_prospectLastDate(p);
+  if(!d)return 9999;
+  var ms=new Date(d).getTime();
+  if(isNaN(ms))return 9999;
+  return Math.max(0,Math.floor((Date.now()-ms)/86400000));
+}
+function _prospectColorKey(p){
+  var d=_prospectDaysSince(p);
+  if(d===9999)return 'none';
+  if(d<=3)return 'green';
+  if(d<=7)return 'yellow';
+  if(d<=14)return 'orange';
+  if(d<=30)return 'red';
+  return 'darkred';
+}
+
+function renderProspectPage(){
+  var el=document.getElementById('prospect-content');if(!el)return;
+  var q=(_prospectFilter.q||'').toLowerCase();
+  var cf=_prospectFilter.color;
+  var list=_prospectsAll.slice().sort(function(a,b){
+    var da=_prospectDaysSince(a),db=_prospectDaysSince(b);
+    if(da!==db)return db-da;
+    return (b.score||1)-(a.score||1);
+  });
+  if(q)list=list.filter(function(p){
+    return (p.name||'').toLowerCase().indexOf(q)>=0||(p.region||'').toLowerCase().indexOf(q)>=0||(p.phone||'').indexOf(q)>=0;
+  });
+  if(cf)list=list.filter(function(p){return _prospectColorKey(p)===cf;});
+
+  var h='';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+  h+='<div style="font-size:16px;font-weight:800;color:#1A1A1A">&#128101; Danh sách Tiềm năng <span style="font-size:14px;color:#999;font-weight:600">('+_prospectsAll.length+')</span></div>';
+  h+='<button class="btn btn-g btn-sm" data-prospect-action="add">+ Thêm mới</button>';
+  h+='</div>';
+
+  h+='<div class="pf-filter-bar">';
+  h+='<input class="pf-search" id="pf-search" placeholder="&#128269; Tìm tên, khu vực, SĐT..." value="'+escHtml(q)+'">';
+  h+='</div>';
+
+  var colors=[['','Tất cả'],['green','Xanh 1-3n'],['yellow','Vàng 4-7n'],['orange','Cam 8-14n'],['red','Đỏ 15-30n'],['darkred','Đỏ >30n']];
+  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">';
+  colors.forEach(function(c){
+    var active=(cf===c[0]);
+    var bg=c[0]?_PROSPECT_COLORS[c[0]]:'';
+    var style=bg?('background:'+bg+';color:#fff;border:1px solid '+bg+';border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer'):
+      ('background:'+(active?'#1A1A1A':'#F8F8F8')+';color:'+(active?'#fff':'#333')+';border:1px solid '+(active?'#1A1A1A':'#E0E0E0')+';border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer');
+    h+='<button style="'+style+'" data-pf-color="'+c[0]+'">'+c[1]+'</button>';
+  });
+  h+='</div>';
+
+  if(!list.length){
+    h+='<div class="pf-empty">'+(q||cf?'Không tìm thấy kết quả phù hợp.':'Chưa có tiềm năng nào.<br>Bấm <b>+ Thêm mới</b> để bắt đầu xây dựng danh sách.')+'</div>';
+  }else{
+    h+='<div class="pf-list">';
+    list.forEach(function(p){
+      var ck=_prospectColorKey(p);
+      var days=_prospectDaysSince(p);
+      var fu=p.followups||[];
+      var lastFu=fu.length?fu[fu.length-1]:null;
+      h+='<div class="pf-card">';
+      h+='<div class="pf-ind pf-'+ck+'"></div>';
+      h+='<div class="pf-body">';
+      h+='<div class="pf-top">';
+      h+='<button class="pf-name-btn" data-prospect-open="'+p.id+'">'+escHtml(p.name||'(Chưa đặt tên)')+'</button>';
+      if(p.score)h+='<span class="pf-score">Nhóm '+p.score+'/10</span>';
+      h+='</div>';
+      var meta=[];
+      if(p.region)meta.push('&#128205; '+escHtml(p.region));
+      if(p.phone)meta.push('&#128222; '+escHtml(p.phone));
+      if(p.zalo)meta.push('Zalo: '+escHtml(p.zalo));
+      var contactLabel=days===9999?'Chưa có ngày':(days===0?'Hôm nay':days+' ngày trước');
+      meta.push('&#128197; <b>'+contactLabel+'</b>');
+      if(meta.length)h+='<div class="pf-meta">'+meta.join(' &nbsp;&middot;&nbsp; ')+'</div>';
+      var stages=[];
+      if(p.businessStage&&BSTAGES[p.businessStage])stages.push('<span class="pf-stage biz">&#128188; '+escHtml(BSTAGES[p.businessStage])+'</span>');
+      if(p.healthStage&&HSTAGES[p.healthStage])stages.push('<span class="pf-stage hlth">&#127807; '+escHtml(HSTAGES[p.healthStage])+'</span>');
+      if(p.memberStatus&&p.memberStatus!=='none')stages.push('<span class="pf-stage mem">&#127894;&#65039; '+escHtml(MSTATUS[p.memberStatus]||p.memberStatus)+'</span>');
+      if(stages.length)h+='<div class="pf-stages">'+stages.join('')+'</div>';
+      if(lastFu&&lastFu.note)h+='<div class="pf-fu-row"><div class="pf-fu-dot" style="background:'+(_PROSPECT_COLORS[ck]||'#CCC')+'"></div><span style="font-size:11px;color:#999;margin-right:4px">Lần theo dõi '+fu.length+':</span>'+escHtml(lastFu.note)+'</div>';
+      h+='</div>';
+      h+='<div class="pf-act"><button class="btn btn-o btn-sm" data-prospect-open="'+p.id+'">&#9998; Sửa / Theo dõi</button></div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  el.innerHTML=h;
+  var si=document.getElementById('pf-search');
+  if(si)si.addEventListener('input',function(){_prospectFilter.q=this.value;renderProspectPage();});
+}
+
+// ── Modal mở/đóng ──
+function openProspectModal(id){
+  _prospectEditId=id||null;
+  var p=id?(_prospectsAll.find(function(x){return x.id===id;})||null):null;
+  if(!p)p={id:'p'+Date.now(),name:'',contactDate:_todayISO(),zalo:'',fb:'',phone:'',region:'',followups:[],businessStage:0,healthStage:0,memberStatus:'none',score:5};
+  _prospectModalFus=(p.followups||[]).map(function(f){return {date:f.date,note:f.note};});
+  var titleEl=document.getElementById('prosp-modal-title');
+  if(titleEl)titleEl.textContent=id?'Chi tiết Tiềm Năng':'Thêm Tiềm Năng Mới';
+  var delBtn=document.getElementById('prosp-modal-del');
+  if(delBtn)delBtn.style.display=id?'':'none';
+  var body=document.getElementById('prosp-modal-body');if(!body)return;
+  body.innerHTML=_buildProspectModalHtml(p);
+  var scoreInp=document.getElementById('pm-score');
+  if(scoreInp)scoreInp.addEventListener('input',function(){var n=document.getElementById('pm-score-num');if(n)n.textContent=this.value;});
+  _renderModalFuList();
+  document.getElementById('prosp-ov').classList.add('open');
+}
+function closeProspectModal(){
+  document.getElementById('prosp-ov').classList.remove('open');
+}
+
+function _buildProspectModalHtml(p){
+  function ge(v){return escHtml(v==null?'':String(v));}
+  function optList(arr,val){
+    return arr.map(function(s,i){return '<option value="'+i+'"'+(i==val?' selected':'')+'>'+ge(s)+'</option>';}).join('');
+  }
+  var msel='<option value="none"'+(p.memberStatus==='none'||!p.memberStatus?' selected':'')+'>Chưa đăng ký</option>'+
+    '<option value="registered"'+(p.memberStatus==='registered'?' selected':'')+'>Đã đăng ký ID</option>'+
+    '<option value="existing"'+(p.memberStatus==='existing'?' selected':'')+'>Thành viên cũ</option>';
+  return (
+    '<div class="pm-section">'+
+      '<div class="pm-sec-title">Thông tin cơ bản</div>'+
+      '<div class="pm-row"><div class="pm-fld" style="flex:2"><label>Tên</label><input id="pm-name" value="'+ge(p.name)+'" placeholder="Họ và tên..."></div>'+
+      '<div class="pm-fld"><label>Ngày liên hệ đầu</label><input id="pm-contactDate" type="date" value="'+ge(p.contactDate)+'"></div></div>'+
+      '<div class="pm-row">'+
+        '<div class="pm-fld"><label>Zalo</label><input id="pm-zalo" value="'+ge(p.zalo)+'"></div>'+
+        '<div class="pm-fld"><label>Facebook</label><input id="pm-fb" value="'+ge(p.fb)+'"></div>'+
+      '</div>'+
+      '<div class="pm-row">'+
+        '<div class="pm-fld"><label>SĐT</label><input id="pm-phone" type="tel" value="'+ge(p.phone)+'"></div>'+
+        '<div class="pm-fld"><label>Khu vực / Địa phương</label><input id="pm-region" value="'+ge(p.region)+'"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pm-section">'+
+      '<div class="pm-sec-title">Mức độ quan tâm</div>'+
+      '<div class="pm-row">'+
+        '<div class="pm-fld"><label>&#128188; Cơ hội kinh doanh</label><select id="pm-bstage">'+optList(BSTAGES,p.businessStage||0)+'</select></div>'+
+        '<div class="pm-fld"><label>&#127807; Sức khoẻ</label><select id="pm-hstage">'+optList(HSTAGES,p.healthStage||0)+'</select></div>'+
+      '</div>'+
+      '<div class="pm-row"><div class="pm-fld"><label>&#127894;&#65039; Tình trạng thành viên</label><select id="pm-mstatus">'+msel+'</select></div></div>'+
+    '</div>'+
+    '<div class="pm-section">'+
+      '<div class="pm-sec-title">Lịch sử theo dõi</div>'+
+      '<div class="pm-fu-list" id="pm-fu-list"></div>'+
+      '<div class="pm-add-fu">'+
+        '<div class="pm-add-fu-title">&#10133; Thêm lần theo dõi mới</div>'+
+        '<div class="pm-row">'+
+          '<div class="pm-fld"><label>Ngày</label><input id="pm-fu-date" type="date" value="'+_todayISO()+'"></div>'+
+          '<div class="pm-fld" style="flex:2"><label>Ghi chú nội dung</label><input id="pm-fu-note" placeholder="Kết quả cuộc gọi / gặp mặt..."></div>'+
+        '</div>'+
+        '<button class="btn btn-o btn-sm" data-prospect-action="add-fu">+ Thêm</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pm-section">'+
+      '<div class="pm-sec-title">Điểm tiềm năng (Nhóm 1 – 10)</div>'+
+      '<div class="pm-score-wrap">'+
+        '<div class="pm-score-num" id="pm-score-num">'+(p.score||5)+'</div>'+
+        '<input class="pm-score-inp" id="pm-score" type="range" min="1" max="10" value="'+(p.score||5)+'">'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:#BBB;margin-top:3px"><span>1 – Ít tiềm năng nhất</span><span>10 – Tiềm năng nhất</span></div>'+
+    '</div>'
+  );
+}
+
+function _renderModalFuList(){
+  var el=document.getElementById('pm-fu-list');if(!el)return;
+  if(!_prospectModalFus.length){
+    el.innerHTML='<div style="font-size:12px;color:#BBB;text-align:center;padding:8px">Chưa có lần theo dõi nào</div>';
+    return;
+  }
+  var h='';
+  _prospectModalFus.forEach(function(f,i){
+    h+='<div class="pm-fu-item">'+
+      '<div style="font-size:11px;font-weight:800;color:#888;white-space:nowrap">Lần '+(i+1)+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:12px;font-weight:700;color:#555">&#128197; '+escHtml(f.date)+'</div>'+
+        '<div style="font-size:13px;color:#333;margin-top:2px;line-height:1.5">'+escHtml(f.note)+'</div>'+
+      '</div>'+
+      '<button class="pm-fu-del" data-pm-del-fu="'+i+'">&#10005;</button>'+
+    '</div>';
+  });
+  el.innerHTML=h;
+}
+
+function _addProspectFollowup(){
+  var date=((document.getElementById('pm-fu-date')||{}).value||'').trim()||_todayISO();
+  var note=((document.getElementById('pm-fu-note')||{}).value||'').trim();
+  if(!note){showToast('Nhập ghi chú trước khi thêm');return;}
+  _prospectModalFus.push({date:date,note:note});
+  var ni=document.getElementById('pm-fu-note');if(ni)ni.value='';
+  _renderModalFuList();
+}
+
+function saveProspectModal(){
+  var name=((document.getElementById('pm-name')||{}).value||'').trim();
+  if(!name){showToast('Vui lòng nhập tên');return;}
+  var obj={
+    id:_prospectEditId||('p'+Date.now()),
+    name:name,
+    contactDate:((document.getElementById('pm-contactDate')||{}).value||'').trim()||_todayISO(),
+    zalo:((document.getElementById('pm-zalo')||{}).value||'').trim(),
+    fb:((document.getElementById('pm-fb')||{}).value||'').trim(),
+    phone:((document.getElementById('pm-phone')||{}).value||'').trim(),
+    region:((document.getElementById('pm-region')||{}).value||'').trim(),
+    businessStage:parseInt(((document.getElementById('pm-bstage')||{}).value)||'0')||0,
+    healthStage:parseInt(((document.getElementById('pm-hstage')||{}).value)||'0')||0,
+    memberStatus:((document.getElementById('pm-mstatus')||{}).value)||'none',
+    score:parseInt(((document.getElementById('pm-score')||{}).value)||'5')||5,
+    followups:_prospectModalFus.slice()
+  };
+  if(_prospectEditId){
+    var idx=_prospectsAll.findIndex(function(x){return x.id===_prospectEditId;});
+    if(idx>=0)_prospectsAll[idx]=obj;else _prospectsAll.push(obj);
+  }else{
+    _prospectsAll.push(obj);
+  }
+  saveProspects();
+  closeProspectModal();
+  renderProspectPage();
+  renderActionCenter();
+  showToast('Đã lưu: '+obj.name);
+}
+
+function deleteProspect(id){
+  if(!confirm('Xoá tiềm năng này khỏi danh sách?'))return;
+  _prospectsAll=_prospectsAll.filter(function(x){return x.id!==id;});
+  saveProspects();
+  closeProspectModal();
+  renderProspectPage();
+  renderActionCenter();
+  showToast('Đã xoá');
+}
+
+// ── Tích hợp Action Center: hiện top tiềm năng cần liên hệ ──
+function _prospectAttentionHtml(){
+  var urgent=_prospectsAll.filter(function(p){return _prospectDaysSince(p)>=4;})
+    .sort(function(a,b){return _prospectDaysSince(b)-_prospectDaysSince(a)})
+    .slice(0,5);
+  if(!urgent.length)return '';
+  var h='<div class="ac-prospect-hd">&#128204; Tiềm năng cần liên hệ hôm nay</div>';
+  urgent.forEach(function(p){
+    var ck=_prospectColorKey(p);
+    var days=_prospectDaysSince(p);
+    var label=days>=4&&days<=7?'Vàng':days>=8&&days<=14?'Cam':days>=15&&days<=30?'Đỏ':'Đỏ sẫm (>30n)';
+    var fu=p.followups||[];
+    var nextLabel='Lần theo dõi #'+(fu.length+1);
+    h+='<div class="ac-prospect-item" data-prospect-open="'+p.id+'">'+
+      '<div class="ac-prospect-dot" style="background:'+(_PROSPECT_COLORS[ck]||'#CCC')+'"></div>'+
+      '<div class="ac-prospect-name">'+escHtml(p.name)+'<span style="font-size:11px;font-weight:600;color:#999;margin-left:6px">'+nextLabel+'</span></div>'+
+      '<div class="ac-prospect-since">'+days+'n &middot; '+label+'</div>'+
+    '</div>';
+  });
+  return '<div style="background:#FFF8E1;border-radius:10px;padding:8px 12px;margin-top:14px;border:1px solid #FFE082">'+h+'</div>';
 }
 
 // ================================================================
