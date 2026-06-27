@@ -1,4 +1,4 @@
-<!-- VERSION: v6.17-goals-vision-board -->
+<!-- VERSION: v6.18-admin-per-person-analytics-secret-view -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -611,6 +611,29 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .an-health .an-h{text-align:left}
 .an-health-num{font-size:44px;font-weight:800;font-family:Arial;line-height:1;margin:4px 0 10px}
 .an-insights .an-ins{font-size:12.5px;color:#333;background:#F4F8FF;border-radius:9px;padding:9px 11px;margin-bottom:6px;line-height:1.55;font-family:Arial}
+/* v6.18 — Chi tiết theo người + Xem toàn bộ nội dung TV (QTV) */
+.an-person{border:1px solid #ECECEC;border-radius:10px;padding:10px;margin-bottom:8px;background:#FCFCFB}
+.an-person-hd{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+.an-person-name{font-size:13.5px;font-weight:800;font-family:Arial;color:#1A1A1A}
+.an-person-meta{font-size:11px;color:#888;font-family:Arial;margin-top:2px;line-height:1.5}
+.an-person-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.an-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.an-chip{font-size:11px;font-family:Arial;font-weight:700;background:#EAF3FF;color:#1565C0;border-radius:20px;padding:3px 9px;white-space:nowrap}
+.an-chip.zero{background:#F2F2F2;color:#AAA}
+.an-person-view{margin-top:9px}
+.an-person-view button{background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
+.av-sec{margin:14px 0 4px}
+.av-empty{font-size:12.5px;color:#aaa;font-family:Arial;padding:6px 0}
+.av-box{border:1px solid #EEE;border-radius:10px;overflow:hidden}
+.av-li{padding:8px 11px;border-bottom:1px solid #F5F5F5;font-size:12.5px;font-family:Arial}
+.av-li:last-child{border-bottom:none}
+.av-li b{font-weight:700}
+.av-tag{font-size:10.5px;color:#1565C0;font-weight:700}
+.av-vb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.av-vb{border:1px solid #EEE;border-radius:10px;overflow:hidden}
+.av-vb-prev{height:80px;position:relative;overflow:hidden;background:#EFEDE6}
+.av-vb-prev .vbp-el{position:absolute}
+.av-vb-nm{font-size:11px;font-weight:700;font-family:Arial;padding:6px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ===== v6.9 — Tiềm năng & Theo dõi (Prospect Management) ===== */
 .pf-list{display:flex;flex-direction:column;gap:8px;margin-bottom:80px}
@@ -6225,6 +6248,24 @@ function renderAnalytics(data){
   if(grow&&grow.recent>grow.prior)h+='<div class="an-co" style="border-color:#1565C0"><b>📈 Tăng nhanh:</b> '+escHtml(grow.lbl)+' (+'+(grow.recent-grow.prior)+' lượt 7n)</div>';
   if(abandon)h+='<div class="an-co" style="border-color:#E65100"><b>🚪 Bị bỏ rơi:</b> '+escHtml(abandon.lbl)+' (không dùng >14 ngày)</div>';
   h+='</div></div>';
+  // 3b) CHI TIẾT THEO NGƯỜI — ai dùng hoạt động/trang nào
+  var featLbl={};ANALYTICS_FEATURES.forEach(function(f){featLbl[f.id]=f.lbl;});
+  var persons=users.slice().sort(function(a,b){return (b.last||0)-(a.last||0);});
+  h+='<div class="an-sec"><div class="an-h">👤 Chi tiết theo người dùng (ai dùng gì · trang nào)</div>';
+  h+='<div class="an-frow-sub" style="margin:-4px 0 10px">Từng người + những hoạt động/trang họ đã tham gia (số lượt) + lần hoạt động gần nhất. Bấm <b>Xem toàn bộ nội dung</b> để xem bí mật mọi thứ bên trong tài khoản (chỉ đọc, họ không hay biết).</div>';
+  persons.forEach(function(u){
+    var dotc=u.cls==='high'?'#1A7A5E':u.cls==='mod'?'#1565C0':u.cls==='low'?'#F9A825':u.cls==='atrisk'?'#E65100':'#C62828';
+    var lastTxt=u.last?fmtDT(new Date(u.last).toISOString()):'chưa hoạt động';
+    h+='<div class="an-person"><div class="an-person-hd"><div style="display:flex;gap:8px;min-width:0"><span class="an-person-dot" style="background:'+dotc+'"></span><div style="min-width:0"><div class="an-person-name">'+escHtml(u.name||u.email||'(không tên)')+'</div><div class="an-person-meta">'+escHtml(u.email||'')+(u.email?' · ':'')+'gần nhất: '+lastTxt+' · '+u.activeDaysCount+' ngày · '+u.sessions+' phiên</div></div></div></div>';
+    var fids=Object.keys(u.feats||{}).filter(function(k){return featLbl[k];}).sort(function(a,b){return u.feats[b]-u.feats[a];});
+    h+='<div class="an-chips">';
+    if(fids.length)fids.forEach(function(fid){h+='<span class="an-chip">'+escHtml(featLbl[fid])+' ×'+u.feats[fid]+'</span>';});
+    else h+='<span class="an-chip zero">Chưa ghi nhận trang/hoạt động nào</span>';
+    h+='</div>';
+    h+='<div class="an-person-view"><button data-view-uid="'+escHtml(u.uid)+'" data-view-name="'+escHtml(u.name||u.email||'')+'">👁️ Xem toàn bộ nội dung (bí mật)</button></div>';
+    h+='</div>';
+  });
+  h+='</div>';
   // 4) GIỮ CHÂN
   h+='<div class="an-sec"><div class="an-h">🔁 Giữ chân (Retention)</div><div class="an-grid">';
   [[1,'D1'],[7,'D7'],[30,'D30'],[90,'D90']].forEach(function(p){var r=retentionRate(users,p[0]);h+=_anStat(r===null?'—':(r+'%'),p[1]+' giữ chân',r===null?'#999':(r>=40?'#1A7A5E':r>=20?'#E65100':'#C62828'));});
@@ -7478,12 +7519,15 @@ document.addEventListener('click',function(e){
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
-  // QTV: XEM nội dung 1 tài khoản (cây + thành viên) — chỉ đọc
+  // QTV: XEM toàn bộ nội dung 1 tài khoản (bí mật, chỉ đọc)
   t=e.target.closest('[data-view-uid]');
   if(t){
     openAccountView(t.getAttribute('data-view-uid'),t.getAttribute('data-view-name')||'');
     return;
   }
+  // QTV: từ modal xem nội dung → mở sơ đồ tương tác (chỉ đọc)
+  t=e.target.closest('[data-acct-tree]');
+  if(t){openAccountTreeView();return;}
   // Admin: gỡ QTV
   t=e.target.closest('[data-rmadmin]');
   if(t){
@@ -7874,22 +7918,113 @@ function buildAccountViewHtml(nodes,members){
   }
   return h;
 }
+// v6.18 — QTV xem BÍ MẬT toàn bộ nội dung trong tài khoản thành viên (chỉ ĐỌC; không thông báo cho họ).
+var _avData=null;
+function buildFullAccountView(uid,name,data){
+  var nodes=(data.tree&&data.tree.nodes)||[];
+  var mems=(data.members&&data.members.members)||[];
+  var h='';
+  h+='<div style="font-size:12px;color:#7A5A0C;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:8px 11px;margin-bottom:10px;font-family:Arial;line-height:1.5">🔒 <b>Chế độ xem bí mật (chỉ QTV).</b> Thành viên KHÔNG nhận được thông báo. Toàn bộ chỉ ĐỌC — không thay đổi gì dữ liệu của họ.</div>';
+  h+=buildAccountViewHtml(nodes,mems); // tổng quan + sơ đồ tuyến + danh sách thành viên
+  h+='<div style="margin:8px 0 4px"><button class="btn btn-d btn-sm" data-acct-tree="1">🌳 Mở sơ đồ tương tác (chỉ đọc)</button></div>';
+  // 🎯 Kế hoạch năm
+  var ann=data.anngoals&&data.anngoals.ann;
+  h+='<div class="adm-title av-sec" style="font-size:14px">🎯 Kế hoạch năm</div>';
+  if(ann&&ann.items&&ann.items.length){
+    h+='<div class="av-box">';
+    ann.items.forEach(function(it){var pct=Math.min(100,annPct(it.act&&it.act.year,annNum(it.annual)));
+      h+='<div class="av-li"><b>'+avEsc(it.name||'(mục tiêu)')+'</b> — mục tiêu '+avEsc(String(it.annual||'0'))+' '+avEsc(it.unit||'')+' · đạt '+pct+'%</div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có kế hoạch năm.</div>';
+  // 👥 Tiềm năng
+  var prl=(data.prospects&&data.prospects.list)||[];
+  h+='<div class="adm-title av-sec" style="font-size:14px">👥 Tiềm năng / khách hàng ('+prl.length+')</div>';
+  if(prl.length){
+    h+='<div class="av-box">';
+    prl.forEach(function(p){
+      var bs=BSTAGES[p.businessStage||0]||'',hs=HSTAGES[p.healthStage||0]||'';
+      var fu=(p.followups&&p.followups.length)?(p.followups.length+' lần theo dõi'):'chưa theo dõi';
+      h+='<div class="av-li"><b>'+avEsc(p.name||'(không tên)')+'</b>'+(p.region?' · '+avEsc(p.region):'')+
+        '<div style="font-size:11px;color:#888;margin-top:2px">'+(bs?'KD: '+avEsc(bs):'')+(bs&&hs?' · ':'')+(hs?'SK: '+avEsc(hs):'')+' · '+avEsc(MSTATUS[p.memberStatus]||MSTATUS.none)+' · '+fu+'</div></div>';
+    });
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có tiềm năng nào.</div>';
+  // ⚡ Kế hoạch ngày (7 ngày gần nhất)
+  var acts=(data.actplans&&data.actplans.acts)||{};
+  var dayKeys=Object.keys(acts).filter(function(k){return (acts[k]||[]).length;}).sort(function(a,b){return _keyTime(b)-_keyTime(a);}).slice(0,7);
+  h+='<div class="adm-title av-sec" style="font-size:14px">⚡ Kế hoạch ngày (7 ngày gần nhất)</div>';
+  if(dayKeys.length){
+    h+='<div class="av-box">';
+    dayKeys.forEach(function(k){var arr=acts[k]||[];var done=arr.filter(function(x){return x.done;}).length;
+      h+='<div class="av-li"><b>'+avEsc(k)+'</b> <span class="av-tag">'+done+'/'+arr.length+' xong</span>';
+      arr.slice(0,12).forEach(function(t){h+='<div style="font-size:11.5px;color:#666;margin-top:2px">'+(t.done?'✅':'⬜')+' '+(t.prio?'⭐ ':'')+avEsc(t.text||'')+'</div>';});
+      h+='</div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có kế hoạch ngày.</div>';
+  // 📅 Lịch quan trọng
+  var tks=(data.tasks&&data.tasks.tasks)||[];
+  h+='<div class="adm-title av-sec" style="font-size:14px">📅 Lịch quan trọng ('+tks.length+')</div>';
+  if(tks.length){
+    h+='<div class="av-box">';
+    tks.slice().sort(function(a,b){return (a.date||'9999')<(b.date||'9999')?-1:1;}).forEach(function(t){
+      h+='<div class="av-li">'+(t.done?'✅':'🔔')+' <b>'+avEsc(t.desc||'(không tên)')+'</b>'+(t.date?' · '+avEsc(t.date):'')+(t.note?'<div style="font-size:11px;color:#888">'+avEsc(t.note)+'</div>':'')+'</div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có lịch quan trọng.</div>';
+  // 🧭 Bánh xe cuộc đời (mới nhất)
+  var wheel=(data.wheel&&data.wheel.wheel)||{};
+  var wk=Object.keys(wheel).sort(function(a,b){return _keyTime(b)-_keyTime(a);})[0];
+  h+='<div class="adm-title av-sec" style="font-size:14px">🧭 Bánh xe cuộc đời'+(wk?(' · ngày '+avEsc(wk)):'')+'</div>';
+  if(wk&&wheel[wk]){
+    var ws=wheel[wk];h+='<div class="av-box">';
+    WHEEL_CATS.forEach(function(c){var v=ws[c.id];if(v==null)return;h+='<div class="av-li" style="display:flex;justify-content:space-between"><span>'+avEsc(c.lbl)+'</span><b style="color:'+c.c+'">'+v+'/10</b></div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa chấm bánh xe.</div>';
+  // 🗺️ Câu lạc bộ
+  var loc=data.location||{},clubs=(data.clubs&&data.clubs.list)||[];
+  var hasLoc=loc&&(loc.clubName||loc.address||loc.lat);
+  h+='<div class="adm-title av-sec" style="font-size:14px">🗺️ Câu lạc bộ</div>';
+  if(hasLoc||clubs.length){
+    h+='<div class="av-box">';
+    if(hasLoc)h+='<div class="av-li"><b>'+avEsc(loc.clubName||'CLB chính')+'</b> <span class="av-tag">chính</span><div style="font-size:11px;color:#888">'+avEsc(loc.address||'')+(loc.city?' · '+avEsc(loc.city):'')+'</div></div>';
+    clubs.forEach(function(c){h+='<div class="av-li"><b>'+avEsc(c.clubName||'CLB')+'</b><div style="font-size:11px;color:#888">'+avEsc(c.address||'')+(c.city?' · '+avEsc(c.city):'')+'</div></div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có CLB.</div>';
+  // 🖼️ Bảng tầm nhìn
+  var vbs=data.vboards||[];
+  h+='<div class="adm-title av-sec" style="font-size:14px">🖼️ Bảng tầm nhìn ('+vbs.length+')</div>';
+  if(vbs.length){
+    h+='<div class="av-vb-grid">';
+    vbs.forEach(function(b){h+='<div class="av-vb"><div class="av-vb-prev" style="background:'+(b.bg||'#EFEDE6')+'"><div style="position:absolute;inset:0;overflow:hidden">'+vbPreviewEls(b,80)+'</div></div><div class="av-vb-nm">'+avEsc(b.name||'Bảng')+'</div></div>';});
+    h+='</div>';
+  }else h+='<div class="av-empty">Chưa có bảng tầm nhìn.</div>';
+  // ⏱️ Hoạt động
+  var act=data.activity;
+  if(act&&act.lastSeen)h+='<div class="av-sec" style="font-size:11.5px;color:#999;font-family:Arial">⏱️ Lần hoạt động gần nhất: '+avEsc(fmtDT(act.lastSeen))+' · '+(act.sessions||0)+' phiên</div>';
+  return h;
+}
 function openAccountView(uid,name){
   var ov=document.getElementById('acctview-ov');if(!ov)return;
   document.getElementById('acctview-title').innerHTML='👁️ '+avEsc(name||'Tài khoản');
-  document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải dữ liệu tài khoản...</div>';
+  document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải toàn bộ nội dung tài khoản…</div>';
   ov.classList.add('open');
-  Promise.all([
-    fsGetUser(uid,'tree').catch(function(){return null;}),
-    fsGetUser(uid,'members').catch(function(){return null;})
-  ]).then(function(r){
-    closeAccountView();
-    var nodes=(r[0]&&r[0].nodes)||[];
-    var mems=(r[1]&&r[1].members)||[];
-    enterViewMode(nodes,mems,name); // hiển thị như cây thật, chỉ đọc
+  var docs=['tree','members','prospects','actplans','tasks','wheel','anngoals','location','clubs','vbindex','activity'];
+  Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})).then(function(r){
+    var data={};docs.forEach(function(d,i){data[d]=r[i];});
+    var idx=(data.vbindex&&data.vbindex.boards)||[];
+    return Promise.all(idx.slice(0,12).map(function(it){return fsGetUser(uid,'vboard_'+it.id).catch(function(){return null;});})).then(function(bs){
+      data.vboards=bs.map(function(x){return x&&x.board;}).filter(Boolean);
+      _avData={uid:uid,name:name,nodes:(data.tree&&data.tree.nodes)||[],members:(data.members&&data.members.members)||[]};
+      if(!document.getElementById('acctview-ov').classList.contains('open'))return;
+      document.getElementById('acctview-body').innerHTML=buildFullAccountView(uid,name,data);
+    });
   }).catch(function(err){
-    document.getElementById('acctview-body').innerHTML='<div style="color:#E53935;padding:16px">Lỗi tải dữ liệu: '+avEsc(err&&err.message)+'<br><br>Nếu là lỗi quyền (permission), hãy cập nhật lại <b>Firestore Rules</b> (bản v4.5) rồi Publish.</div>';
+    document.getElementById('acctview-body').innerHTML='<div style="color:#E53935;padding:16px">Lỗi tải dữ liệu: '+avEsc(err&&err.message)+'<br><br>Nếu là lỗi quyền (permission), hãy cập nhật <b>Firestore Rules</b> (QTV đọc <code>users/**</code>) rồi Publish.</div>';
   });
+}
+function openAccountTreeView(){
+  if(!_avData)return;
+  closeAccountView();
+  enterViewMode(_avData.nodes,_avData.members,_avData.name);
 }
 function closeAccountView(){var ov=document.getElementById('acctview-ov');if(ov)ov.classList.remove('open');}
 // === XEM sơ đồ tài khoản khác như cây thật (chỉ đọc) ===
