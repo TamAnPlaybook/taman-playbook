@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Học Viện Tâm An - Tâm An Academy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --blue: #1B4F8A;
+    --blue-light: #2E6CB5;
+    --green: #2E8B57;
+    --green-light: #4CAF7D;
+    --orange: #F07B30;
+    --purple: #7B5EB5;
+    --teal: #2BА8А8;
+    --teal2: #1FА0А0;
+    --bg: #F4F7FB;
+    --card-bg: #FFFFFF;
+    --text: #1F2A37;
+    --text-soft: #5A6B7B;
+    --border: #E3E9F0;
+  }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { text-decoration: none; color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* HEADER */
+  header {
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .nav-wrap {
+    max-width: 1500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    gap: 16px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    flex-shrink: 0;
+  }
+  .logo-text small {
+    display: block;
+    font-size: 11px;
+    color: var(--text-soft);
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .logo-text strong {
+    display: block;
+    font-size: 22px;
+    color: var(--blue);
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  nav a:hover { background: var(--bg); color: var(--blue); }
+  nav a.active { background: var(--blue); color: #fff; }
+  nav a .ico { font-size: 16px; }
+
+  .menu-toggle {
+    display: none;
+    font-size: 26px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--blue);
+  }
+
+  /* PAGE SECTIONS */
+  .page { display: none; animation: fade 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 0 24px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(120deg, #E8F1FB 0%, #F0F6FC 45%, #E6F3EC 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-inner {
+    max-width: 1500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 48px 24px;
+    gap: 32px;
+  }
+  .hero-content { flex: 1; }
+  .hero-logo-big {
+    width: 80px; height: 80px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 56px;
+    color: var(--blue);
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 1.05;
+    margin-bottom: 12px;
+  }
+  .hero .slogan {
+    font-size: 26px;
+    color: var(--green);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .hero .desc {
+    font-size: 18px;
+    color: var(--text-soft);
+    max-width: 560px;
+  }
+  .hero-img {
+    flex: 0 0 44%;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 300px;
+    background: linear-gradient(135deg, #87CEEB, #B0E0C8);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    position: relative;
+  }
+  .hero-img .people {
+    font-size: 120px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+    padding-bottom: 10px;
+  }
+  .hero-img .sky-deco {
+    position: absolute;
+    top: 20px; left: 0; right: 0;
+    text-align: center;
+    font-size: 40px;
+    opacity: 0.6;
+  }
+
+  /* CARD GRID (entry points) */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+    margin-top: -40px;
+    position: relative;
+    z-index: 5;
+    padding-bottom: 8px;
+  }
+  .entry-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+  }
+  .entry-card:hover { transform: translateY(-6px); box-shadow: 0 14px 36px rgba(0,0,0,0.13); }
+  .entry-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 14px;
+  }
+  .ec-green .entry-icon { background: #E3F3EA; }
+  .ec-blue .entry-icon { background: #E4EFFB; }
+  .ec-orange .entry-icon { background: #FCEDE2; }
+  .ec-purple .entry-icon { background: #EEE9F8; }
+  .ec-teal .entry-icon { background: #E0F3F3; }
+  .entry-card .label-sm { font-size: 13px; color: var(--text-soft); font-weight: 600; }
+  .entry-card .label-lg { font-size: 19px; font-weight: 800; margin-bottom: 8px; }
+  .ec-green .label-lg { color: var(--green); }
+  .ec-blue .label-lg { color: var(--blue); }
+  .ec-orange .label-lg { color: var(--orange); }
+  .ec-purple .label-lg { color: var(--purple); }
+  .ec-teal .label-lg { color: var(--teal2); }
+  .entry-card p { font-size: 14px; color: var(--text-soft); flex: 1; margin-bottom: 16px; }
+  .entry-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+  .entry-btn:hover { opacity: 0.88; }
+  .ec-green .entry-btn { background: var(--green); }
+  .ec-blue .entry-btn { background: var(--blue); }
+  .ec-orange .entry-btn { background: var(--orange); }
+  .ec-purple .entry-btn { background: var(--purple); }
+  .ec-teal .entry-btn { background: var(--teal2); }
+
+  /* CORE VALUES STRIP */
+  .values-strip {
+    background: #fff;
+    border-radius: 16px;
+    margin-top: 24px;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  }
+  .value-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 0 8px;
+    border-right: 1px solid var(--border);
+  }
+  .value-item:last-child { border-right: none; }
+  .value-item .v-icon { font-size: 26px; color: var(--green); }
+  .value-item strong { display: block; font-size: 15px; color: var(--text); }
+  .value-item span { font-size: 13px; color: var(--text-soft); }
+
+  /* THREE COLUMN SECTION */
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    gap: 20px;
+    margin-top: 28px;
+    margin-bottom: 40px;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  }
+  .panel-welcome {
+    background: linear-gradient(135deg, #EAF2FB, #F0F7FC);
+  }
+  .panel h3 {
+    font-size: 19px;
+    color: var(--blue);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .title-underline {
+    width: 60px; height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  .video-box {
+    background: linear-gradient(135deg, #2C3E50, #34495E);
+    border-radius: 12px;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .play-btn {
+    width: 60px; height: 60px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--blue);
+    transition: transform 0.2s;
+  }
+  .video-box:hover .play-btn { transform: scale(1.1); }
+  .panel-welcome p { font-size: 14px; color: var(--text-soft); text-align: center; margin-bottom: 14px; }
+  .btn-cta {
+    display: block;
+    text-align: center;
+    background: var(--blue);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-cta:hover { background: var(--blue-light); }
+  .btn-cta.orange { background: var(--orange); }
+  .btn-cta.orange:hover { opacity: 0.88; }
+
+  /* ROADMAP */
+  .panel-roadmap h3 { text-align: center; }
+  .roadmap-flow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin: 20px 0;
+    gap: 4px;
+  }
+  .rm-step { text-align: center; flex: 1; position: relative; }
+  .rm-circle {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    position: relative;
+  }
+  .rm-num {
+    position: absolute;
+    bottom: -4px; right: 50%;
+    transform: translateX(50%);
+    background: #fff;
+    color: var(--text);
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .rm-step strong { display: block; font-size: 12px; margin-top: 8px; line-height: 1.3; }
+  .rm-step span { font-size: 11px; color: var(--text-soft); }
+  .rm-arrow { color: var(--text-soft); font-size: 18px; align-self: center; padding-top: 16px; }
+  .quote-box {
+    background: #FFF8E7;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    text-align: center;
+    font-style: italic;
+  }
+  .quote-box .qmark { color: var(--orange); font-size: 20px; font-weight: 700; }
+
+  /* SUPPORT PANEL */
+  .panel-support {
+    background: linear-gradient(135deg, #FFF6E9, #FFF9F0);
+  }
+  .panel-support h3 { color: var(--orange); }
+  .support-list { list-style: none; margin-top: 8px; }
+  .support-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .support-list li .s-ico { font-size: 18px; color: var(--orange); }
+
+  /* PAGE CONTENT (subpages) */
+  .page-hero {
+    background: linear-gradient(120deg, var(--blue), var(--blue-light));
+    color: #fff;
+    padding: 48px 24px;
+    text-align: center;
+  }
+  .page-hero .ph-icon { font-size: 52px; margin-bottom: 12px; }
+  .page-hero h2 { font-size: 38px; font-weight: 800; margin-bottom: 8px; }
+  .page-hero p { font-size: 17px; opacity: 0.92; max-width: 640px; margin: 0 auto; }
+  .page-body { padding: 40px 0 56px; }
+
+  .section-title {
+    font-size: 26px;
+    color: var(--blue);
+    font-weight: 800;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .section-sub { text-align: center; color: var(--text-soft); margin-bottom: 28px; }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .content-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 4px solid var(--blue);
+  }
+  .content-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.1); }
+  .content-card.t-green { border-top-color: var(--green); }
+  .content-card.t-orange { border-top-color: var(--orange); }
+  .content-card.t-purple { border-top-color: var(--purple); }
+  .content-card.t-teal { border-top-color: var(--teal2); }
+  .cc-icon { font-size: 36px; margin-bottom: 12px; }
+  .content-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .content-card p { font-size: 14px; color: var(--text-soft); margin-bottom: 14px; }
+  .resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--blue);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .resource-link:hover { text-decoration: underline; }
+
+  /* Step list for "Bắt đầu tại đây" */
+  .step-list { max-width: 800px; margin: 0 auto; }
+  .step-row {
+    display: flex;
+    gap: 20px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    align-items: flex-start;
+  }
+  .step-badge {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-row h4 { font-size: 18px; margin-bottom: 6px; }
+  .step-row p { font-size: 14px; color: var(--text-soft); }
+
+  /* Media gallery */
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .media-item {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+    cursor: pointer;
+  }
+  .media-item:hover { transform: translateY(-4px); }
+  .media-thumb {
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+  }
+  .mt-1 { background: linear-gradient(135deg, #667EEA, #764BA2); }
+  .mt-2 { background: linear-gradient(135deg, #F093FB, #F5576C); }
+  .mt-3 { background: linear-gradient(135deg, #4FACFE, #00F2FE); }
+  .mt-4 { background: linear-gradient(135deg, #43E97B, #38F9D7); }
+  .mt-5 { background: linear-gradient(135deg, #FA709A, #FEE140); }
+  .mt-6 { background: linear-gradient(135deg, #30CFD0, #330867); }
+  .media-item .mi-body { padding: 14px; }
+  .media-item h4 { font-size: 15px; margin-bottom: 4px; }
+  .media-item span { font-size: 13px; color: var(--text-soft); }
+
+  /* FAQ */
+  .faq-list { max-width: 800px; margin: 0 auto; }
+  .faq-item {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+  }
+  .faq-q {
+    padding: 18px 22px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .faq-q:hover { background: var(--bg); }
+  .faq-q .arrow { transition: transform 0.3s; color: var(--blue); }
+  .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s;
+    padding: 0 22px;
+    color: var(--text-soft);
+    font-size: 15px;
+  }
+  .faq-item.open .faq-a { max-height: 300px; padding: 0 22px 18px; }
+
+  /* FOOTER */
+  footer {
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    margin-top: 20px;
+  }
+  .footer-inner {
+    max-width: 1500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-logo { display: flex; align-items: center; gap: 10px; }
+  .footer-logo .logo-icon { width: 40px; height: 40px; }
+  .footer-logo strong { color: var(--blue); font-size: 18px; font-weight: 800; }
+  .footer-logo small { display: block; font-size: 12px; color: var(--text-soft); }
+  .footer-center { text-align: center; font-size: 14px; color: var(--text-soft); flex: 1; min-width: 280px; }
+  .footer-right { font-size: 13px; color: var(--text-soft); }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+    .values-strip { grid-template-columns: repeat(3, 1fr); }
+    .three-col { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 44px; }
+  }
+  @media (max-width: 768px) {
+    nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: #fff;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      gap: 2px;
+    }
+    nav.open { display: flex; }
+    nav a { padding: 12px; }
+    .menu-toggle { display: block; }
+    .hero-inner { flex-direction: column; }
+    .hero-img { width: 100%; flex: none; }
+    .hero h1 { font-size: 36px; }
+    .hero .slogan { font-size: 20px; }
+    .card-grid { grid-template-columns: 1fr; margin-top: 20px; }
+    .values-strip { grid-template-columns: 1fr; }
+    .value-item { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .value-item:last-child { border-bottom: none; }
+    .roadmap-flow { flex-wrap: wrap; }
+    .rm-step { flex: 0 0 30%; margin-bottom: 16px; }
+    .rm-arrow { display: none; }
+    .page-hero h2 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="nav-wrap">
+    <a href="#" class="logo" onclick="showPage('home', this); return false;">
+      <svg class="logo-icon" viewBox="0 0 48 48" fill="none">
+        <path d="M24 6C16 6 10 12 10 20c0 4 2 7 4 9-2 1-4 3-4 6 0 4 6 7 14 7s14-3 14-7c0-3-2-5-4-6 2-2 4-5 4-9 0-8-6-14-14-14z" fill="#2E8B57" opacity="0.9"/>
+        <path d="M24 10c-5 0-9 4-9 10 0 3 1 5 3 7h12c2-2 3-4 3-7 0-6-4-10-9-10z" fill="#1B4F8A"/>
+        <circle cx="24" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <span class="logo-text">
+        <small>HỌC VIỆN</small>
+        <strong>TÂM AN</strong>
+      </span>
+    </a>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="mainNav">
+      <a href="#" class="active" data-page="home" onclick="showPage('home', this); return false;"><span class="ico">🏠</span> Trang chủ</a>
+      <a href="#" data-page="newmember" onclick="showPage('newmember', this); return false;"><span class="ico">🌱</span> Thành viên mới</a>
+      <a href="#" data-page="start" onclick="showPage('start', this); return false;"><span class="ico">🚀</span> Bắt đầu tại đây</a>
+      <a href="#" data-page="club" onclick="showPage('club', this); return false;"><span class="ico">💛</span> CLB Chăm sóc</a>
+      <a href="#" data-page="leader" onclick="showPage('leader', this); return false;"><span class="ico">🏆</span> Leader Academy</a>
+      <a href="#" data-page="meetings" onclick="showPage('meetings', this); return false;"><span class="ico">🎥</span> Thư viện cuộc họp</a>
+      <a href="#" data-page="media" onclick="showPage('media', this); return false;"><span class="ico">📁</span> Marketing & Media</a>
+      <a href="#" data-page="faq" onclick="showPage('faq', this); return false;"><span class="ico">❓</span> FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HOME PAGE ============ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <svg class="hero-logo-big" viewBox="0 0 48 48" fill="none">
+          <path d="M24 6C16 6 10 12 10 20c0 4 2 7 4 9-2 1-4 3-4 6 0 4 6 7 14 7s14-3 14-7c0-3-2-5-4-6 2-2 4-5 4-9 0-8-6-14-14-14z" fill="#2E8B57" opacity="0.9"/>
+          <path d="M24 10c-5 0-9 4-9 10 0 3 1 5 3 7h12c2-2 3-4 3-7 0-6-4-10-9-10z" fill="#1B4F8A"/>
+          <circle cx="24" cy="18" r="4" fill="#fff"/>
+        </svg>
+        <h1>TÂM AN ACADEMY</h1>
+        <div class="slogan">TÂM AN – HẠNH PHÚC – THỊNH VƯỢNG</div>
+        <p class="desc">Nơi lưu trữ tri thức, đào tạo và công cụ phát triển đội nhóm Tâm An</p>
+      </div>
+      <div class="hero-img">
+        <div class="sky-deco">☁️ ☀️ ☁️</div>
+        <div class="people">🙌</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Entry cards -->
+    <div class="card-grid">
+      <div class="entry-card ec-green" onclick="showPageByName('newmember')">
+        <div class="entry-icon">🧑‍🌾</div>
+        <span class="label-sm">TÔI LÀ</span>
+        <span class="label-lg">THÀNH VIÊN MỚI</span>
+        <p>Lộ trình 30 ngày đầu dành cho người mới</p>
+        <span class="entry-btn">Bắt đầu ngay →</span>
+      </div>
+      <div class="entry-card ec-blue" onclick="showPageByName('club')">
+        <div class="entry-icon">👥</div>
+        <span class="label-sm">TÔI MUỐN</span>
+        <span class="label-lg">VẬN HÀNH CLB</span>
+        <p>Quy trình, tài liệu và công cụ vận hành CLB</p>
+        <span class="entry-btn">Xem ngay →</span>
+      </div>
+      <div class="entry-card ec-orange" onclick="showPageByName('leader')">
+        <div class="entry-icon">📈</div>
+        <span class="label-sm">TÔI MUỐN TRỞ THÀNH</span>
+        <span class="label-lg">LEADER</span>
+        <p>Kỹ năng lãnh đạo và phát triển hệ thống</p>
+        <span class="entry-btn">Khám phá ngay →</span>
+      </div>
+      <div class="entry-card ec-purple" onclick="showPageByName('meetings')">
+        <div class="entry-icon">🎥</div>
+        <span class="label-sm">TÔI MUỐN XEM LẠI</span>
+        <span class="label-lg">CUỘC HỌP</span>
+        <p>Video, biên bản và mindmap các cuộc họp</p>
+        <span class="entry-btn">Vào thư viện →</span>
+      </div>
+      <div class="entry-card ec-teal" onclick="showPageByName('media')">
+        <div class="entry-icon">🖼️</div>
+        <span class="label-sm">THƯ VIỆN</span>
+        <span class="label-lg">MARKETING</span>
+        <p>Hình ảnh, video, tài liệu truyền thông</p>
+        <span class="entry-btn">Truy cập ngay →</span>
+      </div>
+    </div>
+
+    <!-- Core values -->
+    <div class="values-strip">
+      <div class="value-item">
+        <span class="v-icon">📚</span>
+        <div><strong>Tri thức là sức mạnh</strong><span>Học – Hiểu – Hành – Chia sẻ</span></div>
+      </div>
+      <div class="value-item">
+        <span class="v-icon">💚</span>
+        <div><strong>Đồng hành & Yêu thương</strong><span>Tâm An là một gia đình</span></div>
+      </div>
+      <div class="value-item">
+        <span class="v-icon">🎯</span>
+        <div><strong>Kỷ luật & Nhất quán</strong><span>Làm đúng – Làm đủ – Làm đều</span></div>
+      </div>
+      <div class="value-item">
+        <span class="v-icon">📈</span>
+        <div><strong>Phát triển không ngừng</strong><span>Học mỗi ngày – Tiến mỗi ngày</span></div>
+      </div>
+      <div class="value-item">
+        <span class="v-icon">👫</span>
+        <div><strong>Nhân bản hệ thống</strong><span>Giúp người khác thành công</span></div>
+      </div>
+    </div>
+
+    <!-- Three columns -->
+    <div class="three-col">
+      <div class="panel panel-welcome">
+        <h3>CHÀO MỪNG BẠN ĐẾN VỚI HỌC VIỆN TÂM AN</h3>
+        <div class="title-underline"></div>
+        <div class="video-box"><div class="play-btn">▶</div></div>
+        <p>Xem video giới thiệu để hiểu rõ hơn về Tâm An</p>
+        <a href="#" class="btn-cta" onclick="return false;">Xem video chào mừng</a>
+      </div>
+
+      <div class="panel panel-roadmap">
+        <h3>LỘ TRÌNH PHÁT TRIỂN TẠI TÂM AN</h3>
+        <div class="roadmap-flow">
+          <div class="rm-step">
+            <div class="rm-circle" style="background:#4CAF7D;"><span>👤</span><span class="rm-num">1</span></div>
+            <strong>THÀNH VIÊN MỚI</strong>
+            <span>Học hỏi kiến thức nền tảng</span>
+          </div>
+          <div class="rm-arrow">→</div>
+          <div class="rm-step">
+            <div class="rm-circle" style="background:#2E6CB5;"><span>👥</span><span class="rm-num">2</span></div>
+            <strong>THÀNH VIÊN HOẠT ĐỘNG</strong>
+            <span>Thực hành & hỗ trợ cộng đồng</span>
+          </div>
+          <div class="rm-arrow">→</div>
+          <div class="rm-step">
+            <div class="rm-circle" style="background:#F07B30;"><span>🤝</span><span class="rm-num">3</span></div>
+            <strong>VẬN HÀNH CLB</strong>
+            <span>Xây dựng và phát triển CLB</span>
+          </div>
+          <div class="rm-arrow">→</div>
+          <div class="rm-step">
+            <div class="rm-circle" style="background:#7B5EBS;background:#7B5EB5;"><span>⭐</span><span class="rm-num">4</span></div>
+            <strong>LEADER</strong>
+            <span>Phát triển bản thân và đội nhóm</span>
+          </div>
+          <div class="rm-arrow">→</div>
+          <div class="rm-step">
+            <div class="rm-circle" style="background:#4CAF7D;"><span>🏆</span><span class="rm-num">5</span></div>
+            <strong>THỦ LĨNH HỆ THỐNG</strong>
+            <span>Nhân bản hệ thống bền vững</span>
+          </div>
+        </div>
+        <div class="quote-box">
+          <span class="qmark">"</span> Thành công của bạn = Giúp đỡ càng nhiều người thành công <span class="qmark">"</span>
+        </div>
+      </div>
+
+      <div class="panel panel-support">
+        <h3>BẠN CẦN HỖ TRỢ?</h3>
+        <div class="title-underline"></div>
+        <ul class="support-list">
+          <li><span class="s-ico">❓</span> Câu hỏi thường gặp (FAQ)</li>
+          <li><span class="s-ico">📖</span> Hướng dẫn sử dụng Học viện</li>
+          <li><span class="s-ico">👥</span> Liên hệ Ban Điều Hành</li>
+          <li><span class="s-ico">📅</span> Lịch đào tạo & sự kiện</li>
+        </ul>
+        <a href="#" class="btn-cta orange" style="margin-top:16px;" onclick="return false;">Liên hệ ngay</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ THÀNH VIÊN MỚI ============ -->
+<div class="page" id="page-newmember">
+  <div class="page-hero">
+    <div class="ph-icon">🌱</div>
+    <h2>Thành Viên Mới</h2>
+    <p>Lộ trình 30 ngày đầu tiên giúp bạn làm quen và xây dựng nền tảng vững chắc tại Tâm An</p>
+  </div>
+  <div class="container page-body">
+    <div class="section-title">Lộ Trình 30 Ngày Đầu</div>
+    <div class="section-sub">Từng bước giúp bạn hòa nhập và phát triển</div>
+    <div class="content-grid">
+      <div class="content-card t-green">
+        <div class="cc-icon">📅</div>
+        <h4>Tuần 1: Làm quen</h4>
+        <p>Hiểu về Tâm An, tầm nhìn sứ mệnh, gia nhập các nhóm cộng đồng và làm quen với hệ thống.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem tài liệu →</a>
+      </div>
+      <div class="content-card t-green">
+        <div class="cc-icon">📖</div>
+        <h4>Tuần 2: Kiến thức nền tảng</h4>
+        <p>Học về sản phẩm, kiến thức sức khỏe cơ bản và cách chia sẻ giá trị tới khách hàng.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem tài liệu →</a>
+      </div>
+      <div class="content-card t-green">
+        <div class="cc-icon">🤝</div>
+        <h4>Tuần 3: Thực hành</h4>
+        <p>Bắt đầu thực hành chia sẻ, tham gia hỗ trợ cộng đồng và áp dụng kiến thức đã học.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem tài liệu →</a>
+      </div>
+      <div class="content-card t-green">
+        <div class="cc-icon">🚀</div>
+        <h4>Tuần 4: Tăng tốc</h4>
+        <p>Đặt mục tiêu cá nhân, xây dựng kế hoạch hành động và bắt đầu phát triển đội nhóm.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem tài liệu →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BẮT ĐẦU TẠI ĐÂY ============ -->
+<div class="page" id="page-start">
+  <div class="page-hero" style="background:linear-gradient(120deg,#2E8B57,#4CAF7D);">
+    <div class="ph-icon">🚀</div>
+    <h2>Bắt Đầu Tại Đây</h2>
+    <p>Hướng dẫn từng bước dành cho người mới — làm theo thứ tự để có khởi đầu thuận lợi nhất</p>
+  </div>
+  <div class="container page-body">
+    <div class="step-list">
+      <div class="step-row">
+        <div class="step-badge">1</div>
+        <div><h4>Tham gia các nhóm cộng đồng</h4><p>Vào nhóm Zalo/Facebook của CLB để cập nhật thông tin và kết nối với mọi người.</p></div>
+      </div>
+      <div class="step-row">
+        <div class="step-badge">2</div>
+        <div><h4>Xem video giới thiệu</h4><p>Hiểu rõ về tầm nhìn, sứ mệnh và giá trị cốt lõi của Tâm An.</p></div>
+      </div>
+      <div class="step-row">
+        <div class="step-badge">3</div>
+        <div><h4>Hoàn thành khóa học nền tảng</h4><p>Học kiến thức cơ bản về sản phẩm và mô hình hoạt động.</p></div>
+      </div>
+      <div class="step-row">
+        <div class="step-badge">4</div>
+        <div><h4>Đặt mục tiêu cá nhân</h4><p>Xác định mục tiêu rõ ràng và lập kế hoạch hành động cùng người hướng dẫn.</p></div>
+      </div>
+      <div class="step-row">
+        <div class="step-badge">5</div>
+        <div><h4>Bắt đầu hành động</h4><p>Áp dụng những gì đã học và bắt đầu hành trình phát triển của bạn.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CLB CHĂM SÓC ============ -->
+<div class="page" id="page-club">
+  <div class="page-hero">
+    <div class="ph-icon">💛</div>
+    <h2>CLB Chăm Sóc</h2>
+    <p>Quy trình, tài liệu và công cụ giúp bạn vận hành CLB hiệu quả và chuyên nghiệp</p>
+  </div>
+  <div class="container page-body">
+    <div class="section-title">Công Cụ Vận Hành CLB</div>
+    <div class="section-sub">Tất cả những gì bạn cần để vận hành một CLB thành công</div>
+    <div class="content-grid">
+      <div class="content-card">
+        <div class="cc-icon">📋</div>
+        <h4>Quy trình vận hành</h4>
+        <p>Hướng dẫn chi tiết quy trình tổ chức và vận hành CLB từ A-Z.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Tải tài liệu →</a>
+      </div>
+      <div class="content-card">
+        <div class="cc-icon">📊</div>
+        <h4>Mẫu báo cáo</h4>
+        <p>Các biểu mẫu theo dõi hoạt động và báo cáo tiến độ thành viên.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Tải mẫu →</a>
+      </div>
+      <div class="content-card">
+        <div class="cc-icon">🗓️</div>
+        <h4>Lịch sinh hoạt</h4>
+        <p>Mẫu lịch sinh hoạt định kỳ và kế hoạch tổ chức sự kiện CLB.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem lịch →</a>
+      </div>
+      <div class="content-card">
+        <div class="cc-icon">🎓</div>
+        <h4>Kịch bản chăm sóc</h4>
+        <p>Kịch bản và quy trình chăm sóc khách hàng, thành viên mới.</p>
+        <a href="#" class="resource-link" onclick="return false;">📄 Xem kịch bản →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEADER ACADEMY ============ -->
+<div class="page" id="page-leader">
+  <div class="page-hero" style="background:linear-gradient(120deg,#F07B30,#FF9D5C);">
+    <div class="ph-icon">🏆</div>
+    <h2>Leader Academy</h2>
+    <p>Phát triển kỹ năng lãnh đạo và xây dựng hệ thống đội nhóm vững mạnh</p>
+  </div>
+  <div class="container page-body">
+    <div class="section-title">Chương Trình Đào Tạo Leader</div>
+    <div class="section-sub">Nâng tầm bản thân để dẫn dắt đội nhóm</div>
+    <div class="content-grid">
+      <div class="content-card t-orange">
+        <div class="cc-icon">🎤</div>
+        <h4>Kỹ năng thuyết trình</h4>
+        <p>Học cách truyền đạt và chia sẻ giá trị một cách thuyết phục, cuốn hút.</p>
+        <a href="#" class="resource-link" onclick="return false;">🎥 Xem khóa học →</a>
+      </div>
+      <div class="content-card t-orange">
+        <div class="cc-icon">👔</div>
+        <h4>Lãnh đạo đội nhóm</h4>
+        <p>Phương pháp quản lý, dẫn dắt và truyền cảm hứng cho đội nhóm của bạn.</p>
+        <a href="#" class="resource-link" onclick="return false;">🎥 Xem khóa học →</a>
+      </div>
+      <div class="content-card t-orange">
+        <div class="cc-icon">🌐</div>
+        <h4>Xây dựng hệ thống</h4>
+        <p>Chiến lược nhân bản và phát triển hệ thống bền vững, lâu dài.</p>
+        <a href="#" class="resource-link" onclick="return false;">🎥 Xem khóa học →</a>
+      </div>
+      <div class="content-card t-orange">
+        <div class="cc-icon">🧠</div>
+        <h4>Tư duy lãnh đạo</h4>
+        <p>Phát triển tư duy và tâm thế của một nhà lãnh đạo thành công.</p>
+        <a href="#" class="resource-link" onclick="return false;">🎥 Xem khóa học →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ THƯ VIỆN CUỘC HỌP ============ -->
+<div class="page" id="page-meetings">
+  <div class="page-hero" style="background:linear-gradient(120deg,#7B5EBS,#7B5EB5,#9D80D6);">
+    <div class="ph-icon">🎥</div>
+    <h2>Thư Viện Cuộc Họp</h2>
+    <p>Xem lại video, biên bản và mindmap của các cuộc họp đã diễn ra</p>
+  </div>
+  <div class="container page-body">
+    <div class="section-title">Video & Tài Liệu Cuộc Họp</div>
+    <div class="section-sub">Lưu trữ đầy đủ nội dung các buổi họp</div>
+    <div class="media-grid">
+      <div class="media-item"><div class="media-thumb mt-1">▶</div><div class="mi-body"><h4>Họp tháng - Định hướng Quý</h4><span>📅 Cập nhật mới nhất</span></div></div>
+      <div class="media-item"><div class="media-thumb mt-2">▶</div><div class="mi-body"><h4>Đào tạo kỹ năng bán hàng</h4><span>📅 Buổi training</span></div></div>
+      <div class="media-item"><div class="media-thumb mt-3">▶</div><div class="mi-body"><h4>Chia sẻ kinh nghiệm Leader</h4><span>📅 Talkshow</span></div></div>
+      <div class="media-item"><div class="media-thumb mt-4">📄</div><div class="mi-body"><h4>Biên bản họp Ban Điều Hành</h4><span>📄 Tài liệu PDF</span></div></div>
+      <div class="media-item"><div class="media-thumb mt-5">🧠</div><div class="mi-body"><h4>Mindmap chiến lược</h4><span>🧠 Sơ đồ tư duy</span></div></div>
+      <div class="media-item"><div class="media-thumb mt-6">▶</div><div class="mi-body"><h4>Sự kiện kết nối cộng đồng</h4><span>📅 Sự kiện</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MARKETING & MEDIA ============ -->
+<div class="page" id="page-media">
+  <div class="page-hero" style="background:linear-gradient(120deg,#2BА8А8,#1FА0А0,#3CC);">
+    <div class="ph-icon">📁</div>
+    <h2>Marketing & Media</h2>
+    <p>Kho hình ảnh, video và tài liệu truyền thông sẵn sàng để sử dụng</p>
+  </div>
+  <div class="container page-body">
+    <div class="section-title">Tài Nguyên Truyền Thông</div>
+    <div class="section-sub">Hình ảnh, video và mẫu thiết kế cho hoạt động marketing</div>
+    <div class="content-grid">
+      <div class="content-card t-teal">
+        <div class="cc-icon">🖼️</div>
+        <h4>Bộ hình ảnh thương hiệu</h4>
+        <p>Logo, banner, hình ảnh chuẩn thương hiệu Tâm An để sử dụng.</p>
+        <a href="#" class="resource-link" onclick="return false;">📥 Tải về →</a>
+      </div>
+      <div class="content-card t-teal">
+        <div class="cc-icon">🎬</div>
+        <h4>Video quảng bá</h4>
+        <p>Thư viện video giới thiệu sản phẩm và câu chuyện thương hiệu.</p>
+        <a href="#" class="resource-link" onclick="return false;">🎥 Xem video →</a>
+      </div>
+      <div class="content-card t-teal">
+        <div class="cc-icon">📱</div>
+        <h4>Mẫu bài đăng MXH</h4>
+        <p>Template bài viết, story cho Facebook, Zalo, TikTok.</p>
+        <a href="#" class="resource-link" onclick="return false;">📥 Tải mẫu →</a>
+      </div>
+      <div class="content-card t-teal">
+        <div class="cc-icon">🎨</div>
+        <h4>Bộ nhận diện thiết kế</h4>
+        <p>Font chữ, màu sắc và hướng dẫn sử dụng thương hiệu.</p>
+        <a href="#" class="resource-link" onclick="return false;">📥 Tải về →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FAQ ============ -->
+<div class="page" id="page-faq">
+  <div class="page-hero">
+    <div class="ph-icon">❓</div>
+    <h2>Câu Hỏi Thường Gặp</h2>
+    <p>Giải đáp những thắc mắc phổ biến về Học viện và hoạt động tại Tâm An</p>
+  </div>
+  <div class="container page-body">
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Tôi là thành viên mới, nên bắt đầu từ đâu? <span class="arrow">▼</span></div>
+        <div class="faq-a">Bạn hãy vào mục "Bắt đầu tại đây" và làm theo 5 bước hướng dẫn. Sau đó tham khảo "Lộ trình 30 ngày" trong mục Thành viên mới để có khởi đầu vững chắc.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Làm sao để vận hành một CLB? <span class="arrow">▼</span></div>
+        <div class="faq-a">Tất cả quy trình, tài liệu và công cụ vận hành CLB đều có trong mục "CLB Chăm sóc". Bạn có thể tải về các biểu mẫu và kịch bản cần thiết tại đó.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Tôi muốn trở thành Leader thì cần học gì? <span class="arrow">▼</span></div>
+        <div class="faq-a">Hãy vào "Leader Academy" để tham gia các khóa đào tạo về kỹ năng thuyết trình, lãnh đạo đội nhóm và xây dựng hệ thống bền vững.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Tôi xem lại video các buổi họp ở đâu? <span class="arrow">▼</span></div>
+        <div class="faq-a">Mục "Thư viện cuộc họp" lưu trữ tất cả video, biên bản và mindmap của các buổi họp đã diễn ra.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Tôi cần hình ảnh, tài liệu marketing thì lấy ở đâu? <span class="arrow">▼</span></div>
+        <div class="faq-a">Mục "Marketing & Media" cung cấp đầy đủ bộ hình ảnh thương hiệu, video quảng bá và mẫu bài đăng mạng xã hội.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Tôi cần hỗ trợ trực tiếp thì liên hệ ai? <span class="arrow">▼</span></div>
+        <div class="faq-a">Bạn có thể liên hệ Ban Điều Hành qua các kênh được công bố trong cộng đồng, hoặc đặt câu hỏi trong nhóm để được hỗ trợ nhanh nhất.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <svg class="logo-icon" viewBox="0 0 48 48" fill="none">
+        <path d="M24 6C16 6 10 12 10 20c0 4 2 7 4 9-2 1-4 3-4 6 0 4 6 7 14 7s14-3 14-7c0-3-2-5-4-6 2-2 4-5 4-9 0-8-6-14-14-14z" fill="#2E8B57" opacity="0.9"/>
+        <path d="M24 10c-5 0-9 4-9 10 0 3 1 5 3 7h12c2-2 3-4 3-7 0-6-4-10-9-10z" fill="#1B4F8A"/>
+        <circle cx="24" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <div><strong>TÂM AN ACADEMY</strong><small>Tâm An – Hạnh Phúc – Thịnh Vượng</small></div>
+    </div>
+    <div class="footer-center">Học viện được xây dựng với ❤️ vì sự phát triển của đội nhóm Tâm An</div>
+    <div class="footer-right">© 2024 Tâm An Academy. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    var page = document.getElementById('page-' + name);
+    if (page) page.classList.add('active');
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    if (el && el.dataset && el.dataset.page) {
+      el.classList.add('active');
+    } else {
+      var navLink = document.querySelector('nav a[data-page="' + name + '"]');
+      if (navLink) navLink.classList.add('active');
+    }
+    document.getElementById('mainNav').classList.remove('open');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function showPageByName(name) {
+    showPage(name, null);
+  }
+  function toggleMenu() {
+    document.getElementById('mainNav').classList.toggle('open');
+  }
+  function toggleFaq(el) {
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
