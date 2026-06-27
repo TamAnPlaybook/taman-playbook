@@ -1,4 +1,4 @@
-<!-- VERSION: v6.16-background-customization-daily-reminders -->
+<!-- VERSION: v6.17-goals-vision-board -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -739,6 +739,60 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .ap-row-lbl{flex:1;font-size:13.5px;font-weight:600;color:var(--ink)}
 .ap-toggle{border:1.5px solid var(--line);background:#F3F3F3;color:#888;border-radius:20px;padding:7px 16px;font-size:12.5px;font-weight:700;font-family:Arial;cursor:pointer;transition:all .2s var(--ease)}
 .ap-toggle.on{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:var(--accent-2)}
+
+/* ============ v6.17 — VISION BOARD ============ */
+/* Danh sách bảng (trong tab Mục tiêu) */
+.vb-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vb-tile{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .2s var(--ease),transform .15s var(--ease)}
+.vb-tile:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.vb-tile-prev{height:96px;position:relative;overflow:hidden;background:#EFEDE6}
+.vb-tile-prev .vbp-el{position:absolute}
+.vb-tile-meta{padding:9px 11px}
+.vb-tile-name{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vb-tile-cat{font-size:11px;color:#999;margin-top:2px;display:flex;align-items:center;gap:5px;justify-content:space-between}
+.vb-tile-def{color:var(--accent);font-weight:700}
+.vb-new-tile{border:2px dashed #D6D2C6;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#A99;cursor:pointer;min-height:140px;background:transparent;font-weight:700;font-size:13px}
+.vb-new-tile:hover{border-color:var(--accent);color:var(--accent)}
+.vb-default-hero{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:14px;position:relative;background:#EFEDE6}
+.vb-default-hero .vbp-el{position:absolute}
+.vb-default-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+/* Editor toàn màn hình */
+#vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
+#vb-editor.open{display:flex}
+#vb-bar{display:flex;align-items:center;gap:6px;padding:8px;background:#1E1C16;border-bottom:1px solid var(--accent);flex-wrap:wrap;flex-shrink:0}
+.vb-tb{background:#2B281F;border:1px solid #3A3628;color:#EDE6D2;border-radius:8px;padding:7px 11px;font-size:13px;font-weight:700;font-family:Arial;cursor:pointer;white-space:nowrap;min-height:38px;display:inline-flex;align-items:center;gap:5px}
+.vb-tb:hover{border-color:var(--accent)}
+.vb-tb-g{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:var(--accent-2)}
+.vb-name-inp{background:#15140F;border:1px solid #3A3628;color:#fff;border-radius:8px;padding:7px 10px;font-size:14px;font-family:Arial;outline:none;min-width:120px;max-width:200px;flex:0 1 auto}
+.vb-cat-sel{background:#15140F;border:1px solid #3A3628;color:#EDE6D2;border-radius:8px;padding:7px 8px;font-size:12px;font-family:Arial;cursor:pointer;max-width:140px}
+#vb-add-tools{display:flex;gap:5px;flex-wrap:wrap}
+#vb-el-tools{display:none;background:#262219;border-bottom:1px solid #3A3628;padding:6px 8px;gap:5px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+#vb-el-tools.on{display:flex}
+.vb-mini{background:#34301F;border:1px solid #44402C;color:#EDE6D2;border-radius:7px;width:34px;height:34px;font-size:14px;font-weight:700;font-family:Arial;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.vb-mini.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.vb-mini.del{background:#5A2020;border-color:#7A2A2A;color:#FFD9D9}
+.vb-mini-col{width:34px;height:34px;border:1px solid #44402C;border-radius:7px;position:relative;overflow:hidden;cursor:pointer}
+.vb-mini-col input{position:absolute;inset:-4px;opacity:0;cursor:pointer}
+#vb-stage-wrap{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:14px;background:#15140F;-webkit-overflow-scrolling:touch}
+#vb-sizer{position:relative;flex-shrink:0}
+#vb-stage{position:absolute;top:0;left:0;transform-origin:top left;background:#fff;box-shadow:0 14px 50px rgba(0,0,0,.5)}
+.vb-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px}
+.vb-pick-cell{font-size:28px;background:#F7F5EF;border:1px solid var(--line);border-radius:10px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s var(--ease),border-color .2s}
+.vb-pick-cell:hover{border-color:var(--accent);transform:scale(1.06)}
+.vb-tpl-row{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:#F7F5EF;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font-family:Arial}
+.vb-tpl-row:hover{border-color:var(--accent)}
+.vb-tpl-row b{font-size:14px;color:var(--ink)}
+.vb-tpl-row span{font-size:12px;color:#888}
+.vb-el{position:absolute;box-sizing:border-box;cursor:move;user-select:none;-webkit-user-select:none;touch-action:none}
+.vb-el.sel{outline:2px solid var(--accent);outline-offset:1px}
+.vb-el .vb-el-txt{width:100%;height:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:center;word-break:break-word;line-height:1.25}
+.vb-el .vb-el-txt[contenteditable=true]{cursor:text;outline:none}
+.vb-el img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;border-radius:inherit}
+.vb-handle{position:absolute;width:20px;height:20px;background:var(--accent);border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4);z-index:30;touch-action:none}
+.vb-h-rs{right:-11px;bottom:-11px;cursor:nwse-resize}
+.vb-h-rot{left:50%;top:-30px;margin-left:-11px;cursor:grab;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px}
+.vb-h-rot:after{content:'';position:absolute;left:50%;top:20px;width:2px;height:10px;background:var(--accent);margin-left:-1px}
+@media(max-width:600px){.vb-name-inp{max-width:120px}.vb-tb{padding:8px 9px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -875,8 +929,10 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
         <button class="stab" data-sub="tp:results">&#128202; Kết quả</button>
       </div>
 
-      <!-- A. MỤC TIÊU (Goals): Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
+      <!-- A. MỤC TIÊU (Goals): Vision Board + Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
       <div class="spg on" id="tp-goals">
+        <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)</div>
+        <div id="vision-board-content"></div>
         <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)</div>
         <div id="annplan-content"></div>
         <div class="tp-sec-title">&#128722; Bánh xe cuộc đời</div>
@@ -1094,6 +1150,33 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
     <div class="nmod-foot">
       <button class="btn btn-g" id="appearance-done">&#10003; Xong</button>
     </div>
+  </div>
+</div>
+
+<!-- VISION BOARD EDITOR (v6.17) -->
+<div id="vb-editor">
+  <div id="vb-bar">
+    <button class="vb-tb" id="vb-close" title="Đóng">&#10005;</button>
+    <input id="vb-name" class="vb-name-inp" placeholder="Tên bảng tầm nhìn">
+    <select id="vb-cat" class="vb-cat-sel"></select>
+    <div id="vb-add-tools"></div>
+    <span style="flex:1"></span>
+    <label class="vb-tb" title="Màu nền bảng" style="position:relative;overflow:hidden">&#127912;<input type="color" id="vb-bg" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+    <button class="vb-tb" id="vb-template" title="Mẫu thiết kế">&#128196;</button>
+    <button class="vb-tb vb-tb-g" id="vb-save" title="Lưu">&#10003; Lưu</button>
+  </div>
+  <div id="vb-el-tools"></div>
+  <div id="vb-stage-wrap">
+    <div id="vb-sizer"><div id="vb-stage"></div></div>
+  </div>
+  <input type="file" id="vb-img-file" accept="image/*" style="display:none">
+</div>
+
+<!-- VISION BOARD: chọn icon/sticker/template -->
+<div class="nmod-ov" id="vbpick-ov">
+  <div class="nmod">
+    <div class="nmod-hd"><div class="nmod-title" id="vbpick-title">Chọn</div><button class="nmod-x" id="vbpick-close">&#10005;</button></div>
+    <div class="nmod-body" id="vbpick-body"></div>
   </div>
 </div>
 
@@ -2532,7 +2615,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3321,7 +3404,7 @@ function renderActionCenter(){
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'goals';
-  if(sub==='goals'){renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
+  if(sub==='goals'){renderVisionBoards();renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
@@ -8235,10 +8318,343 @@ function selectTheme(key){
 }
 
 // ================================================================
+// v6.17 — VISION BOARD (Bảng tầm nhìn) — canvas kéo-thả tự xây (vanilla JS)
+// Nhiều bảng; phần tử: chữ/câu nói/truyền cảm hứng/ảnh/icon/sticker/hình; di
+// chuyển/đổi cỡ/xoay/xếp lớp/xoá; chữ giàu định dạng; mẫu thiết kế; bảng mặc định.
+// Lưu: index (vbindex) + mỗi bảng 1 document (vboard_<id>) — localStorage + Firestore.
+// ================================================================
+var VB_W=960,VB_H=600;
+var VB_CATS=['Tổng quát','Sức khoẻ','Tài chính','Gia đình','Sự nghiệp','Du lịch','Phát triển bản thân','Kinh doanh','Tâm linh','Học tập'];
+var VB_ICONS=['⭐','❤️','🎯','💰','🏆','🚀','🌟','💎','🔥','🌈','☀️','🌙','✨','🏠','🚗','✈️','🏖️','💪','🧠','📚','🎓','💼','📈','🤝','🌱','🦋','👑','🕊️','🍀','⚡'];
+var VB_STICKERS=['🥇','🎉','💖','🌸','🌻','🍎','🧘','🏝️','🏔️','🏡','💵','📿','🛫','🎻','🎨','⚽','🏅','🐉','🌍','💍'];
+var VB_QUOTES=['Ước mơ lớn — hành động mỗi ngày.','Tôi là kiến trúc sư của cuộc đời mình.','Mỗi ngày là một cơ hội mới.','Kỷ luật tạo nên tự do.','Gieo thói quen, gặt số phận.','Sống tử tế trước, thành công theo sau.','Tin vào bản thân và tiến lên.','Biết ơn hôm nay, kiến tạo ngày mai.'];
+function _tplEl(o){o.id='e'+Date.now().toString(36)+Math.floor(Math.random()*99999).toString(36);o.rot=o.rot||0;return o;}
+var VB_TEMPLATES={
+  oneyear:{name:'Mục tiêu 1 năm',cat:'Tổng quát',bg:'#FBF7EE',desc:'Tiêu đề + 4 lĩnh vực + câu nói',build:function(){return [
+    {type:'inspiration',text:'MỤC TIÊU NĂM '+(new Date().getFullYear()),x:180,y:30,w:600,h:90,fontSize:46,bold:true,color:'#C8A84B',align:'center',bg:'none',z:1},
+    {type:'text',text:'🌿 Sức khoẻ',x:80,y:160,w:360,h:120,fontSize:30,bold:true,color:'#1A7A5E',align:'center',bg:'#E3F2EC',z:2},
+    {type:'text',text:'💰 Tài chính',x:520,y:160,w:360,h:120,fontSize:30,bold:true,color:'#8E6A12',align:'center',bg:'#F6EECF',z:3},
+    {type:'text',text:'👨‍👩‍👧 Gia đình',x:80,y:320,w:360,h:120,fontSize:30,bold:true,color:'#8E2D43',align:'center',bg:'#F6E5EA',z:4},
+    {type:'text',text:'🚀 Sự nghiệp',x:520,y:320,w:360,h:120,fontSize:30,bold:true,color:'#2D5DA8',align:'center',bg:'#E5ECF8',z:5},
+    {type:'quote',text:'Ước mơ lớn — hành động mỗi ngày.',x:180,y:482,w:600,h:80,fontSize:26,italic:true,color:'#555',align:'center',bg:'none',z:6}
+  ];}},
+  fiveyear:{name:'Tầm nhìn 5 năm',cat:'Tổng quát',bg:'#F2F5F8',desc:'Tiêu đề lớn + 3 cột mốc',build:function(){return [
+    {type:'inspiration',text:'TẦM NHÌN 5 NĂM',x:130,y:34,w:700,h:90,fontSize:50,bold:true,color:'#2D5DA8',align:'center',bg:'none',z:1},
+    {type:'text',text:'1–2 năm',x:70,y:170,w:250,h:300,fontSize:24,bold:true,color:'#1A1A1A',align:'center',bg:'#FFFFFF',z:2},
+    {type:'text',text:'3 năm',x:355,y:170,w:250,h:300,fontSize:24,bold:true,color:'#1A1A1A',align:'center',bg:'#FFFFFF',z:3},
+    {type:'text',text:'5 năm',x:640,y:170,w:250,h:300,fontSize:24,bold:true,color:'#1A1A1A',align:'center',bg:'#FFFFFF',z:4}
+  ];}},
+  dream:{name:'Cuộc sống mơ ước',cat:'Phát triển bản thân',bg:'#FFF6F2',desc:'Trung tâm cảm hứng + biểu tượng',build:function(){return [
+    {type:'inspiration',text:'CUỘC SỐNG MƠ ƯỚC CỦA TÔI',x:130,y:240,w:700,h:120,fontSize:42,bold:true,color:'#8E2D43',align:'center',bg:'none',z:5},
+    {type:'sticker',char:'🏝️',x:80,y:60,w:130,h:130,fontSize:96,z:1},
+    {type:'sticker',char:'🚗',x:740,y:70,w:130,h:130,fontSize:96,z:2},
+    {type:'sticker',char:'🏡',x:90,y:400,w:130,h:130,fontSize:96,z:3},
+    {type:'sticker',char:'✈️',x:740,y:400,w:130,h:130,fontSize:96,z:4}
+  ];}},
+  business:{name:'Tầm nhìn kinh doanh',cat:'Kinh doanh',bg:'#13201B',desc:'Mục tiêu doanh nghiệp (nền tối)',build:function(){return [
+    {type:'inspiration',text:'TẦM NHÌN KINH DOANH',x:130,y:40,w:700,h:90,fontSize:46,bold:true,color:'#C8A84B',align:'center',bg:'none',z:1},
+    {type:'text',text:'🎯 Mục tiêu doanh số',x:90,y:180,w:360,h:130,fontSize:26,bold:true,color:'#fff',align:'center',bg:'#1F3A2E',z:2},
+    {type:'text',text:'🤝 Phát triển đội nhóm',x:510,y:180,w:360,h:130,fontSize:26,bold:true,color:'#fff',align:'center',bg:'#1F3A2E',z:3},
+    {type:'text',text:'📈 Cấp bậc hướng tới',x:90,y:340,w:360,h:130,fontSize:26,bold:true,color:'#fff',align:'center',bg:'#1F3A2E',z:4},
+    {type:'text',text:'🌍 Tầm ảnh hưởng',x:510,y:340,w:360,h:130,fontSize:26,bold:true,color:'#fff',align:'center',bg:'#1F3A2E',z:5}
+  ];}}
+};
+var _vbIndex=[],_vbDefault='',_vbCur=null,_vbSel=null,_vbScale=1,_vbDrag=null,_vbSaveT=null;
+function _hex(c){c=(c||'').trim();if(/^#[0-9a-fA-F]{6}$/.test(c))return c;var m=/^rgb\((\d+),\s*(\d+),\s*(\d+)/.exec(c);if(m)return '#'+[1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('');return '#1a1a1a';}
+function _vbFind(id){return _vbCur&&_vbCur.els.filter(function(x){return x.id===id;})[0];}
+function _vbMaxZ(){return _vbCur&&_vbCur.els.length?Math.max.apply(null,_vbCur.els.map(function(x){return x.z||0;})):0;}
+// ── Lưu/đọc index + từng bảng ──
+function loadVbIndexLocal(){try{var s=localStorage.getItem('ta_vbindex');if(s){var o=JSON.parse(s)||{};_vbIndex=o.boards||[];_vbDefault=o.def||'';}}catch(e){_vbIndex=[];_vbDefault='';}}
+function saveVbIndex(){var o={boards:_vbIndex,def:_vbDefault};try{localStorage.setItem('ta_vbindex',JSON.stringify(o));}catch(e){}if(fbDb&&fbUser)fsSet('vbindex',o).catch(function(){});}
+function loadVbIndexCloud(){if(!fbDb||!fbUser)return;fsGet('vbindex').then(function(d){if(d){_vbIndex=d.boards||_vbIndex;_vbDefault=(d.def!=null?d.def:_vbDefault);try{localStorage.setItem('ta_vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));}catch(e){}_vbPrefetchBoards();renderVisionBoards();}}).catch(function(){});}
+function _vbPrefetchBoards(){ // kéo từng bảng về local để xem trước/đa thiết bị
+  if(!fbDb||!fbUser)return;
+  _vbIndex.forEach(function(it){
+    if(loadVbBoardLocal(it.id))return;
+    fsGet('vboard_'+it.id).then(function(d){if(d&&d.board){try{localStorage.setItem('ta_vboard_'+it.id,JSON.stringify(d.board));}catch(e){}renderVisionBoards();}}).catch(function(){});
+  });
+}
+function loadVbBoardLocal(id){try{var s=localStorage.getItem('ta_vboard_'+id);return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveVbBoard(b){try{localStorage.setItem('ta_vboard_'+b.id,JSON.stringify(b));}catch(e){}if(fbDb&&fbUser)fsSet('vboard_'+b.id,{board:b}).catch(function(){});}
+function _newVbBoardObj(id){return {id:id,name:'Bảng tầm nhìn mới',cat:'Tổng quát',bg:'#FBF7EE',els:[]};}
+function vbCreateBoard(){
+  var id='vb'+Date.now().toString(36);var b=_newVbBoardObj(id);
+  _vbIndex.push({id:id,name:b.name,cat:b.cat});saveVbIndex();saveVbBoard(b);_openVbEditorWith(b);
+}
+function openVbBoard(id){
+  var b=loadVbBoardLocal(id);
+  if(b){_openVbEditorWith(b);return;}
+  if(fbDb&&fbUser)fsGet('vboard_'+id).then(function(d){_openVbEditorWith((d&&d.board)||_newVbBoardObj(id));}).catch(function(){_openVbEditorWith(_newVbBoardObj(id));});
+  else _openVbEditorWith(_newVbBoardObj(id));
+}
+function vbSetDefault(id){_vbDefault=(_vbDefault===id?'':id);saveVbIndex();renderVisionBoards();showToast(_vbDefault?'⭐ Đã ghim làm nguồn cảm hứng mặc định':'Đã bỏ ghim mặc định');}
+function vbDeleteBoard(id){
+  if(!confirm('Xoá bảng tầm nhìn này? Không hoàn tác.'))return;
+  _vbIndex=_vbIndex.filter(function(x){return x.id!==id;});
+  if(_vbDefault===id)_vbDefault='';
+  try{localStorage.removeItem('ta_vboard_'+id);}catch(e){}
+  if(fbDb&&fbUser){import(FB_STORE).then(function(m){m.deleteDoc(m.doc(fbDb,'users',fbUser.uid,'data','vboard_'+id)).catch(function(){});}).catch(function(){});}
+  saveVbIndex();renderVisionBoards();showToast('Đã xoá bảng');
+}
+// ── Mở/đóng editor ──
+function _openVbEditorWith(b){
+  _vbCur=b;_vbSel=null;
+  if(!b.els)b.els=[];
+  document.getElementById('vb-name').value=b.name||'';
+  var cs=document.getElementById('vb-cat');cs.innerHTML=VB_CATS.map(function(c){return '<option>'+escHtml(c)+'</option>';}).join('');cs.value=b.cat||'Tổng quát';
+  document.getElementById('vb-add-tools').innerHTML=
+    '<button class="vb-tb" data-vbadd="text">＋ Chữ</button>'+
+    '<button class="vb-tb" data-vbadd="quote">❝ Câu nói</button>'+
+    '<button class="vb-tb" data-vbadd="inspiration">✦ Cảm hứng</button>'+
+    '<button class="vb-tb" data-vbadd="image">🖼 Ảnh</button>'+
+    '<button class="vb-tb" data-vbadd="icon">⭐ Icon</button>'+
+    '<button class="vb-tb" data-vbadd="sticker">🎉 Sticker</button>'+
+    '<button class="vb-tb" data-vbadd="shape">▭ Hình</button>';
+  document.getElementById('vb-bg').value=_hex(b.bg||'#FBF7EE');
+  document.getElementById('vb-editor').classList.add('open');
+  renderVbStage();renderVbElTools();
+  setTimeout(fitVbStage,40);
+}
+function closeVbEditor(){
+  if(_vbCur){_vbCur.name=document.getElementById('vb-name').value.trim()||'Bảng tầm nhìn';_vbCur.cat=document.getElementById('vb-cat').value;_vbSyncIndex(_vbCur);saveVbBoard(_vbCur);saveVbIndex();}
+  document.getElementById('vb-editor').classList.remove('open');_vbCur=null;_vbSel=null;renderVisionBoards();
+}
+function _vbSyncIndex(b){var it=_vbIndex.filter(function(x){return x.id===b.id;})[0];if(it){it.name=b.name;it.cat=b.cat;}else _vbIndex.push({id:b.id,name:b.name,cat:b.cat});}
+function vbSaveAndToast(){if(!_vbCur)return;_vbCur.name=document.getElementById('vb-name').value.trim()||'Bảng tầm nhìn';_vbCur.cat=document.getElementById('vb-cat').value;_vbSyncIndex(_vbCur);saveVbBoard(_vbCur);saveVbIndex();showToast('✓ Đã lưu bảng tầm nhìn');}
+function fitVbStage(){
+  var wrap=document.getElementById('vb-stage-wrap');if(!wrap)return;
+  var avail=wrap.clientWidth-28;
+  _vbScale=Math.min(1.4,Math.max(0.18,avail/VB_W));
+  var st=document.getElementById('vb-stage'),sz=document.getElementById('vb-sizer');
+  st.style.width=VB_W+'px';st.style.height=VB_H+'px';st.style.transform='scale('+_vbScale+')';
+  sz.style.width=(VB_W*_vbScale)+'px';sz.style.height=(VB_H*_vbScale)+'px';
+}
+// ── Render stage ──
+function renderVbStage(){
+  var st=document.getElementById('vb-stage');if(!st||!_vbCur)return;
+  st.style.background=_vbCur.bg||'#FBF7EE';
+  var els=_vbCur.els.slice().sort(function(a,b){return (a.z||0)-(b.z||0);});
+  st.innerHTML=els.map(vbElHtml).join('');
+  if(_vbSel)_vbMountHandles();
+}
+function vbElHtml(e){
+  var base='position:absolute;left:'+e.x+'px;top:'+e.y+'px;width:'+e.w+'px;height:'+e.h+'px;transform:rotate('+(e.rot||0)+'deg);z-index:'+(e.z||1);
+  var sel=(_vbSel===e.id)?' sel':'',inner='';
+  if(e.type==='image'){inner='<img src="'+(e.src||'')+'" alt="">';if(e.radius)base+=';border-radius:'+e.radius+'px';}
+  else if(e.type==='shape'){
+    if(e.shape==='circle')base+=';background:'+(e.color||'#C8A84B')+';border-radius:50%';
+    else base+=';background:'+(e.color||'#C8A84B')+';border-radius:'+(e.radius||8)+'px';
+  }
+  else if(e.type==='icon'||e.type==='sticker'){
+    inner='<div class="vb-el-txt" style="align-items:center;justify-content:center;font-size:'+(e.fontSize||64)+'px;text-align:center">'+escHtml(e.char||'⭐')+'</div>';
+  }else{
+    var ts='font-size:'+(e.fontSize||28)+'px;color:'+(e.color||'#1A1A1A')+';text-align:'+(e.align||'center')+';font-weight:'+(e.bold?'800':'400')+(e.italic?';font-style:italic':'')+(e.bg&&e.bg!=='none'?';background:'+e.bg:'')+';padding:6px 8px';
+    if(e.bg&&e.bg!=='none')base+=';border-radius:8px';
+    inner='<div class="vb-el-txt" data-vb-txt="'+e.id+'" style="'+ts+'">'+escHtml(e.text||'')+'</div>';
+  }
+  return '<div class="vb-el'+sel+'" data-vb-el="'+e.id+'" style="'+base+'">'+inner+'</div>';
+}
+function _vbMountHandles(){
+  var el=document.querySelector('[data-vb-el="'+_vbSel+'"]');if(!el)return;
+  var rot=document.createElement('div');rot.className='vb-handle vb-h-rot';rot.setAttribute('data-vb-handle','rotate');rot.textContent='↻';
+  var rs=document.createElement('div');rs.className='vb-handle vb-h-rs';rs.setAttribute('data-vb-handle','resize');
+  el.appendChild(rot);el.appendChild(rs);
+}
+function _applyVbElStyle(e){var d=document.querySelector('[data-vb-el="'+e.id+'"]');if(!d)return;d.style.left=e.x+'px';d.style.top=e.y+'px';d.style.width=e.w+'px';d.style.height=e.h+'px';d.style.transform='rotate('+(e.rot||0)+'deg)';}
+function selectVbEl(id){_vbSel=id;renderVbStage();renderVbElTools();}
+function _vbCommit(){if(_vbSaveT)clearTimeout(_vbSaveT);_vbSaveT=setTimeout(function(){if(_vbCur)saveVbBoard(_vbCur);},450);}
+// ── Thêm phần tử ──
+function _vbAdd(props){
+  var e={type:props.type,x:Math.round(VB_W/2-(props.w||220)/2),y:Math.round(VB_H/2-(props.h||120)/2),w:props.w||220,h:props.h||120,rot:0,z:_vbMaxZ()+1};
+  e.id='e'+Date.now().toString(36)+Math.floor(Math.random()*999).toString(36);
+  for(var k in props)if(k!=='w'&&k!=='h'&&k!=='type')e[k]=props[k];
+  if(props.w)e.w=props.w;if(props.h)e.h=props.h;
+  _vbCur.els.push(e);selectVbEl(e.id);_vbCommit();
+}
+function vbAddText(kind){
+  if(kind==='quote')_vbAdd({type:'quote',text:VB_QUOTES[Math.floor(Math.random()*VB_QUOTES.length)],fontSize:26,italic:true,color:'#444',align:'center',bg:'none',w:360,h:120});
+  else if(kind==='inspiration')_vbAdd({type:'inspiration',text:'TÔI LÀM ĐƯỢC!',fontSize:42,bold:true,color:'#C8A84B',align:'center',bg:'none',w:440,h:120});
+  else _vbAdd({type:'text',text:'Văn bản của bạn',fontSize:30,color:'#1A1A1A',align:'center',bg:'none',w:300,h:90});
+}
+function vbAddShape(shape){_vbAdd({type:'shape',shape:shape,color:'#C8A84B',w:shape==='line'?320:170,h:shape==='line'?14:170,radius:8});}
+function vbAddIconChar(ch,big){_vbAdd({type:big?'sticker':'icon',char:ch,fontSize:big?100:64,w:big?140:96,h:big?140:96});}
+function vbAddImageFromFile(file){
+  if(!file||!/^image\//.test(file.type||'')){showToast('Vui lòng chọn tệp ảnh');return;}
+  showToast('Đang xử lý ảnh…');
+  _compressToLimit(file,1000,0.7,300000,function(url){
+    if(!url){showToast('Không đọc được ảnh');return;}
+    _vbAdd({type:'image',src:url,w:320,h:230,radius:10});showToast('✓ Đã thêm ảnh');
+  });
+}
+// ── Thao tác phần tử ──
+function vbLayer(el,dir){var zs=_vbCur.els.map(function(x){return x.z||0;});el.z=dir>0?Math.max.apply(null,zs)+1:Math.min.apply(null,zs)-1;}
+function vbDup(el){var c=JSON.parse(JSON.stringify(el));c.id='e'+Date.now().toString(36)+Math.floor(Math.random()*999).toString(36);c.x+=24;c.y+=24;c.z=_vbMaxZ()+1;_vbCur.els.push(c);selectVbEl(c.id);_vbCommit();}
+function vbDelEl(id){_vbCur.els=_vbCur.els.filter(function(x){return x.id!==id;});_vbSel=null;renderVbStage();renderVbElTools();_vbCommit();}
+function startVbTextEdit(id){
+  var e=_vbFind(id);if(!e)return;var d=document.querySelector('[data-vb-txt="'+id+'"]');if(!d)return;
+  d.setAttribute('contenteditable','true');d.focus();
+  try{var r=document.createRange();r.selectNodeContents(d);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}catch(err){}
+  d.addEventListener('blur',function ob(){d.removeAttribute('contenteditable');e.text=(d.innerText||'').replace(/\n{3,}/g,'\n\n').trim();d.removeEventListener('blur',ob);renderVbStage();renderVbElTools();_vbCommit();});
+}
+// ── Toolbar phần tử ──
+function renderVbElTools(){
+  var bar=document.getElementById('vb-el-tools');if(!bar)return;
+  if(!_vbSel){bar.classList.remove('on');bar.innerHTML='';return;}
+  var e=_vbFind(_vbSel);if(!e){bar.classList.remove('on');bar.innerHTML='';return;}
+  var isText=(e.type==='text'||e.type==='quote'||e.type==='inspiration'),h='';
+  if(isText){
+    h+='<button class="vb-mini" data-vbt="fs-" title="Nhỏ">A-</button><button class="vb-mini" data-vbt="fs+" title="To">A+</button>';
+    h+='<label class="vb-mini-col" title="Màu chữ"><span style="display:block;width:100%;height:100%;background:'+(e.color||'#1A1A1A')+'"></span><input type="color" data-vbt="color" value="'+_hex(e.color||'#1A1A1A')+'"></label>';
+    h+='<label class="vb-mini-col" title="Màu nền chữ"><span style="display:block;width:100%;height:100%;background:'+((e.bg&&e.bg!=='none')?e.bg:'#ffffff')+'"></span><input type="color" data-vbt="bg" value="'+_hex((e.bg&&e.bg!=='none')?e.bg:'#ffffff')+'"></label>';
+    h+='<button class="vb-mini" data-vbt="bgoff" title="Bỏ nền chữ">⌫</button>';
+    h+='<button class="vb-mini'+(e.align==='left'?' on':'')+'" data-vbt="al-left">⬅</button>';
+    h+='<button class="vb-mini'+((e.align==='center'||!e.align)?' on':'')+'" data-vbt="al-center">≡</button>';
+    h+='<button class="vb-mini'+(e.align==='right'?' on':'')+'" data-vbt="al-right">➡</button>';
+    h+='<button class="vb-mini'+(e.bold?' on':'')+'" data-vbt="bold" style="font-weight:800">B</button>';
+    h+='<button class="vb-mini'+(e.italic?' on':'')+'" data-vbt="italic" style="font-style:italic">I</button>';
+    h+='<button class="vb-mini" data-vbt="edit" title="Sửa chữ">✎</button>';
+  }
+  if(e.type==='shape')h+='<label class="vb-mini-col" title="Màu"><span style="display:block;width:100%;height:100%;background:'+(e.color||'#C8A84B')+'"></span><input type="color" data-vbt="shcolor" value="'+_hex(e.color||'#C8A84B')+'"></label>';
+  if(e.type==='icon'||e.type==='sticker')h+='<button class="vb-mini" data-vbt="fs-">A-</button><button class="vb-mini" data-vbt="fs+">A+</button>';
+  h+='<span style="width:6px;display:inline-block"></span>';
+  h+='<button class="vb-mini" data-vbt="front" title="Đưa lên trên">⬆</button><button class="vb-mini" data-vbt="back" title="Đưa xuống dưới">⬇</button>';
+  h+='<button class="vb-mini" data-vbt="dup" title="Nhân bản">⧉</button>';
+  h+='<button class="vb-mini del" data-vbt="del" title="Xoá">🗑</button>';
+  bar.innerHTML=h;bar.classList.add('on');
+}
+function vbElToolClick(ev){
+  var t=ev.target.closest('[data-vbt]');if(!t)return;var el=_vbFind(_vbSel);if(!el)return;var a=t.getAttribute('data-vbt');
+  var defFs=(el.type==='icon'||el.type==='sticker')?64:28;
+  if(a==='fs-')el.fontSize=Math.max(8,(el.fontSize||defFs)-4);
+  else if(a==='fs+')el.fontSize=Math.min(260,(el.fontSize||defFs)+4);
+  else if(a==='al-left')el.align='left';else if(a==='al-center')el.align='center';else if(a==='al-right')el.align='right';
+  else if(a==='bold')el.bold=!el.bold;else if(a==='italic')el.italic=!el.italic;else if(a==='bgoff')el.bg='none';
+  else if(a==='edit'){startVbTextEdit(el.id);return;}
+  else if(a==='front')vbLayer(el,1);else if(a==='back')vbLayer(el,-1);
+  else if(a==='dup'){vbDup(el);return;}
+  else if(a==='del'){vbDelEl(el.id);return;}
+  else return;
+  renderVbStage();renderVbElTools();_vbCommit();
+}
+function vbElToolChange(ev){
+  var t=ev.target.closest('[data-vbt]');if(!t)return;var el=_vbFind(_vbSel);if(!el)return;var a=t.getAttribute('data-vbt');
+  if(a==='color')el.color=ev.target.value;else if(a==='bg')el.bg=ev.target.value;else if(a==='shcolor')el.color=ev.target.value;else return;
+  renderVbStage();renderVbElTools();_vbCommit();
+}
+// ── Kéo / đổi cỡ / xoay ──
+function vbStageDown(ev){
+  if(!_vbCur)return;
+  var handle=ev.target.closest('[data-vb-handle]'),elDiv=ev.target.closest('[data-vb-el]');
+  if(handle&&_vbSel){
+    var e=_vbFind(_vbSel);if(!e)return;ev.preventDefault();
+    var rect=document.getElementById('vb-stage').getBoundingClientRect();
+    _vbDrag={mode:handle.getAttribute('data-vb-handle'),e:e,sx:ev.clientX,sy:ev.clientY,ow:e.w,oh:e.h,
+      cx:rect.left+(e.x+e.w/2)*_vbScale,cy:rect.top+(e.y+e.h/2)*_vbScale};
+    return;
+  }
+  if(elDiv){var id=elDiv.getAttribute('data-vb-el');if(elDiv.querySelector('[contenteditable=true]'))return;selectVbEl(id);var e2=_vbFind(id);_vbDrag={mode:'move',e:e2,sx:ev.clientX,sy:ev.clientY,ox:e2.x,oy:e2.y};ev.preventDefault();return;}
+  selectVbEl(null);
+}
+function vbStageMove(ev){
+  if(!_vbDrag)return;var e=_vbDrag.e;var dx=(ev.clientX-_vbDrag.sx)/_vbScale,dy=(ev.clientY-_vbDrag.sy)/_vbScale;
+  if(_vbDrag.mode==='move'){e.x=Math.round(_vbDrag.ox+dx);e.y=Math.round(_vbDrag.oy+dy);}
+  else if(_vbDrag.mode==='resize'){e.w=Math.max(24,Math.round(_vbDrag.ow+dx));e.h=Math.max(18,Math.round(_vbDrag.oh+dy));}
+  else if(_vbDrag.mode==='rotate'){e.rot=Math.round(Math.atan2(ev.clientY-_vbDrag.cy,ev.clientX-_vbDrag.cx)*180/Math.PI+90);}
+  _applyVbElStyle(e);
+}
+function vbStageUp(){if(_vbDrag){_vbDrag=null;_vbCommit();}}
+// ── Picker (icon/sticker/shape/template) ──
+function openVbPick(kind){
+  var title='',body='';
+  if(kind==='icon'||kind==='sticker'){title=kind==='icon'?'Chọn biểu tượng':'Chọn sticker';var arr=kind==='icon'?VB_ICONS:VB_STICKERS;body='<div class="vb-pick-grid">'+arr.map(function(c){return '<button class="vb-pick-cell" data-vbpick="'+kind+'" data-char="'+c+'">'+c+'</button>';}).join('')+'</div>';}
+  else if(kind==='shape'){title='Chọn hình khối';body='<div class="vb-pick-grid"><button class="vb-pick-cell" data-vbpick="shape" data-shape="rect">▭</button><button class="vb-pick-cell" data-vbpick="shape" data-shape="circle">●</button><button class="vb-pick-cell" data-vbpick="shape" data-shape="line">▬</button></div>';}
+  else if(kind==='template'){title='Mẫu thiết kế';body='<div style="font-size:12px;color:#888;margin-bottom:10px">Áp dụng mẫu sẽ thay các phần tử hiện tại. Bạn vẫn tuỳ chỉnh tự do sau đó.</div>'+Object.keys(VB_TEMPLATES).map(function(k){var t=VB_TEMPLATES[k];return '<button class="vb-tpl-row" data-vbtpl="'+k+'"><b>'+escHtml(t.name)+'</b><span>'+escHtml(t.desc||'')+'</span></button>';}).join('');}
+  document.getElementById('vbpick-title').textContent=title;
+  document.getElementById('vbpick-body').innerHTML=body;
+  document.getElementById('vbpick-ov').classList.add('open');
+}
+function closeVbPick(){document.getElementById('vbpick-ov').classList.remove('open');}
+function applyVbTemplate(key){
+  var t=VB_TEMPLATES[key];if(!t||!_vbCur)return;
+  if(_vbCur.els.length&&!confirm('Áp dụng mẫu "'+t.name+'" sẽ thay toàn bộ phần tử hiện có. Tiếp tục?'))return;
+  _vbCur.els=t.build().map(_tplEl);_vbCur.bg=t.bg||_vbCur.bg;
+  if(!document.getElementById('vb-name').value.trim()||document.getElementById('vb-name').value==='Bảng tầm nhìn mới'){_vbCur.name=t.name;document.getElementById('vb-name').value=t.name;}
+  document.getElementById('vb-bg').value=_hex(_vbCur.bg);
+  _vbSel=null;renderVbStage();renderVbElTools();_vbCommit();
+}
+// ── Render danh sách bảng (trong tab Mục tiêu) + bảng mặc định ──
+function vbPreviewEls(b,prevH){
+  var s=prevH/VB_H;
+  return b.els.slice().sort(function(a,c){return (a.z||0)-(c.z||0);}).map(function(e){
+    var st='left:'+(e.x*s)+'px;top:'+(e.y*s)+'px;width:'+(e.w*s)+'px;height:'+(e.h*s)+'px;transform:rotate('+(e.rot||0)+'deg);';
+    if(e.type==='image')return '<div class="vbp-el" style="'+st+'"><img src="'+e.src+'" style="width:100%;height:100%;object-fit:cover;border-radius:'+((e.radius||0)*s)+'px"></div>';
+    if(e.type==='shape')return '<div class="vbp-el" style="'+st+'background:'+(e.color||'#C8A84B')+';'+(e.shape==='circle'?'border-radius:50%':'border-radius:'+((e.radius||0)*s)+'px')+'"></div>';
+    if(e.type==='icon'||e.type==='sticker')return '<div class="vbp-el" style="'+st+'font-size:'+((e.fontSize||64)*s)+'px;display:flex;align-items:center;justify-content:center;line-height:1">'+escHtml(e.char||'')+'</div>';
+    return '<div class="vbp-el" style="'+st+'font-size:'+((e.fontSize||28)*s)+'px;color:'+(e.color||'#1A1A1A')+';text-align:'+(e.align||'center')+';'+(e.bold?'font-weight:800;':'')+(e.italic?'font-style:italic;':'')+(e.bg&&e.bg!=='none'?'background:'+e.bg+';':'')+'overflow:hidden;line-height:1.2;padding:'+(6*s)+'px '+(8*s)+'px">'+escHtml(e.text||'')+'</div>';
+  }).join('');
+}
+function renderVisionBoards(){
+  var el=document.getElementById('vision-board-content');if(!el)return;var h='';
+  if(_vbDefault){var db=loadVbBoardLocal(_vbDefault);if(db)h+='<div class="vb-default-hero" data-vbopen="'+db.id+'" style="height:170px;cursor:pointer;background:'+(db.bg||'#EFEDE6')+'"><div style="position:absolute;inset:0;overflow:hidden">'+vbPreviewEls(db,170)+'</div><div class="vb-default-cap">⭐ '+escHtml(db.name)+' · Nguồn cảm hứng mặc định — chạm để mở</div></div>';}
+  h+='<div style="font-size:12.5px;color:#666;margin-bottom:10px;line-height:1.5">Hình dung tương lai: kéo-thả ảnh, câu nói, biểu tượng, hình khối… Tạo nhiều bảng (1 năm, 5 năm, cuộc sống mơ ước, kinh doanh) và ghim ⭐ một bảng làm nguồn cảm hứng.</div>';
+  h+='<div class="vb-list">';
+  _vbIndex.forEach(function(it){
+    var b=loadVbBoardLocal(it.id);
+    h+='<div class="vb-tile"><div class="vb-tile-prev" data-vbopen="'+it.id+'" style="background:'+((b&&b.bg)||'#EFEDE6')+'">'+(b?'<div style="position:absolute;inset:0;overflow:hidden">'+vbPreviewEls(b,96)+'</div>':'')+'</div>';
+    h+='<div class="vb-tile-meta"><div class="vb-tile-name" data-vbopen="'+it.id+'">'+escHtml(it.name||'Bảng')+'</div>';
+    h+='<div class="vb-tile-cat"><span>'+escHtml(it.cat||'')+'</span><span style="display:flex;gap:8px">';
+    h+=(_vbDefault===it.id?'<span class="vb-tile-def" data-vbsetdef="'+it.id+'" style="cursor:pointer">⭐</span>':'<span data-vbsetdef="'+it.id+'" title="Ghim mặc định" style="cursor:pointer;color:#bbb">☆</span>');
+    h+='<span data-vbdel="'+it.id+'" title="Xoá" style="cursor:pointer;color:#C99">🗑</span>';
+    h+='</span></div></div></div>';
+  });
+  h+='<button class="vb-new-tile" data-vbnew="1">＋<span>Tạo bảng mới</span></button>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+function bindVisionBoardEvents(){
+  var list=document.getElementById('vision-board-content');
+  if(list)list.addEventListener('click',function(e){
+    var t=e.target.closest('[data-vbsetdef]');if(t){vbSetDefault(t.getAttribute('data-vbsetdef'));return;}
+    t=e.target.closest('[data-vbdel]');if(t){vbDeleteBoard(t.getAttribute('data-vbdel'));return;}
+    t=e.target.closest('[data-vbnew]');if(t){vbCreateBoard();return;}
+    t=e.target.closest('[data-vbopen]');if(t){openVbBoard(t.getAttribute('data-vbopen'));return;}
+  });
+  document.getElementById('vb-close').addEventListener('click',closeVbEditor);
+  document.getElementById('vb-save').addEventListener('click',vbSaveAndToast);
+  document.getElementById('vb-template').addEventListener('click',function(){openVbPick('template');});
+  document.getElementById('vb-name').addEventListener('input',function(){if(_vbCur)_vbCur.name=this.value;});
+  document.getElementById('vb-cat').addEventListener('change',function(){if(_vbCur){_vbCur.cat=this.value;_vbCommit();}});
+  document.getElementById('vb-bg').addEventListener('input',function(){if(_vbCur){_vbCur.bg=this.value;renderVbStage();_vbCommit();}});
+  document.getElementById('vb-add-tools').addEventListener('click',function(e){
+    var t=e.target.closest('[data-vbadd]');if(!t)return;var a=t.getAttribute('data-vbadd');
+    if(a==='text'||a==='quote'||a==='inspiration')vbAddText(a);
+    else if(a==='image')document.getElementById('vb-img-file').click();
+    else if(a==='icon')openVbPick('icon');else if(a==='sticker')openVbPick('sticker');else if(a==='shape')openVbPick('shape');
+  });
+  document.getElementById('vb-img-file').addEventListener('change',function(e){var f=e.target.files&&e.target.files[0];if(f)vbAddImageFromFile(f);e.target.value='';});
+  document.getElementById('vb-el-tools').addEventListener('click',vbElToolClick);
+  document.getElementById('vb-el-tools').addEventListener('change',vbElToolChange);
+  var stage=document.getElementById('vb-stage');
+  stage.addEventListener('pointerdown',vbStageDown);
+  stage.addEventListener('dblclick',function(e){var d=e.target.closest('[data-vb-txt]');if(d)startVbTextEdit(d.getAttribute('data-vb-txt'));});
+  window.addEventListener('pointermove',vbStageMove);
+  window.addEventListener('pointerup',vbStageUp);
+  window.addEventListener('resize',function(){if(document.getElementById('vb-editor').classList.contains('open'))fitVbStage();});
+  document.getElementById('vbpick-close').addEventListener('click',closeVbPick);
+  document.getElementById('vbpick-ov').addEventListener('click',function(e){if(e.target===this)closeVbPick();});
+  document.getElementById('vbpick-body').addEventListener('click',function(e){
+    var t=e.target.closest('[data-vbpick]');
+    if(t){var kind=t.getAttribute('data-vbpick');if(kind==='shape')vbAddShape(t.getAttribute('data-shape'));else vbAddIconChar(t.getAttribute('data-char'),kind==='sticker');closeVbPick();return;}
+    t=e.target.closest('[data-vbtpl]');if(t){applyVbTemplate(t.getAttribute('data-vbtpl'));closeVbPick();return;}
+  });
+}
+
+// ================================================================
 // STATIC BUTTON BINDINGS
 // ================================================================
 function bindStatic(){
   loadPrefsLocal();loadBgImageLocal();applyPrefs(); // v6.15/6.16 — áp tông màu + nền cá nhân ngay khi tải
+  loadVbIndexLocal();bindVisionBoardEvents(); // v6.17 — Vision Board
   document.getElementById('btn-appearance').addEventListener('click',openAppearance);
   document.getElementById('appearance-close').addEventListener('click',closeAppearance);
   document.getElementById('appearance-done').addEventListener('click',closeAppearance);
