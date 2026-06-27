@@ -1,4 +1,4 @@
-<!-- VERSION: v6.15-premium-ui-theme-personalization -->
+<!-- VERSION: v6.16-background-customization-daily-reminders -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -734,6 +734,11 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .thm-swatch .thm-dot{position:absolute;top:8px;left:8px;width:16px;height:16px;border-radius:50%}
 .thm-name{font-size:12.5px;font-weight:700;color:var(--ink)}
 .thm-tick{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:var(--accent);min-height:15px}
+.ap-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.ap-row:last-child{border-bottom:none}
+.ap-row-lbl{flex:1;font-size:13.5px;font-weight:600;color:var(--ink)}
+.ap-toggle{border:1.5px solid var(--line);background:#F3F3F3;color:#888;border-radius:20px;padding:7px 16px;font-size:12.5px;font-weight:700;font-family:Arial;cursor:pointer;transition:all .2s var(--ease)}
+.ap-toggle.on{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:var(--accent-2)}
 </style>
 </head>
 <body>
@@ -2522,11 +2527,12 @@ function showVerifyGate(user){
 function enterAppFirebase(user){
   NS=user.uid.slice(0,16);
   var displayName=user.displayName||user.email.split('@')[0];
+  _meName=displayName; // v6.16 — tên hiển thị cho lời nhắc cá nhân hoá
   try{localStorage.setItem('ta_last_ns',NS);}catch(e){}
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();loadPrefsCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -7888,7 +7894,26 @@ var THEME_PRESETS={
   charcoal:{name:'Than chì',accent:'#4A4A4A',a2:'#2E2E2E',soft:'#E9E9E9',ink:'#FFFFFF'}
 };
 var THEME_ORDER=['gold','emerald','sapphire','bordeaux','bronze','charcoal'];
-var _prefs={theme:'gold'};
+// v6.16 — Hình nền cao cấp (gradient châu Âu). Ảnh tự upload lưu riêng (_bgImage).
+var BG_PRESETS={
+  cream:{name:'Lụa kem',css:'linear-gradient(135deg,#FBF3E6 0%,#F1E2C9 100%)'},
+  marble:{name:'Cẩm thạch',css:'linear-gradient(135deg,#F6F6F8 0%,#E3E3EA 55%,#EFEFF3 100%)'},
+  provence:{name:'Provence',css:'linear-gradient(135deg,#F7E2C6 0%,#E7B58A 55%,#C98C9B 100%)'},
+  forest:{name:'Rừng thẳm',css:'linear-gradient(135deg,#2E5043 0%,#16271F 100%)'},
+  mediterranean:{name:'Địa Trung Hải',css:'linear-gradient(135deg,#BFE0EF 0%,#5E9FC2 55%,#2D6A8F 100%)'},
+  lavender:{name:'Oải hương',css:'linear-gradient(160deg,#EFE9F8 0%,#D2C2E8 55%,#B8A0DA 100%)'},
+  midnight:{name:'Đêm châu Âu',css:'linear-gradient(135deg,#243B55 0%,#141E30 100%)'}
+};
+var BG_ORDER=['cream','marble','provence','lavender','mediterranean','forest','midnight'];
+var _prefs={theme:'gold',bg:{type:'none',preset:'',dim:0.3},notify:{enabled:false,time:'19:00',freq:'daily',fired:''}};
+var _bgImage='';
+function _ensurePrefShape(){
+  if(!_prefs.bg||typeof _prefs.bg!=='object')_prefs.bg={type:'none',preset:'',dim:0.3};
+  if(_prefs.bg.dim==null)_prefs.bg.dim=0.3;
+  if(!_prefs.notify||typeof _prefs.notify!=='object')_prefs.notify={enabled:false,time:'19:00',freq:'daily',fired:''};
+  if(!_prefs.notify.time)_prefs.notify.time='19:00';
+  if(!_prefs.notify.freq)_prefs.notify.freq='daily';
+}
 function applyTheme(key){
   var t=THEME_PRESETS[key]?key:'gold';var p=THEME_PRESETS[t];
   var r=document.documentElement.style;
@@ -7898,14 +7923,37 @@ function applyTheme(key){
   r.setProperty('--accent-ink',p.ink);
   _prefs.theme=t;
 }
+function _ensureBgScrim(){
+  var s=document.getElementById('app-bg-scrim');
+  if(!s){s=document.createElement('div');s.id='app-bg-scrim';s.style.cssText='position:fixed;inset:0;z-index:-1;pointer-events:none;display:none';document.body.appendChild(s);}
+  return s;
+}
+function applyBackground(bg){
+  bg=bg||{type:'none'};var b=document.body,s=_ensureBgScrim();
+  var img='';
+  if(bg.type==='image'&&_bgImage)img='url("'+_bgImage+'")';
+  else if(bg.type==='preset'&&BG_PRESETS[bg.preset])img=BG_PRESETS[bg.preset].css;
+  if(img){
+    b.style.backgroundImage=img;b.style.backgroundSize='cover';b.style.backgroundPosition='center';
+    b.style.backgroundAttachment='fixed';b.style.backgroundRepeat='no-repeat';
+    var dim=(bg.dim==null?0.3:bg.dim);
+    if(dim>0){s.style.display='block';s.style.background='rgba(18,16,13,'+dim+')';}else s.style.display='none';
+  }else{
+    b.style.backgroundImage='';b.style.backgroundAttachment='';s.style.display='none';
+  }
+}
 function applyPrefs(){
+  _ensurePrefShape();
   applyTheme(_prefs.theme||'gold');
-  // Phase 2 sẽ thêm: applyBackground(_prefs.bg)
+  applyBackground(_prefs.bg);
+  startReengage(); // (re)arm lịch nhắc việc (tự gating theo notify.enabled)
 }
 function loadPrefsLocal(){
   try{var s=localStorage.getItem('ta_prefs');if(s){var o=JSON.parse(s)||{};for(var k in o)_prefs[k]=o[k];}}catch(e){}
+  _ensurePrefShape();
 }
 function savePrefs(){
+  _ensurePrefShape();
   try{localStorage.setItem('ta_prefs',JSON.stringify(_prefs));}catch(e){}
   if(fbDb&&fbUser){var copy={};for(var k in _prefs)copy[k]=_prefs[k];fsSet('prefs',copy).catch(function(){});}
 }
@@ -7914,10 +7962,201 @@ function loadPrefsCloud(){
   fsGet('prefs').then(function(d){
     if(!d)return;delete d.updatedAt;
     for(var k in d)_prefs[k]=d[k];
-    applyPrefs();
+    _ensurePrefShape();applyPrefs();
     if(document.getElementById('appearance-ov').classList.contains('open'))renderAppearance();
   }).catch(function(){});
 }
+// ── Ảnh nền tự upload: lưu RIÊNG (data/bgimage) để không phình document prefs ──
+function loadBgImageLocal(){try{_bgImage=localStorage.getItem('ta_bgimage')||'';}catch(e){_bgImage='';}}
+function saveBgImage(dataURL){
+  _bgImage=dataURL||'';
+  try{if(_bgImage)localStorage.setItem('ta_bgimage',_bgImage);else localStorage.removeItem('ta_bgimage');}catch(e){}
+  if(fbDb&&fbUser)fsSet('bgimage',{image:_bgImage}).catch(function(){});
+}
+function loadBgImageCloud(){
+  if(!fbDb||!fbUser)return;
+  fsGet('bgimage').then(function(d){
+    if(d&&typeof d.image==='string'){_bgImage=d.image;try{if(_bgImage)localStorage.setItem('ta_bgimage',_bgImage);}catch(e){}
+      if(_prefs.bg&&_prefs.bg.type==='image')applyBackground(_prefs.bg);}
+  }).catch(function(){});
+}
+// ── Nén ảnh phía client để vừa giới hạn Firestore (~1MB/document) ──
+function _compressImage(file,maxDim,q,cb){
+  var rd=new FileReader();
+  rd.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height,sc=Math.min(1,maxDim/Math.max(w,h));
+      var cw=Math.max(1,Math.round(w*sc)),ch=Math.max(1,Math.round(h*sc));
+      var c=document.createElement('canvas');c.width=cw;c.height=ch;
+      try{c.getContext('2d').drawImage(img,0,0,cw,ch);cb(c.toDataURL('image/jpeg',q));}catch(err){cb(null);}
+    };
+    img.onerror=function(){cb(null);};img.src=e.target.result;
+  };
+  rd.onerror=function(){cb(null);};rd.readAsDataURL(file);
+}
+function _compressToLimit(file,maxDim,q,limit,cb){
+  _compressImage(file,maxDim,q,function(url){
+    if(!url){cb(null);return;}
+    if(url.length<=limit||q<=0.4){cb(url);return;}
+    _compressToLimit(file,maxDim,q-0.12,limit,cb);
+  });
+}
+function handleBgUpload(file){
+  if(!file)return;
+  if(!/^image\//.test(file.type||'')){showToast('Vui lòng chọn tệp ảnh');return;}
+  showToast('Đang xử lý ảnh nền…');
+  _compressToLimit(file,1500,0.72,950000,function(url){
+    if(!url){showToast('Không đọc được ảnh');return;}
+    saveBgImage(url);
+    _prefs.bg={type:'image',preset:'',dim:(_prefs.bg&&_prefs.bg.dim!=null?_prefs.bg.dim:0.3)};
+    savePrefs();applyBackground(_prefs.bg);renderAppearance();
+    showToast('✓ Đã đặt ảnh nền của bạn');
+  });
+}
+function setBgPreset(key){
+  if(!BG_PRESETS[key])return;
+  _prefs.bg={type:'preset',preset:key,dim:(_prefs.bg&&_prefs.bg.dim!=null?_prefs.bg.dim:0.3)};
+  savePrefs();applyBackground(_prefs.bg);renderAppearance();
+}
+function setBgNone(){
+  _prefs.bg={type:'none',preset:'',dim:(_prefs.bg&&_prefs.bg.dim!=null?_prefs.bg.dim:0.3)};
+  savePrefs();applyBackground(_prefs.bg);renderAppearance();
+}
+function setBgDim(v){
+  v=Math.max(0,Math.min(0.7,parseFloat(v)||0));
+  _prefs.bg.dim=v;applyBackground(_prefs.bg);savePrefs();
+}
+
+// ================================================================
+// v6.16 — NHẮC NHỞ HẰNG NGÀY (re-engagement) — Web Notification API + nhắc trong app
+// Không cần backend: kiểm theo phút khi app mở; mở app sau giờ hẹn vẫn nhắc (in-app).
+// Nội dung tích cực, cá nhân hoá theo dữ liệu thực (việc/lịch/tiềm năng/La bàn) + đổi mỗi ngày.
+// ================================================================
+var _notifyTimer=null,_meName='';
+function _ymdLocal(d){d=d||new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function _isoTodayLocal(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function _hhmmNow(d){d=d||new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+function _dayOfYear(){var d=new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);}
+function _slotsForFreq(n){
+  if(n.freq==='twice')return [{name:'am',time:'08:00'},{name:'pm',time:n.time||'19:00'}];
+  return [{name:'main',time:n.time||'19:00'}];
+}
+function _dayAllowed(n,d){
+  var dow=(d||new Date()).getDay();
+  if(n.freq==='weekdays')return dow>=1&&dow<=5;
+  if(n.freq==='weekends')return dow===0||dow===6;
+  return true;
+}
+var REENGAGE_OPENERS=[
+  'Chào {name}! Một ngày mới để tiến gần hơn tới mục tiêu 💪',
+  '{name} ơi, việc lớn bắt đầu từ một bước nhỏ hôm nay ✨',
+  'Dừng lại một chút nhé {name} — nhìn lại để bước tiếp vững vàng 🌿',
+  'Mỗi ngày tốt hơn 1%, {name} nhé! 📈',
+  '{name}, kiên trì hôm nay là thành công ngày mai 🌟',
+  'Chăm cây mỗi ngày thì cây mới xanh, {name} ạ 🌳',
+  'Năng lượng tích cực cho {name} hôm nay! ☀️',
+  '{name} ơi, hành trình vạn dặm bắt đầu từ hôm nay 🚀',
+  'Một phút nhìn lại bản thân, {name} sẽ thấy mình đã đi rất xa 🧭',
+  'Hôm nay {name} muốn trở thành phiên bản nào của chính mình? 🌈',
+  'Gieo thói quen tốt hôm nay, {name} gặt tương lai mong muốn 🌱',
+  '{name}, đội nhóm đang chờ năng lượng của bạn lan toả 💛'
+];
+function buildReengageMessage(){
+  var name=(_meName||'').trim();
+  var who=name||'bạn';
+  var acts=[];try{acts=dayActs();}catch(e){}
+  var undone=acts.filter(function(a){return !a.done;});
+  var tasks=[];try{tasks=loadTasks();}catch(e){}
+  var today=_isoTodayLocal();
+  var openTasks=tasks.filter(function(t){return !t.done&&t.date;});
+  var todayAppt=openTasks.filter(function(t){return t.date===today;});
+  var overdueAppt=openTasks.filter(function(t){return t.date<today;});
+  var urgentProsp=[];try{urgentProsp=(_prospectsAll||[]).filter(function(p){return _prospectDaysSince(p)>=7;});}catch(e){}
+  var wheelDone=false;try{wheelDone=Object.keys(dayWheel()||{}).length>0;}catch(e){}
+  var cta;
+  if(todayAppt.length)cta='📅 Hôm nay có '+todayAppt.length+' lịch quan trọng — đừng quên: "'+(todayAppt[0].desc||'')+'".';
+  else if(overdueAppt.length)cta='⏰ Có '+overdueAppt.length+' lịch đã quá hạn cần xử lý ngay.';
+  else if(undone.length)cta='✅ Còn '+undone.length+' việc trong Kế hoạch hôm nay chưa hoàn thành. Bạn làm được mà!';
+  else if(urgentProsp.length)cta='📞 '+urgentProsp.length+' người tiềm năng đã lâu chưa liên hệ — hỏi thăm họ hôm nay nhé?';
+  else if(!wheelDone)cta='🧭 Bạn chưa chấm La bàn cuộc đời hôm nay. Dành 1 phút lắng lại nào.';
+  else cta='🌟 Bạn đang làm rất tốt! Xem lại tiến độ và phác mục tiêu cho ngày mai.';
+  var op=REENGAGE_OPENERS[(_dayOfYear()+(REENGAGE_OPENERS.length))%REENGAGE_OPENERS.length].replace('{name}',who);
+  return {title:'Tâm An TTHC',opener:op,body:cta};
+}
+function _ensureReengageCard(){
+  var c=document.getElementById('reengage-card');
+  if(!c){
+    c=document.createElement('div');c.id='reengage-card';
+    c.style.cssText='display:none;position:fixed;left:12px;right:12px;bottom:14px;max-width:520px;margin:0 auto;z-index:8000;background:linear-gradient(135deg,#1F1F1F,#2A2A2A);color:#fff;border:1px solid var(--accent);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.4);padding:14px 16px;font-family:Arial';
+    document.body.appendChild(c);
+  }
+  return c;
+}
+function showReengageCard(msg){
+  var c=_ensureReengageCard();
+  c.innerHTML='<div style="display:flex;align-items:flex-start;gap:10px">'
+    +'<div style="font-size:22px;line-height:1">🔔</div>'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="font-weight:800;color:var(--accent);font-size:14px;margin-bottom:3px">'+escHtml(msg.opener)+'</div>'
+    +'<div style="font-size:13px;line-height:1.5;color:#EDEDED">'+escHtml(msg.body)+'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+    +'<button class="btn btn-sm" data-reengage="open" style="background:var(--accent);color:var(--accent-ink);flex:0 1 auto">Mở Kế hoạch ngày</button>'
+    +'<button class="btn btn-sm" data-reengage="wheel" style="background:rgba(255,255,255,.12);color:#fff;flex:0 1 auto">La bàn cuộc đời</button>'
+    +'<button class="btn btn-sm" data-reengage="dismiss" style="background:transparent;color:#bbb;border:1px solid rgba(255,255,255,.25);flex:0 1 auto">Để sau</button>'
+    +'</div></div>'
+    +'<button data-reengage="dismiss" style="background:none;border:none;color:#999;font-size:18px;cursor:pointer;line-height:1;padding:0 2px">✕</button>'
+    +'</div>';
+  c.style.display='block';
+}
+function hideReengageCard(){var c=document.getElementById('reengage-card');if(c)c.style.display='none';}
+function fireReengage(){
+  var msg=buildReengageMessage();
+  showReengageCard(msg);
+  try{
+    if(window.Notification&&Notification.permission==='granted'){
+      var nt=new Notification(msg.title,{body:msg.opener+'\n'+msg.body,tag:'taman-reengage',renotify:true});
+      nt.onclick=function(){try{window.focus();}catch(e){}nt.close();};
+    }
+  }catch(e){}
+}
+function checkReengage(force){
+  var n=_prefs.notify;if(!n||!n.enabled)return;
+  var now=new Date();
+  if(!force&&!_dayAllowed(n,now))return;
+  var due=_slotsForFreq(n).filter(function(s){return force|| _hhmmNow(now)>=s.time;});
+  if(!due.length)return;
+  due.sort(function(a,b){return a.time<b.time?-1:1;});
+  var slot=due[due.length-1];
+  var key=_ymdLocal(now)+'#'+slot.name;
+  if(!force&&n.fired===key)return;
+  n.fired=key;savePrefs();
+  fireReengage();
+}
+function startReengage(){
+  if(_notifyTimer)return;
+  _notifyTimer=setInterval(checkReengage,60000);
+  setTimeout(function(){checkReengage(false);},3500); // kiểm sớm sau khi tải (nhắc nếu đã qua giờ hẹn)
+}
+function requestNotifyPerm(cb){
+  if(!('Notification' in window)){showToast('Trình duyệt không hỗ trợ thông báo');if(cb)cb('unsupported');return;}
+  if(Notification.permission==='granted'){if(cb)cb('granted');return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted')showToast('✓ Đã bật thông báo trình duyệt');
+    else showToast('Chưa cấp quyền — vẫn nhắc trong ứng dụng');
+    if(cb)cb(p);renderAppearance();
+  }).catch(function(){if(cb)cb('error');});
+}
+function toggleNotify(){
+  _prefs.notify.enabled=!_prefs.notify.enabled;
+  if(_prefs.notify.enabled){
+    requestNotifyPerm();
+    _prefs.notify.fired=''; // cho phép nhắc lại hôm nay
+  }
+  savePrefs();renderAppearance();
+}
+function setNotifyTime(v){if(/^\d{2}:\d{2}$/.test(v||'')){_prefs.notify.time=v;_prefs.notify.fired='';savePrefs();}}
+function setNotifyFreq(v){_prefs.notify.freq=v||'daily';_prefs.notify.fired='';savePrefs();renderAppearance();}
 function renderAppearance(){
   var h='';
   h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">Chọn tông màu chủ đạo cho toàn ứng dụng. Lựa chọn được lưu và đồng bộ trên mọi thiết bị.</div>';
@@ -7932,6 +8171,60 @@ function renderAppearance(){
     h+='</div>';
   });
   h+='</div>';
+
+  // ── Hình nền ──
+  h+='<div class="msec-title" style="margin-top:18px">Hình nền</div>';
+  var bg=_prefs.bg||{type:'none'};
+  h+='<div class="thm-grid">';
+  // None
+  h+='<div class="thm-card'+(bg.type==='none'?' on':'')+'" data-bg="none" style="--tc:var(--accent)">';
+  h+='<div class="thm-swatch" style="background:var(--app-bg);display:flex;align-items:center;justify-content:center;color:#bbb;font-size:20px">∅</div>';
+  h+='<div class="thm-name">Không nền</div><div class="thm-tick">'+(bg.type==='none'?'✓ Đang dùng':'')+'</div></div>';
+  BG_ORDER.forEach(function(key){
+    var p=BG_PRESETS[key];var on=(bg.type==='preset'&&bg.preset===key);
+    h+='<div class="thm-card'+(on?' on':'')+'" data-bg="'+key+'" style="--tc:var(--accent)">';
+    h+='<div class="thm-swatch" style="background:'+p.css+'"></div>';
+    h+='<div class="thm-name">'+escHtml(p.name)+'</div><div class="thm-tick">'+(on?'✓ Đang dùng':'')+'</div></div>';
+  });
+  // Custom image
+  var hasImg=bg.type==='image'&&_bgImage;
+  h+='<div class="thm-card'+(hasImg?' on':'')+'" data-bg-upload="1" style="--tc:var(--accent)">';
+  h+='<div class="thm-swatch" style="'+(hasImg?('background-image:url(\''+_bgImage+'\');background-size:cover;background-position:center'):'background:#EDEAE2;display:flex;align-items:center;justify-content:center;color:#999;font-size:20px')+'">'+(hasImg?'':'⬆️')+'</div>';
+  h+='<div class="thm-name">Ảnh của tôi</div><div class="thm-tick">'+(hasImg?'✓ Đang dùng':'Tải ảnh lên')+'</div></div>';
+  h+='</div>';
+  h+='<input type="file" id="ap-bg-file" accept="image/*" style="display:none">';
+  if(bg.type==='preset'||bg.type==='image'){
+    h+='<div style="margin-top:12px;display:flex;align-items:center;gap:10px">';
+    h+='<span style="font-size:12px;color:#666;white-space:nowrap">Độ mờ nền</span>';
+    h+='<input type="range" id="ap-bg-dim" min="0" max="0.7" step="0.05" value="'+(bg.dim==null?0.3:bg.dim)+'" style="flex:1">';
+    h+='<span style="font-size:12px;color:#888;width:34px;text-align:right">'+Math.round((bg.dim==null?0.3:bg.dim)*100)+'%</span>';
+    h+='</div>';
+    h+='<div style="font-size:11.5px;color:#999;margin-top:6px;line-height:1.5">Nội dung luôn hiển thị trên thẻ nền trắng để dễ đọc. Tăng độ mờ nếu nền quá sáng/rối.</div>';
+  }
+
+  // ── Nhắc nhở hằng ngày ──
+  var n=_prefs.notify||{};
+  h+='<div class="msec-title" style="margin-top:18px">Nhắc nhở hằng ngày</div>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px">Lời nhắc nhẹ nhàng, tích cực để bạn quay lại xem Kế hoạch ngày, La bàn cuộc đời, việc chưa xong, mục tiêu & tiến độ. Nội dung tự thay đổi và cá nhân hoá theo dữ liệu của bạn.</div>';
+  h+='<div class="ap-row"><div class="ap-row-lbl">Bật nhắc nhở</div>';
+  h+='<button class="ap-toggle'+(n.enabled?' on':'')+'" data-notify-toggle="1">'+(n.enabled?'Đang bật':'Đang tắt')+'</button></div>';
+  if(n.enabled){
+    h+='<div class="ap-row"><div class="ap-row-lbl">Giờ nhắc</div><input type="time" id="ap-notify-time" class="setup-input" style="width:140px;margin:0" value="'+escHtml(n.time||'19:00')+'"></div>';
+    h+='<div class="ap-row"><div class="ap-row-lbl">Tần suất</div><select id="ap-notify-freq" class="sel" style="width:180px">';
+    [['daily','Hằng ngày'],['weekdays','Ngày thường (T2–T6)'],['weekends','Cuối tuần'],['twice','2 lần/ngày (sáng & tối)']].forEach(function(o){
+      h+='<option value="'+o[0]+'"'+((n.freq||'daily')===o[0]?' selected':'')+'>'+o[1]+'</option>';
+    });
+    h+='</select></div>';
+    var perm=('Notification' in window)?Notification.permission:'unsupported';
+    var permLbl=perm==='granted'?'✓ Thông báo trình duyệt đang bật':perm==='denied'?'⚠ Trình duyệt đã chặn — chỉ nhắc trong app':perm==='unsupported'?'Trình duyệt không hỗ trợ thông báo':'Bật thông báo trình duyệt';
+    h+='<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">';
+    if(perm==='default')h+='<button class="btn btn-sm btn-o" data-notify-perm="1">🔔 '+permLbl+'</button>';
+    else h+='<span style="font-size:12px;color:#777;align-self:center">'+permLbl+'</span>';
+    h+='<button class="btn btn-sm btn-o" data-notify-test="1">👀 Xem thử lời nhắc</button>';
+    h+='</div>';
+    h+='<div style="font-size:11.5px;color:#999;margin-top:8px;line-height:1.5">Lưu ý: thông báo ngoài ứng dụng chỉ hiện khi trình duyệt/ứng dụng đang mở hoặc vừa hoạt động (giới hạn của web tĩnh, không có máy chủ). Khi mở lại app sau giờ hẹn, bạn vẫn nhận lời nhắc trong ứng dụng.</div>';
+  }
+
   document.getElementById('appearance-body').innerHTML=h;
 }
 function openAppearance(){renderAppearance();document.getElementById('appearance-ov').classList.add('open');}
@@ -7945,12 +8238,40 @@ function selectTheme(key){
 // STATIC BUTTON BINDINGS
 // ================================================================
 function bindStatic(){
-  loadPrefsLocal();applyPrefs(); // v6.15 — áp tông màu cá nhân ngay khi tải (trước khi đăng nhập)
+  loadPrefsLocal();loadBgImageLocal();applyPrefs(); // v6.15/6.16 — áp tông màu + nền cá nhân ngay khi tải
   document.getElementById('btn-appearance').addEventListener('click',openAppearance);
   document.getElementById('appearance-close').addEventListener('click',closeAppearance);
   document.getElementById('appearance-done').addEventListener('click',closeAppearance);
   document.getElementById('appearance-ov').addEventListener('click',function(e){if(e.target===this)closeAppearance();});
-  document.getElementById('appearance-body').addEventListener('click',function(e){var t=e.target.closest('[data-theme]');if(t)selectTheme(t.getAttribute('data-theme'));});
+  document.getElementById('appearance-body').addEventListener('click',function(e){
+    var t=e.target.closest('[data-theme]');if(t){selectTheme(t.getAttribute('data-theme'));return;}
+    t=e.target.closest('[data-bg]');if(t){var k=t.getAttribute('data-bg');if(k==='none')setBgNone();else setBgPreset(k);return;}
+    t=e.target.closest('[data-bg-upload]');if(t){var f=document.getElementById('ap-bg-file');if(f)f.click();return;}
+    t=e.target.closest('[data-notify-toggle]');if(t){toggleNotify();return;}
+    t=e.target.closest('[data-notify-perm]');if(t){requestNotifyPerm();return;}
+    t=e.target.closest('[data-notify-test]');if(t){fireReengage();return;}
+  });
+  document.getElementById('appearance-body').addEventListener('change',function(e){
+    if(e.target.id==='ap-bg-file'){var file=e.target.files&&e.target.files[0];if(file)handleBgUpload(file);e.target.value='';return;}
+    if(e.target.id==='ap-notify-time'){setNotifyTime(e.target.value);return;}
+    if(e.target.id==='ap-notify-freq'){setNotifyFreq(e.target.value);return;}
+  });
+  document.getElementById('appearance-body').addEventListener('input',function(e){
+    if(e.target.id==='ap-bg-dim'){setBgDim(e.target.value);var lbl=e.target.parentNode&&e.target.parentNode.lastElementChild;if(lbl)lbl.textContent=Math.round((parseFloat(e.target.value)||0)*100)+'%';}
+  });
+  // Thẻ nhắc nhở (re-engagement) — điều hướng / đóng
+  document.body.addEventListener('click',function(e){
+    var t=e.target.closest('[data-reengage]');if(!t)return;
+    var act=t.getAttribute('data-reengage');hideReengageCard();
+    if(act==='open'){
+      var mt=document.querySelector('.mtab[data-main="tp"]');if(mt)mt.click();
+      var st=document.querySelector('[data-sub="tp:actions"]');if(st)st.click();
+      var st2=document.querySelector('[data-sub="act:today"]');if(st2)st2.click();
+    }else if(act==='wheel'){
+      var mw=document.querySelector('.mtab[data-main="tp"]');if(mw)mw.click();
+      var sw=document.querySelector('[data-sub="tp:goals"]');if(sw)sw.click();
+    }
+  });
   document.getElementById('btn-login').addEventListener('click',doLogin);
   document.getElementById('btn-register').addEventListener('click',doRegister);
   document.getElementById('btn-forgot').addEventListener('click',doForgot);
