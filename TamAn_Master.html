@@ -1,4 +1,4 @@
-<!-- VERSION: v6.12-life-compass-wheel-2-mirror -->
+<!-- VERSION: v6.14-delbranch-idgoc-button -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -193,6 +193,11 @@ input[type=range]{flex:1;height:6px;accent-color:#1A7A5E;cursor:pointer}
 .tbtn.green{background:#1A7A5E;color:white;border-color:#1A7A5E}
 .tbtn.blue{background:#1565C0;color:white;border-color:#1565C0}
 .tbtn.gold{background:#C8A84B;color:#1A1A1A;border-color:#C8A84B}
+/* v6.14: nút "+ ID Gốc" — hiệu ứng nhịp nhẹ nhàng để dễ thấy mà không gây xao nhãng */
+@keyframes idgocPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,168,75,.55);transform:scale(1)}50%{box-shadow:0 0 0 6px rgba(200,168,75,0);transform:scale(1.04)}}
+#btn-add-root{animation:idgocPulse 2.2s ease-in-out infinite}
+#btn-add-root:hover,#btn-add-root:active{animation:none}
+@media (prefers-reduced-motion:reduce){#btn-add-root{animation:none}}
 #fs-overlay{display:none;position:fixed;inset:0;z-index:900;background:#FFFFFF;flex-direction:column}
 #fs-overlay.open{display:flex}
 #fs-head{background:#1A1A1A;color:#C8A84B;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -577,6 +582,36 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .lm-becoming{font-size:13px;color:#1A7A5E;font-weight:700;margin-top:8px;font-family:Arial;line-height:1.5}
 .lm-purpose-q{font-size:14px;font-weight:700;color:#6A1B9A;font-style:italic;margin-top:8px;line-height:1.55;font-family:Arial}
 
+/* ===== v6.13 — Admin Analytics & Product Intelligence ===== */
+.an-note{font-size:12.5px;color:#5E4A1E;background:#FFF8E8;border:1px solid #F0E2B8;border-radius:9px;padding:9px 11px;margin-bottom:12px;line-height:1.55;font-family:Arial}
+.an-sec{background:#fff;border:1px solid #E8E8E8;border-radius:12px;padding:12px;margin-bottom:12px}
+.an-h{font-size:14px;font-weight:800;color:#1A1A1A;font-family:Arial;margin-bottom:10px}
+.an-sub{font-size:11.5px;color:#888;font-family:Arial;margin:10px 0 5px}
+.an-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(max-width:520px){.an-grid{grid-template-columns:repeat(2,1fr)}}
+.an-stat{text-align:center;background:#F7F9F8;border-radius:9px;padding:9px 4px}
+.an-num{font-size:21px;font-weight:800;font-family:Arial;line-height:1}
+.an-lbl{font-size:10px;color:#888;margin-top:3px;font-family:Arial;line-height:1.3}
+.an-track{height:13px;border-radius:7px;background:#EFEFEF;overflow:hidden;flex:1;min-width:60px}
+.an-fill{height:100%;border-radius:7px;transition:width .4s ease}
+.an-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.an-row-lbl{font-size:12px;font-weight:700;font-family:Arial;width:108px;flex-shrink:0}
+.an-row-v{font-size:12px;font-weight:800;font-family:Arial;color:#444;width:64px;text-align:right;flex-shrink:0}
+.an-spark{display:flex;align-items:flex-end;gap:3px;height:54px;padding-top:4px}
+.an-sp-col{flex:1;height:100%;display:flex;align-items:flex-end}
+.an-sp-bar{width:100%;background:linear-gradient(180deg,#1A7A5E,#2EA37C);border-radius:3px 3px 0 0;min-height:2px}
+.an-frow{padding:8px 0;border-bottom:1px solid #F3F3F3}
+.an-frow-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}
+.an-frow-lbl{font-size:13px;font-weight:700;font-family:Arial}
+.an-frow-n{font-size:11.5px;color:#777;font-family:Arial;white-space:nowrap}
+.an-frow-sub{font-size:11px;color:#999;font-family:Arial;margin-top:4px}
+.an-callouts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.an-co{font-size:12px;font-family:Arial;border-left:3px solid #ccc;padding:6px 10px;background:#FAFAFA;border-radius:0 8px 8px 0;line-height:1.5}
+.an-health{text-align:center}
+.an-health .an-h{text-align:left}
+.an-health-num{font-size:44px;font-weight:800;font-family:Arial;line-height:1;margin:4px 0 10px}
+.an-insights .an-ins{font-size:12.5px;color:#333;background:#F4F8FF;border-radius:9px;padding:9px 11px;margin-bottom:6px;line-height:1.55;font-family:Arial}
+
 /* ===== v6.9 — Tiềm năng & Theo dõi (Prospect Management) ===== */
 .pf-list{display:flex;flex-direction:column;gap:8px;margin-bottom:80px}
 .pf-card{background:white;border-radius:12px;border:1px solid #E8E8E8;overflow:hidden;display:flex;align-items:stretch}
@@ -864,12 +899,12 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     </div>
     <div class="tb-row">
       <button class="stab on" data-treemode="binary">&#127795; Nhị phân</button>
+      <button class="tbtn gold" id="btn-add-root">+ ID Gốc</button>
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
       <button class="tbtn" id="btn-tzoom-in">+</button>
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
       <button class="tbtn gold" id="btn-fullscreen">&#x26F6; Toàn trang</button>
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
-      <button class="tbtn" id="btn-add-root">+ Gốc</button>
       <button class="tbtn gold" id="btn-export-branch">&#127795; Xuất nhánh</button>
       <button class="tbtn" id="btn-import-branch" style="background:#EDE7F6;border-color:#B39DDB;color:#5E35B1">&#127795; Nhập nhánh</button>
       <span id="tree-total" style="margin-left:auto;font-size:12px;font-weight:700;color:#555;white-space:nowrap"></span>
@@ -960,6 +995,21 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
       <button class="btn btn-r btn-sm" id="nmod-del-btn" style="display:none">&#128465; Xóa</button>
       <button class="btn btn-o" id="nmod-cancel">Hủy</button>
       <button class="btn btn-g" id="nmod-save-btn">&#10003; Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- XOÁ CẢ NHÁNH MODAL (v6.14) -->
+<div class="nmod-ov" id="delbr-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title" id="delbr-title">&#128465;&#65039; Xoá cả nhánh</div>
+      <button class="nmod-x" id="delbr-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="delbr-body"></div>
+    <div class="nmod-foot">
+      <button class="btn btn-o" id="delbr-cancel">Hủy</button>
+      <button class="btn btn-r" id="delbr-confirm">&#128465;&#65039; Xoá vĩnh viễn</button>
     </div>
   </div>
 </div>
@@ -2412,6 +2462,7 @@ function enterAppFirebase(user){
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
   showAndFitTree();
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
+  trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -5253,6 +5304,8 @@ function buildNodeView(n){
     }
   }
   h+='</div>';
+  // v6.14 \u2014 Xo\u00e1 C\u1ea2 NH\u00c1NH (ID n\u00e0y + to\u00e0n b\u1ed9 h\u1eadu du\u1ec7 theo v\u1ecb tr\u00ed \u0111\u1eb7t). C\u1ea7n nh\u1eadp l\u1ea1i m\u1eadt kh\u1ea9u + x\u00e1c nh\u1eadn.
+  h+='<div style="margin-top:8px"><button class="btn btn-r btn-sm nmod-del-branch" data-del-branch="'+n.id+'" style="width:100%">\ud83d\uddd1\ufe0f Xo\u00e1 c\u1ea3 nh\u00e1nh t\u1eeb ID n\u00e0y</button></div>';
   }
   return h;
 }
@@ -5462,6 +5515,136 @@ function deleteNode(){
   saveTree2();closeNodeModal();
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
   showToast('\u2713 \u0110\u00e3 x\u00f3a');
+}
+// ============================================================
+// v6.14 \u2014 XO\u00c1 C\u1ea2 NH\u00c1NH (ID + to\u00e0n b\u1ed9 h\u1eadu du\u1ec7 theo V\u1eca TR\u00cd \u0110\u1eb6T parentId)
+// C\u00f3 x\u00e1c nh\u1eadn r\u00f5 r\u00e0ng + nh\u1eadp l\u1ea1i m\u1eadt kh\u1ea9u \u0111\u0103ng nh\u1eadp + ch\u1eb7n ch\u1ebf \u0111\u1ed9 Xem.
+// ============================================================
+var _delBranchId=null,_delBranchAuth='password',_delBranchBusy=false;
+// Thu th\u1eadp m\u1ecdi ID con ch\u00e1u theo parentId (g\u1ed3m ch\u00ednh n\u00f3), ch\u1ed1ng v\u00f2ng l\u1eb7p/tr\u00f9ng.
+function collectPlacementSubtree(rootId){
+  var byParent={};
+  treeNodes.forEach(function(n){ if(n.parentId){(byParent[n.parentId]=byParent[n.parentId]||[]).push(n.id);} });
+  var out=[],seen={},q=[rootId];
+  while(q.length){
+    var cur=q.shift();
+    if(seen[cur])continue; seen[cur]=1; out.push(cur);
+    (byParent[cur]||[]).forEach(function(cid){ if(!seen[cid])q.push(cid); });
+  }
+  return out;
+}
+// C\u00e1c ID NGO\u00c0I nh\u00e1nh \u0111ang l\u1ea5y t\u00ean trong nh\u00e1nh l\u00e0m ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 (f1of) \u2192 s\u1ebd b\u1ecb g\u1ee1 li\u00ean k\u1ebft.
+function branchOrphanSponsorIds(idSet,nameSet){
+  return treeNodes.filter(function(n){
+    return !idSet[n.id] && n.f1of && nameSet[n.f1of];
+  }).map(function(n){return n.id;});
+}
+function openDeleteBranchModal(nid){
+  if(viewOnlyMode){showToast('\u0110ang \u1edf ch\u1ebf \u0111\u1ed9 Xem \u2014 kh\u00f4ng xo\u00e1 \u0111\u01b0\u1ee3c');return;}
+  var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
+  var ids=collectPlacementSubtree(nid);
+  var idSet={}; ids.forEach(function(i){idSet[i]=1;});
+  var nameSet={}; treeNodes.forEach(function(x){ if(idSet[x.id])nameSet[x.name]=1; });
+  var orphanIds=branchOrphanSponsorIds(idSet,nameSet);
+  _delBranchId=nid;
+  var descCount=ids.length-1;
+  var isRoot=!n.parentId;
+  var names=ids.map(function(i){var t=treeNodes.find(function(x){return x.id===i;});return t?t.name:i;});
+  var h='';
+  h+='<div style="background:#FFEBEE;border:1px solid #FFCDD2;border-radius:12px;padding:12px 14px;margin-bottom:12px">';
+  h+='<div style="font-weight:800;color:#C62828;font-size:15px;margin-bottom:6px">\u26a0 H\u00e0nh \u0111\u1ed9ng KH\u00d4NG TH\u1ec2 HO\u00c0N T\u00c1C</div>';
+  h+='<div style="font-size:13px;color:#7A1F1F;line-height:1.6">B\u1ea1n s\u1eafp xo\u00e1 V\u0128NH VI\u1ec4N ID <b>'+escHtml(n.name)+'</b>'+(descCount>0?(' v\u00e0 <b>'+descCount+'</b> ID h\u1eadu du\u1ec7 b\u00ean d\u01b0\u1edbi (theo v\u1ecb tr\u00ed \u0111\u1eb7t trong c\u00e2y nh\u1ecb ph\u00e2n)'):' (kh\u00f4ng c\u00f3 ID n\u00e0o b\u00ean d\u01b0\u1edbi)')+'.<br>T\u1ed5ng c\u1ed9ng <b>'+ids.length+' ID</b> s\u1ebd b\u1ecb xo\u00e1 kh\u1ecfi s\u01a1 \u0111\u1ed3 v\u00e0 kh\u00f4ng th\u1ec3 kh\u00f4i ph\u1ee5c.</div>';
+  if(isRoot)h+='<div style="font-size:13px;color:#B71C1C;font-weight:800;margin-top:8px">\ud83d\udea8 \u0110\u00e2y l\u00e0 ID G\u1ed0C \u2014 xo\u00e1 nh\u00e1nh n\u00e0y s\u1ebd xo\u00e1 TO\u00c0N B\u1ed8 s\u01a1 \u0111\u1ed3.</div>';
+  if(orphanIds.length)h+='<div style="font-size:12.5px;color:#7A1F1F;margin-top:8px">\u2139\ufe0f '+orphanIds.length+' ID ngo\u00e0i nh\u00e1nh \u0111ang \u0111\u01b0\u1ee3c nh\u00e1nh n\u00e0y b\u1ea3o tr\u1ee3 \u2192 s\u1ebd \u0111\u01b0\u1ee3c G\u1ee0 li\u00ean k\u1ebft b\u1ea3o tr\u1ee3 (v\u1eabn gi\u1eef l\u1ea1i tr\u00ean s\u01a1 \u0111\u1ed3).</div>';
+  h+='</div>';
+  h+='<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:5px">Danh s\u00e1ch ID s\u1ebd b\u1ecb xo\u00e1 ('+ids.length+'):</div>';
+  h+='<div style="max-height:150px;overflow:auto;border:1px solid #EEE;border-radius:10px;padding:8px 10px;margin-bottom:12px;font-size:13px;color:#444;line-height:1.8">';
+  h+=names.slice(0,200).map(function(nm,i){return (i+1)+'. '+escHtml(nm);}).join('<br>');
+  if(names.length>200)h+='<br>\u2026 v\u00e0 '+(names.length-200)+' ID kh\u00e1c';
+  h+='</div>';
+  var user=fbAuth&&fbAuth.currentUser;
+  var hasPwd=!!(user&&(user.providerData||[]).some(function(p){return p.providerId==='password';}));
+  _delBranchAuth=hasPwd?'password':(user?'google':'phrase');
+  if(_delBranchAuth==='password'){
+    h+='<div style="font-size:13px;font-weight:700;margin-bottom:6px">\ud83d\udd12 Nh\u1eadp l\u1ea1i m\u1eadt kh\u1ea9u \u0111\u0103ng nh\u1eadp \u0111\u1ec3 x\u00e1c nh\u1eadn</div>';
+    h+='<input type="password" id="delbr-pwd" class="setup-input" autocomplete="current-password" placeholder="M\u1eadt kh\u1ea9u c\u1ee7a b\u1ea1n" style="margin-bottom:4px">';
+  }else if(_delBranchAuth==='google'){
+    h+='<div style="font-size:13px;color:#555;line-height:1.6">\ud83d\udd12 T\u00e0i kho\u1ea3n c\u1ee7a b\u1ea1n \u0111\u0103ng nh\u1eadp b\u1eb1ng <b>Google</b>. Khi b\u1ea5m <b>Xo\u00e1 v\u0129nh vi\u1ec5n</b>, b\u1ea1n s\u1ebd \u0111\u01b0\u1ee3c y\u00eau c\u1ea7u x\u00e1c minh l\u1ea1i b\u1eb1ng Google tr\u01b0\u1edbc khi xo\u00e1.</div>';
+  }else{
+    h+='<div style="font-size:13px;font-weight:700;margin-bottom:6px">\ud83d\udd12 G\u00f5 \u0111\u00fang t\u00ean ID g\u1ed1c c\u1ee7a nh\u00e1nh \u0111\u1ec3 x\u00e1c nh\u1eadn</div>';
+    h+='<div style="font-size:12px;color:#888;margin-bottom:6px">G\u00f5 ch\u00ednh x\u00e1c: <b>'+escHtml(n.name)+'</b></div>';
+    h+='<input type="text" id="delbr-pwd" class="setup-input" autocomplete="off" placeholder="Nh\u1eadp t\u00ean ID g\u1ed1c c\u1ee7a nh\u00e1nh" style="margin-bottom:4px">';
+  }
+  h+='<div id="delbr-err" style="color:#C62828;font-size:13px;font-weight:700;min-height:18px;margin-top:4px"></div>';
+  document.getElementById('delbr-body').innerHTML=h;
+  document.getElementById('delbr-title').textContent='\ud83d\uddd1\ufe0f Xo\u00e1 c\u1ea3 nh\u00e1nh: '+n.name;
+  document.getElementById('delbr-ov').classList.add('open');
+  setTimeout(function(){var f=document.getElementById('delbr-pwd');if(f)f.focus();},80);
+}
+function closeDeleteBranchModal(){document.getElementById('delbr-ov').classList.remove('open');_delBranchId=null;_delBranchBusy=false;}
+// Th\u1ef1c hi\u1ec7n xo\u00e1 (thu\u1ea7n d\u1eef li\u1ec7u) \u2014 t\u00e1ch ri\u00eang \u0111\u1ec3 test \u0111\u01b0\u1ee3c m\u00e0 kh\u00f4ng c\u1ea7n Firebase.
+function performDeleteBranch(nid){
+  var ids=collectPlacementSubtree(nid);
+  var idSet={}; ids.forEach(function(i){idSet[i]=1;});
+  var nameSet={}; treeNodes.forEach(function(x){ if(idSet[x.id])nameSet[x.name]=1; });
+  // g\u1ee1 li\u00ean k\u1ebft b\u1ea3o tr\u1ee3 c\u1ee7a ID ngo\u00e0i nh\u00e1nh tr\u1ecf v\u00e0o nh\u00e1nh b\u1ecb xo\u00e1 (tr\u00e1nh f1of m\u1ed3 c\u00f4i)
+  treeNodes.forEach(function(n){ if(!idSet[n.id]&&n.f1of&&nameSet[n.f1of])n.f1of=''; });
+  treeNodes=treeNodes.filter(function(n){return !idSet[n.id];});
+  if(focusNodeId&&idSet[focusNodeId])focusNodeId=null;
+  try{clearRankMemo();}catch(e){}
+  saveTree2();
+  return ids.length;
+}
+async function confirmDeleteBranch(){
+  if(_delBranchBusy)return;
+  if(viewOnlyMode){showToast('\u0110ang \u1edf ch\u1ebf \u0111\u1ed9 Xem \u2014 kh\u00f4ng xo\u00e1 \u0111\u01b0\u1ee3c');return;}
+  var nid=_delBranchId; if(!nid)return;
+  var n=treeNodes.find(function(x){return x.id===nid;});
+  if(!n){closeDeleteBranchModal();return;}
+  var errEl=document.getElementById('delbr-err');
+  if(errEl)errEl.textContent='';
+  var val=((document.getElementById('delbr-pwd')||{}).value)||'';
+  if(_delBranchAuth==='password'){
+    if(!val){if(errEl)errEl.textContent='Vui l\u00f2ng nh\u1eadp m\u1eadt kh\u1ea9u.';return;}
+  }else if(_delBranchAuth==='phrase'){
+    if(val.trim()!==String(n.name).trim()){if(errEl)errEl.textContent='T\u00ean kh\u00f4ng kh\u1edbp. H\u00e3y g\u00f5 \u0111\u00fang t\u00ean ID g\u1ed1c c\u1ee7a nh\u00e1nh.';return;}
+  }
+  _delBranchBusy=true;
+  var btn=document.getElementById('delbr-confirm');
+  if(btn){btn.disabled=true;btn.textContent='\u0110ang x\u00e1c th\u1ef1c\u2026';}
+  try{
+    var user=fbAuth&&fbAuth.currentUser;
+    if(user){
+      var m=await import(FB_AUTH);
+      if(_delBranchAuth==='password'){
+        var cred=m.EmailAuthProvider.credential(user.email,val);
+        await m.reauthenticateWithCredential(user,cred);
+      }else if(_delBranchAuth==='google'){
+        await m.reauthenticateWithPopup(user,new m.GoogleAuthProvider());
+      }
+    }
+    // Kh\u00f4ng c\u00f3 user Firebase \u2192 ch\u1ebf \u0111\u1ed9 'phrase' \u0111\u00e3 x\u00e1c th\u1ef1c b\u1eb1ng t\u00ean ID g\u1ed1c \u1edf tr\u00ean.
+  }catch(err){
+    _delBranchBusy=false;
+    if(btn){btn.disabled=false;btn.textContent='\ud83d\uddd1\ufe0f Xo\u00e1 v\u0129nh vi\u1ec5n';}
+    var code=((err&&err.code)||'')+'';
+    var msg;
+    if(code.indexOf('wrong-password')>=0||code.indexOf('invalid-credential')>=0||code.indexOf('invalid-login')>=0)msg='M\u1eadt kh\u1ea9u kh\u00f4ng \u0111\u00fang. Vui l\u00f2ng th\u1eed l\u1ea1i.';
+    else if(code.indexOf('too-many-requests')>=0)msg='Th\u1eed l\u1ea1i qu\u00e1 nhi\u1ec1u l\u1ea7n. Vui l\u00f2ng \u0111\u1ee3i m\u1ed9t l\u00e1t r\u1ed3i th\u1eed l\u1ea1i.';
+    else if(code.indexOf('popup')>=0||code.indexOf('cancelled')>=0)msg='Ch\u01b0a x\u00e1c minh \u0111\u01b0\u1ee3c b\u1eb1ng Google. Vui l\u00f2ng th\u1eed l\u1ea1i.';
+    else msg='X\u00e1c th\u1ef1c th\u1ea5t b\u1ea1i: '+((err&&err.message)||err);
+    if(errEl)errEl.textContent=msg;
+    return;
+  }
+  // X\u00e1c th\u1ef1c OK \u2192 ki\u1ec3m tra l\u1ea1i nh\u00e1nh c\u00f2n t\u1ed3n t\u1ea1i r\u1ed3i xo\u00e1.
+  if(!treeNodes.find(function(x){return x.id===nid;})){closeDeleteBranchModal();closeNodeModal();renderCurrentTree();showToast('Nh\u00e1nh \u0111\u00e3 kh\u00f4ng c\u00f2n t\u1ed3n t\u1ea1i');return;}
+  var cnt=performDeleteBranch(nid);
+  _delBranchBusy=false;
+  if(btn){btn.disabled=false;btn.textContent='\ud83d\uddd1\ufe0f Xo\u00e1 v\u0129nh vi\u1ec5n';}
+  closeDeleteBranchModal();
+  closeNodeModal();
+  renderCurrentTree();
+  showToast('\u2713 \u0110\u00e3 xo\u00e1 '+cnt+' ID');
 }
 function moveNodeSide(nid,newSide){
   var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
@@ -5675,6 +5858,246 @@ function showStarCriteria(nid){
 // ================================================================
 // TRANG QUẢN TRỊ — kiểm soát mã mời đăng ký
 // ================================================================
+// ================================================================
+// v6.13 — PART 2: ADMIN ANALYTICS & PRODUCT INTELLIGENCE
+//   • Lớp theo dõi hành vi (ẩn danh hoá) ghi users/{uid}/data/activity
+//     — chủ GHI + QTV ĐỌC, DÙNG LẠI Rules sẵn có (KHÔNG cần Rules mới).
+//   • Không lưu mật khẩu / nội dung riêng tư — chỉ đếm hành vi + thời điểm.
+//   • Bảng phân tích QTV: hoạt động, gắn kết, tính năng, giữ chân, phân khúc,
+//     App Health, insights & đề xuất — tất cả rule-based.
+// ================================================================
+var ANALYTICS_FEATURES=[
+  {id:'tree',lbl:'Sơ đồ đội nhóm'},{id:'goals',lbl:'Mục tiêu (Goals)'},
+  {id:'wheel',lbl:'Bánh xe cuộc đời'},{id:'mirror',lbl:'Tấm gương cuộc đời'},
+  {id:'daily',lbl:'Kế hoạch ngày'},{id:'checkin',lbl:'Điểm danh'},
+  {id:'prospect',lbl:'Tiềm năng'},{id:'map',lbl:'Bản đồ CLB'},
+  {id:'results',lbl:'Báo cáo & Kết quả'},{id:'guide',lbl:'Hướng dẫn'}
+];
+var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect'};
+// ───── Lớp theo dõi (tracking) ─────
+var _act=null,_actDirty=false,_actLastTick=0,_actTimers=false;
+function _keyTime(k){var p=String(k).split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1).getTime();}
+function _actKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function _dayKeyAgo(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function _ensureActDay(){if(!_act.days)_act.days={};var k=_actKey();if(!_act.days[k])_act.days[k]={s:0,d:0,f:{}};return _act.days[k];}
+function _pruneActDays(){
+  if(!_act.days)return;var keys=Object.keys(_act.days);if(keys.length<=140)return;
+  keys.map(function(k){return {k:k,t:_keyTime(k)};}).sort(function(a,b){return a.t-b.t;})
+    .slice(0,keys.length-140).forEach(function(o){delete _act.days[o.k];});
+}
+function _mergeActivity(local,cloud){ // hợp nhất đa thiết bị: UNION ngày (tránh ghi đè mất lịch sử)
+  if(!cloud||typeof cloud!=='object')return local;
+  if(!local)return cloud;
+  var fs=[local.firstSeen,cloud.firstSeen].filter(Boolean).sort();
+  var ls=[local.lastSeen,cloud.lastSeen].filter(Boolean).sort();
+  var out={v:1,firstSeen:fs[0]||'',lastSeen:ls[ls.length-1]||'',sessions:Math.max(local.sessions||0,cloud.sessions||0),days:{},featLast:{}};
+  var all={};Object.keys(local.days||{}).forEach(function(k){all[k]=1;});Object.keys(cloud.days||{}).forEach(function(k){all[k]=1;});
+  Object.keys(all).forEach(function(k){
+    var a=(local.days||{})[k],b=(cloud.days||{})[k];
+    if(a&&b){out.days[k]=((b.s||0)+(b.d||0))>((a.s||0)+(a.d||0))?b:a;} // cùng ngày: giữ bản nhiều hoạt động hơn
+    else out.days[k]=a||b;
+  });
+  [local.featLast||{},cloud.featLast||{}].forEach(function(fl){Object.keys(fl).forEach(function(fid){if(!out.featLast[fid]||fl[fid]>out.featLast[fid])out.featLast[fid]=fl[fid];});});
+  return out;
+}
+function _setupTrackTimers(){
+  if(_actTimers)return;_actTimers=true;
+  setInterval(trackHeartbeat,20000);
+  setInterval(function(){trackFlush(false);},30000);
+  document.addEventListener('visibilitychange',function(){if(document.hidden){trackHeartbeat();trackFlush(true);}else{_actLastTick=Date.now();}});
+  window.addEventListener('pagehide',function(){trackHeartbeat();trackFlush(true);});
+  window.addEventListener('beforeunload',function(){trackHeartbeat();trackFlush(true);});
+}
+function trackInit(){
+  if(!fbUser)return;
+  try{var s=nmGet('activity_v1');_act=s?JSON.parse(s):null;}catch(e){_act=null;}
+  if(!_act||typeof _act!=='object')_act={v:1,sessions:0,days:{},featLast:{}};
+  function start(){
+    var nowIso=new Date().toISOString();
+    if(!_act.firstSeen)_act.firstSeen=nowIso;
+    _act.lastSeen=nowIso;_act.sessions=(_act.sessions||0)+1;
+    var day=_ensureActDay();day.s=(day.s||0)+1;
+    _actLastTick=Date.now();_actDirty=true;trackFlush(true);_setupTrackTimers();
+  }
+  if(fbDb){fsGet('activity').then(function(d){_act=_mergeActivity(_act,d);try{nmSet('activity_v1',JSON.stringify(_act));}catch(e){}start();}).catch(function(){start();});}
+  else start();
+}
+function trackHeartbeat(){
+  if(!_act||document.hidden)return;
+  var now=Date.now(),dt=Math.round((now-_actLastTick)/1000);_actLastTick=now;
+  if(dt>0&&dt<=120){var day=_ensureActDay();day.d=(day.d||0)+dt;_act.lastSeen=new Date().toISOString();_actDirty=true;}
+}
+function trackEvent(feat){
+  if(!_act||!feat)return;
+  var day=_ensureActDay();if(!day.f)day.f={};day.f[feat]=(day.f[feat]||0)+1;
+  if(!_act.featLast)_act.featLast={};_act.featLast[feat]=new Date().toISOString();
+  _act.lastSeen=new Date().toISOString();_actDirty=true;
+}
+function trackSub(grp,sub){
+  if(grp==='tp'){if(sub==='goals'){trackEvent('goals');try{if(wheelStats())trackEvent('mirror');}catch(e){}}else if(sub==='results')trackEvent('results');else if(sub==='actions')trackEvent('daily');}
+  else if(grp==='act'){trackEvent(sub==='ngay'?'checkin':'daily');}
+  else if(grp==='res')trackEvent('results');
+  else if(grp==='map')trackEvent('map');
+}
+function trackFlush(force){
+  if(!_act||!_actDirty)return;
+  _pruneActDays();
+  try{nmSet('activity_v1',JSON.stringify(_act));}catch(e){}
+  if(fbDb&&fbUser)fsSet('activity',_act).catch(function(){});
+  _actDirty=false;
+}
+// ───── Engine phân tích ─────
+function analyzeUser(u){
+  var a=u.activity||{},days=a.days||{},keys=Object.keys(days),now=Date.now();
+  var daySet={},activeDays=[];
+  keys.forEach(function(k){var d=days[k];if(d&&((d.s||0)>0||(d.d||0)>0||(d.f&&Object.keys(d.f).length))){daySet[k]=true;activeDays.push(k);}});
+  var lastFromDays=activeDays.length?Math.max.apply(null,activeDays.map(_keyTime)):0;
+  var last=a.lastSeen?Math.max(new Date(a.lastSeen).getTime(),lastFromDays):lastFromDays;
+  var firstSeenT=a.firstSeen?new Date(a.firstSeen).getTime():(activeDays.length?Math.min.apply(null,activeDays.map(_keyTime)):(u.createdAt?new Date(u.createdAt).getTime():0));
+  var daysSince=last?Math.floor((now-last)/864e5):99999;
+  var act7=activeDays.filter(function(k){return (now-_keyTime(k))<=7*864e5;}).length;
+  var act30=activeDays.filter(function(k){return (now-_keyTime(k))<=30*864e5;}).length;
+  var sessions=a.sessions||0;
+  var totalDur=keys.reduce(function(s,k){return s+((days[k].d)||0);},0);
+  var avgDur=sessions?Math.round(totalDur/sessions):0;
+  var feats={};keys.forEach(function(k){var f=days[k].f||{};Object.keys(f).forEach(function(fid){feats[fid]=(feats[fid]||0)+f[fid];});});
+  var featCount=Object.keys(feats).length;
+  var score=Math.min(30,act30*3)+Math.min(20,act7*4)+Math.min(20,sessions)+Math.min(15,featCount*2)+Math.min(15,Math.round(avgDur/60));
+  score=Math.min(100,score);
+  if(daysSince>30)score=Math.round(score*0.35);else if(daysSince>14)score=Math.round(score*0.65);
+  var cls=(last===0)?'inactive':(daysSince>30?'inactive':daysSince>14?'atrisk':score>=70?'high':score>=40?'mod':'low');
+  var tenure=firstSeenT?Math.floor((now-firstSeenT)/864e5):0;
+  var seg=(last===0)?'inactive':(daysSince>30?'inactive':daysSince>14?'atrisk':tenure<7?'new':score>=75?'power':'active');
+  return {uid:u.uid,name:u.name,email:u.email,daySet:daySet,last:last,firstSeenT:firstSeenT,daysSince:daysSince,
+    act7:act7,act30:act30,activeToday:!!daySet[_actKey()],sessions:sessions,avgDur:avgDur,feats:feats,featCount:featCount,
+    score:score,cls:cls,seg:seg,tenure:tenure,activeDaysCount:activeDays.length,createdAt:u.createdAt};
+}
+function aggregateFeatures(data){
+  var now=Date.now(),res={};
+  ANALYTICS_FEATURES.forEach(function(f){res[f.id]={id:f.id,lbl:f.lbl,users:0,uses:0,last:0,recent:0,prior:0};});
+  data.forEach(function(u){
+    var days=(u.activity&&u.activity.days)||{},seen={};
+    Object.keys(days).forEach(function(k){
+      var f=days[k].f||{},t=_keyTime(k);
+      Object.keys(f).forEach(function(fid){
+        if(!res[fid])return;
+        res[fid].uses+=f[fid];seen[fid]=true;
+        if(t>res[fid].last)res[fid].last=t;
+        var age=now-t;
+        if(age<=7*864e5)res[fid].recent+=f[fid];else if(age<=14*864e5)res[fid].prior+=f[fid];
+      });
+    });
+    Object.keys(seen).forEach(function(fid){if(res[fid])res[fid].users++;});
+  });
+  return ANALYTICS_FEATURES.map(function(f){return res[f.id];});
+}
+function retentionRate(users,N){
+  var now=Date.now();
+  var cohort=users.filter(function(u){return u.firstSeenT&&(now-u.firstSeenT)>=N*864e5;});
+  if(!cohort.length)return null;
+  var ret=cohort.filter(function(u){return u.last&&(u.last-u.firstSeenT)>=(N-1)*864e5;}).length;
+  return Math.round(ret/cohort.length*100);
+}
+async function loadAnalyticsData(){
+  var accts=await fetchAccounts().catch(function(){return [];});
+  var acts=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'activity').catch(function(){return null;});}));
+  return accts.map(function(a,i){return {uid:a.uid,name:a.name,email:a.email,createdAt:a.createdAt,activity:acts[i]||null};});
+}
+function _anBar(pct,color){return '<div class="an-track"><div class="an-fill" style="width:'+Math.max(0,Math.min(100,pct))+'%;background:'+color+'"></div></div>';}
+function _anStat(num,lbl,color){return '<div class="an-stat"><div class="an-num" style="color:'+(color||'#1A1A1A')+'">'+num+'</div><div class="an-lbl">'+lbl+'</div></div>';}
+function renderAnalytics(data){
+  var el=document.getElementById('analytics-content');if(!el)return;
+  if(!data||!data.length){el.innerHTML='<div style="color:#999;font-size:13px;padding:10px 0">Chưa có tài khoản nào để phân tích.</div>';return;}
+  var users=data.map(analyzeUser),now=Date.now(),total=users.length;
+  var dau=users.filter(function(u){return u.activeToday;}).length;
+  var wau=users.filter(function(u){return u.act7>0;}).length;
+  var mau=users.filter(function(u){return u.act30>0;}).length;
+  var inactive=users.filter(function(u){return u.cls==='inactive';}).length;
+  var atrisk=users.filter(function(u){return u.cls==='atrisk';}).length;
+  var returning=users.filter(function(u){return u.activeDaysCount>=2;}).length;
+  function regWithin(d){return data.filter(function(u){return u.createdAt&&(now-new Date(u.createdAt).getTime())<=d*864e5;}).length;}
+  var new7=regWithin(7),new30=regWithin(30);
+  var anyData=users.some(function(u){return u.last>0;});
+  var h='';
+  if(!anyData)h+='<div class="an-note">⏳ Lớp theo dõi vừa bật — số liệu sẽ tích luỹ &amp; có ý nghĩa dần sau vài ngày/tuần người dùng hoạt động. Hôm nay phần lớn chỉ số còn 0.</div>';
+  // 1) HOẠT ĐỘNG
+  h+='<div class="an-sec"><div class="an-h">📊 Hoạt động người dùng</div><div class="an-grid">';
+  h+=_anStat(total,'Tổng người dùng','#1A1A1A')+_anStat(dau,'Hoạt động hôm nay (DAU)','#1A7A5E')+
+     _anStat(wau,'7 ngày (WAU)','#1565C0')+_anStat(mau,'30 ngày (MAU)','#6A1B9A')+
+     _anStat(new7,'Đăng ký mới 7n','#00897B')+_anStat(returning,'Quay lại ≥2 ngày','#3949AB')+
+     _anStat(atrisk,'Có nguy cơ','#E65100')+_anStat(inactive,'Ngưng dùng','#C62828');
+  h+='</div>';
+  // bar 14 ngày DAU
+  var series=[];for(var i=13;i>=0;i--){var k=_dayKeyAgo(i);series.push({k:k,c:users.filter(function(u){return u.daySet[k];}).length});}
+  var maxC=Math.max(1,Math.max.apply(null,series.map(function(s){return s.c;})));
+  h+='<div class="an-sub">Người hoạt động mỗi ngày (14 ngày gần nhất)</div><div class="an-spark">';
+  series.forEach(function(s){h+='<div class="an-sp-col" title="'+s.k+': '+s.c+'"><div class="an-sp-bar" style="height:'+Math.round(s.c/maxC*100)+'%"></div></div>';});
+  h+='</div></div>';
+  // 2) GẮN KẾT
+  var clsDef=[{k:'high',lbl:'Gắn kết cao',c:'#1A7A5E'},{k:'mod',lbl:'Gắn kết vừa',c:'#1565C0'},{k:'low',lbl:'Gắn kết thấp',c:'#F9A825'},{k:'atrisk',lbl:'Có nguy cơ',c:'#E65100'},{k:'inactive',lbl:'Ngưng dùng',c:'#C62828'}];
+  h+='<div class="an-sec"><div class="an-h">💚 Mức độ gắn kết</div>';
+  clsDef.forEach(function(cd){var n=users.filter(function(u){return u.cls===cd.k;}).length;var pct=total?Math.round(n/total*100):0;
+    h+='<div class="an-row"><div class="an-row-lbl" style="color:'+cd.c+'">'+cd.lbl+'</div>'+_anBar(pct,cd.c)+'<div class="an-row-v">'+n+' ('+pct+'%)</div></div>';});
+  h+='</div>';
+  // 3) TÍNH NĂNG
+  var fa=aggregateFeatures(data);
+  var faSort=fa.slice().sort(function(a,b){return b.uses-a.uses;});
+  var maxUses=Math.max(1,Math.max.apply(null,fa.map(function(f){return f.uses;})));
+  h+='<div class="an-sec"><div class="an-h">🧩 Sử dụng tính năng</div>';
+  faSort.forEach(function(f){
+    var lastTxt=f.last?fmtDT(new Date(f.last).toISOString()):'chưa dùng';
+    h+='<div class="an-frow"><div class="an-frow-top"><span class="an-frow-lbl">'+escHtml(f.lbl)+'</span><span class="an-frow-n">'+f.users+' người · '+f.uses+' lượt</span></div>'+
+       _anBar(Math.round(f.uses/maxUses*100),'#1565C0')+'<div class="an-frow-sub">Gần nhất: '+lastTxt+'</div></div>';
+  });
+  var most=faSort[0],least=faSort[faSort.length-1];
+  var grow=fa.slice().filter(function(f){return f.prior>0||f.recent>0;}).sort(function(a,b){return ((b.recent-b.prior)/(b.prior||1))-((a.recent-a.prior)/(a.prior||1));})[0];
+  var abandon=fa.slice().filter(function(f){return f.uses>0&&f.last>0&&(now-f.last)>14*864e5;}).sort(function(a,b){return a.last-b.last;})[0];
+  h+='<div class="an-callouts">';
+  if(most&&most.uses>0)h+='<div class="an-co" style="border-color:#1A7A5E"><b>🔥 Dùng nhiều nhất:</b> '+escHtml(most.lbl)+' ('+most.uses+' lượt)</div>';
+  if(least)h+='<div class="an-co" style="border-color:#C62828"><b>🧊 Ít dùng nhất:</b> '+escHtml(least.lbl)+' ('+least.uses+' lượt)</div>';
+  if(grow&&grow.recent>grow.prior)h+='<div class="an-co" style="border-color:#1565C0"><b>📈 Tăng nhanh:</b> '+escHtml(grow.lbl)+' (+'+(grow.recent-grow.prior)+' lượt 7n)</div>';
+  if(abandon)h+='<div class="an-co" style="border-color:#E65100"><b>🚪 Bị bỏ rơi:</b> '+escHtml(abandon.lbl)+' (không dùng >14 ngày)</div>';
+  h+='</div></div>';
+  // 4) GIỮ CHÂN
+  h+='<div class="an-sec"><div class="an-h">🔁 Giữ chân (Retention)</div><div class="an-grid">';
+  [[1,'D1'],[7,'D7'],[30,'D30'],[90,'D90']].forEach(function(p){var r=retentionRate(users,p[0]);h+=_anStat(r===null?'—':(r+'%'),p[1]+' giữ chân',r===null?'#999':(r>=40?'#1A7A5E':r>=20?'#E65100':'#C62828'));});
+  h+='</div><div class="an-frow-sub" style="margin-top:6px">D-N = % người vẫn còn hoạt động sau N ngày kể từ lần đầu. "—" = chưa đủ thời gian để đo.</div></div>';
+  // 5) PHÂN KHÚC
+  var segDef=[{k:'new',lbl:'🌱 Mới (<7 ngày)',c:'#00897B'},{k:'active',lbl:'✅ Hoạt động',c:'#1565C0'},{k:'power',lbl:'⭐ Power user',c:'#1A7A5E'},{k:'atrisk',lbl:'⚠️ Có nguy cơ',c:'#E65100'},{k:'inactive',lbl:'💤 Ngưng dùng',c:'#C62828'}];
+  h+='<div class="an-sec"><div class="an-h">👥 Phân khúc người dùng</div>';
+  segDef.forEach(function(sd){var n=users.filter(function(u){return u.seg===sd.k;}).length;var pct=total?Math.round(n/total*100):0;
+    h+='<div class="an-row"><div class="an-row-lbl" style="color:'+sd.c+'">'+sd.lbl+'</div>'+_anBar(pct,sd.c)+'<div class="an-row-v">'+n+'</div></div>';});
+  h+='</div>';
+  // 6) APP HEALTH
+  var d7=retentionRate(users,7),d30=retentionRate(users,30);
+  var engPct=total?Math.round(users.filter(function(u){return u.cls==='high'||u.cls==='mod';}).length/total*100):0;
+  var activeRatio=total?Math.round(mau/total*100):0;
+  var adopt=Math.round(fa.filter(function(f){return f.users>0;}).length/ANALYTICS_FEATURES.length*100);
+  var growthC=Math.min(100,Math.round(new30/Math.max(1,total)*100));
+  var comps=[];if(d7!==null)comps.push({w:0.30,v:d7});comps.push({w:0.25,v:engPct});comps.push({w:0.20,v:activeRatio});comps.push({w:0.15,v:adopt});comps.push({w:0.10,v:growthC});
+  var wsum=comps.reduce(function(s,c){return s+c.w;},0);
+  var health=Math.round(comps.reduce(function(s,c){return s+c.w*c.v;},0)/wsum);
+  var hc=health>=70?'#1A7A5E':health>=45?'#E65100':'#C62828';
+  h+='<div class="an-sec an-health"><div class="an-h">❤️ App Health Score</div>';
+  h+='<div class="an-health-num" style="color:'+hc+'">'+health+'<span style="font-size:18px;color:#999">/100</span></div>';
+  h+=_anBar(health,hc);
+  h+='<div class="an-grid" style="margin-top:10px">'+_anStat(engPct+'%','Gắn kết','#1565C0')+_anStat(activeRatio+'%','Tỉ lệ MAU','#6A1B9A')+_anStat(adopt+'%','Phủ tính năng','#00897B')+_anStat((d7===null?'—':d7+'%'),'Giữ chân D7','#1A7A5E')+'</div></div>';
+  // 7) INSIGHTS & ĐỀ XUẤT
+  var ins=[];
+  if(most&&most.uses>0)ins.push('Tính năng <b>'+escHtml(most.lbl)+'</b> được dùng nhiều nhất ('+most.users+' người) — nên đầu tư &amp; làm nổi bật.');
+  if(least&&least.uses===0)ins.push('<b>'+escHtml(least.lbl)+'</b> gần như chưa ai dùng — cân nhắc hướng dẫn rõ hơn, đặt nổi bật hơn, hoặc xem lại sự cần thiết.');
+  else if(least)ins.push('<b>'+escHtml(least.lbl)+'</b> ít dùng nhất — kiểm tra xem có khó tìm/khó dùng không.');
+  if(grow&&grow.recent>grow.prior)ins.push('<b>'+escHtml(grow.lbl)+'</b> đang tăng nhanh — tận dụng đà này.');
+  if(abandon)ins.push('<b>'+escHtml(abandon.lbl)+'</b> bị bỏ rơi (>14 ngày không ai dùng) — nên cải thiện trải nghiệm.');
+  if(atrisk>0)ins.push('<b>'+atrisk+' người</b> có nguy cơ rời bỏ (14–30 ngày không hoạt động) — nên nhắc nhở/chăm sóc.');
+  if(d7!==null&&d7<30)ins.push('Giữ chân D7 chỉ <b>'+d7+'%</b> — nhiều người không quay lại sau tuần đầu. Tập trung tạo giá trị ở 7 ngày đầu (ví dụ: nhắc chấm Bánh xe + xem Tấm gương).');
+  if(returning>0&&total)ins.push('Người quay lại ≥2 ngày thường gắn kết lâu hơn — hiện có <b>'+returning+'/'+total+'</b>.');
+  if(!ins.length)ins.push('Chưa đủ dữ liệu để rút ra nhận định. Hãy để người dùng hoạt động vài ngày rồi xem lại.');
+  h+='<div class="an-sec an-insights"><div class="an-h">🤖 Nhận định &amp; Đề xuất sản phẩm</div>';
+  ins.forEach(function(s){h+='<div class="an-ins">💡 '+s+'</div>';});
+  h+='<div class="an-frow-sub" style="margin-top:8px">Cập nhật theo dữ liệu hành vi thật (ẩn danh hoá), không phải phỏng đoán.</div></div>';
+  el.innerHTML=h;
+}
 var FIRESTORE_RULES="rules_version = '2';\n"+
 "service cloud.firestore {\n"+
 "  match /databases/{database}/documents {\n"+
@@ -5826,6 +6249,11 @@ function renderAdminPage(){
     }else{
       // #2 MA MOI 1 LAN (single-use) — moi QTV deu tao/xoa duoc
       var invArr=invitesArr||[];var legacyCodes=(reg&&reg.codes)||[];
+      // v6.13 — Phân tích & Insights (Analytics) — tải theo yêu cầu để admin page nhẹ
+      h+='<div class="adm-box"><div class="adm-title">📊 Phân tích &amp; Insights</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Hiểu app có thực sự giúp người dùng không — hoạt động (DAU/WAU/MAU), gắn kết, tính năng, giữ chân, phân khúc, App Health, đề xuất cải tiến. Dữ liệu <b>ẩn danh hoá hành vi</b> (không lộ mật khẩu / nội dung riêng tư).</div>';
+      h+='<button class="btn btn-d btn-sm" id="btn-load-analytics">📊 Mở bảng phân tích</button>';
+      h+='<div id="analytics-content" style="margin-top:12px"></div></div>';
       h+='<div class="adm-box"><div class="adm-title">🎟️ Mã mời 1 lần (single-use)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Mỗi mã chỉ dùng được <b>1 lần</b> để tạo tài khoản, dùng xong tự khoá. Tạo mã rồi gửi riêng cho từng người. Muốn chặt nhất: <b>xoá trống mã cố định</b> ở trên, chỉ phát mã 1 lần.</div>';
       h+='<button class="btn btn-g btn-sm" id="btn-gen-codes">➕ Tạo 5 mã mới</button>';
@@ -6448,6 +6876,7 @@ document.addEventListener('click',function(e){
     if(pg==='admin')renderAdminPage();
     if(pg==='map')renderMapPage();
     if(pg==='prospect')renderProspectPage();
+    if(_MAIN_FEAT[pg])trackEvent(_MAIN_FEAT[pg]); // v6.13 — theo dõi điều hướng tab
     return;
   }
 
@@ -6471,6 +6900,7 @@ document.addEventListener('click',function(e){
     else if(grp==='res')renderResSub(sub);
     else if(grp==='pt')renderPtSub(sub);
     else if(grp==='map')ensureMapSub(sub);
+    trackSub(grp,sub); // v6.13 — theo dõi điều hướng sub-tab
     return;
   }
 
@@ -6709,6 +7139,12 @@ document.addEventListener('click',function(e){
     return;
   }
   // Admin: nhận quyền lần đầu
+  if(e.target.id==='btn-load-analytics'){ // v6.13 — tải & vẽ bảng phân tích
+    var _ac=document.getElementById('analytics-content');
+    if(_ac)_ac.innerHTML='<div style="color:#999;font-size:13px;padding:10px 0">Đang tải số liệu phân tích...</div>';
+    loadAnalyticsData().then(function(d){renderAnalytics(d);}).catch(function(){if(_ac)_ac.innerHTML='<div style="color:#C62828;font-size:13px">Không tải được số liệu (cần quyền QTV).</div>';});
+    return;
+  }
   if(e.target.id==='btn-admin-claim'){
     fsSetGlobal('admins',{emails:[fbUser.email]}).then(function(){
       showToast('\u2713 Bạn là quản trị viên');renderAdminPage();
@@ -7003,6 +7439,10 @@ document.addEventListener('click',function(e){
   // Xem cả cây từ ID này: lấy ID làm gốc tạm (focus) rồi đóng popup
   t=e.target.closest('[data-focus-sub]');
   if(t){focusSubtree(t.getAttribute('data-focus-sub'));return;}
+
+  // v6.14 — Xoá cả nhánh từ ID này (mở modal xác nhận + nhập lại mật khẩu)
+  t=e.target.closest('[data-del-branch]');
+  if(t){openDeleteBranchModal(t.getAttribute('data-del-branch'));return;}
 
   // Copy Firestore Rules
   if(e.target.id==='btn-copy-rules'){copyText(FIRESTORE_RULES);return;}
@@ -7395,6 +7835,7 @@ function bindStatic(){
     if(fbDb&&fbUser)fsSet('wheel',{wheel:loadWheel()}).catch(function(){});
     renderWheelCompare(); // cập nhật danh sách mốc so sánh khi chấm điểm hôm nay
     renderLifeMirror();   // cập nhật La bàn / Tấm gương cuộc đời theo điểm mới
+    trackEvent('wheel');  // v6.13 — theo dõi chấm Bánh xe
   });
 
 
@@ -7416,6 +7857,13 @@ function bindStatic(){
   document.getElementById('nmod-save-btn').addEventListener('click',saveNodeModal);
   document.getElementById('nmod-del-btn').addEventListener('click',deleteNode);
   document.getElementById('nmod-ov').addEventListener('click',function(e){if(e.target===this)closeNodeModal();});
+
+  // v6.14 — modal Xoá cả nhánh
+  document.getElementById('delbr-close').addEventListener('click',closeDeleteBranchModal);
+  document.getElementById('delbr-cancel').addEventListener('click',closeDeleteBranchModal);
+  document.getElementById('delbr-confirm').addEventListener('click',confirmDeleteBranch);
+  document.getElementById('delbr-ov').addEventListener('click',function(e){if(e.target===this)closeDeleteBranchModal();});
+  document.getElementById('delbr-ov').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();confirmDeleteBranch();}});
 
   document.getElementById('clubedit-close').addEventListener('click',closeAdminClubEdit);
   document.getElementById('clubedit-cancel').addEventListener('click',closeAdminClubEdit);
