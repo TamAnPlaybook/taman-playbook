@@ -1,4 +1,4 @@
-<!-- VERSION: v6.14-delbranch-idgoc-button -->
+<!-- VERSION: v6.15-premium-ui-theme-personalization -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -671,6 +671,69 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .lrm-min-btn{position:absolute;top:7px;right:7px;z-index:10;background:#1565C0;color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
 .leaflet-routing-container{position:relative!important}
 .leaflet-routing-container.lrm-collapsed .leaflet-routing-alt,.leaflet-routing-container.lrm-collapsed .leaflet-routing-geocoders,.leaflet-routing-container.lrm-collapsed h2{display:none!important}
+
+/* ============================================================================
+   v6.15 — PREMIUM EUROPEAN THEME LAYER (đặt CUỐI stylesheet để thắng theo thứ tự
+   nguồn). Hệ thống biến (design tokens) cho phép cá nhân hoá tông màu mà vẫn giữ
+   ngôn ngữ thiết kế cao cấp. Chỉ TINH CHỈNH thị giác — KHÔNG đổi bố cục chức năng.
+   ============================================================================ */
+:root{
+  --accent:#C8A84B; --accent-2:#A8842B; --accent-soft:#F6EECF; --accent-ink:#1A1A1A;
+  --app-bg:#ECEAE3; --surface:#FFFFFF; --line:#E7E3D9; --ink:#1A1A1A;
+  --shadow-sm:0 1px 2px rgba(28,25,20,.05),0 1px 3px rgba(28,25,20,.045);
+  --shadow-md:0 6px 18px rgba(28,25,20,.07),0 2px 6px rgba(28,25,20,.05);
+  --shadow-lg:0 18px 48px rgba(28,25,20,.16);
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+/* Arial là phông DUY NHẤT — toàn bộ ứng dụng (kể cả Leaflet/biểu đồ) */
+body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,.leaflet-container,.leaflet-container *{font-family:Arial,Helvetica,sans-serif!important}
+/* Nền tổng thể tông lanh ấm + khử răng cưa chữ cho cảm giác tinh tế */
+body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* Thẻ cao cấp: bóng mềm nhiều lớp, viền tinh tế, nâng nhẹ khi rê chuột */
+.mc,.adm-box,.chart-wrap,.ov-wrap{border-color:var(--line)!important;box-shadow:var(--shadow-sm);transition:box-shadow .25s var(--ease),transform .2s var(--ease)}
+@media(pointer:fine){
+  .mc:hover,.adm-box:hover,.chart-wrap:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+}
+/* Thanh trên cùng: gradient tối sang + chỉ kim loại mảnh dưới chân */
+.topbar{background:linear-gradient(180deg,#242424 0%,#151515 100%);box-shadow:0 2px 12px rgba(0,0,0,.2);border-bottom:1px solid var(--accent)}
+.tb-logo{color:var(--accent);letter-spacing:.4px;font-weight:800}
+.main-tabs{background:#141414}
+.mtab{transition:color .2s var(--ease),border-color .2s var(--ease)}
+.mtab.on{color:var(--accent);border-bottom-color:var(--accent)}
+/* Nút: chuyển động mượt + phản hồi khi nhấn */
+.btn,.tbtn,.stab,.db-btn,.db-today,.fb-filter,.setup-btn,.gbtn,.disc-btn{transition:transform .12s var(--ease),box-shadow .2s var(--ease),background .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease)}
+.btn:active,.tbtn:active,.stab:active,.db-btn:active,.fb-filter:active{transform:translateY(1px)}
+@media(pointer:fine){.tbtn:hover,.btn-o:hover,.fb-filter:hover{box-shadow:var(--shadow-sm)}}
+.tbtn.gold{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:var(--accent-2)}
+.dd-center .mc{border-color:var(--accent)!important}
+/* Ô nhập: vòng focus tông accent tinh tế */
+.setup-input:focus,.srch:focus,.nmod-inp:focus,.sel:focus,.sel-filter:focus,#tree-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* Modal & popup: bóng sâu sang trọng */
+.modal,.nmod{box-shadow:0 -12px 44px rgba(0,0,0,.24)}
+/* Điểm nhấn accent xuyên suốt → đồng nhất ngôn ngữ thiết kế */
+.setup-logo,.flink,.setup-btn,.pin-btn.on,#fs-head,.ovt th{color:var(--accent)}
+.ovt th{background:#1A1A1A}
+/* Thanh cuộn cao cấp trên thiết bị có chuột */
+@media(pointer:fine){
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#CBC6B8;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:#B2AC9C;background-clip:content-box}
+  ::-webkit-scrollbar-track{background:transparent}
+}
+/* Nút Giao diện (🎨) trên thanh trên cùng */
+.tb-gear{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.62);width:30px;height:28px;border-radius:7px;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+.tb-gear:hover{color:var(--accent);border-color:var(--accent)}
+/* Lưới chọn chủ đề (Giao diện) */
+.thm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:520px){.thm-grid{grid-template-columns:repeat(3,1fr)}}
+.thm-card{border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:var(--surface);transition:border-color .2s var(--ease),box-shadow .2s var(--ease),transform .15s var(--ease);text-align:center}
+.thm-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.thm-card.on{border-color:var(--tc,#C8A84B);box-shadow:0 0 0 3px var(--accent-soft)}
+.thm-swatch{height:46px;border-radius:10px;margin-bottom:9px;position:relative;overflow:hidden;border:1px solid rgba(0,0,0,.06)}
+.thm-swatch .thm-bar{position:absolute;left:0;right:0;bottom:0;height:14px;background:#151515}
+.thm-swatch .thm-dot{position:absolute;top:8px;left:8px;width:16px;height:16px;border-radius:50%}
+.thm-name{font-size:12.5px;font-weight:700;color:var(--ink)}
+.thm-tick{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:var(--accent);min-height:15px}
 </style>
 </head>
 <body>
@@ -762,6 +825,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <div class="tb-logo">Tâm An TTHC</div>
     <div class="tb-ns" id="tb-ns"></div>
     <div class="tb-date" id="tb-date"></div>
+    <button class="tb-gear" id="btn-appearance" title="Giao diện & cá nhân hoá">&#127912;</button>
     <button class="tb-out" id="btn-logout">Thoát</button>
   </div>
   <!-- v6.5 — Banner chạy chữ: động lực / thông báo QTV / chúc mừng đội nhóm -->
@@ -1010,6 +1074,20 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
     <div class="nmod-foot">
       <button class="btn btn-o" id="delbr-cancel">Hủy</button>
       <button class="btn btn-r" id="delbr-confirm">&#128465;&#65039; Xoá vĩnh viễn</button>
+    </div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN / CÁ NHÂN HOÁ MODAL (v6.15) -->
+<div class="nmod-ov" id="appearance-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title" id="appearance-title">&#127912; Giao diện</div>
+      <button class="nmod-x" id="appearance-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="appearance-body"></div>
+    <div class="nmod-foot">
+      <button class="btn btn-g" id="appearance-done">&#10003; Xong</button>
     </div>
   </div>
 </div>
@@ -2448,7 +2526,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadAnnCloud();loadProspects();loadPrefsCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -7796,9 +7874,83 @@ function attachSelFilter(inputEl,selEl){
   });
 }
 // ================================================================
+// v6.15 — CÁ NHÂN HOÁ GIAO DIỆN (Premium themes) + lưu prefs đa thiết bị
+// Mọi tuỳ chọn cá nhân (chủ đề màu; về sau: nền, nhắc việc) lưu chung 1 document
+// Firestore users/{uid}/data/prefs + localStorage 'ta_prefs' (fsSet ghi đè cả
+// document nên luôn gửi toàn bộ _prefs).
+// ================================================================
+var THEME_PRESETS={
+  gold:{name:'Vàng kim cổ điển',accent:'#C8A84B',a2:'#A8842B',soft:'#F6EECF',ink:'#1A1A1A'},
+  emerald:{name:'Lục bảo',accent:'#1F7A5E',a2:'#155C46',soft:'#E2F1EB',ink:'#FFFFFF'},
+  sapphire:{name:'Lam ngọc',accent:'#2D5DA8',a2:'#1F4279',soft:'#E5ECF8',ink:'#FFFFFF'},
+  bordeaux:{name:'Rượu vang',accent:'#8E2D43',a2:'#6C2032',soft:'#F6E5EA',ink:'#FFFFFF'},
+  bronze:{name:'Đồng cổ',accent:'#B07D4B',a2:'#8B6038',soft:'#F3E9DD',ink:'#1A1A1A'},
+  charcoal:{name:'Than chì',accent:'#4A4A4A',a2:'#2E2E2E',soft:'#E9E9E9',ink:'#FFFFFF'}
+};
+var THEME_ORDER=['gold','emerald','sapphire','bordeaux','bronze','charcoal'];
+var _prefs={theme:'gold'};
+function applyTheme(key){
+  var t=THEME_PRESETS[key]?key:'gold';var p=THEME_PRESETS[t];
+  var r=document.documentElement.style;
+  r.setProperty('--accent',p.accent);
+  r.setProperty('--accent-2',p.a2);
+  r.setProperty('--accent-soft',p.soft);
+  r.setProperty('--accent-ink',p.ink);
+  _prefs.theme=t;
+}
+function applyPrefs(){
+  applyTheme(_prefs.theme||'gold');
+  // Phase 2 sẽ thêm: applyBackground(_prefs.bg)
+}
+function loadPrefsLocal(){
+  try{var s=localStorage.getItem('ta_prefs');if(s){var o=JSON.parse(s)||{};for(var k in o)_prefs[k]=o[k];}}catch(e){}
+}
+function savePrefs(){
+  try{localStorage.setItem('ta_prefs',JSON.stringify(_prefs));}catch(e){}
+  if(fbDb&&fbUser){var copy={};for(var k in _prefs)copy[k]=_prefs[k];fsSet('prefs',copy).catch(function(){});}
+}
+function loadPrefsCloud(){
+  if(!fbDb||!fbUser)return;
+  fsGet('prefs').then(function(d){
+    if(!d)return;delete d.updatedAt;
+    for(var k in d)_prefs[k]=d[k];
+    applyPrefs();
+    if(document.getElementById('appearance-ov').classList.contains('open'))renderAppearance();
+  }).catch(function(){});
+}
+function renderAppearance(){
+  var h='';
+  h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:12px">Chọn tông màu chủ đạo cho toàn ứng dụng. Lựa chọn được lưu và đồng bộ trên mọi thiết bị.</div>';
+  h+='<div class="msec-title">Chủ đề màu cao cấp</div>';
+  h+='<div class="thm-grid">';
+  THEME_ORDER.forEach(function(key){
+    var p=THEME_PRESETS[key];var on=(_prefs.theme||'gold')===key;
+    h+='<div class="thm-card'+(on?' on':'')+'" data-theme="'+key+'" style="--tc:'+p.accent+'">';
+    h+='<div class="thm-swatch" style="background:'+p.soft+'"><div class="thm-dot" style="background:'+p.accent+'"></div><div class="thm-bar"></div></div>';
+    h+='<div class="thm-name">'+escHtml(p.name)+'</div>';
+    h+='<div class="thm-tick">'+(on?'✓ Đang dùng':'')+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  document.getElementById('appearance-body').innerHTML=h;
+}
+function openAppearance(){renderAppearance();document.getElementById('appearance-ov').classList.add('open');}
+function closeAppearance(){document.getElementById('appearance-ov').classList.remove('open');}
+function selectTheme(key){
+  if(!THEME_PRESETS[key])return;
+  applyTheme(key);savePrefs();renderAppearance();
+}
+
+// ================================================================
 // STATIC BUTTON BINDINGS
 // ================================================================
 function bindStatic(){
+  loadPrefsLocal();applyPrefs(); // v6.15 — áp tông màu cá nhân ngay khi tải (trước khi đăng nhập)
+  document.getElementById('btn-appearance').addEventListener('click',openAppearance);
+  document.getElementById('appearance-close').addEventListener('click',closeAppearance);
+  document.getElementById('appearance-done').addEventListener('click',closeAppearance);
+  document.getElementById('appearance-ov').addEventListener('click',function(e){if(e.target===this)closeAppearance();});
+  document.getElementById('appearance-body').addEventListener('click',function(e){var t=e.target.closest('[data-theme]');if(t)selectTheme(t.getAttribute('data-theme'));});
   document.getElementById('btn-login').addEventListener('click',doLogin);
   document.getElementById('btn-register').addEventListener('click',doRegister);
   document.getElementById('btn-forgot').addEventListener('click',doForgot);
