@@ -1,4 +1,4 @@
-<!-- VERSION: v6.20-wheel-of-life-3.0 -->
+<!-- VERSION: v6.21-dailyplan-pct-map-ab-directions-3areas -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -123,6 +123,21 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .trow{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5;gap:10px}
 .trow:last-child{border-bottom:none}
 .tlbl{flex:1;font-size:14px}.tnote{font-size:11px;color:#BBB;margin-top:2px}
+/* v6.21 — Kế hoạch ngày: cột Kế hoạch + Báo cáo + % tự tính */
+.kh-pct-live{background:#FAFAF7;border:1px solid #EEE8D8;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.kh-pct-top{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;color:#555}
+.kh-pct-num{font-size:20px;font-weight:800;font-family:Arial}
+.kh-pct-track{height:8px;background:#ECECEC;border-radius:6px;overflow:hidden;margin:6px 0 4px}
+.kh-pct-fill{height:100%;border-radius:6px;transition:width .25s}
+.kh-pct-note{font-size:11px;color:#AAA;line-height:1.4}
+.kh-head{display:flex;align-items:center;gap:10px;padding:4px 0 2px}
+.kh-head .kh-h-lbl{flex:1}
+.kh-head .kh-h-plan,.kh-head .kh-h-rep{width:78px;text-align:center;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#AAA}
+.trow-kh .kh-fields{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.kh-cell{width:78px;display:flex;justify-content:center;align-items:center}
+.kh-cell .kh-num{width:100%;text-align:center;padding:8px 6px}
+.kh-cell-plan{font-size:11px;color:#BBB}
+@media(max-width:600px){.kh-head .kh-h-plan,.kh-head .kh-h-rep,.kh-cell{width:64px}}
 .msec{margin-top:14px}
 .msec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#AAA;margin-bottom:8px}
 .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#EBEBEB;border-radius:10px;overflow:hidden;margin-top:8px}
@@ -480,13 +495,14 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .map-search-go{position:absolute;right:6px;top:6px;border:none;background:#1A7A5E;color:#fff;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .map-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .map-tools .btn-sm{flex:0 1 auto}
-#myclub-map-wrap{position:relative}
-#myclub-map-wrap.map-fs{position:fixed;inset:0;z-index:1300;background:#fff;margin:0;padding:10px;display:flex;flex-direction:column;border-radius:0}
-#myclub-map-wrap.map-fs #myclub-map{flex:1;height:auto!important;border-radius:10px;margin:6px 0 0}
-#myclub-map-wrap.map-fs .map-search{margin:0 0 8px}
-#myclub-map-wrap.map-fs .geo-sug{max-height:46vh}
+/* v6.21 — Toàn màn hình DÙNG CHUNG cho cả 3 bản đồ (.map-wrap + .lf-map) */
+.map-wrap{position:relative}
+.map-wrap.map-fs{position:fixed;inset:0;z-index:1300;background:#fff;margin:0;padding:10px;display:flex;flex-direction:column;border-radius:0}
+.map-wrap.map-fs .lf-map{flex:1;height:auto!important;min-height:0!important;border-radius:10px;margin:6px 0 0}
+.map-wrap.map-fs .map-search{margin:0 0 8px}
+.map-wrap.map-fs .geo-sug{max-height:46vh}
 .map-fs-exit{display:none}
-#myclub-map-wrap.map-fs .map-fs-exit{display:inline-flex;align-items:center;gap:5px;position:absolute;top:16px;right:18px;z-index:1310;background:#1A1A1A;color:#fff;border:none;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:700;font-family:Arial;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.map-wrap.map-fs .map-fs-exit{display:inline-flex;align-items:center;gap:5px;position:absolute;top:16px;right:18px;z-index:1310;background:#1A1A1A;color:#fff;border:none;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:700;font-family:Arial;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .geo-sug .geo-co{color:#1A7A5E;font-weight:700}
 .geo-sug .geo-hint{color:#E65100;cursor:default}
 .geo-sug .geo-hint:hover{background:transparent}
@@ -1380,6 +1396,9 @@ var NOMINATIM_REVERSE='https://nominatim.openstreetmap.org/reverse';
 var LRM_CSS='https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css';
 var LRM_JS='https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
 var OSRM_URL='https://router.project-osrm.org/route/v1';
+// v6.21 — Ô tìm địa chỉ trong bảng Chỉ đường A→B (leaflet-control-geocoder, Nominatim, miễn phí)
+var LGEO_CSS='https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css';
+var LGEO_JS='https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js';
 
 var SKILLS=[
   {id:'disc',lbl:'DISC — Nhận diện tính cách'},
@@ -1973,8 +1992,10 @@ function renderMapPage(){
 }
 function destroyMaps(){
   unwatchPublicClubs();
+  _routeCtrl=null;_routeMap=null;_dirDest=null;_allSearchMarker=null; // v6.21 — reset chỉ đường + ghim tìm kiếm
   if(_myMap){try{_myMap.remove();}catch(e){}_myMap=null;_myMarker=null;_myExtraLayer=null;}
-  if(_globalMap){try{_globalMap.remove();}catch(e){}_globalMap=null;_globalCluster=null;_routeCtrl=null;}
+  if(_clxMap){try{_clxMap.remove();}catch(e){}_clxMap=null;_clxMarker=null;}
+  if(_globalMap){try{_globalMap.remove();}catch(e){}_globalMap=null;_globalCluster=null;}
   _myLoc=null;_radiusKm=0;_locMarker=null;_locCircle=null; // v6.10 — reset trạng thái định vị khi rời/ dựng lại bản đồ
 }
 function ensureMapSub(sub){if(sub==='all'){initGlobalMap(false);}else initMyClubMap();}
@@ -1988,19 +2009,10 @@ function renderMyClubForm(){
     '<div class="map-card">'+
       '<h3>🏠 Câu lạc bộ của tôi</h3>'+
       '<div class="map-hint">Tìm như Google Maps · dán <b>link Google Maps</b> hoặc <b>toạ độ</b> · bấm <b>📍 Vị trí của tôi</b> · hoặc chạm/kéo ghim trên bản đồ. Tên &amp; địa chỉ &amp; toạ độ tự điền.</div>'+
-      '<div id="myclub-map-wrap">'+
-        '<div class="map-search">'+
-          '<input class="map-inp map-search-inp" id="cl-search" autocomplete="off" placeholder="🔎 Tìm quán, địa chỉ, địa danh, quận, thành phố, toạ độ, hoặc dán link Google Maps…">'+
-          '<button class="map-search-go" data-map-action="search-go" title="Tìm">🔎</button>'+
-          '<div id="cl-geo-sug" class="geo-sug"></div>'+
-        '</div>'+
-        '<div class="map-tools">'+
-          '<button class="btn btn-o btn-sm" data-map-action="locate-my">📍 Vị trí của tôi</button>'+
-          '<button class="btn btn-o btn-sm" data-map-action="paste-gmap">📋 Dán link Google Maps</button>'+
-          '<button class="btn btn-o btn-sm" data-map-action="myclub-fs">⛶ Toàn màn hình</button>'+
-        '</div>'+
-        '<div id="myclub-map"></div>'+
-        '<button class="map-fs-exit" data-map-action="myclub-fs">✕ Thoát toàn màn hình</button>'+
+      '<div class="map-wrap" id="myclub-map-wrap">'+
+        mapToolbarHtml('mine')+
+        '<div id="myclub-map" class="lf-map"></div>'+
+        '<button class="map-fs-exit" data-map-action="map-fs" data-mapctx="mine">✕ Thoát toàn màn hình</button>'+
       '</div>'+
       '<div class="map-hint" style="margin:2px 0 10px">Bản đồ hiện <b>tất cả CLB của bạn</b>: 🏠 CLB chính (ghim kéo được) + 📍 các CLB khác.</div>'+
       '<div class="map-fld"><label>Tên câu lạc bộ</label><input class="map-inp" id="cl-name" placeholder="VD: CLB Tâm An Quận 1" value="'+escHtml(d.clubName)+'"></div>'+
@@ -2033,10 +2045,10 @@ function renderExtraSection(){
   h+='<div class="map-hint">Quản lý nhiều CLB bạn phụ trách / mở rộng. Gõ địa chỉ rồi bấm <b>🔍 Tìm</b> để lấy toạ độ + Tỉnh/Thành tự động.</div>';
   h+='<div class="map-fld"><label>Tên câu lạc bộ</label><input class="map-inp" id="clx-name" placeholder="VD: CLB Tâm An Quận 3" value="'+g(ed.clubName)+'"></div>';
   h+='<div class="map-fld"><label>Địa chỉ</label><input class="map-inp" id="clx-addr" autocomplete="off" placeholder="Số nhà, đường, phường/xã..." value="'+g(ed.address)+'"><div id="clx-geo-sug" class="geo-sug"></div></div>';
-  h+='<div style="margin:-2px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-g btn-sm" data-map-action="geocode-extra">🔍 Tìm địa chỉ</button>'+
-     '<button class="btn btn-o btn-sm" data-map-action="extra-geo-here">📍 Dùng vị trí của tôi</button></div>';
-  h+='<div class="map-hint" style="margin:0 0 4px">Cách nhanh nhất: <b>bấm thẳng lên bản đồ</b> hoặc <b>kéo ghim</b> để chọn vị trí — toạ độ &amp; Tỉnh/Thành tự điền.</div>';
-  h+='<div id="clx-map"></div>';
+  h+='<div style="margin:-2px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-g btn-sm" data-map-action="geocode-extra">🔍 Tìm từ ô địa chỉ</button></div>';
+  h+='<div class="map-hint" style="margin:0 0 4px">Tìm như Google Maps · dán <b>link/toạ độ</b> · <b>📍 Vị trí của tôi</b> · hoặc <b>bấm/kéo ghim</b> trên bản đồ — toạ độ &amp; Tỉnh/Thành tự điền.</div>';
+  h+='<div class="map-wrap" id="clx-map-wrap">'+mapToolbarHtml('extra')+'<div id="clx-map" class="lf-map"></div>'+
+     '<button class="map-fs-exit" data-map-action="map-fs" data-mapctx="extra">✕ Thoát toàn màn hình</button></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="clx-city" value="'+g(ed.city)+'"></div>'+
      '<div class="map-fld"><label>Quốc gia</label><input class="map-inp" id="clx-country" value="'+g(ed.country)+'"></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Chủ CLB</label><input class="map-inp" id="clx-owner" value="'+g(ed.ownerName)+'"></div>'+
@@ -2170,8 +2182,7 @@ function pickGeo(idx){
   setMyMarker(lat,lng,false);if(_myMap)_myMap.setView([lat,lng],16);
   var sug=document.getElementById('cl-geo-sug');if(sug)sug.innerHTML='';
 }
-// ── v6.19 — Tìm kiếm thông minh kiểu Google Maps cho "CLB của tôi" ──
-var _clSearchT=null,_clResults=[],_clNameHint='';
+// ── Phân tích toạ độ / link Google Maps (dùng chung cho tìm kiếm bản đồ) ──
 function parseLatLng(s){
   var m=String(s).trim().match(/^(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
   if(!m)return null;var la=parseFloat(m[1]),ln=parseFloat(m[2]);
@@ -2188,83 +2199,136 @@ function parseGoogleMapsUrl(s){
   if(qt){var v=decodeURIComponent(qt[1].replace(/\+/g,' ')).trim();if(v&&!parseLatLng(v))return {placeName:v};}
   return {shortLink:/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(s)};
 }
-function clSearchInput(){
-  var inp=document.getElementById('cl-search'),sug=document.getElementById('cl-geo-sug');if(!inp||!sug)return;
+// ── v6.21 — Hệ thống tìm kiếm/công cụ bản đồ DÙNG CHUNG cho cả 3 khu vực (CLB của tôi · Thêm CLB khác · Toàn bộ CLB) ──
+//   Mọi cập nhật tính năng bản đồ chỉ cần sửa 1 nơi (MAPCTX + hàm mapXxx) → áp dụng cho cả 3.
+var MAPCTX={
+  mine:{ input:'cl-search', sug:'cl-geo-sug', wrap:'myclub-map-wrap', mode:'edit',
+         map:function(){return _myMap;}, apply:function(r){applyMineResult(r);} },
+  extra:{ input:'clx-search', sug:'clx-search-sug', wrap:'clx-map-wrap', mode:'edit',
+         map:function(){return _clxMap;}, apply:function(r){applyExtraResult(r);} },
+  all:{ input:'gm-search', sug:'gm-search-sug', wrap:'global-map-wrap', mode:'view',
+         map:function(){return _globalMap;}, apply:function(r){applyAllResult(r);} }
+};
+var _mapSearchT={},_mapResults={},_mapNameHint={},_allSearchMarker=null;
+function mapToolbarHtml(key,opts){
+  opts=opts||{};var c=MAPCTX[key];
+  var h='<div class="map-search">'+
+    '<input class="map-inp map-search-inp" id="'+c.input+'" autocomplete="off" placeholder="🔎 Tìm quán, địa chỉ, địa danh, toạ độ, hoặc dán link Google Maps…">'+
+    '<button class="map-search-go" data-map-action="map-search-go" data-mapctx="'+key+'" title="Tìm">🔎</button>'+
+    '<div id="'+c.sug+'" class="geo-sug"></div>'+
+  '</div>'+
+  '<div class="map-tools">';
+  if(opts.locate!==false)h+='<button class="btn btn-o btn-sm" data-map-action="map-locate" data-mapctx="'+key+'">📍 Vị trí của tôi</button>';
+  h+='<button class="btn btn-o btn-sm" data-map-action="map-paste" data-mapctx="'+key+'">📋 Dán link Google Maps</button>'+
+     '<button class="btn btn-o btn-sm" data-map-action="map-dir-ab" data-mapctx="'+key+'">🧭 Chỉ đường A→B</button>'+
+     '<button class="btn btn-o btn-sm" data-map-action="map-fs" data-mapctx="'+key+'">⛶ Toàn màn hình</button>'+
+  '</div>';
+  return h;
+}
+function mapSearchInput(key){
+  var c=MAPCTX[key];if(!c)return;
+  var inp=document.getElementById(c.input),sug=document.getElementById(c.sug);if(!inp||!sug)return;
   var q=inp.value.trim();
-  if(_clSearchT)clearTimeout(_clSearchT);
+  if(_mapSearchT[key])clearTimeout(_mapSearchT[key]);
   if(q.length<2){sug.innerHTML='';return;}
   var ll=parseLatLng(q);
-  if(ll){_clResults=[{lat:ll.lat,lng:ll.lng,_coords:true}];sug.innerHTML='<div class="geo-co" data-map-action="pick-search" data-geo-idx="0">📍 Toạ độ: '+ll.lat.toFixed(6)+', '+ll.lng.toFixed(6)+' — chọn</div>';return;}
+  if(ll){_mapResults[key]=[{lat:ll.lat,lng:ll.lng,_coords:true}];sug.innerHTML='<div class="geo-co" data-map-action="map-pick" data-mapctx="'+key+'" data-geo-idx="0">📍 Toạ độ: '+ll.lat.toFixed(6)+', '+ll.lng.toFixed(6)+' — chọn</div>';return;}
   var gm=parseGoogleMapsUrl(q);
   if(gm){
-    if(gm.lat!=null){_clResults=[{lat:gm.lat,lng:gm.lng,_coords:true}];sug.innerHTML='<div class="geo-co" data-map-action="pick-search" data-geo-idx="0">📍 Từ link Google Maps: '+gm.lat.toFixed(6)+', '+gm.lng.toFixed(6)+' — chọn</div>';return;}
-    if(gm.placeName){_clNameHint=gm.placeName;_clSearchT=setTimeout(function(){clDoSearch(gm.placeName);},350);return;}
+    if(gm.lat!=null){_mapResults[key]=[{lat:gm.lat,lng:gm.lng,_coords:true}];sug.innerHTML='<div class="geo-co" data-map-action="map-pick" data-mapctx="'+key+'" data-geo-idx="0">📍 Từ link Google Maps: '+gm.lat.toFixed(6)+', '+gm.lng.toFixed(6)+' — chọn</div>';return;}
+    if(gm.placeName){_mapNameHint[key]=gm.placeName;_mapSearchT[key]=setTimeout(function(){mapDoSearch(key,gm.placeName);},350);return;}
     if(gm.shortLink){sug.innerHTML='<div class="geo-hint">Link rút gọn Google Maps không đọc trực tiếp được. Hãy mở link rồi copy <b>tên địa điểm</b> hoặc <b>toạ độ</b> dán lại vào đây.</div>';return;}
   }
-  _clNameHint='';
-  _clSearchT=setTimeout(function(){clDoSearch(q);},350);
+  _mapNameHint[key]='';
+  _mapSearchT[key]=setTimeout(function(){mapDoSearch(key,q);},350);
 }
-async function clDoSearch(q){
-  var sug=document.getElementById('cl-geo-sug');if(!sug)return;
+async function mapDoSearch(key,q){
+  var c=MAPCTX[key];var sug=document.getElementById(c.sug);if(!sug)return;
   sug.innerHTML='<div style="color:#999">Đang tìm…</div>';
   try{
     var res=await geocodeAddress(q);
-    _clResults=res.map(function(r){return {lat:parseFloat(r.lat),lng:parseFloat(r.lon),address:r.display_name,city:pickCity(r.address),country:pickCountry(r.address)};});
-    if(!_clResults.length){sug.innerHTML='<div style="color:#999">Không tìm thấy. Thử tên khác, hoặc dán toạ độ / link Google Maps.</div>';return;}
-    sug.innerHTML=_clResults.map(function(r,i){return '<div data-map-action="pick-search" data-geo-idx="'+i+'">📍 '+escHtml(r.address||(r.lat+', '+r.lng))+'</div>';}).join('');
+    _mapResults[key]=res.map(function(r){return {lat:parseFloat(r.lat),lng:parseFloat(r.lon),address:r.display_name,city:pickCity(r.address),country:pickCountry(r.address)};});
+    if(!_mapResults[key].length){sug.innerHTML='<div style="color:#999">Không tìm thấy. Thử tên khác, hoặc dán toạ độ / link Google Maps.</div>';return;}
+    sug.innerHTML=_mapResults[key].map(function(r,i){return '<div data-map-action="map-pick" data-mapctx="'+key+'" data-geo-idx="'+i+'">📍 '+escHtml(r.address||(r.lat+', '+r.lng))+'</div>';}).join('');
   }catch(e){sug.innerHTML='<div style="color:#E53935">Lỗi tìm kiếm (thử lại)</div>';}
 }
-function clSearchGo(){
-  var inp=document.getElementById('cl-search');if(!inp)return;var q=inp.value.trim();if(!q){showToast('Nhập nội dung tìm kiếm');return;}
-  var ll=parseLatLng(q);if(ll){applyMapResult({lat:ll.lat,lng:ll.lng});_clClearSearch();return;}
+function mapSearchGo(key){
+  var c=MAPCTX[key];var inp=document.getElementById(c.input);if(!inp)return;var q=inp.value.trim();if(!q){showToast('Nhập nội dung tìm kiếm');return;}
+  var ll=parseLatLng(q);if(ll){c.apply({lat:ll.lat,lng:ll.lng});mapClearSearch(key);return;}
   var gm=parseGoogleMapsUrl(q);
   if(gm){
-    if(gm.lat!=null){applyMapResult({lat:gm.lat,lng:gm.lng});_clClearSearch();return;}
-    if(gm.placeName){_clNameHint=gm.placeName;clDoSearch(gm.placeName);return;}
+    if(gm.lat!=null){c.apply({lat:gm.lat,lng:gm.lng});mapClearSearch(key);return;}
+    if(gm.placeName){_mapNameHint[key]=gm.placeName;mapDoSearch(key,gm.placeName);return;}
     if(gm.shortLink){showToast('Link rút gọn — mở link rồi copy tên/toạ độ dán vào đây');return;}
   }
-  clDoSearch(q);
+  mapDoSearch(key,q);
 }
-function _clClearSearch(){var inp=document.getElementById('cl-search');if(inp)inp.value='';var s=document.getElementById('cl-geo-sug');if(s)s.innerHTML='';}
-function clPickSearch(idx){var r=_clResults&&_clResults[idx];if(!r)return;applyMapResult(r);_clClearSearch();}
-function applyMapResult(r){
+function mapClearSearch(key){var c=MAPCTX[key];var inp=document.getElementById(c.input);if(inp)inp.value='';var s=document.getElementById(c.sug);if(s)s.innerHTML='';}
+function mapPickSearch(key,idx){var r=_mapResults[key]&&_mapResults[key][idx];if(!r)return;MAPCTX[key].apply(r);mapClearSearch(key);}
+function mapPaste(key){
+  var c=MAPCTX[key];var inp=document.getElementById(c.input);
+  if(navigator.clipboard&&navigator.clipboard.readText){
+    navigator.clipboard.readText().then(function(txt){
+      if(inp){inp.value=txt||'';inp.focus();mapSearchInput(key);}
+      showToast(txt?'Đã dán — đang nhận diện vị trí…':'Bảng tạm trống — hãy copy link rồi thử lại');
+    }).catch(function(){if(inp)inp.focus();showToast('Hãy dán (Ctrl/⌘+V) vào ô tìm kiếm');});
+  }else{if(inp)inp.focus();showToast('Hãy dán (Ctrl/⌘+V) vào ô tìm kiếm');}
+}
+function mapLocate(key){
+  var c=MAPCTX[key];
+  if(!navigator.geolocation){showToast('Trình duyệt không hỗ trợ định vị');return;}
+  showToast('Đang lấy vị trí của bạn…');
+  navigator.geolocation.getCurrentPosition(function(p){
+    var la=p.coords.latitude,ln=p.coords.longitude,map=c.map();
+    c.apply({lat:la,lng:ln,_locate:true,_noToast:true});
+    if(map)map.setView([la,ln],16);
+    showToast('📍 Đã định vị vị trí của bạn'+(c.mode==='edit'?' — kéo ghim để chỉnh nếu cần':''));
+  },function(){showToast('Không lấy được vị trí (hãy cấp quyền định vị cho trình duyệt)');},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+}
+function mapToggleFs(key){
+  var c=MAPCTX[key];var w=document.getElementById(c.wrap);if(!w)return;
+  var on=w.classList.toggle('map-fs');
+  try{document.body.style.overflow=on?'hidden':'';}catch(e){}
+  setTimeout(function(){var map=c.map();if(map){map.invalidateSize();if(!on&&key==='mine')fitMyClubs();}},80);
+}
+// apply: đặt vị trí cho từng khu vực (edit → ghim + điền form; view → bay tới + ghim tạm có nút chỉ đường)
+function applyMineResult(r){
   var lat=r.lat,lng=r.lng;if(lat==null||lng==null||isNaN(lat)||isNaN(lng))return;
-  setMyMarker(lat,lng,false);
+  setMyMarker(lat,lng,!!r._locate); // định vị → reverse fill địa chỉ
   if(_myMap)_myMap.setView([lat,lng],16);
   fillLatLng(lat,lng);
   var addrEl=document.getElementById('cl-addr'),cityEl=document.getElementById('cl-city'),ctryEl=document.getElementById('cl-country'),nameEl=document.getElementById('cl-name');
   if(r.address&&addrEl)addrEl.value=r.address;
   if(r.city&&cityEl)cityEl.value=r.city;
   if(r.country&&ctryEl)ctryEl.value=r.country;
-  if(_clNameHint&&nameEl&&!nameEl.value.trim()){nameEl.value=_clNameHint;}
-  _clNameHint='';
-  if(!r.address||!r.city)doReverseFill(lat,lng); // toạ độ thuần / thiếu → reverse để điền địa chỉ
-  showToast('📍 Đã chọn vị trí — kéo ghim để chỉnh nếu cần');
+  if(_mapNameHint.mine&&nameEl&&!nameEl.value.trim()){nameEl.value=_mapNameHint.mine;}
+  _mapNameHint.mine='';
+  if(!r._locate&&(!r.address||!r.city))doReverseFill(lat,lng);
+  if(!r._noToast)showToast('📍 Đã chọn vị trí — kéo ghim để chỉnh nếu cần');
 }
-function myClubLocate(){
-  if(!navigator.geolocation){showToast('Trình duyệt không hỗ trợ định vị');return;}
-  showToast('Đang lấy vị trí của bạn…');
-  navigator.geolocation.getCurrentPosition(function(p){
-    var la=p.coords.latitude,ln=p.coords.longitude;
-    setMyMarker(la,ln,true);
-    if(_myMap)_myMap.setView([la,ln],16);
-    showToast('📍 Đã đặt ghim tại vị trí của bạn — kéo để chỉnh nếu cần');
-  },function(){showToast('Không lấy được vị trí (hãy cấp quyền định vị cho trình duyệt)');},{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+function applyExtraResult(r){
+  var lat=r.lat,lng=r.lng;if(lat==null||lng==null||isNaN(lat)||isNaN(lng))return;
+  if(_clxMap)_clxMap.setView([lat,lng],16);
+  setClxMarker(lat,lng,!!r._locate);
+  fillClxLatLng(lat,lng);
+  var set=function(id,v){var el=document.getElementById(id);if(el&&v)el.value=v;};
+  if(r.address)set('clx-addr',r.address);
+  if(r.city)set('clx-city',r.city);
+  if(r.country)set('clx-country',r.country);
+  if(_mapNameHint.extra){var nm=document.getElementById('clx-name');if(nm&&!nm.value.trim())nm.value=_mapNameHint.extra;_mapNameHint.extra='';}
+  if(!r._locate&&(!r.address||!r.city))clxReverseFill(lat,lng);
+  if(!r._noToast)showToast('📍 Đã chọn vị trí — kéo ghim để chỉnh nếu cần');
 }
-function toggleMyClubFs(){
-  var w=document.getElementById('myclub-map-wrap');if(!w)return;
-  var on=w.classList.toggle('map-fs');
-  try{document.body.style.overflow=on?'hidden':'';}catch(e){}
-  setTimeout(function(){if(_myMap){_myMap.invalidateSize();if(!on)fitMyClubs();}},60);
-}
-function pasteGmap(){
-  var inp=document.getElementById('cl-search');
-  if(navigator.clipboard&&navigator.clipboard.readText){
-    navigator.clipboard.readText().then(function(txt){
-      if(inp){inp.value=txt||'';inp.focus();clSearchInput();}
-      showToast(txt?'Đã dán — đang nhận diện vị trí…':'Bảng tạm trống — hãy copy link rồi thử lại');
-    }).catch(function(){if(inp)inp.focus();showToast('Hãy dán (Ctrl/⌘+V) vào ô tìm kiếm');});
-  }else{if(inp)inp.focus();showToast('Hãy dán (Ctrl/⌘+V) vào ô tìm kiếm');}
+function applyAllResult(r){
+  var lat=r.lat,lng=r.lng;if(lat==null||lng==null||isNaN(lat)||isNaN(lng))return;
+  var map=_globalMap;if(!map)return;
+  map.setView([lat,lng],16);
+  if(_allSearchMarker){try{map.removeLayer(_allSearchMarker);}catch(e){}_allSearchMarker=null;}
+  var label=r.address||(lat.toFixed(5)+', '+lng.toFixed(5));
+  _allSearchMarker=L.marker([lat,lng]).addTo(map);
+  _allSearchMarker.bindPopup('<div class="map-pop"><div class="mp-name">📍 '+escHtml(label)+'</div>'+
+    '<div style="margin-top:6px"><button class="btn btn-g btn-sm" data-map-action="dir-to" data-club-lat="'+lat+'" data-club-lng="'+lng+'" data-club-name="'+escHtml(label)+'" style="width:100%">🧭 Chỉ đường tới đây</button></div></div>').openPopup();
+  if(!r._noToast)showToast('📍 Đã tới địa điểm — bấm 🧭 để chỉ đường');
 }
 function saveClub(){
   if(viewOnlyMode){showToast('Đang ở chế độ Xem — không lưu được');return;}
@@ -2370,7 +2434,12 @@ function renderAllClubShell(){
       '</div>'+
       '<div id="radius-chips" class="radius-chips" style="display:none"></div>'+
     '</div>'+
-    '<div id="global-map"></div>'+
+    '<div class="map-wrap" id="global-map-wrap">'+
+      '<div class="map-hint" style="margin-bottom:6px">🔎 Tìm &amp; tới <b>bất kỳ địa điểm</b> (địa chỉ / toạ độ / link Google Maps) · 📋 dán link · 🧭 chỉ đường A→B · ⛶ toàn màn hình.</div>'+
+      mapToolbarHtml('all',{locate:false})+
+      '<div id="global-map" class="lf-map"></div>'+
+      '<button class="map-fs-exit" data-map-action="map-fs" data-mapctx="all">✕ Thoát toàn màn hình</button>'+
+    '</div>'+
     '<div class="map-card" id="club-prov-stats" style="margin-top:8px"></div>'+
     '<div class="map-card" id="club-directory"></div>';
 }
@@ -2500,13 +2569,21 @@ function locateOff(){
   plotClubs(currentClubList());
 }
 // ── v6.8 — Chỉ đường trong app (Leaflet Routing Machine + OSRM): điểm đầu (vị trí của tôi / điểm A kéo được) → điểm đến (CLB / B) ──
-var _routeCtrl=null,_lrmLoading=null,_dirDest=null;
+var _routeCtrl=null,_lrmLoading=null,_dirDest=null,_routeMap=null;
 function _activeMap(){return ((currentSubTab.map||'mine')==='all')?_globalMap:_myMap;}
 async function loadRouting(){
-  if(window.L&&window.L.Routing)return;
+  if(window.L&&window.L.Routing&&window.L.Control&&window.L.Control.Geocoder)return;
   if(_lrmLoading)return _lrmLoading;
-  _lrmLoading=(async function(){loadCssOnce(LRM_CSS);await loadScriptOnce(LRM_JS);})();
+  _lrmLoading=(async function(){
+    loadCssOnce(LRM_CSS);loadCssOnce(LGEO_CSS);
+    await loadScriptOnce(LRM_JS);
+    try{await loadScriptOnce(LGEO_JS);}catch(e){} // không có geocoder vẫn chỉ đường được (kéo ghim)
+  })();
   return _lrmLoading;
+}
+function _routeGeocoder(){ // ô tìm địa chỉ cho điểm A/B nếu thư viện đã nạp
+  try{if(window.L&&L.Control&&L.Control.Geocoder)return L.Control.Geocoder.nominatim();}catch(e){}
+  return null;
 }
 function _ensureDirClear(map){
   var cont=map.getContainer();if(!cont||cont.querySelector('.dir-clear-btn'))return;
@@ -2529,25 +2606,28 @@ function _ensureLrmMinBtn(map){
     panel.appendChild(mb);
   },800);
 }
-function _setRoute(map,a,b){
-  if(!map||!window.L||!L.Routing)return;
-  if(_routeCtrl){try{_routeCtrl.setWaypoints([L.latLng(a[0],a[1]),L.latLng(b[0],b[1])]);}catch(e){}}
-  else{
-    _routeCtrl=L.Routing.control({
-      waypoints:[L.latLng(a[0],a[1]),L.latLng(b[0],b[1])],
-      router:L.Routing.osrmv1({serviceUrl:OSRM_URL}),
-      lineOptions:{styles:[{color:'#1565C0',weight:5,opacity:0.85}]},
-      routeWhileDragging:true,addWaypoints:true,fitSelectedRoutes:true,showAlternatives:false,geocoder:null,
-      createMarker:function(i,wp){return L.marker(wp.latLng,{draggable:true});}
-    }).addTo(map);
-  }
+function _newRouteCtrl(map,waypoints){
+  _routeCtrl=L.Routing.control({
+    waypoints:waypoints,
+    router:L.Routing.osrmv1({serviceUrl:OSRM_URL}),
+    lineOptions:{styles:[{color:'#1565C0',weight:5,opacity:0.85}]},
+    routeWhileDragging:true,addWaypoints:true,fitSelectedRoutes:true,showAlternatives:false,
+    geocoder:_routeGeocoder(), // ô tìm địa chỉ A→B (nếu thư viện sẵn sàng)
+    createMarker:function(i,wp){return wp.latLng?L.marker(wp.latLng,{draggable:true}):null;}
+  }).addTo(map);
+  _routeMap=map;
   _ensureDirClear(map);
   _ensureLrmMinBtn(map);
 }
+function _setRoute(map,a,b){
+  if(!map||!window.L||!L.Routing)return;
+  if(_routeCtrl&&_routeMap===map){try{_routeCtrl.setWaypoints([L.latLng(a[0],a[1]),L.latLng(b[0],b[1])]);}catch(e){}}
+  else{if(_routeCtrl)clearDirections();_newRouteCtrl(map,[L.latLng(a[0],a[1]),L.latLng(b[0],b[1])]);}
+}
 function clearDirections(){
-  var map=_activeMap();
+  var map=_routeMap||_activeMap();
   if(_routeCtrl&&map){try{map.removeControl(_routeCtrl);}catch(e){}}
-  _routeCtrl=null;_dirDest=null;
+  _routeCtrl=null;_dirDest=null;_routeMap=null;
   document.querySelectorAll('.dir-clear-btn').forEach(function(b){if(b.parentNode)b.parentNode.removeChild(b);});
 }
 async function startDirections(destLat,destLng,name){
@@ -2564,6 +2644,21 @@ async function startDirections(destLat,destLng,name){
       showToast('Không lấy được vị trí — KÉO điểm đầu (A) trên bản đồ để chọn nơi xuất phát.');
     },{enableHighAccuracy:true,timeout:9000});
   }else{var c=map.getCenter();_setRoute(map,[c.lat,c.lng],_dirDest);}
+}
+// v6.21 — Chỉ đường A→B bất kỳ: mở bảng chỉ đường với ô tìm địa chỉ cho CẢ điểm A và B (kéo ghim / thêm điểm dừng được)
+async function startDirectionsAB(ctxKey){
+  var ctx=MAPCTX[ctxKey]||MAPCTX.mine;var map=ctx.map();
+  if(!map){showToast('Mở bản đồ rồi thử lại');return;}
+  await loadRouting();
+  if(_routeCtrl)clearDirections();
+  showToast('🧭 Gõ địa chỉ điểm A và điểm B vào bảng chỉ đường (hoặc kéo ghim trên bản đồ).');
+  _newRouteCtrl(map,[null,null]); // 2 ô trống để người dùng tự tìm A và B
+  // Gợi ý: điền sẵn điểm A = vị trí của tôi nếu cho phép định vị
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(p){
+      try{if(_routeCtrl&&_routeMap===map)_routeCtrl.spliceWaypoints(0,1,L.latLng(p.coords.latitude,p.coords.longitude));}catch(e){}
+    },function(){},{enableHighAccuracy:true,timeout:8000});
+  }
 }
 // ── v6.7 — QTV quản trị MỌI CLB (sửa/xoá CLB của bất kỳ tài khoản; ghi vào path của chủ CLB) ──
 var _admClubEdit=null; // {uid,primary,id} CLB QTV đang sửa
@@ -3433,20 +3528,25 @@ function buildModalBody(m,type){
   }
   if(type==='kh'){
     h+='<div class="msec"><div class="msec-title">\uD83D\uDC65 Kế hoạch ngày — '+fmtDate(currentDay)+'</div>';
+    h+=khPctBarHtml(m.id);
+    h+='<div class="kh-head"><span class="kh-h-lbl"></span><span class="kh-h-plan">K\u1ebf ho\u1ea1ch</span><span class="kh-h-rep">B\u00e1o c\u00e1o</span></div>';
     KH.forEach(function(k){
+      if(k.t==='pct')return; // % ho\u00e0n th\u00e0nh nay T\u1ef0 T\u00cdNH theo K\u1ebf ho\u1ea1ch vs B\u00e1o c\u00e1o \u2014 b\u1ecf \u00f4 nh\u1eadp tay
       var v=dGet(m.id,'kh_'+k.id);
-      h+='<div class="trow"><div class="tlbl">'+k.icon+' '+k.lbl+'<div class="tnote">'+k.note+'</div></div>';
+      h+='<div class="trow trow-kh"><div class="tlbl">'+k.icon+' '+k.lbl+'<div class="tnote">'+k.note+'</div></div>';
       if(k.t==='check'){
-        h+='<div class="tg">';
+        h+='<div class="kh-fields"><span class="kh-cell kh-cell-plan">C\u1ea7n l\u00e0m</span><span class="kh-cell"><span class="tg">';
         h+=tgBtn(m.id,'kh_'+k.id,'yes',v,'\u2713','tg-y');
         h+=tgBtn(m.id,'kh_'+k.id,'no',v,'\u2717','tg-n');
-        h+='</div>';
+        h+='</span></span></div>';
       }else if(k.t==='num'){
-        h+='<input type="number" class="nmod-inp kh-num" style="width:70px;text-align:center" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'" value="'+escHtml(v)+'" min="0" placeholder="0">';
-      }else if(k.t==='pct'){
-        h+='<input type="number" class="nmod-inp kh-num" style="width:70px;text-align:center" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'" value="'+escHtml(v)+'" min="0" max="100" placeholder="%">';
+        var rp=dGet(m.id,'kh_'+k.id+'_rp');
+        h+='<div class="kh-fields">'+
+           '<span class="kh-cell"><input type="number" class="nmod-inp kh-num kh-plan-inp" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'" value="'+escHtml(v)+'" min="0" placeholder="KH"></span>'+
+           '<span class="kh-cell"><input type="number" class="nmod-inp kh-num kh-rep-inp" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'_rp" value="'+escHtml(rp)+'" min="0" placeholder="\u0110\u1ea1t"></span>'+
+           '</div>';
       }else{
-        h+='<input type="text" class="nmod-inp kh-num" style="width:150px" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'" value="'+escHtml(v)+'" placeholder="...">';
+        h+='<div class="kh-fields"><input type="text" class="nmod-inp kh-num" style="width:100%" data-kh-mid="'+m.id+'" data-kh-field="kh_'+k.id+'" value="'+escHtml(v)+'" placeholder="..."></div>';
       }
       h+='</div>';
     });
@@ -3457,6 +3557,35 @@ function buildModalBody(m,type){
   h+='<div style="font-size:12px;color:#999;padding:2px 0 8px;line-height:1.6">Tên & cấp bậc lấy theo ID trên cây. Muốn đổi tên: vào tab <b>Sơ đồ → Nhị phân</b>.</div>';
   h+='</div>';
   return h;
+}
+// ── Task 1 (v6.21) — % hoàn thành ngày TỰ TÍNH theo Kế hoạch (plan) vs Báo cáo (report) ──
+// check: cần làm → đạt nếu báo cáo "yes". num: đạt = min(Báo cáo / Kế hoạch, 1) — chỉ tính khi có Kế hoạch>0.
+function khAutoPct(mid){
+  var sum=0,cnt=0;
+  KH.forEach(function(k){
+    if(k.id==='pct')return;
+    if(k.t==='check'){cnt++;if(dGet(mid,'kh_'+k.id)==='yes')sum+=1;}
+    else if(k.t==='num'){
+      var plan=parseFloat(dGet(mid,'kh_'+k.id));
+      if(!isNaN(plan)&&plan>0){cnt++;var rp=parseFloat(dGet(mid,'kh_'+k.id+'_rp'));if(isNaN(rp))rp=0;sum+=Math.min(rp/plan,1);}
+    }
+  });
+  return cnt?Math.round(sum/cnt*100):0;
+}
+function recalcKhPct(mid){dSet(mid,'kh_pct',String(khAutoPct(mid)));}
+function khPctBarHtml(mid){
+  var p=khAutoPct(mid);
+  var col=p>=80?'#1A7A5E':(p>=50?'#F9A825':'#C62828');
+  return '<div class="kh-pct-live" id="kh-pct-live">'+
+    '<div class="kh-pct-top"><span>🎯 % Hoàn thành hôm nay (tự tính)</span><span class="kh-pct-num" style="color:'+col+'">'+p+'%</span></div>'+
+    '<div class="kh-pct-track"><div class="kh-pct-fill" style="width:'+p+'%;background:'+col+'"></div></div>'+
+    '<div class="kh-pct-note">Đặt <b>Kế hoạch</b> + nhập <b>Báo cáo</b> → app tự đo mức hoàn thành.</div>'+
+    '</div>';
+}
+function updateKhPctLive(mid){
+  recalcKhPct(mid);
+  var box=document.getElementById('kh-pct-live');
+  if(box){var tmp=document.createElement('div');tmp.innerHTML=khPctBarHtml(mid);box.outerHTML=tmp.innerHTML;}
 }
 function refreshModalBody(){
   if(!modalMid)return;
@@ -7397,11 +7526,13 @@ document.addEventListener('click',function(e){
     else if(ma==='locate-off')locateOff();
     else if(ma==='set-radius')setRadius(parseInt(t.getAttribute('data-km'),10)||0);
     else if(ma==='copy-addr')copyText(t.getAttribute('data-addr')||'');
-    else if(ma==='search-go')clSearchGo();
-    else if(ma==='pick-search')clPickSearch(parseInt(t.getAttribute('data-geo-idx'),10)||0);
-    else if(ma==='locate-my')myClubLocate();
-    else if(ma==='paste-gmap')pasteGmap();
-    else if(ma==='myclub-fs')toggleMyClubFs();
+    // v6.21 — công cụ bản đồ DÙNG CHUNG cho cả 3 khu vực (data-mapctx = mine|extra|all)
+    else if(ma==='map-search-go')mapSearchGo(t.getAttribute('data-mapctx')||'mine');
+    else if(ma==='map-pick')mapPickSearch(t.getAttribute('data-mapctx')||'mine',parseInt(t.getAttribute('data-geo-idx'),10)||0);
+    else if(ma==='map-locate')mapLocate(t.getAttribute('data-mapctx')||'mine');
+    else if(ma==='map-paste')mapPaste(t.getAttribute('data-mapctx')||'mine');
+    else if(ma==='map-dir-ab')startDirectionsAB(t.getAttribute('data-mapctx')||'mine');
+    else if(ma==='map-fs')mapToggleFs(t.getAttribute('data-mapctx')||'mine');
     return;
   }
 
@@ -7814,6 +7945,7 @@ document.addEventListener('click',function(e){
     var val=t.getAttribute('data-tg-val');
     var cur=dGet(tmid,fld);
     dSet(tmid,fld,cur===val?'':val);
+    if(/^kh_/.test(fld))recalcKhPct(tmid); // check Kế hoạch ngày → cập nhật % tự tính
     refreshModalBody();
     return;
   }
@@ -7993,7 +8125,9 @@ document.addEventListener('click',function(e){
 document.addEventListener('change',function(e){
   var t=e.target;
   if(t.classList.contains('kh-num')){
-    dSet(t.getAttribute('data-kh-mid'),t.getAttribute('data-kh-field'),t.value);
+    var _kmid=t.getAttribute('data-kh-mid');
+    dSet(_kmid,t.getAttribute('data-kh-field'),t.value);
+    updateKhPctLive(_kmid); // tự tính lại % hoàn thành ngay khi đổi Kế hoạch / Báo cáo
     return;
   }
   if(t.classList.contains('mo-kpi')){
@@ -9053,9 +9187,10 @@ function bindVisionBoardEvents(){
 function bindStatic(){
   loadPrefsLocal();loadBgImageLocal();applyPrefs(); // v6.15/6.16 — áp tông màu + nền cá nhân ngay khi tải
   loadVbIndexLocal();bindVisionBoardEvents(); // v6.17 — Vision Board
-  // v6.19 — Tìm kiếm thông minh "CLB của tôi" (live autocomplete + Enter)
-  document.addEventListener('input',function(e){if(e.target&&e.target.id==='cl-search')clSearchInput();});
-  document.addEventListener('keydown',function(e){if(e.target&&e.target.id==='cl-search'&&e.key==='Enter'){e.preventDefault();clSearchGo();}});
+  // v6.21 — Tìm kiếm thông minh DÙNG CHUNG cho cả 3 bản đồ (live autocomplete + Enter): tra ô theo MAPCTX
+  function _mapKeyByInput(id){for(var k in MAPCTX){if(MAPCTX[k].input===id)return k;}return null;}
+  document.addEventListener('input',function(e){if(!e.target||!e.target.id)return;var k=_mapKeyByInput(e.target.id);if(k)mapSearchInput(k);});
+  document.addEventListener('keydown',function(e){if(!e.target||!e.target.id||e.key!=='Enter')return;var k=_mapKeyByInput(e.target.id);if(k){e.preventDefault();mapSearchGo(k);}});
   document.getElementById('btn-appearance').addEventListener('click',openAppearance);
   document.getElementById('appearance-close').addEventListener('click',closeAppearance);
   document.getElementById('appearance-done').addEventListener('click',closeAppearance);
