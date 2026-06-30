@@ -1,4 +1,4 @@
-<!-- VERSION: v6.23-mapname-clubsearch-truefullscreen-prospectname -->
+<!-- VERSION: v6.25-admin-newid-inbox -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -532,7 +532,11 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .prov-bar-wrap{flex:1;height:14px;background:#EFEFEF;border-radius:7px;overflow:hidden}
 .prov-bar{height:100%;background:linear-gradient(90deg,#1A7A5E,#2EA37C);border-radius:7px;min-width:3px}
 .prov-cnt{width:30px;text-align:right;font-size:13px;font-weight:800;color:#1A7A5E}
-.cd-prov{font-size:12px;font-weight:800;color:#1565C0;background:#EEF4FF;border-radius:7px;padding:4px 9px;margin:10px 0 6px}
+.cd-prov{font-size:12px;font-weight:800;color:#1565C0;background:#EEF4FF;border-radius:7px;padding:4px 9px;margin:10px 0 6px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.cd-prov:active{background:#E2ECFF}
+.cd-prov-caret{display:inline-block;transition:transform .15s;font-size:11px}
+.cd-prov.collapsed .cd-prov-caret{transform:rotate(-90deg)}
+.cd-prov-body.hidden{display:none}
 .cd-item{border:1px solid #EEE;border-radius:9px;padding:8px 10px;margin-bottom:6px;background:#fff}
 .cd-item.cd-clk{cursor:pointer}
 .cd-item.cd-clk:active{background:#F4F8FF}
@@ -1750,6 +1754,99 @@ async function deleteUserData(uid){ // QTV xoá toàn bộ dữ liệu users/{ui
 }
 
 // ================================================================
+// v6.25 — HỘP THƯ "ID MỚI TOÀN ĐỘI" (CHỈ QTV — thành viên KHÔNG biết)
+//   • Báo khi sơ đồ của BẤT KỲ tài khoản nào trong đội có thêm ID mới
+//     (kèm: tên ID, ai bảo trợ = f1of, đặt dưới ai = parentId, bên Trái/Phải, ngày vào).
+//   • So sánh "ảnh chụp" id-các-nút mỗi tài khoản với baseline lần quét trước
+//     (lưu localStorage MÁY QTV — KHÔNG cần Rules mới; QTV đã đọc users/** qua isAdmin).
+//   • Lần quét ĐẦU mỗi tài khoản: ghi nền IM LẶNG (không báo cả đội), từ đó về sau chỉ báo ID phát sinh thêm.
+// ================================================================
+var NEWID_SEEN_KEY='ta_admin_newid_seen';   // {uid:[nodeId,...]} baseline id-các-nút đã biết
+var NEWID_INBOX_KEY='ta_admin_newid_inbox'; // [{...item}] hộp thư thông báo
+var NEWID_INIT_KEY='ta_admin_newid_init';   // '1' khi đã thiết lập theo dõi lần đầu
+function _newidLoad(key,def){try{var s=localStorage.getItem(key);return s?JSON.parse(s):def;}catch(e){return def;}}
+function _newidSave(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+function newidInbox(){var a=_newidLoad(NEWID_INBOX_KEY,[]);return (a&&a.length)?a:[];}
+function newidUnread(){return newidInbox().filter(function(x){return !x.read;}).length;}
+async function scanNewIds(){
+  // Quét sơ đồ MỌI tài khoản → phát hiện ID mới so với baseline. Trả {added,firstRun,accounts}.
+  var accts=await fetchAccounts().catch(function(){return [];});
+  var trees=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'tree').catch(function(){return null;});}));
+  var seen=_newidLoad(NEWID_SEEN_KEY,{})||{};
+  var inbox=newidInbox();
+  var firstRun=_newidLoad(NEWID_INIT_KEY,'')!=='1';
+  var added=0,now=new Date().toISOString();
+  accts.forEach(function(a,i){
+    var nodes=(trees[i]&&trees[i].nodes)||[];
+    var nodeMap={};nodes.forEach(function(n){if(n&&n.id)nodeMap[n.id]=n;});
+    var known=seen[a.uid];
+    if(!known){
+      // Tài khoản chưa từng theo dõi → ghi nền IM LẶNG (tránh tràn hộp thư)
+      seen[a.uid]=nodes.map(function(n){return n.id;});
+      return;
+    }
+    var knownSet={};known.forEach(function(id){knownSet[id]=1;});
+    var fresh=nodes.filter(function(n){return n&&n.id&&!knownSet[n.id];});
+    if(fresh.length){
+      fresh.forEach(function(n){
+        var placed=n.parentId?nodeMap[n.parentId]:null;
+        inbox.unshift({
+          uid:a.uid, acctName:a.name||a.email||'(không tên)',
+          nodeId:n.id, nodeName:n.name||n.id,
+          sponsor:n.f1of||'', side:n.side||'',
+          placedUnder:placed?(placed.name||placed.id):'', joinDate:n.joinDate||'',
+          detectedAt:now, read:false
+        });
+        added++;
+      });
+      seen[a.uid]=nodes.map(function(n){return n.id;});
+    }
+  });
+  _newidSave(NEWID_SEEN_KEY,seen);
+  if(inbox.length>500)inbox=inbox.slice(0,500); // giới hạn 500 mục gần nhất
+  _newidSave(NEWID_INBOX_KEY,inbox);
+  _newidSave(NEWID_INIT_KEY,'1');
+  return {added:added, firstRun:firstRun, accounts:accts.length};
+}
+function _nidSide(s){return s==='L'?'Trái':s==='R'?'Phải':'';}
+function newIdItemHtml(it){
+  var side=_nidSide(it.side);
+  var bd=it.read?'#E8E2D2':'#C8A84B', bg=it.read?'#FCFBF7':'#FFFBE9';
+  var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
+  h+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'<b>✨ '+escHtml(it.nodeName||it.nodeId)+'</b>'+(it.joinDate?' <span style="font-size:11px;color:#999">· vào '+escHtml(it.joinDate)+'</span>':'')+'</div>';
+  h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Sơ đồ: <b>'+escHtml(it.acctName)+'</b><br>👤 Bảo trợ: <b>'+escHtml(it.sponsor||'—')+'</b><br>📍 Đặt dưới: <b>'+escHtml(it.placedUnder||'(gốc)')+'</b>'+(side?' · bên '+side:'')+'</div>';
+  h+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 Phát hiện: '+escHtml(fmtDT(it.detectedAt))+'</div>';
+  h+='</div>';
+  return h;
+}
+function renderNewIdInbox(scanning){
+  var el=document.getElementById('newid-inbox');if(!el)return;
+  var inbox=newidInbox();var unread=inbox.filter(function(x){return !x.read;}).length;
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+  h+='<button class="btn btn-d btn-sm" id="btn-newid-scan"'+(scanning?' disabled style="opacity:.6"':'')+'>'+(scanning?'⏳ Đang quét…':'🔄 Quét ID mới ngay')+'</button>';
+  if(inbox.length){
+    if(unread)h+='<button class="btn btn-sm" style="background:#1A7A5E;color:#fff" id="btn-newid-readall">✓ Đã đọc tất cả</button>';
+    h+='<button class="btn btn-r btn-sm" id="btn-newid-clear">🗑️ Xoá hộp thư</button>';
+  }
+  h+='</div>';
+  if(unread)h+='<div style="font-size:13px;color:#C62828;font-weight:700;margin-bottom:8px">🔴 '+unread+' ID mới chưa đọc</div>';
+  if(!inbox.length){
+    h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
+  }else{
+    inbox.forEach(function(it){h+=newIdItemHtml(it);});
+  }
+  el.innerHTML=h;
+}
+function mountNewIdInbox(){
+  renderNewIdInbox(true); // hiện hộp thư đã lưu + trạng thái đang quét
+  scanNewIds().then(function(r){
+    renderNewIdInbox(false);
+    if(r.firstRun)showToast('✅ Đã thiết lập theo dõi ID mới toàn đội ('+r.accounts+' tài khoản)');
+    else if(r.added)showToast('🔔 Phát hiện '+r.added+' ID mới trong đội');
+  }).catch(function(){renderNewIdInbox(false);});
+}
+
+// ================================================================
 // v5.7 — BẢN ĐỒ CLB (Leaflet + OpenStreetMap; miễn phí, không cần API key)
 // ================================================================
 var _leafletLoading=null,_leafletReady=false;
@@ -1955,12 +2052,15 @@ function toggleFavClub(k){
   showToast(i>=0?'☆ Đã bỏ ghi nhớ':'★ Đã ghi nhớ CLB');
   if((currentSubTab.map||'')!=='_'){ if(typeof plotClubs==='function'&&_allClubs)plotClubs(currentClubList()); renderMyClubsManager(); }
 }
+var _cdGroupSeq=0; // v6.24 — id duy nhất cho từng nhóm Tỉnh/Thành (gập/mở)
 function clubDirectoryHtml(clubs,opts){
   opts=opts||{};
   var h='<div class="club-dir"><div class="prov-title">📒 '+escHtml(opts.title||'Danh bạ CLB')+' ('+clubs.length+')</div>';
   if(!clubs.length){return h+'<div style="color:#999;font-size:13px;padding:6px 0">Chưa có CLB nào.</div></div>';}
   provinceStats(clubs).forEach(function(s){
-    h+='<div class="cd-prov">📍 '+escHtml(s.prov)+' · '+s.count+' CLB</div>';
+    var _gid='cdg_'+(++_cdGroupSeq); // v6.24 — bấm tên Tỉnh/Thành để gập/mở danh sách CLB của tỉnh đó
+    h+='<div class="cd-prov" data-map-action="toggle-prov" data-prov-body="'+_gid+'"><span class="cd-prov-caret">▾</span> 📍 '+escHtml(s.prov)+' · '+s.count+' CLB</div>';
+    h+='<div class="cd-prov-body" id="'+_gid+'">';
     s.clubs.forEach(function(c){
       var hasPt=(c.lat!=null&&c.lng!=null);
       h+='<div class="cd-item'+(hasPt?' cd-clk':'')+'"'+(hasPt?' data-map-action="focus-club" data-club-lat="'+c.lat+'" data-club-lng="'+c.lng+'"':'')+'>';
@@ -1991,6 +2091,7 @@ function clubDirectoryHtml(clubs,opts){
       if(opts.showOwner&&(own||c.acctEmail))h+='<div class="cd-sub">👤 '+escHtml(own||'—')+(c.acctEmail?(' · '+escHtml(c.acctEmail)):'')+'</div>';
       h+='</div>';
     });
+    h+='</div>'; // đóng .cd-prov-body
   });
   return h+'</div>';
 }
@@ -7005,6 +7106,10 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Hiểu app có thực sự giúp người dùng không — hoạt động (DAU/WAU/MAU), gắn kết, tính năng, giữ chân, phân khúc, App Health, đề xuất cải tiến. Dữ liệu <b>ẩn danh hoá hành vi</b> (không lộ mật khẩu / nội dung riêng tư).</div>';
       h+='<button class="btn btn-d btn-sm" id="btn-load-analytics">📊 Mở bảng phân tích</button>';
       h+='<div id="analytics-content" style="margin-top:12px"></div></div>';
+      // v6.25 — Hộp thư ID mới toàn đội (CHỈ QTV; tự quét khi mở trang quản trị)
+      h+='<div class="adm-box"><div class="adm-title">🔔 Hộp thư: ID mới toàn đội</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Tự báo khi <b>sơ đồ của bất kỳ tài khoản nào</b> trong đội có thêm <b>ID mới</b> — kèm <b>ai bảo trợ</b> và <b>đặt dưới ai</b>. Chỉ quản trị viên thấy; thành viên KHÔNG biết chức năng này. Lần quét đầu chỉ ghi nền (không báo cả đội), từ đó về sau chỉ báo ID phát sinh thêm.</div>';
+      h+='<div id="newid-inbox"></div></div>';
       h+='<div class="adm-box"><div class="adm-title">🎟️ Mã mời 1 lần (single-use)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Mỗi mã chỉ dùng được <b>1 lần</b> để tạo tài khoản, dùng xong tự khoá. Tạo mã rồi gửi riêng cho từng người. Muốn chặt nhất: <b>xoá trống mã cố định</b> ở trên, chỉ phát mã 1 lần.</div>';
       h+='<button class="btn btn-g btn-sm" id="btn-gen-codes">➕ Tạo 5 mã mới</button>';
@@ -7141,6 +7246,7 @@ function renderAdminPage(){
       h+='Sau đó đổi mã mời ở trên để họ không đăng ký lại được.</div></div>';
     }
     el.innerHTML=h;
+    if(document.getElementById('newid-inbox'))mountNewIdInbox(); // v6.25 — tự quét ID mới toàn đội
   });
 }
 
@@ -7673,6 +7779,7 @@ document.addEventListener('click',function(e){
     else if(ma==='toggle-fav')toggleFavClub(t.getAttribute('data-fav-key'));
     else if(ma==='save-start')saveMyStart();
     else if(ma==='focus-club')focusClubOnMap(t.getAttribute('data-club-lat'),t.getAttribute('data-club-lng'));
+    else if(ma==='toggle-prov'){var _pb=document.getElementById(t.getAttribute('data-prov-body'));if(_pb){_pb.classList.toggle('hidden');t.classList.toggle('collapsed',_pb.classList.contains('hidden'));}}
     else if(ma==='refresh-all')initGlobalMap(true);
     else if(ma==='admin-edit-club')openAdminClubEdit(t.getAttribute('data-uid'),t.getAttribute('data-primary'),t.getAttribute('data-club-id'));
     else if(ma==='admin-del-club')adminDelClub(t.getAttribute('data-uid'),t.getAttribute('data-primary'),t.getAttribute('data-club-id'));
@@ -7907,6 +8014,10 @@ document.addEventListener('click',function(e){
     loadAnalyticsData().then(function(d){renderAnalytics(d);}).catch(function(){if(_ac)_ac.innerHTML='<div style="color:#C62828;font-size:13px">Không tải được số liệu (cần quyền QTV).</div>';});
     return;
   }
+  // v6.25 — Hộp thư ID mới toàn đội: quét lại / đã đọc tất cả / xoá hộp thư
+  if(e.target.id==='btn-newid-scan'){mountNewIdInbox();return;}
+  if(e.target.id==='btn-newid-readall'){var _ib=newidInbox();_ib.forEach(function(x){x.read=true;});_newidSave(NEWID_INBOX_KEY,_ib);renderNewIdInbox(false);return;}
+  if(e.target.id==='btn-newid-clear'){if(!confirm('Xoá toàn bộ hộp thư ID mới?\n\n(Chỉ xoá danh sách thông báo, KHÔNG ảnh hưởng dữ liệu sơ đồ/cây của ai.)'))return;_newidSave(NEWID_INBOX_KEY,[]);renderNewIdInbox(false);return;}
   if(e.target.id==='btn-admin-claim'){
     fsSetGlobal('admins',{emails:[fbUser.email]}).then(function(){
       showToast('\u2713 Bạn là quản trị viên');renderAdminPage();
