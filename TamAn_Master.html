@@ -1,4 +1,4 @@
-<!-- VERSION: v6.26-provinces-fullview-dupname-wheelcarry-sync-tangX-compactstats -->
+<!-- VERSION: v6.27-nangdong-tracking-admin-remind -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1169,6 +1169,7 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
     <div id="tree-search-bar">
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm: tên, mã ID, SĐT, DISC, cấp bậc, bảo trợ...">
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
+      <button class="tbtn" id="btn-nangdong" style="background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32">&#128197; Năng động<span class="tt-badge" id="nd-badge"></span></button>
       <div id="disc-bar"></div>
       <div id="tree-search-sug"></div>
     </div>
@@ -1369,6 +1370,17 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
       <button class="nmod-x" id="tt-close">&#10005;</button>
     </div>
     <div class="nmod-body" id="thangtien-content"></div>
+  </div>
+</div>
+
+<!-- NĂNG ĐỘNG — popup nhập tháng đóng Năng động gần nhất (trên ID gốc) -->
+<div class="nmod-ov" id="nd-ov">
+  <div class="nmod">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#128197; Năng động — tháng đóng gần nhất</div>
+      <button class="nmod-x" id="nd-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="nangdong-content"></div>
   </div>
 </div>
 
@@ -3146,7 +3158,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3739,6 +3751,7 @@ function renderAll(){
   renderLifeWheel();
   renderWheelCompare();
   renderDdBranchBar();
+  try{renderNangDong();}catch(e){}
 }
 function renderDdBranchBar(){
   var bar=document.getElementById('dd-branch-bar');if(!bar)return;
@@ -5601,6 +5614,94 @@ function getCustomLks(){
   try{return JSON.parse(nmGet('custom_lks')||'[]');}catch(e){return [];}
 }
 function setCustomLks(arr){nmSet('custom_lks',JSON.stringify(arr));}
+// ================================================================
+// v6.27 — NĂNG ĐỘNG: tháng đóng Năng động gần nhất (gắn ID gốc của mỗi user)
+//   • Tháng đóng = "tháng thứ 1". T1–5 an toàn · T6 cảnh báo vàng (nên đóng) ·
+//     từ T12 báo đỏ (nguy cơ MẤT doanh số tích luỹ). Đóng lại (cập nhật tháng mới) → đếm lại từ 1.
+//   • Lưu users/{uid}/data/nangdong={m,y} (đồng bộ; QTV đọc dựng danh sách nhắc — KHÔNG cần Rules mới).
+// ================================================================
+function loadNangDong(){try{var s=nmGet('nangdong');return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveNangDong(m,y){
+  var o={m:parseInt(m,10),y:parseInt(y,10),updatedAt:new Date().toISOString()};
+  nmSet('nangdong',JSON.stringify(o));
+  if(fbDb&&fbUser)fsSet('nangdong',o).catch(function(){});
+}
+function loadNangDongCloud(){if(!fbDb||!fbUser)return;fsGet('nangdong').then(function(d){if(d&&d.m){nmSet('nangdong',JSON.stringify(d));try{renderNangDong();}catch(e){}}}).catch(function(){});}
+function nangDongIndex(m,y){
+  m=parseInt(m,10);y=parseInt(y,10);if(!m||!y)return null;
+  var now=currentDay||new Date();
+  var diff=(now.getFullYear()-y)*12+((now.getMonth()+1)-m); // số tháng chênh so với tháng đóng
+  if(diff<0)return null; // tháng đóng ở tương lai → coi như chưa tới
+  return diff+1; // tháng đóng = tháng thứ 1
+}
+function nangDongStatus(idx){
+  if(idx==null)return {lv:'none',c:'#999',msg:'Chưa nhập tháng đóng Năng động gần nhất.'};
+  if(idx>=12)return {lv:'danger',c:'#C62828',msg:'🔴 Tháng thứ '+idx+' — NGUY CƠ MẤT doanh số tích luỹ! Hãy ĐÓNG NĂNG ĐỘNG ngay.'};
+  if(idx>=6)return {lv:'warn',c:'#E65100',msg:'⚠️ Tháng thứ '+idx+' — đã tới mốc 6 tháng, NÊN đóng Năng động để giữ doanh số tích luỹ.'};
+  return {lv:'ok',c:'#1A7A5E',msg:'✅ Tháng thứ '+idx+'/6 — đang an toàn.'};
+}
+function _ndRootName(){var r=treeNodes.filter(function(x){return !x.parentId;});return r.length===1?(r[0].name||''):'';}
+function renderNangDong(){
+  var nd=loadNangDong();
+  var idx=nd?nangDongIndex(nd.m,nd.y):null;
+  var st=nangDongStatus(idx);
+  var badge=document.getElementById('nd-badge');
+  if(badge){var due=(st.lv==='warn'||st.lv==='danger');badge.textContent=due?'!':'';badge.style.background=st.lv==='danger'?'#C62828':'#E65100';}
+  var el=document.getElementById('nangdong-content');if(!el)return;
+  var rootNm=_ndRootName();
+  var cy=(new Date()).getFullYear();
+  var hm=nd&&nd.m?parseInt(nd.m,10):'',hy=nd&&nd.y?parseInt(nd.y,10):cy;
+  var h='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px;font-family:Arial">Chọn <b>tháng + năm bạn ĐÓNG Năng động gần nhất</b>'+(rootNm?(' cho ID gốc <b>'+escHtml(rootNm)+'</b>'):'')+'. Tháng đó tính là <b>tháng thứ 1</b>. Đến <b>tháng 6</b> nên đóng lại; từ <b>tháng 12</b> có nguy cơ mất doanh số tích luỹ.</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">';
+  h+='<div><div style="font-size:11px;color:#888;margin-bottom:3px">Tháng</div><select id="nd-month" class="nmod-inp" style="min-width:96px"><option value="">— Tháng —</option>';
+  for(var mo=1;mo<=12;mo++)h+='<option value="'+mo+'"'+(hm===mo?' selected':'')+'>Tháng '+mo+'</option>';
+  h+='</select></div>';
+  h+='<div><div style="font-size:11px;color:#888;margin-bottom:3px">Năm</div><select id="nd-year" class="nmod-inp" style="min-width:90px">';
+  for(var yy=cy;yy>=cy-6;yy--)h+='<option value="'+yy+'"'+(hy===yy?' selected':'')+'>'+yy+'</option>';
+  h+='</select></div>';
+  h+='<button class="btn btn-g btn-sm" id="btn-nd-save" style="height:38px">💾 Lưu</button>';
+  h+='</div>';
+  if(nd&&nd.m){
+    h+='<div style="border-radius:10px;padding:11px 13px;background:'+(st.lv==='danger'?'#FDECEA':st.lv==='warn'?'#FFF3E0':'#E8F5E9')+';border:1px solid '+st.c+'">';
+    h+='<div style="font-size:13px;color:'+st.c+';font-weight:700">'+st.msg+'</div>';
+    h+='<div style="font-size:11.5px;color:#666;margin-top:4px">Tháng đóng gần nhất: <b>Tháng '+nd.m+'/'+nd.y+'</b> · đóng lại thì cập nhật tháng mới để bộ đếm về tháng 1.</div></div>';
+  }else h+='<div style="font-size:12.5px;color:#999">Chưa có dữ liệu. Hãy chọn tháng + năm rồi bấm Lưu.</div>';
+  el.innerHTML=h;
+}
+// ── QTV: danh sách nhắc đóng Năng động (đọc nangdong của mọi tài khoản) ──
+async function scanNangDong(){
+  var accts=await fetchAccounts().catch(function(){return [];});
+  var nds=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'nangdong').catch(function(){return null;});}));
+  var out=[];
+  accts.forEach(function(a,i){
+    var nd=nds[i];if(!nd||!nd.m)return;
+    var idx=nangDongIndex(nd.m,nd.y);
+    out.push({uid:a.uid,name:a.name||a.email||'(không tên)',m:nd.m,y:nd.y,idx:idx,st:nangDongStatus(idx)});
+  });
+  out.sort(function(a,b){return (b.idx||0)-(a.idx||0);}); // nguy cấp lên trước
+  return out;
+}
+function renderNangDongRemind(list,loading){
+  var el=document.getElementById('nangdong-remind');if(!el)return;
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn btn-d btn-sm" id="btn-nd-rescan"'+(loading?' disabled style="opacity:.6"':'')+'>'+(loading?'⏳ Đang quét…':'🔄 Quét lại')+'</button></div>';
+  if(!list){el.innerHTML=h+'<div style="font-size:13px;color:#999;padding:6px 0">Đang tải…</div>';return;}
+  var due=list.filter(function(x){return x.st.lv==='warn'||x.st.lv==='danger';});
+  h+='<div style="font-size:12.5px;color:#666;margin-bottom:8px">Tổng <b>'+list.length+'</b> người đã nhập · <b style="color:#C62828">'+due.length+'</b> người cần đóng Năng động (tháng ≥ 6).</div>';
+  if(!list.length){h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có ai nhập. Khi thành viên nhập ở mục <b>📅 Năng động</b> (tab Sơ đồ) trên ID gốc của họ, danh sách nhắc sẽ tự hiện ở đây — ai tới tháng 6/12 sẽ được tô màu cảnh báo.</div>';el.innerHTML=h;return;}
+  list.forEach(function(x){
+    var bd=x.st.lv==='danger'?'#C62828':x.st.lv==='warn'?'#E65100':'#A5D6A7';
+    var bg=x.st.lv==='danger'?'#FDECEA':x.st.lv==='warn'?'#FFF3E0':'#F4FBF4';
+    h+='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
+    h+='<div style="font-size:13.5px;color:#1A1A1A;font-weight:700">'+(x.st.lv==='danger'?'🔴 ':x.st.lv==='warn'?'⚠️ ':'✅ ')+escHtml(x.name)+'</div>';
+    h+='<div style="font-size:12px;color:#555;margin-top:3px">Đóng gần nhất: <b>Tháng '+x.m+'/'+x.y+'</b> · hiện <b style="color:'+x.st.c+'">tháng thứ '+(x.idx||'?')+'</b></div>';
+    h+='<div style="font-size:11.5px;color:'+x.st.c+';margin-top:2px">'+x.st.msg+'</div></div>';
+  });
+  el.innerHTML=h;
+}
+function mountNangDongRemind(){
+  renderNangDongRemind(null,true);
+  scanNangDong().then(function(list){renderNangDongRemind(list,false);}).catch(function(){renderNangDongRemind([],false);});
+}
 function renderBranchStats(){
   var _allRoots=treeNodes.filter(function(x){return !x.parentId;});
   var rootCnt=_allRoots.length;
@@ -7219,6 +7320,10 @@ function renderAdminPage(){
       h+='<div class="adm-box"><div class="adm-title">🔔 Hộp thư: ID mới toàn đội</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Tự báo khi <b>sơ đồ của bất kỳ tài khoản nào</b> trong đội có thêm <b>ID mới</b> — kèm <b>ai bảo trợ</b> và <b>đặt dưới ai</b>. Chỉ quản trị viên thấy; thành viên KHÔNG biết chức năng này. Lần quét đầu chỉ ghi nền (không báo cả đội), từ đó về sau chỉ báo ID phát sinh thêm.</div>';
       h+='<div id="newid-inbox"></div></div>';
+      // v6.27 — Danh sách nhắc đóng Năng động (đọc nangdong của mọi tài khoản)
+      h+='<div class="adm-box"><div class="adm-title">📅 Nhắc đóng Năng động</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Tổng hợp <b>tháng đóng Năng động gần nhất</b> mà mỗi thành viên nhập (ở mục 📅 Năng động trên tab Sơ đồ, gắn ID gốc của họ). Ai tới <b>tháng 6</b> (vàng) hoặc <b>tháng ≥12</b> (đỏ) sẽ được nhắc để tránh mất doanh số tích luỹ. Nguy cấp xếp lên trên.</div>';
+      h+='<div id="nangdong-remind"></div></div>';
       h+='<div class="adm-box"><div class="adm-title">🎟️ Mã mời 1 lần (single-use)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Mỗi mã chỉ dùng được <b>1 lần</b> để tạo tài khoản, dùng xong tự khoá. Tạo mã rồi gửi riêng cho từng người. Muốn chặt nhất: <b>xoá trống mã cố định</b> ở trên, chỉ phát mã 1 lần.</div>';
       h+='<button class="btn btn-g btn-sm" id="btn-gen-codes">➕ Tạo 5 mã mới</button>';
@@ -7356,6 +7461,7 @@ function renderAdminPage(){
     }
     el.innerHTML=h;
     if(document.getElementById('newid-inbox'))mountNewIdInbox(); // v6.25 — tự quét ID mới toàn đội
+    if(document.getElementById('nangdong-remind'))mountNangDongRemind(); // v6.27 — danh sách nhắc đóng Năng động
   });
 }
 
@@ -8126,6 +8232,15 @@ document.addEventListener('click',function(e){
     return;
   }
   // v6.25 — Hộp thư ID mới toàn đội: quét lại / đã đọc tất cả / xoá hộp thư
+  // v6.27 — Năng động: lưu tháng đóng + QTV quét lại danh sách nhắc
+  if(e.target.id==='btn-nd-save'){
+    if(viewOnlyMode){showToast('Đang ở chế độ Xem — không sửa được');return;}
+    var _ndm=(document.getElementById('nd-month')||{}).value||'';
+    var _ndy=(document.getElementById('nd-year')||{}).value||'';
+    if(!_ndm){showToast('Hãy chọn Tháng đóng Năng động');return;}
+    saveNangDong(_ndm,_ndy);renderNangDong();showToast('✓ Đã lưu tháng đóng Năng động');return;
+  }
+  if(e.target.id==='btn-nd-rescan'){mountNangDongRemind();return;}
   if(e.target.id==='btn-newid-scan'){mountNewIdInbox();return;}
   if(e.target.id==='btn-newid-readall'){var _ib=newidInbox();_ib.forEach(function(x){x.read=true;});_newidSave(NEWID_INBOX_KEY,_ib);renderNewIdInbox(false);return;}
   if(e.target.id==='btn-newid-clear'){if(!confirm('Xoá toàn bộ hộp thư ID mới?\n\n(Chỉ xoá danh sách thông báo, KHÔNG ảnh hưởng dữ liệu sơ đồ/cây của ai.)'))return;_newidSave(NEWID_INBOX_KEY,[]);renderNewIdInbox(false);return;}
@@ -8673,6 +8788,8 @@ function openLegend(){
 function closeLegend(){document.getElementById('legend-ov').classList.remove('open');}
 function openThangTien(){renderRankAlert();document.getElementById('tt-ov').classList.add('open');}
 function closeThangTien(){document.getElementById('tt-ov').classList.remove('open');}
+function openNangDong(){renderNangDong();document.getElementById('nd-ov').classList.add('open');}
+function closeNangDong(){document.getElementById('nd-ov').classList.remove('open');}
 // ================================================================
 // XEM TÀI KHOẢN (QTV) — đọc cây + thành viên của 1 tài khoản, CHỈ XEM
 // Tự chứa: không đụng tới members/treeNodes toàn cục, không ghi gì.
@@ -8823,7 +8940,7 @@ function openAccountView(uid,name){
   document.getElementById('acctview-title').innerHTML='👁️ '+avEsc(name||'Tài khoản');
   document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải toàn bộ nội dung tài khoản…</div>';
   ov.classList.add('open');
-  var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','localmirror','activity'];
+  var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','localmirror','nangdong','activity'];
   Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})).then(function(r){
     var data={};docs.forEach(function(d,i){data[d]=r[i];});
     var idx=(data.vbindex&&data.vbindex.boards)||[];
@@ -8882,6 +8999,7 @@ function enterFullAccountView(){
   if(d.anngoals&&d.anngoals.ann)_fvPut('anngoals_v1',J(d.anngoals.ann));
   if(d.location)_fvPut('location',J(d.location));
   if(d.clubs&&d.clubs.list)_fvPut('clubs',J({list:d.clubs.list}));
+  if(d.nangdong&&d.nangdong.m)_fvPut('nangdong',J(d.nangdong));
   // dữ liệu chỉ-lưu-máy (điểm danh d_, KPI mo_, kỹ năng p_, mục tiêu goals_, leader key) từ localmirror
   if(d.localmirror&&d.localmirror.kv){var kv=d.localmirror.kv;Object.keys(kv).forEach(function(bk){_fvPut(bk,kv[bk]);});}
   // 3) Đặt biến toàn cục
@@ -9846,6 +9964,9 @@ function bindStatic(){
   document.getElementById('btn-thangtien').addEventListener('click',openThangTien);
   document.getElementById('tt-close').addEventListener('click',closeThangTien);
   document.getElementById('tt-ov').addEventListener('click',function(e){if(e.target===this)closeThangTien();});
+  document.getElementById('btn-nangdong').addEventListener('click',openNangDong);
+  document.getElementById('nd-close').addEventListener('click',closeNangDong);
+  document.getElementById('nd-ov').addEventListener('click',function(e){if(e.target===this)closeNangDong();});
   document.getElementById('acctview-close').addEventListener('click',closeAccountView);
   document.getElementById('acctview-ov').addEventListener('click',function(e){if(e.target===this)closeAccountView();});
   document.getElementById('prosp-modal-x').addEventListener('click',closeProspectModal);
