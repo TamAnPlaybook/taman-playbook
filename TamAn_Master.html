@@ -1,4 +1,4 @@
-<!-- VERSION: v6.25-admin-newid-inbox -->
+<!-- VERSION: v6.26-provinces-fullview-dupname-wheelcarry-sync-tangX-compactstats -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -49,10 +49,10 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .db-cur{flex:1;text-align:center;font-weight:700;font-size:15px}
 .db-today{background:#1A7A5E;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
 .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);background:white;border-bottom:1px solid #E8E8E8}
-.sbox{padding:9px 4px;text-align:center;border-right:1px solid #E8E8E8}
+.sbox{padding:4px 3px;text-align:center;border-right:1px solid #E8E8E8}
 .sbox:last-child{border-right:none}
-.sn{font-size:22px;font-weight:700;color:#1A7A5E;line-height:1}
-.sl{font-size:10px;color:#999;margin-top:3px;line-height:1.3}
+.sn{font-size:15px;font-weight:700;color:#1A7A5E;line-height:1}
+.sl{font-size:8.5px;color:#999;margin-top:1px;line-height:1.2}
 .search-row{background:white;padding:8px 12px;border-bottom:1px solid #E8E8E8;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .search-row #srch-wrap{min-width:180px}
 .srch{flex:1;padding:8px 12px;border:1.5px solid #E0E0E0;border-radius:10px;font-size:15px;font-family:Arial;outline:none}
@@ -180,7 +180,7 @@ input[type=range]{flex:1;height:6px;accent-color:#1A7A5E;cursor:pointer}
 .cbar{width:28px;border-radius:4px 4px 0 0;min-height:2px}
 .cday{font-size:10px;color:#999}
 .cval{font-size:9px;font-weight:700;color:#666}
-@media(max-width:480px){.stats-bar{grid-template-columns:repeat(2,1fr)}.skill-grid,.kpi-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.skill-grid,.kpi-grid{grid-template-columns:1fr}}
 @media(min-width:700px){.skill-grid{grid-template-columns:repeat(3,1fr)}.kpi-grid{grid-template-columns:repeat(3,1fr)}}
 
 @keyframes rankpulse{0%{box-shadow:0 0 0 0 rgba(255,143,0,.75)}70%{box-shadow:0 0 0 13px rgba(255,143,0,0)}100%{box-shadow:0 0 0 0 rgba(255,143,0,0)}}
@@ -322,6 +322,8 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .star-rail .rail-cap{color:#90CAF9;background:rgba(13,17,23,.7)}
 .rail-btn{flex:0 0 auto;min-width:34px;padding:6px 7px;border-radius:8px;border:1.5px solid #C8A84B;background:rgba(255,255,255,.94);color:#1A1A1A;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);line-height:1.1;text-align:center}
 .rail-btn.on{background:#C8A84B;color:#1A1A1A;border-color:#6b520f;box-shadow:0 0 0 2px rgba(200,168,75,.45)}
+.rail-btn.rail-x{border-color:#E53935;color:#E53935;background:rgba(255,255,255,.96)}
+.star-rail .rail-btn.rail-x{border-color:#EF5350;color:#FFCDD2;background:rgba(40,20,20,.92)}
 .star-rail .rail-btn{border-color:#42A5F5;background:rgba(20,28,40,.92);color:#E3F2FD}
 .star-rail .rail-btn.on{background:#42A5F5;color:#06223f;border-color:#0D47A1}
 @keyframes lvlglow{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,0)}50%{box-shadow:0 0 0 8px rgba(255,193,7,.9)}}
@@ -1010,6 +1012,12 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
     <div class="tb-date" id="tb-date"></div>
     <button class="tb-gear" id="btn-appearance" title="Giao diện & cá nhân hoá">&#127912;</button>
     <button class="tb-out" id="btn-logout">Thoát</button>
+  </div>
+  <!-- v6.26 — Banner QTV duyệt TOÀN BỘ app của thành viên (chỉ đọc) -->
+  <div id="fullview-banner" style="display:none;align-items:center;gap:10px;background:#7A1212;color:#fff;padding:8px 12px;font-size:13px;font-weight:700">
+    <span style="font-size:16px">&#128065;&#65039;</span>
+    <span id="fullview-name" style="flex:1">Đang xem toàn bộ app — chỉ đọc</span>
+    <button class="tbtn" id="btn-exit-fullview" style="background:#fff;color:#7A1212;border-color:#fff">&#10005; Thoát xem</button>
   </div>
   <!-- v6.5 — Banner chạy chữ: động lực / thông báo QTV / chúc mừng đội nhóm -->
   <div id="ticker-bar" style="display:none">
@@ -2137,8 +2145,21 @@ function destroyMaps(){
 
 // v6.22 — GỘP: quản lý CLB của tôi (thêm/sửa/xoá + ảnh + đánh giá 1–10 sao) — primary & mở rộng dùng CHUNG 1 form
 var _formPhoto=''; // ảnh đang chọn trong form (base64 nén)
+// v6.26 — Gợi ý Tỉnh/Thành: 34 đơn vị hành chính cấp tỉnh hiện hành (sau sáp nhập 1/7/2025).
+// Dùng <datalist> nên vẫn GÕ TỰ DO tên khác / nước ngoài được.
+var VN_PROVINCES=['Hà Nội','TP. Hồ Chí Minh','Hải Phòng','Đà Nẵng','Cần Thơ','Huế',
+  'An Giang','Bắc Ninh','Cà Mau','Cao Bằng','Đắk Lắk','Điện Biên','Đồng Nai','Đồng Tháp','Gia Lai',
+  'Hà Tĩnh','Hưng Yên','Khánh Hòa','Lai Châu','Lâm Đồng','Lạng Sơn','Lào Cai','Nghệ An','Ninh Bình',
+  'Phú Thọ','Quảng Ngãi','Quảng Ninh','Quảng Trị','Sơn La','Tây Ninh','Thái Nguyên','Thanh Hóa','Tuyên Quang','Vĩnh Long'];
+function ensureProvinceDatalist(){
+  if(document.getElementById('vn-provinces'))return;
+  var dl=document.createElement('datalist');dl.id='vn-provinces';
+  dl.innerHTML=VN_PROVINCES.map(function(p){return '<option value="'+escHtml(p)+'"></option>';}).join('');
+  document.body.appendChild(dl);
+}
 function renderMyClubsManager(){
   var el=document.getElementById('myclub-content');if(!el)return;
+  ensureProvinceDatalist();
   var eid=_extraEditId; // null=thêm mới · '__primary'=sửa CLB chính · <id>=sửa CLB mở rộng
   var ed={};
   if(eid==='__primary')ed=loadMyClubLocal()||{};
@@ -2155,7 +2176,7 @@ function renderMyClubsManager(){
   h+='<div style="margin:-2px 0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-g btn-sm" data-map-action="geocode-extra">🔍 Tìm từ ô địa chỉ</button></div>';
   h+='<div class="map-wrap" id="clx-map-wrap">'+mapToolbarHtml('extra')+'<div id="clx-map" class="lf-map"></div>'+
      '<button class="map-fs-exit" data-map-action="map-fs" data-mapctx="extra">✕ Thoát toàn màn hình</button></div>';
-  h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="clx-city" value="'+g(ed.city)+'"></div>'+
+  h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="clx-city" list="vn-provinces" placeholder="Chọn hoặc gõ Tỉnh/Thành..." value="'+g(ed.city)+'"></div>'+
      '<div class="map-fld"><label>Quốc gia</label><input class="map-inp" id="clx-country" value="'+g(ed.country)+'"></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Chủ CLB</label><input class="map-inp" id="clx-owner" value="'+g(owner)+'"></div>'+
      '<div class="map-fld"><label>Liên hệ (SĐT/ID)</label><input class="map-inp" id="clx-contact" value="'+g(ed.ownerContact)+'"></div></div>';
@@ -2914,13 +2935,14 @@ function openAdminClubEdit(uid,primary,id){
   primary=+primary;
   var c=_findClub(uid,primary,id)||{};
   _admClubEdit={uid:uid,primary:primary,id:id};
+  ensureProvinceDatalist();
   var g=function(v){return escHtml(v==null?'':v);};
   var ll=function(v){var n=parseFloat(v);return isNaN(n)?'':n.toFixed(6);};
   var h='<div class="map-hint" style="margin-bottom:8px">'+(primary?'🏠 CLB chính':'📍 CLB mở rộng')+' của <b>'+g(c.acctName||c.ownerName||c.acctEmail||uid)+'</b>. Sửa rồi bấm <b>Lưu</b> — ghi thẳng vào dữ liệu của chủ CLB.</div>';
   h+='<div class="map-fld"><label>Tên CLB</label><input class="map-inp" id="ce-name" value="'+g(c.clubName)+'"></div>';
   h+='<div class="map-fld"><label>Địa chỉ</label><input class="map-inp" id="ce-addr" autocomplete="off" value="'+g(c.address)+'"><div id="ce-geo-sug" class="geo-sug"></div></div>';
   h+='<div style="margin:-2px 0 10px"><button class="btn btn-g btn-sm" data-map-action="admin-geo">🔍 Tìm toạ độ từ địa chỉ</button></div>';
-  h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="ce-city" value="'+g(c.city)+'"></div>'+
+  h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="ce-city" list="vn-provinces" placeholder="Chọn hoặc gõ Tỉnh/Thành..." value="'+g(c.city)+'"></div>'+
      '<div class="map-fld"><label>Quốc gia</label><input class="map-inp" id="ce-country" value="'+g(c.country)+'"></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Chủ CLB</label><input class="map-inp" id="ce-owner" value="'+g(c.ownerName)+'"></div>'+
      '<div class="map-fld"><label>Liên hệ</label><input class="map-inp" id="ce-contact" value="'+g(c.ownerContact)+'"></div></div>';
@@ -3124,7 +3146,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3180,7 +3202,7 @@ function doLogout(){
 // ================================================================
 function nmKey(k){return 'ta_'+NS+'_'+k;}
 function nmGet(k,def){try{var v=localStorage.getItem(nmKey(k));return v!==null?v:(def||'');}catch(e){return def||'';}}
-function nmSet(k,v){if(viewOnlyMode)return;try{localStorage.setItem(nmKey(k),v);}catch(e){}} // chặn ghi khi đang XEM tài khoản khác
+function nmSet(k,v){if(viewOnlyMode)return;try{localStorage.setItem(nmKey(k),v);}catch(e){}if(_isLocalSyncKey(k))scheduleLocalMirrorPush();} // chặn ghi khi đang XEM tài khoản khác; v6.26 đồng bộ đa thiết bị các key chỉ-lưu-máy
 function dk(){var d=currentDay;return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function mk2(){return currentMonth.y+'-'+currentMonth.m;}
 // ── Kỳ đo lường (tab Mục tiêu - kết quả) ──
@@ -3224,6 +3246,62 @@ function mGet(mid,f){return nmGet('mo_'+mid+'_'+pkey()+'_'+f);}
 function mSet(mid,f,v){nmSet('mo_'+mid+'_'+pkey()+'_'+f,v);}
 function pGet(mid,f,def){return nmGet('p_'+mid+'_'+f,def||'');}
 function pSet(mid,f,v){nmSet('p_'+mid+'_'+f,v);}
+// ================================================================
+// v6.26 — ĐỒNG BỘ ĐA THIẾT BỊ cho dữ liệu CHỈ-LƯU-MÁY:
+//   Điểm danh/KH ngày (d_), KPI (mo_), Kỹ năng (p_), Mục tiêu (goals_), Leader Key (custom_lks).
+//   • Gom vào 1 document users/{uid}/data/localmirror = {kv,ts}.
+//   • "Bản mới nhất thắng" (so ts toàn document). KHÔNG cần Rules mới (chủ tự ghi users/** của mình).
+// ================================================================
+var LOCAL_SYNC_PREFIXES=['d_','mo_','p_','goals_'];
+function _isLocalSyncKey(k){
+  if(k==='custom_lks')return true;
+  for(var i=0;i<LOCAL_SYNC_PREFIXES.length;i++){if(k.indexOf(LOCAL_SYNC_PREFIXES[i])===0)return true;}
+  return false;
+}
+function collectLocalMirror(){
+  var kv={},pfx='ta_'+NS+'_';
+  try{for(var i=0;i<localStorage.length;i++){
+    var full=localStorage.key(i);if(!full||full.indexOf(pfx)!==0)continue;
+    var bare=full.slice(pfx.length);
+    if(_isLocalSyncKey(bare))kv[bare]=localStorage.getItem(full);
+  }}catch(e){}
+  return kv;
+}
+var _lmTimer=null,_LM_TS='localmirror_ts';
+function scheduleLocalMirrorPush(){
+  if(!fbDb||!fbUser||viewOnlyMode)return;
+  clearTimeout(_lmTimer);_lmTimer=setTimeout(pushLocalMirror,1500); // gộp nhiều thay đổi trong 1.5s
+}
+function pushLocalMirror(){
+  if(!fbDb||!fbUser||viewOnlyMode)return;
+  var kv=collectLocalMirror();
+  var ts=new Date().toISOString();
+  try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,ts);}catch(e){}
+  try{if(JSON.stringify(kv).length>900000){console.warn('localmirror quá lớn (>900KB) — bỏ qua đồng bộ lần này');return;}}catch(e){}
+  fsSet('localmirror',{kv:kv,ts:ts}).catch(function(){});
+}
+function applyLocalMirror(kv){
+  if(!kv)return;var pfx='ta_'+NS+'_';
+  Object.keys(kv).forEach(function(bare){try{localStorage.setItem(pfx+bare,kv[bare]);}catch(e){}}); // setItem trực tiếp → không kích hoạt push lại
+}
+function loadLocalMirrorCloud(){
+  if(!fbDb||!fbUser)return;
+  fsGet('localmirror').then(function(d){
+    var localTs=localStorage.getItem('ta_'+NS+'_'+_LM_TS)||'';
+    if(!d||!d.ts){ // chưa có bản cloud → seed từ máy này nếu đang có dữ liệu
+      if(Object.keys(collectLocalMirror()).length)pushLocalMirror();
+      return;
+    }
+    if(d.ts>=localTs){ // cloud mới hơn (hoặc bằng) → KÉO VỀ máy này (bản mới nhất thắng)
+      applyLocalMirror(d.kv||{});
+      try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,d.ts);}catch(e){}
+      try{renderAll();updateStats();}catch(e){}
+      try{var pg=(document.querySelector('.page.on')||{}).id;if(pg==='page-tp'&&typeof renderTpSub==='function')renderTpSub(currentSubTab.tp);}catch(e){}
+    }else{ // máy này mới hơn → ĐẨY LÊN cloud
+      pushLocalMirror();
+    }
+  }).catch(function(){});
+}
 
 function saveMembers(){
   nmSet('members',JSON.stringify(members));
@@ -3989,7 +4067,31 @@ var WHEEL_CATS=[
 function loadWheel(){try{var s=nmGet('wheel_v1');return s?JSON.parse(s):{};}catch(e){return {};}}
 function loadWheelCloud(){if(!fbDb||!fbUser)return;fsGet('wheel').then(function(d){if(d&&d.wheel){nmSet('wheel_v1',JSON.stringify(d.wheel));renderLifeWheel();renderLifeMirror();}}).catch(function(){});}
 function dayWheel(){var o=loadWheel();return o[dk()]||{};}
-function setWheelScore(cat,v){var o=loadWheel();var d=o[dk()]||{};d[cat]=v;o[dk()]=d;nmSet('wheel_v1',JSON.stringify(o));}
+// v6.26 — Bản chấm gần nhất TRƯỚC hôm nay (để lần sau "bắt đầu từ hình ảnh lần trước")
+function prevWheelDayScores(){
+  var o=loadWheel(),todayK=dk(),best=null,bestT=-1;
+  Object.keys(o).forEach(function(k){
+    if(k===todayK)return;
+    var d=o[k]||{};if(!WHEEL_CATS.some(function(c){return (d[c.id]||0)>0;}))return;
+    var p=String(k).split('-');var t=new Date(parseInt(p[0],10),(parseInt(p[1],10)||1)-1,parseInt(p[2],10)||1).getTime();
+    if(t>bestT){bestT=t;best=d;}
+  });
+  return best;
+}
+// HIỂN THỊ KHỞI ĐẦU: hôm nay đã chấm → dùng hôm nay; chưa chấm → lấy hình ảnh lần chấm gần nhất trước đó.
+function dayWheelStart(){
+  var t=dayWheel();
+  if(WHEEL_CATS.some(function(c){return (t[c.id]||0)>0;}))return t;
+  return prevWheelDayScores()||t;
+}
+function setWheelScore(cat,v){
+  var o=loadWheel();var k=dk();var d=o[k];
+  if(!d){ // chưa chấm hôm nay → KẾ THỪA hình ảnh lần chấm gần nhất rồi mới chỉnh (item 4)
+    var prev=prevWheelDayScores();
+    d=prev?Object.assign({},prev):{};
+  }
+  d[cat]=v;o[k]=d;nmSet('wheel_v1',JSON.stringify(o));
+}
 // ── v6.20 — Bánh xe 3.0: kho "Mong muốn" (Desired) + tích hợp Kế hoạch ngày ──
 function loadWheelGoal(){try{var s=nmGet('wheelgoal_v1');var o=s?JSON.parse(s):null;return (o&&typeof o==='object')?o:{};}catch(e){return {};}}
 function saveWheelGoal(g){nmSet('wheelgoal_v1',JSON.stringify(g));if(fbDb&&fbUser)fsSet('wheelgoal',{goal:g}).catch(function(){});}
@@ -4035,7 +4137,7 @@ function wheelMultiSVG(layers){
   return '<svg viewBox="0 0 340 300" width="100%" style="max-width:360px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">'+s+'</svg>';
 }
 function wheelChartFull(){
-  var cur=dayWheel(),goal=loadWheelGoal(),exp=wheelExpected(),layers=[];
+  var cur=dayWheelStart(),goal=loadWheelGoal(),exp=wheelExpected(),layers=[];
   if(wheelGoalSet())layers.push({sc:goal,fill:'rgba(200,168,75,0.10)',stroke:'#C8A84B',width:2});
   if(exp)layers.push({sc:exp.sc,fill:'none',stroke:'#1565C0',width:1.6,dash:true});
   layers.push({sc:cur,fill:'rgba(198,40,40,0.16)',stroke:'#C62828',width:2.3});
@@ -4128,7 +4230,7 @@ function wheelRadarSVG(sc){
 function lwChartHtml(sc){var b=wheelBalance(sc);return wheelRadarSVG(sc)+'<div class="lw-bal" style="color:'+b.c+'">'+b.t+(b.avg?(' · TB '+b.avg.toFixed(1)+'/10'):'')+'</div>';}
 function renderLifeWheel(){
   var el=document.getElementById('life-wheel-content');if(!el)return;
-  var cur=dayWheel(),goal=loadWheelGoal(),goalOn=wheelGoalSet();
+  var cur=dayWheelStart(),goal=loadWheelGoal(),goalOn=wheelGoalSet();
   var h='<div class="lw-card">';
   h+='<div class="lw-head"><div class="lw-title">🛞 Bánh xe cuộc đời</div>';
   h+='<div style="display:flex;gap:6px;align-items:center"><button class="lw-help-btn" data-wheel-help="1" title="Cách chấm điểm">ⓘ</button><div class="lw-date">'+fmtDate(currentDay)+'</div></div></div>';
@@ -5454,6 +5556,7 @@ function buildTreeRail(lvlSet){
   lvls.forEach(function(l){
     h+='<button class="rail-btn'+(activeLvlHL===l?' on':'')+'" data-lvlhl="'+l+'">'+l+'</button>';
   });
+  if(activeLvlHL!=null)h+='<button class="rail-btn rail-x" data-lvlhl-clear="1" title="Bỏ chọn tầng — xem lại toàn bộ">✕</button>';
   rail.innerHTML=h;
 }
 function buildStarRail(fSet){
@@ -5466,6 +5569,7 @@ function buildStarRail(fSet){
   fs.forEach(function(d){
     h+='<button class="rail-btn'+(activeStarHL===d?' on':'')+'" data-fhl="'+d+'">'+d+'</button>';
   });
+  if(activeStarHL!=null)h+='<button class="rail-btn rail-x" data-fhl-clear="1" title="Bỏ chọn F — xem lại toàn bộ">✕</button>';
   rail.innerHTML=h;
 }
 function clearNodeHL(){
@@ -6258,6 +6362,10 @@ function saveNodeModal(){
   }
   var name=((document.getElementById('nf-name')||{}).value||'').trim();
   if(!name){showToast('Vui l\u00f2ng nh\u1eadp t\u00ean');return;}
+  // KI\u1ec2M TRA TR\u00d9NG T\u00caN (item v6.26): kh\u00f4ng cho 2 ID tr\u00f9ng 100% t\u00ean trong c\u00f9ng 1 s\u01a1 \u0111\u1ed3.
+  var _selfId=(activeNodeModal.mode==='edit')?activeNodeModal.nodeId:null;
+  var _dupNode=treeNodes.find(function(x){return x.id!==_selfId&&String(x.name||'').trim()===name;});
+  if(_dupNode){showToast('\u26d4 T\u00ean ID "'+name+'" \u0111\u00e3 c\u00f3 trong s\u01a1 \u0111\u1ed3 \u2014 kh\u00f4ng \u0111\u01b0\u1ee3c tr\u00f9ng 100%. H\u00e3y nh\u1eadp t\u00ean kh\u00e1c \u0111\u1ec3 ph\u00e2n bi\u1ec7t (vd th\u00eam s\u1ed1/khu v\u1ef1c).');return;}
   var selF1=(document.getElementById('nf-f1of-sel')||{}).value||'';
   var inpF1=((document.getElementById('nf-f1of')||{}).value||'').trim();
   var data={
@@ -6762,6 +6870,7 @@ function trackHeartbeat(){
   if(dt>0&&dt<=120){var day=_ensureActDay();day.d=(day.d||0)+dt;_act.lastSeen=new Date().toISOString();_actDirty=true;}
 }
 function trackEvent(feat){
+  if(viewOnlyMode)return; // QTV duyệt app người khác → không tính vào hoạt động của QTV
   if(!_act||!feat)return;
   var day=_ensureActDay();if(!day.f)day.f={};day.f[feat]=(day.f[feat]||0)+1;
   if(!_act.featLast)_act.featLast={};_act.featLast[feat]=new Date().toISOString();
@@ -7993,6 +8102,8 @@ document.addEventListener('click',function(e){
   }
   // Thoát chế độ XEM sơ đồ tài khoản khác
   if(e.target.closest('#btn-exit-view')){exitViewMode();return;}
+  // Thoát chế độ duyệt TOÀN BỘ app (chỉ đọc)
+  if(e.target.closest('#btn-exit-fullview')){exitFullAccountView();return;}
   // #1 Xác minh email: gửi lại / kiểm tra đã xác minh
   if(e.target.id==='btn-verify-resend'){
     fbResendVerify().then(function(){var vs=document.getElementById('verify-status');if(vs){vs.style.color='#1A7A5E';vs.textContent='✓ Đã gửi lại email xác minh.';}})
@@ -8193,6 +8304,9 @@ document.addEventListener('click',function(e){
   // QTV: từ modal xem nội dung → mở sơ đồ tương tác (chỉ đọc)
   t=e.target.closest('[data-acct-tree]');
   if(t){openAccountTreeView();return;}
+  // QTV: từ modal xem nội dung → DUYỆT TOÀN BỘ app của họ (chỉ đọc)
+  t=e.target.closest('[data-acct-fullapp]');
+  if(t){enterFullAccountView();return;}
   // Admin: gỡ QTV
   t=e.target.closest('[data-rmadmin]');
   if(t){
@@ -8254,6 +8368,22 @@ document.addEventListener('click',function(e){
     renderResSub(currentSubTab.res||'tongquan');return;}
 
 
+  // Nút ✕ xả chọn Tầng (rail nhị phân) → bỏ làm sáng, xem lại toàn bộ
+  t=e.target.closest('[data-lvlhl-clear]');
+  if(t){
+    activeLvlHL=null;
+    var _rc=t.parentNode;_rc.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
+    t.remove();applyLevelHL();
+    return;
+  }
+  // Nút ✕ xả chọn F (rail mặt trời) → bỏ làm sáng, xem lại toàn bộ
+  t=e.target.closest('[data-fhl-clear]');
+  if(t){
+    activeStarHL=null;
+    var _fc=t.parentNode;_fc.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
+    t.remove();applyLevelHL();
+    return;
+  }
   // Nút TẦNG (rail trái cây nhị phân) → làm sáng toàn bộ ID ở tầng đó (bấm lại = tắt)
   t=e.target.closest('[data-lvlhl]');
   if(t){
@@ -8261,7 +8391,9 @@ document.addEventListener('click',function(e){
     activeLvlHL=(activeLvlHL===_lv)?null:_lv;
     var _rail=t.parentNode;
     _rail.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
-    if(activeLvlHL!=null)t.classList.add('on');
+    var _lx=_rail.querySelector('[data-lvlhl-clear]');
+    if(activeLvlHL!=null){t.classList.add('on');if(!_lx){var _nb=document.createElement('button');_nb.className='rail-btn rail-x';_nb.setAttribute('data-lvlhl-clear','1');_nb.title='Bỏ chọn tầng — xem lại toàn bộ';_nb.textContent='✕';_rail.appendChild(_nb);}}
+    else if(_lx){_lx.remove();}
     applyLevelHL();
     return;
   }
@@ -8272,7 +8404,9 @@ document.addEventListener('click',function(e){
     activeStarHL=(activeStarHL===_fv)?null:_fv;
     var _frail=t.parentNode;
     _frail.querySelectorAll('.rail-btn').forEach(function(b){b.classList.remove('on');});
-    if(activeStarHL!=null)t.classList.add('on');
+    var _fx=_frail.querySelector('[data-fhl-clear]');
+    if(activeStarHL!=null){t.classList.add('on');if(!_fx){var _fb=document.createElement('button');_fb.className='rail-btn rail-x';_fb.setAttribute('data-fhl-clear','1');_fb.title='Bỏ chọn F — xem lại toàn bộ';_fb.textContent='✕';_frail.appendChild(_fb);}}
+    else if(_fx){_fx.remove();}
     applyLevelHL();
     return;
   }
@@ -8606,7 +8740,9 @@ function buildFullAccountView(uid,name,data){
   var h='';
   h+='<div style="font-size:12px;color:#7A5A0C;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:8px 11px;margin-bottom:10px;font-family:Arial;line-height:1.5">🔒 <b>Chế độ xem bí mật (chỉ QTV).</b> Thành viên KHÔNG nhận được thông báo. Toàn bộ chỉ ĐỌC — không thay đổi gì dữ liệu của họ.</div>';
   h+=buildAccountViewHtml(nodes,mems); // tổng quan + sơ đồ tuyến + danh sách thành viên
-  h+='<div style="margin:8px 0 4px"><button class="btn btn-d btn-sm" data-acct-tree="1">🌳 Mở sơ đồ tương tác (chỉ đọc)</button></div>';
+  h+='<div style="margin:8px 0 4px;display:flex;gap:8px;flex-wrap:wrap">'+
+     '<button class="btn btn-sm" style="background:#7A1212;color:#fff" data-acct-fullapp="1">📱 Mở TOÀN BỘ app của họ (chỉ đọc)</button>'+
+     '<button class="btn btn-d btn-sm" data-acct-tree="1">🌳 Mở sơ đồ tương tác (chỉ đọc)</button></div>';
   // 🎯 Kế hoạch năm
   var ann=data.anngoals&&data.anngoals.ann;
   h+='<div class="adm-title av-sec" style="font-size:14px">🎯 Kế hoạch năm</div>';
@@ -8687,13 +8823,14 @@ function openAccountView(uid,name){
   document.getElementById('acctview-title').innerHTML='👁️ '+avEsc(name||'Tài khoản');
   document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải toàn bộ nội dung tài khoản…</div>';
   ov.classList.add('open');
-  var docs=['tree','members','prospects','actplans','tasks','wheel','anngoals','location','clubs','vbindex','activity'];
+  var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','localmirror','activity'];
   Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})).then(function(r){
     var data={};docs.forEach(function(d,i){data[d]=r[i];});
     var idx=(data.vbindex&&data.vbindex.boards)||[];
     return Promise.all(idx.slice(0,12).map(function(it){return fsGetUser(uid,'vboard_'+it.id).catch(function(){return null;});})).then(function(bs){
       data.vboards=bs.map(function(x){return x&&x.board;}).filter(Boolean);
-      _avData={uid:uid,name:name,nodes:(data.tree&&data.tree.nodes)||[],members:(data.members&&data.members.members)||[]};
+      data.vboardRaw={};idx.slice(0,12).forEach(function(it,i){if(bs[i]&&bs[i].board)data.vboardRaw[it.id]=bs[i].board;});
+      _avData={uid:uid,name:name,nodes:(data.tree&&data.tree.nodes)||[],members:(data.members&&data.members.members)||[],data:data};
       if(!document.getElementById('acctview-ov').classList.contains('open'))return;
       document.getElementById('acctview-body').innerHTML=buildFullAccountView(uid,name,data);
     });
@@ -8705,6 +8842,92 @@ function openAccountTreeView(){
   if(!_avData)return;
   closeAccountView();
   enterViewMode(_avData.nodes,_avData.members,_avData.name);
+}
+// ================================================================
+// v6.26 — QTV DUYỆT TOÀN BỘ APP của thành viên (chỉ ĐỌC, giống y giao diện thật).
+//   • Nạp toàn bộ dữ liệu của họ vào 1 namespace tạm '__view', đổi NS sang đó,
+//     đặt các biến toàn cục (members/treeNodes/_prospectsAll/_vbIndex...).
+//   • viewOnlyMode + fullViewMode = chặn MỌI ghi (nmSet bị chặn; fsSet bị chặn).
+//   • Thoát: khôi phục NS + biến + key 'ta_vbindex', xoá key '__view', render lại.
+// ================================================================
+var fullViewMode=false,_fvSaved=null;
+var FV_NS='__view';
+function _fvClearKeys(){
+  try{var pfx='ta_'+FV_NS+'_';var rm=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf(pfx)===0)rm.push(k);}rm.forEach(function(k){localStorage.removeItem(k);});}catch(e){}
+}
+function _fvPut(key,val){try{localStorage.setItem('ta_'+FV_NS+'_'+key,val);}catch(e){}}
+function enterFullAccountView(){
+  if(!_avData||!_avData.data)return;
+  var d=_avData.data,name=_avData.name;
+  // 1) Lưu trạng thái QTV để khôi phục khi thoát
+  _fvSaved={NS:NS,members:members,treeNodes:treeNodes,
+    prospects:(typeof _prospectsAll!=='undefined')?_prospectsAll:null,
+    vbIndex:(typeof _vbIndex!=='undefined')?_vbIndex:null,vbDefault:(typeof _vbDefault!=='undefined')?_vbDefault:null,
+    vbindexLS:(function(){try{return localStorage.getItem('ta_vbindex');}catch(e){return null;}})(),
+    focusNodeId:focusNodeId,mode:currentTreeMode,disc:discFilter,
+    page:((document.querySelector('.page.on')||{}).id)||'page-admin',
+    mainTab:((document.querySelector('.mtab.on')&&document.querySelector('.mtab.on').getAttribute('data-main'))||'admin')};
+  closeAccountView();
+  // 2) Gieo dữ liệu của họ vào namespace '__view'
+  _fvClearKeys();
+  NS=FV_NS;
+  var J=function(o){return JSON.stringify(o);};
+  if(d.members&&d.members.members)_fvPut('members',J(d.members.members));
+  if(d.tree&&d.tree.nodes)_fvPut('tree_v2',J(d.tree.nodes));
+  if(d.prospects&&d.prospects.list)_fvPut('prospects_v1',J(d.prospects.list));
+  if(d.actplans&&d.actplans.acts)_fvPut('act_v1',J(d.actplans.acts));
+  if(d.tasks&&d.tasks.tasks)_fvPut('tasks_v1',J(d.tasks.tasks));
+  if(d.wheel&&d.wheel.wheel)_fvPut('wheel_v1',J(d.wheel.wheel));
+  if(d.wheelgoal&&d.wheelgoal.goal)_fvPut('wheelgoal_v1',J(d.wheelgoal.goal));
+  if(d.anngoals&&d.anngoals.ann)_fvPut('anngoals_v1',J(d.anngoals.ann));
+  if(d.location)_fvPut('location',J(d.location));
+  if(d.clubs&&d.clubs.list)_fvPut('clubs',J({list:d.clubs.list}));
+  // dữ liệu chỉ-lưu-máy (điểm danh d_, KPI mo_, kỹ năng p_, mục tiêu goals_, leader key) từ localmirror
+  if(d.localmirror&&d.localmirror.kv){var kv=d.localmirror.kv;Object.keys(kv).forEach(function(bk){_fvPut(bk,kv[bk]);});}
+  // 3) Đặt biến toàn cục
+  members=(d.members&&d.members.members)||[];
+  treeNodes=(d.tree&&d.tree.nodes)||[];
+  if(typeof _prospectsAll!=='undefined')_prospectsAll=(d.prospects&&d.prospects.list)||[];
+  if(typeof _vbIndex!=='undefined'){_vbIndex=(d.vbindex&&d.vbindex.boards)||[];_vbDefault=(d.vbindex&&d.vbindex.def)||'';
+    try{localStorage.setItem('ta_vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));}catch(e){}
+    if(d.vboardRaw)Object.keys(d.vboardRaw).forEach(function(id){try{localStorage.setItem('ta_vboard_'+id,JSON.stringify(d.vboardRaw[id]));}catch(e){}});}
+  focusNodeId=null;discFilter=null;
+  // 4) Bật chế độ chỉ-đọc toàn app
+  viewOnlyMode=true;fullViewMode=true;viewOnlyName=name||'';
+  try{clearRankMemo();}catch(e){}
+  var fb=document.getElementById('fullview-banner'),fn=document.getElementById('fullview-name');
+  if(fn)fn.textContent='👁️ Đang xem TOÀN BỘ app của '+(name||'tài khoản')+' — chỉ đọc (họ không hề hay biết)';
+  if(fb)fb.style.display='flex';
+  applyViewOnlyUI();
+  // 5) Mở tab Sơ đồ của họ
+  document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')==='tree');});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id==='page-tree');});
+  document.getElementById('app').classList.add('hide-topbars');
+  if(currentTreeMode==='binary')renderTree();else renderStarChart();
+  try{showAndFitTree();}catch(e){}
+}
+function exitFullAccountView(){
+  if(!_fvSaved){fullViewMode=false;viewOnlyMode=false;var fb0=document.getElementById('fullview-banner');if(fb0)fb0.style.display='none';applyViewOnlyUI();return;}
+  var s=_fvSaved;
+  _fvClearKeys();
+  NS=s.NS;
+  members=s.members;treeNodes=s.treeNodes;
+  if(typeof _prospectsAll!=='undefined'&&s.prospects!=null)_prospectsAll=s.prospects;
+  if(typeof _vbIndex!=='undefined'){if(s.vbIndex!=null)_vbIndex=s.vbIndex;if(s.vbDefault!=null)_vbDefault=s.vbDefault;}
+  try{if(s.vbindexLS!=null)localStorage.setItem('ta_vbindex',s.vbindexLS);else localStorage.removeItem('ta_vbindex');}catch(e){}
+  focusNodeId=s.focusNodeId;currentTreeMode=s.mode;discFilter=s.disc;
+  fullViewMode=false;viewOnlyMode=false;viewOnlyName='';
+  var sp=s.page,st=s.mainTab;_fvSaved=null;
+  var fb=document.getElementById('fullview-banner');if(fb)fb.style.display='none';
+  applyViewOnlyUI();
+  try{clearRankMemo();}catch(e){}
+  document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')===st);});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id===sp);});
+  document.getElementById('app').classList.toggle('hide-topbars',st==='tree');
+  if(sp==='page-admin')renderAdminPage();
+  else if(sp==='page-tp')renderTpSub(currentSubTab.tp);
+  else if(sp==='page-tree'){ if(currentTreeMode==='binary')renderTree(); else renderStarChart(); showAndFitTree(); }
+  else { try{renderAll();updateStats();}catch(e){} }
 }
 function closeAccountView(){var ov=document.getElementById('acctview-ov');if(ov)ov.classList.remove('open');}
 // === XEM sơ đồ tài khoản khác như cây thật (chỉ đọc) ===
@@ -8744,8 +8967,9 @@ function exitViewMode(){
 }
 function applyViewOnlyUI(){
   var on=viewOnlyMode;
-  var mt=document.querySelector('.main-tabs'); if(mt)mt.style.display=on?'none':'';
-  var vb=document.getElementById('view-banner'); if(vb)vb.style.display=on?'flex':'none';
+  // Full view (duyệt toàn app): VẪN cho chuyển tab + dùng banner đỏ riêng (#fullview-banner)
+  var mt=document.querySelector('.main-tabs'); if(mt)mt.style.display=(on&&!fullViewMode)?'none':'';
+  var vb=document.getElementById('view-banner'); if(vb)vb.style.display=(on&&!fullViewMode)?'flex':'none';
   ['btn-add-root'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=on?'none':'';});
   if(on){
     var be=document.getElementById('btn-export-branch'),bi=document.getElementById('btn-import-branch');
