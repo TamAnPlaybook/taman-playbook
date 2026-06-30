@@ -1,4 +1,4 @@
-<!-- VERSION: v6.27-nangdong-tracking-admin-remind -->
+<!-- VERSION: v6.27.1-nangdong-loss-pct -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -5636,8 +5636,8 @@ function nangDongIndex(m,y){
 }
 function nangDongStatus(idx){
   if(idx==null)return {lv:'none',c:'#999',msg:'Chưa nhập tháng đóng Năng động gần nhất.'};
-  if(idx>=12)return {lv:'danger',c:'#C62828',msg:'🔴 Tháng thứ '+idx+' — NGUY CƠ MẤT doanh số tích luỹ! Hãy ĐÓNG NĂNG ĐỘNG ngay.'};
-  if(idx>=6)return {lv:'warn',c:'#E65100',msg:'⚠️ Tháng thứ '+idx+' — đã tới mốc 6 tháng, NÊN đóng Năng động để giữ doanh số tích luỹ.'};
+  if(idx>=12)return {lv:'danger',c:'#C62828',msg:'🔴 Tháng thứ '+idx+' — NGUY CƠ MẤT 100% doanh số tích luỹ! Hãy ĐÓNG NĂNG ĐỘNG ngay.'};
+  if(idx>=6)return {lv:'warn',c:'#E65100',msg:'⚠️ Tháng thứ '+idx+' — NGUY CƠ MẤT 50% doanh số tích luỹ. Hãy đóng Năng động để giữ trọn doanh số.'};
   return {lv:'ok',c:'#1A7A5E',msg:'✅ Tháng thứ '+idx+'/6 — đang an toàn.'};
 }
 function _ndRootName(){var r=treeNodes.filter(function(x){return !x.parentId;});return r.length===1?(r[0].name||''):'';}
