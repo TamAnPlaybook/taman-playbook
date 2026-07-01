@@ -1,4 +1,4 @@
-<!-- VERSION: v6.29-flow3-overview-dashboard -->
+<!-- VERSION: v6.30-backup-restore -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -7614,6 +7614,85 @@ function importData(){
 }
 
 // ================================================================
+// v6.30 — SAO LƯU & KHÔI PHỤC TOÀN BỘ (chủ động phòng sự cố mất dữ liệu)
+//   1 file JSON gói: MỌI localStorage ta_* (dữ liệu + cá nhân hoá) + MỌI document
+//   Firestore của user (kể cả bảng tầm nhìn). Khôi phục → ghi lại cả localStorage
+//   lẫn Firestore của tài khoản HIỆN TẠI rồi tải lại app.
+// ================================================================
+var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity'];
+function _dlJson(obj,fname){
+  var blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){try{document.body.removeChild(a);}catch(e){}URL.revokeObjectURL(a.href);},120);
+}
+async function exportBackup(){
+  if(viewOnlyMode){showToast('Đang ở chế độ Xem — không sao lưu');return;}
+  showToast('⏳ Đang gom dữ liệu sao lưu...');
+  var ls={};
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('ta_')===0)ls[k]=localStorage.getItem(k);}}catch(e){}
+  var fs={};
+  if(fbDb&&fbUser){
+    try{
+      var res=await Promise.all(BACKUP_FS_DOCS.map(function(d){return fsGet(d).catch(function(){return null;});}));
+      BACKUP_FS_DOCS.forEach(function(d,i){if(res[i]!=null)fs[d]=res[i];});
+      var vb=(fs.vbindex&&fs.vbindex.boards)||[];
+      var vbres=await Promise.all(vb.map(function(b){return fsGet('vboard_'+b.id).catch(function(){return null;});}));
+      vb.forEach(function(b,i){if(vbres[i]!=null)fs['vboard_'+b.id]=vbres[i];});
+    }catch(e){}
+  }
+  var payload={app:'TamAn',type:'full-backup',version:1,exportedAt:new Date().toISOString(),
+    uid:(fbUser&&fbUser.uid)||'',ns:NS,name:(fbUser&&(fbUser.displayName||fbUser.email))||'',
+    localStorage:ls,firestore:fs};
+  var nm=(payload.name||'taman').replace(/[^a-zA-Z0-9._-]+/g,'_').slice(0,40)||'taman';
+  _dlJson(payload,'TamAn-SaoLuu-'+nm+'-'+new Date().toISOString().slice(0,10)+'.json');
+  showToast('✅ Đã tải file sao lưu ('+Object.keys(ls).length+' mục máy + '+Object.keys(fs).length+' mục cloud)');
+}
+async function applyBackup(payload){
+  // 1) localStorage — remap NS nếu file từ tài khoản khác (cùng máy vẫn dùng lại được)
+  if(payload.localStorage){
+    var bns=payload.ns||'',cur=NS,pref='ta_'+bns+'_';
+    Object.keys(payload.localStorage).forEach(function(k){
+      var nk=k;
+      if(bns&&bns!==cur&&k.indexOf(pref)===0)nk='ta_'+cur+'_'+k.slice(pref.length);
+      try{localStorage.setItem(nk,payload.localStorage[k]);}catch(e){}
+    });
+  }
+  // 2) Firestore — ghi lại từng document vào tài khoản HIỆN TẠI
+  if(fbDb&&fbUser&&payload.firestore){
+    var keys=Object.keys(payload.firestore);
+    for(var i=0;i<keys.length;i++){
+      try{await fsSet(keys[i],payload.firestore[keys[i]]);}catch(e){/* 1 doc lỗi → bỏ qua, tiếp tục */}
+    }
+  }
+}
+function importBackup(){
+  if(viewOnlyMode){showToast('Đang ở chế độ Xem — không khôi phục');return;}
+  var inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      var payload;
+      try{payload=JSON.parse(r.result);}catch(e){showToast('⛔ File không đọc được (không phải JSON)');return;}
+      if(!payload||payload.app!=='TamAn'||!(payload.localStorage||payload.firestore)){showToast('⛔ Không phải file sao lưu Tâm An');return;}
+      var when=payload.exportedAt?(' ('+fmtDT(payload.exportedAt)+')'):'';
+      if(!confirm('KHÔI PHỤC từ file sao lưu'+when+'?\n\n• GHI ĐÈ toàn bộ dữ liệu hiện tại (sơ đồ, thành viên, mục tiêu, điểm danh, KPI, bánh xe, CLB, bảng tầm nhìn, cá nhân hoá...) bằng dữ liệu trong file.\n• Áp cho cả thiết bị này lẫn cloud.\n• Nên SAO LƯU hiện tại trước khi khôi phục.\n\nTiếp tục?'))return;
+      showToast('⏳ Đang khôi phục...');
+      applyBackup(payload).then(function(){
+        showToast('✅ Khôi phục xong — đang tải lại app...');
+        setTimeout(function(){location.reload();},900);
+      }).catch(function(){
+        showToast('⚠ Đã khôi phục phần máy; lỗi ghi cloud. Đang tải lại...');
+        setTimeout(function(){location.reload();},1200);
+      });
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+// ================================================================
 // EXPORT / IMPORT 1 NHÁNH (cây con) — chuyển nhánh sang tài khoản khác
 // Xuất theo nhánh ĐANG HIỂN THỊ: nếu đang focus 1 ID (chọn từ ô tìm / Leader Key)
 // thì xuất ID đó + toàn bộ nhánh đặt dưới (parentId). Không focus = xuất cả cây.
@@ -9575,6 +9654,15 @@ function renderAppearance(){
     h+='<div style="font-size:11.5px;color:#999;margin-top:8px;line-height:1.5">Lưu ý: thông báo ngoài ứng dụng chỉ hiện khi trình duyệt/ứng dụng đang mở hoặc vừa hoạt động (giới hạn của web tĩnh, không có máy chủ). Khi mở lại app sau giờ hẹn, bạn vẫn nhận lời nhắc trong ứng dụng.</div>';
   }
 
+  // ── v6.30 — Sao lưu & Khôi phục toàn bộ dữ liệu ──
+  h+='<div class="msec-title" style="margin-top:18px">💾 Sao lưu &amp; Khôi phục dữ liệu</div>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px">Chủ động lưu <b>TOÀN BỘ nội dung + cá nhân hoá</b> ra 1 file để giữ an toàn phòng khi sự cố. Khi cần, nạp file để khôi phục lại (ghi đè dữ liệu hiện tại, áp cho cả máy này lẫn cloud). Nên sao lưu <b>định kỳ</b> (vd mỗi tuần) và cất file nơi an toàn (Drive, email cho chính mình...).</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<button class="btn btn-g btn-sm" data-backup-export="1">⬇️ Sao lưu ra file</button>';
+  h+='<button class="btn btn-d btn-sm" data-backup-import="1">⬆️ Khôi phục từ file</button>';
+  h+='</div>';
+  h+='<div style="font-size:11.5px;color:#999;margin-top:8px;line-height:1.5">Gồm: sơ đồ cây · thành viên · mục tiêu &amp; chỉ tiêu · điểm danh &amp; kế hoạch ngày · KPI · kỹ năng · bánh xe cuộc đời · Năng động · CLB · bảng tầm nhìn · giao diện/nền/nhắc nhở. File JSON đọc được, chỉ máy bạn có.</div>';
+
   document.getElementById('appearance-body').innerHTML=h;
 }
 function openAppearance(){renderAppearance();document.getElementById('appearance-ov').classList.add('open');}
@@ -9937,6 +10025,8 @@ function bindStatic(){
     t=e.target.closest('[data-notify-toggle]');if(t){toggleNotify();return;}
     t=e.target.closest('[data-notify-perm]');if(t){requestNotifyPerm();return;}
     t=e.target.closest('[data-notify-test]');if(t){fireReengage();return;}
+    t=e.target.closest('[data-backup-export]');if(t){exportBackup();return;}
+    t=e.target.closest('[data-backup-import]');if(t){importBackup();return;}
   });
   document.getElementById('appearance-body').addEventListener('change',function(e){
     if(e.target.id==='ap-bg-file'){var file=e.target.files&&e.target.files[0];if(file)handleBgUpload(file);e.target.value='';return;}
