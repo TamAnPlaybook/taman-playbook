@@ -1,4 +1,4 @@
-<!-- VERSION: v6.28-nangdong-3messages -->
+<!-- VERSION: v6.29-flow3-overview-dashboard -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1056,13 +1056,17 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
   <div class="page" id="page-tp">
     <div class="content">
       <div class="stabs">
-        <button class="stab on" data-sub="tp:goals">&#127919; Mục tiêu</button>
+        <button class="stab on" data-sub="tp:overview">&#128256; Tổng quan</button>
+        <button class="stab" data-sub="tp:goals">&#127919; Mục tiêu</button>
         <button class="stab" data-sub="tp:actions">&#9889; Hành động</button>
         <button class="stab" data-sub="tp:results">&#128202; Kết quả</button>
       </div>
 
+      <!-- 0. TỔNG QUAN — Dòng chảy 3 bước: Mục tiêu → Hành động hôm nay → Kết quả (v6.29) -->
+      <div class="spg on" id="tp-overview"><div id="flow3-content"></div></div>
+
       <!-- A. MỤC TIÊU (Goals): Vision Board + Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
-      <div class="spg on" id="tp-goals">
+      <div class="spg" id="tp-goals">
         <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)</div>
         <div id="vision-board-content"></div>
         <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)</div>
@@ -1520,7 +1524,7 @@ var MINZ=0.03,MAXZ=12;       // giới hạn zoom rất rộng → phóng to/thu
 var activeLvlHL=null,activeStarHL=null; // tầng/F đang được làm sáng (null = không)
 var fbApp=null,fbAuth=null,fbDb=null,fbUser=null,fbReady=false;
 var currentTreeMode='binary';
-var currentSubTab={tp:'goals',act:'today',res:'tongquan',pt:'chart',map:'mine'};
+var currentSubTab={tp:'overview',act:'today',res:'tongquan',pt:'chart',map:'mine'};
 var lkSelected=null;
 var ddKeyId=null;
 var ddBranchRootId=null; // Điểm danh: lọc danh sách theo cả nhánh của 1 ID (chọn từ ô tìm) — null = lọc theo chuỗi gõ
@@ -4035,10 +4039,97 @@ function renderActionCenter(){
   h+=_prospectAttentionHtml();
   el.innerHTML=h;
 }
+// ================================================================
+// v6.29 — TỔNG QUAN "Dòng chảy 3 bước": Mục tiêu → Hành động hôm nay → Kết quả
+//   Đơn giản hoá để ai cũng nhìn ra: nhắm tới gì → hôm nay làm gì → đã đạt tới đâu.
+//   Toàn đội (mặc định) hoặc chọn 1 thành viên. Mỗi bước có nút "Xem chi tiết →".
+// ================================================================
+var _flow3Mid=null; // null = toàn đội; else id thành viên
+function _f3Bar(pct,color){pct=Math.max(0,Math.min(100,Math.round(pct||0)));return '<div style="height:12px;background:#EEE;border-radius:7px;overflow:hidden;margin:5px 0"><div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:7px"></div></div>';}
+function _f3Arrow(){return '<div style="text-align:center;color:#C8A84B;font-size:20px;line-height:1;margin:3px 0">&#11015;</div>';}
+function _f3Card(step,ico,title,question,color,bodyHtml,gotoSub,detailLabel){
+  var h='<div style="border:1px solid #E7E0CC;border-left:5px solid '+color+';border-radius:12px;background:#fff;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.05)">';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span style="background:'+color+';color:#fff;font-weight:800;font-size:12px;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:none">'+step+'</span>';
+  h+='<span style="font-size:15px;font-weight:800;color:'+color+'">'+ico+' '+title+'</span></div>';
+  h+='<div style="font-size:12px;color:#999;font-style:italic;margin-bottom:8px">'+question+'</div>';
+  h+=bodyHtml;
+  if(gotoSub)h+='<div style="margin-top:10px"><button class="btn btn-d btn-sm" data-goto-sub="'+gotoSub+'">'+detailLabel+' &rarr;</button></div>';
+  h+='</div>';
+  return h;
+}
+function renderFlow3(){
+  var el=document.getElementById('flow3-content');if(!el)return;
+  var mid=_flow3Mid;
+  var mem=mid?members.find(function(x){return x.id===mid;}):null;
+  if(mid&&!mem){_flow3Mid=null;mid=null;}
+  // Header + chọn đội/thành viên
+  var h='<div style="background:linear-gradient(135deg,#1A7A5E,#0E5C46);color:#fff;border-radius:12px;padding:13px 15px;margin-bottom:12px">';
+  h+='<div style="font-size:15.5px;font-weight:800">&#128256; Mục tiêu &rarr; Hành động &rarr; Kết quả</div>';
+  h+='<div style="font-size:12px;opacity:.92;margin-top:2px">Nhắm tới gì · hôm nay làm gì · đã đạt tới đâu — kỳ <b>'+escHtml(periodLabel())+'</b>.</div>';
+  h+='<div style="margin-top:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px">&#128101; Xem cho:</span>';
+  h+='<select id="flow3-mem" class="nmod-inp" style="min-width:180px;color:#1A1A1A">';
+  h+='<option value="">Toàn đội ('+members.length+' TV)</option>';
+  members.forEach(function(m){h+='<option value="'+m.id+'"'+(mid===m.id?' selected':'')+'>'+escHtml(m.name)+'</option>';});
+  h+='</select></div></div>';
+
+  // BƯỚC 1 — MỤC TIÊU
+  var ann=loadAnn();
+  var apcts=ann.items.filter(function(it){return annNum(it.annual)>0;}).map(function(it){return Math.min(100,annPct(it.act&&it.act.year,annNum(it.annual)));});
+  var ypct=apcts.length?Math.round(apcts.reduce(function(a,b){return a+b;},0)/apcts.length):0;
+  var goals=loadGoals();
+  var gAvg=goals.length?Math.round(goals.reduce(function(s,g){return s+goalPct(g);},0)/goals.length):0;
+  var b1='<div style="font-size:13px;color:#333">&#127919; Tiến độ mục tiêu năm '+ann.year+': <b style="color:#1A7A5E">'+ypct+'%</b></div>'+_f3Bar(ypct,'#1A7A5E');
+  if(goals.length){
+    b1+='<div style="font-size:12.5px;color:#555;margin-top:8px;font-weight:700">Chỉ tiêu kỳ này:</div>';
+    goals.slice(0,5).forEach(function(g){var p=goalPct(g),st=goalStatus(p);
+      b1+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:3px 0;gap:8px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(g.name||'(mục tiêu)')+'</span><b style="color:'+st.bar+';flex:none">'+p+'%</b><span style="color:#999;flex:none;font-size:11.5px">'+escHtml(String(g.current||0))+'/'+escHtml(String(g.target||0))+'</span></div>';
+    });
+  }else b1+='<div style="font-size:12.5px;color:#C62828;margin-top:8px">&#9888;&#65039; Chưa đặt chỉ tiêu kỳ này — bấm "Đặt mục tiêu".</div>';
+  h+=_f3Card(1,'&#127919;','MỤC TIÊU','Tôi đang nhắm tới điều gì?','#1A7A5E',b1,'tp:goals','Đặt &amp; xem mục tiêu');
+  h+=_f3Arrow();
+
+  // BƯỚC 2 — HÀNH ĐỘNG HÔM NAY
+  var b2='';
+  if(!mid){
+    var acts=dayActs();var doneA=acts.filter(function(x){return x.done;}).length;
+    var actPct=acts.length?Math.round(doneA/acts.length*100):0;
+    var presN=members.filter(memberActive).length;
+    b2+='<div style="font-size:13px;color:#333">&#128203; Việc hôm nay ('+fmtDate(currentDay)+'): <b>'+doneA+'/'+acts.length+' xong</b></div>'+_f3Bar(actPct,'#FB8C00');
+    var undone=acts.filter(function(x){return !x.done;}).slice(0,4);
+    if(undone.length){b2+='<div style="font-size:12px;color:#666;margin-top:2px">Chưa xong:';undone.forEach(function(a){b2+='<div style="padding:2px 0">&#11036; '+(a.prio?'&#11088; ':'')+escHtml(a.text)+'</div>';});b2+='</div>';}
+    else if(acts.length)b2+='<div style="font-size:12px;color:#1A7A5E;margin-top:2px">&#9989; Đã xong hết việc hôm nay!</div>';
+    else b2+='<div style="font-size:12px;color:#999;margin-top:2px">Chưa thêm việc nào cho hôm nay.</div>';
+    b2+='<div style="font-size:12.5px;color:#333;margin-top:9px">&#128587; Điểm danh đội hôm nay: <b>'+presN+'/'+members.length+'</b> có mặt</div>'+_f3Bar(members.length?(presN/members.length*100):0,'#1565C0');
+  }else{
+    var khp=parseInt(dGet(mid,'kh_pct')||'0')||0;
+    var att=[['sang','&#127749; Sáng'],['trua','&#9728;&#65039; Trưa'],['toi','&#127769; Tối']].map(function(s){return (dGet(mid,s[0])==='yes'?'&#9989;':'&#11036;')+' '+s[1];}).join(' &nbsp; ');
+    b2+='<div style="font-size:13px;color:#333">&#128203; Kế hoạch ngày của <b>'+escHtml(mem.name)+'</b>: <b>'+khp+'%</b> hoàn thành</div>'+_f3Bar(khp,'#FB8C00');
+    b2+='<div style="font-size:12.5px;color:#555;margin-top:6px">Điểm danh: '+att+'</div>';
+    b2+='<div style="font-size:11.5px;color:#999;margin-top:4px">Bấm tên trong "Kế hoạch ngày &amp; Điểm danh" để cập nhật việc cụ thể.</div>';
+  }
+  h+=_f3Card(2,'&#9889;','HÀNH ĐỘNG HÔM NAY','Hôm nay tôi cần làm gì?','#FB8C00',b2,'tp:actions','Xem việc hôm nay');
+  h+=_f3Arrow();
+
+  // BƯỚC 3 — KẾT QUẢ
+  var b3='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+  MONTH_KPI.forEach(function(k){
+    var v=mid?(parseInt(mGet(mid,k.id)||'0')||0):(function(){var s=0;members.forEach(function(m){s+=parseInt(mGet(m.id,k.id)||'0')||0;});return s;})();
+    b3+='<div style="flex:1;min-width:86px;background:#F4FBF9;border:1px solid #CDEBE0;border-radius:9px;padding:7px 9px;text-align:center"><div style="font-size:10.5px;color:#666;line-height:1.3">'+k.icon+' '+escHtml(k.lbl)+'</div><div style="font-size:19px;font-weight:800;color:#1A7A5E">'+v+'</div></div>';
+  });
+  b3+='</div>';
+  if(!mid){
+    var gc=gAvg>=70?'#1A7A5E':gAvg>=30?'#FB8C00':'#E53935';
+    b3+='<div style="font-size:12.5px;color:#333;margin-top:9px">&#128200; Đạt so với chỉ tiêu kỳ này: <b style="color:'+gc+'">'+gAvg+'%</b></div>'+_f3Bar(gAvg,gc);
+  }else b3+='<div style="font-size:11.5px;color:#999;margin-top:8px">Số liệu KPI của '+escHtml(mem.name)+' — '+escHtml(periodLabel())+'. Nhập/sửa ở "KPI thực đạt".</div>';
+  h+=_f3Card(3,'&#128202;','KẾT QUẢ','Tôi đã đạt được gì?','#1565C0',b3,'tp:results','Xem kết quả chi tiết');
+
+  el.innerHTML=h;
+}
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
-  sub=sub||currentSubTab.tp||'goals';
-  if(sub==='goals'){renderVisionBoards();renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
+  sub=sub||currentSubTab.tp||'overview';
+  if(sub==='overview')renderFlow3();
+  else if(sub==='goals'){renderVisionBoards();renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
@@ -7958,6 +8049,14 @@ document.addEventListener('click',function(e){
     return;
   }
 
+  // v6.29 — "Xem chi tiết →" từ Dòng chảy 3 bước: bấm đúng nút sub-tab thật (giữ highlight đúng)
+  t=e.target.closest('[data-goto-sub]');
+  if(t){
+    var _gs=t.getAttribute('data-goto-sub');
+    var _real=document.querySelector('.stab[data-sub="'+_gs+'"]');
+    if(_real)_real.click();
+    return;
+  }
   // Sub tabs
   t=e.target.closest('[data-sub]');
   if(t){
@@ -8706,6 +8805,7 @@ document.addEventListener('change',function(e){
     renderWheelCompare();
     return;
   }
+  if(t.id==='flow3-mem'){_flow3Mid=t.value||null;renderFlow3();return;} // v6.29 — chọn TV cho Dòng chảy 3 bước
   if(t.id==='bc-sel'){renderBcContent(t.value);return;}
   if(t.id==='lk-sel'){lkSelected=t.value;renderBranchStats();return;}
   if(t.id==='nf-f1of-sel'){
