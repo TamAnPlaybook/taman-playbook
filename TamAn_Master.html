@@ -1,4 +1,4 @@
-<!-- VERSION: v6.31-guide-backup-howto -->
+<!-- VERSION: v6.32-pareto-2080-plan-remove-adminguide -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1065,8 +1065,10 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
       <!-- 0. TỔNG QUAN — Dòng chảy 3 bước: Mục tiêu → Hành động hôm nay → Kết quả (v6.29) -->
       <div class="spg on" id="tp-overview"><div id="flow3-content"></div></div>
 
-      <!-- A. MỤC TIÊU (Goals): Vision Board + Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
+      <!-- A. MỤC TIÊU (Goals): Kế hoạch 20/80 + Vision Board + Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
       <div class="spg" id="tp-goals">
+        <div class="tp-sec-title">&#127919; Kế hoạch 20/80 — từ mục tiêu ra việc mỗi ngày</div>
+        <div id="pareto-content"></div>
         <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)</div>
         <div id="vision-board-content"></div>
         <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)</div>
@@ -3268,7 +3270,7 @@ function pSet(mid,f,v){nmSet('p_'+mid+'_'+f,v);}
 //   • Gom vào 1 document users/{uid}/data/localmirror = {kv,ts}.
 //   • "Bản mới nhất thắng" (so ts toàn document). KHÔNG cần Rules mới (chủ tự ghi users/** của mình).
 // ================================================================
-var LOCAL_SYNC_PREFIXES=['d_','mo_','p_','goals_'];
+var LOCAL_SYNC_PREFIXES=['d_','mo_','p_','goals_','pareto_'];
 function _isLocalSyncKey(k){
   if(k==='custom_lks')return true;
   for(var i=0;i<LOCAL_SYNC_PREFIXES.length;i++){if(k.indexOf(LOCAL_SYNC_PREFIXES[i])===0)return true;}
@@ -3756,6 +3758,7 @@ function renderAll(){
   renderWheelCompare();
   renderDdBranchBar();
   try{renderNangDong();}catch(e){}
+  try{renderPareto();}catch(e){}
 }
 function renderDdBranchBar(){
   var bar=document.getElementById('dd-branch-bar');if(!bar)return;
@@ -4129,7 +4132,7 @@ function renderFlow3(){
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'overview';
   if(sub==='overview')renderFlow3();
-  else if(sub==='goals'){renderVisionBoards();renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
+  else if(sub==='goals'){renderPareto();renderVisionBoards();renderAnnPlan();renderLifeWheel();renderLifeMirror();renderWheelCompare();renderGoalsMeasure();}
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
 }
@@ -4877,6 +4880,64 @@ function renderCompare(){
 // ================================================================
 // ĐO LƯỜNG MỤC TIÊU (goal progress) — v5.3  (theo kỳ đo pkey)
 // ================================================================
+// ================================================================
+// v6.32 — KẾ HOẠCH 20/80 (PARETO): gõ mục tiêu số khách VÀO ID → phễu nhân–quả
+//   → việc cần làm MỖI NGÀY → đo lường hằng ngày → khen / nhắc bù.
+//   Tỉ lệ 20% mỗi bước: 1 vào ID ⟸ 5 nghe cơ hội ⟸ 25 kết nối/mời ⟸ 125 trò chuyện.
+// ================================================================
+var PARETO_STAGES=[
+  {k:'talk',   ico:'💬', mult:125, lbl:'Trò chuyện / theo sát', desc:'Chủ động bắt chuyện, theo sát lần 2–3… để xây quan hệ.'},
+  {k:'connect',ico:'🤝', mult:25,  lbl:'Kết nối · tìm nỗi đau · mời trải nghiệm', desc:'Xây quan hệ đúng bước, tìm ra nỗi đau, mời đến CLB trải nghiệm / Zoom CHKD / lớp học 5 ngày.'},
+  {k:'opp',    ico:'🎓', mult:5,   lbl:'Nghe cơ hội KD đầy đủ + theo sát', desc:'Đã nghe TRỌN cơ hội kinh doanh qua Zoom / lớp học nghề đúng bước và được theo sát.'},
+  {k:'id',     ico:'🎯', mult:1,   lbl:'Khách VÀO ID', desc:'Kết quả cuối — có khách đăng ký ID mới.'}
+];
+function _pMonthKey(){var d=currentDay;return d.getFullYear()+'-'+(d.getMonth()+1);}
+function _pMonthLabel(){var d=currentDay;return 'Tháng '+(d.getMonth()+1)+'/'+d.getFullYear();}
+function _pDaysInMonth(){var d=currentDay;return new Date(d.getFullYear(),d.getMonth()+1,0).getDate();}
+function _pDaysLeft(){return _pDaysInMonth()-currentDay.getDate()+1;} // gồm hôm nay
+function loadParetoGoal(){var n=parseInt(nmGet('pareto_goal_'+_pMonthKey()),10);return (isNaN(n)||n<0)?0:n;}
+function saveParetoGoal(g){nmSet('pareto_goal_'+_pMonthKey(),String(g));}
+function paretoDayGet(){var n=parseInt(nmGet('pareto_d_'+dk()),10);return (isNaN(n)||n<0)?0:n;}
+function paretoDaySet(n){nmSet('pareto_d_'+dk(),String(n));}
+function paretoPerDay(g){var days=_pDaysInMonth();return days?Math.ceil(g*125/days):0;}
+function paretoMonthDone(){
+  var pre='ta_'+NS+'_pareto_d_',y=currentDay.getFullYear(),m=currentDay.getMonth()+1,sum=0;
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!k||k.indexOf(pre)!==0)continue;
+    var p=k.slice(pre.length).split('-');if(p.length===3&&(+p[0])===y&&(+p[1])===m)sum+=parseInt(localStorage.getItem(k),10)||0;
+  }}catch(e){}
+  return sum;
+}
+function renderPareto(){
+  var el=document.getElementById('pareto-content');if(!el)return;
+  var g=loadParetoGoal(),perDay=paretoPerDay(g);
+  var h='<div style="background:linear-gradient(135deg,#1A7A5E,#0E5C46);color:#fff;border-radius:12px;padding:13px 15px;margin-bottom:12px">';
+  h+='<div style="font-size:14px;font-weight:800">🎯 '+_pMonthLabel()+' — bạn muốn bao nhiêu khách VÀO ID?</div>';
+  h+='<div style="font-size:12px;opacity:.92;margin-top:2px">Gõ con số → app tính ngược theo 20/80 ra việc cần làm mỗi ngày.</div>';
+  h+='<div style="margin-top:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><input id="pareto-goal-inp" type="number" min="0" inputmode="numeric" value="'+(g||'')+'" placeholder="VD: 2" style="width:120px;padding:8px 10px;border-radius:8px;border:none;font-size:16px;font-weight:800;color:#1A1A1A;text-align:center"><span style="font-size:13px">khách VÀO ID / tháng</span></div></div>';
+  if(!g){h+='<div style="font-size:13px;color:#999;padding:6px 2px;line-height:1.7">Nhập số khách bạn muốn có ID trong tháng để xem <b>phễu 20/80</b> và <b>việc cần làm mỗi ngày</b>.</div>';el.innerHTML=h;return;}
+  // Phễu nhân–quả (hành động → kết quả)
+  h+='<div style="font-size:12.5px;color:#555;font-weight:700;margin:2px 2px 8px">🔗 Quy trình nhân–quả (cứ 5 → 1):</div>';
+  PARETO_STAGES.forEach(function(s,i){
+    var n=g*s.mult,isTalk=s.k==='talk',isId=s.k==='id';
+    var col=isId?'#C62828':isTalk?'#1565C0':'#1A7A5E';
+    h+='<div style="border:1px solid #E7E0CC;border-left:5px solid '+col+';border-radius:10px;background:#fff;padding:10px 12px;margin-bottom:4px"><div style="display:flex;align-items:flex-start;gap:8px"><span style="font-size:18px">'+s.ico+'</span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;color:'+col+'">'+n+' người <span style="font-weight:600;color:#333;font-size:13px">— '+escHtml(s.lbl)+'</span></div><div style="font-size:11.5px;color:#888;margin-top:1px;line-height:1.5">'+escHtml(s.desc)+'</div>';
+    if(isTalk)h+='<div style="font-size:12px;color:#1565C0;font-weight:700;margin-top:3px">→ ÷ '+_pDaysInMonth()+' ngày = mỗi ngày trò chuyện/theo sát ít nhất <b>'+perDay+' người</b></div>';
+    h+='</div></div></div>';
+    if(i<PARETO_STAGES.length-1)h+='<div style="text-align:center;color:#C8A84B;font-size:14px;line-height:1;margin:1px 0">⬇ <span style="font-size:10.5px;color:#999">20% chuyển đổi</span></div>';
+  });
+  // Việc mỗi ngày + đưa vào Kế hoạch ngày
+  h+='<div style="background:#FFF8E1;border:1.5px solid #FFD54F;border-radius:12px;padding:12px 14px;margin-top:12px"><div style="font-size:14px;font-weight:800;color:#7A5A0C">📅 Việc cần làm MỖI NGÀY</div><div style="font-size:13.5px;color:#5D4409;margin-top:4px">💬 Trò chuyện / theo sát (lần 2, 3…) với <b>ít nhất '+perDay+' người</b>.</div><button class="btn btn-g btn-sm" data-pareto-add="'+perDay+'" style="margin-top:8px">➕ Đưa vào Kế hoạch ngày hôm nay</button></div>';
+  // Đo lường HÔM NAY (theo lịch — currentDay) → khen / nhắc
+  var actual=paretoDayGet(),stCol,stBg,stMsg;
+  if(actual>=perDay){stCol='#1A7A5E';stBg='#E8F5E9';stMsg='🎉 Tuyệt vời! Hôm nay đã trò chuyện <b>'+actual+'</b> người — ĐẠT/VƯỢT mục tiêu ('+perDay+'). Giữ nhịp này, ID mới chỉ là chuyện sớm muộn!';}
+  else{stCol='#E65100';stBg='#FFF3E0';stMsg='💪 Hôm nay <b>'+actual+'/'+perDay+'</b> người — cần thêm <b>'+(perDay-actual)+'</b> người nữa. Nếu chưa kịp, <b>hôm sau bù lại</b> nhé. Mỗi cuộc trò chuyện là 1 bước tới ID mới!';}
+  h+='<div style="border:1px solid '+stCol+';background:'+stBg+';border-radius:12px;padding:12px 14px;margin-top:10px"><div style="font-size:13px;font-weight:800;color:#333">📏 Đo lường hôm nay ('+fmtDate(currentDay)+')</div><div style="margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12.5px;color:#555">Đã trò chuyện/theo sát:</span><input id="pareto-day-inp" type="number" min="0" inputmode="numeric" value="'+(actual||'')+'" placeholder="0" style="width:90px;padding:7px 9px;border-radius:8px;border:1.5px solid #ccc;font-size:15px;font-weight:800;text-align:center"><span style="font-size:12.5px;color:#555">người</span></div><div style="font-size:12.5px;color:'+stCol+';font-weight:600;margin-top:8px;line-height:1.6">'+stMsg+'</div></div>';
+  // Tiến độ tháng + bù
+  var done=paretoMonthDone(),need=g*125,left=_pDaysLeft(),remain=Math.max(0,need-done);
+  var avg=left>0?Math.ceil(remain/left):remain,pct=need?Math.min(100,Math.round(done/need*100)):0;
+  h+='<div style="border:1px solid #E7E0CC;border-radius:12px;background:#fff;padding:12px 14px;margin-top:10px"><div style="font-size:13px;font-weight:800;color:#1565C0">📊 Tiến độ '+_pMonthLabel()+'</div><div style="font-size:12.5px;color:#333;margin-top:4px">Đã trò chuyện <b>'+done+'</b>/'+need+' người ('+pct+'%)</div><div style="height:12px;background:#EEE;border-radius:7px;overflow:hidden;margin:5px 0"><div style="height:100%;width:'+pct+'%;background:#1565C0;border-radius:7px"></div></div><div style="font-size:12px;color:#666">Còn <b>'+left+'</b> ngày · cần <b style="color:'+(avg>perDay?'#E65100':'#1A7A5E')+'">'+avg+' người/ngày</b> để kịp'+(avg>perDay?' (đang cần bù)':'')+'.</div></div>';
+  el.innerHTML=h;
+}
 function loadGoals(){try{var s=nmGet('goals_'+pkey());return s?JSON.parse(s):[];}catch(e){return [];}}
 function saveGoals(arr){nmSet('goals_'+pkey(),JSON.stringify(arr));}
 function goalPct(g){var t=parseFloat(g.target),c=parseFloat(g.current);if(!t||t<=0)return 0;if(isNaN(c))c=0;return Math.round(c/t*100);}
@@ -7992,7 +8053,7 @@ function renderGuide(){
     {icon:'\uD83D\uDCC5',title:'KPI Tháng',color:'#E8F5F0',body:'Tab Tháng: nhập 4 chỉ số mỗi TV.\u2022 Học viên đến lớp, người vào Zoom, ID mới, buổi CLB.\u2022 Tổng cả team hiện tự động ở trên cùng.'},
     {icon:'\uD83C\uDF33',title:'Sơ đồ nhị phân',color:'#E3F2FD',body:'Bấm nút + trên mỗi ô để thêm nhánh Trái/Phải.\u2022 Bấm vào ô để xem chi tiết, sửa, đổi bên.\u2022 Màu dây theo nhánh F1. Đường vàng = ranh giới T3\u2194T4. M\u1EB7t tr\u1EDDi: \u0111\u01B0\u1EDDng xanh=F6\u2194F7, v\u00E0ng=F9\u2194F10.\u2022 \u2B50 = đạt tiêu chí sao Prife (2 F1, mỗi F1 \u22654 ID trong 2 tháng liên tiếp).'},
     {icon:'\uD83C\uDFC6',title:'Cấp bậc & Cảnh báo',color:'#FFF8E1',body:'10 cấp: Future Star \u2192 1\u2605 \u2192 2\u2605 \u2192 3\u2605 \u2192 Sapphire \u2192 Ruby \u2192 Pearl \u2192 Emerald \u2192 Diamond \u2192 Crown Ambassador.\u2022 ID đạt cấp có huy hiệu màu trên sơ đồ.\u2022 ID đạt \u226550% tiêu chí cấp kế tiếp sẽ NHẤP NHÁY + hiện trong bảng cảnh báo vàng phía trên sơ đồ.\u2022 Bấm vào ID trong Hệ mặt trời để xem chi tiết tiêu chí.'},
-    {icon:'\uD83D\uDD10',title:'Quản trị & Mã mời',color:'#FFEBEE',body:'Tab Quản trị: Huy bấm Nhận quyền quản trị lần đầu tiên.\u2022 Đặt Mã mời: người mới phải có mã mới đăng ký được.\u2022 Đổi mã bất kỳ lúc nào để chặn người ngoài.\u2022 Xóa tài khoản: làm theo hướng dẫn trong tab (Firebase Console).'},
+    
     {icon:'\uD83D\uDCBE',title:'Sao lưu & Khôi phục',color:'#FFF3E0',body:'Vào nút 🎨 (Giao diện & cá nhân hoá) trên thanh trên cùng → cuối bảng có mục "💾 Sao lưu & Khôi phục dữ liệu" với 2 nút:• ⬇️ Sao lưu ra file — tải về 1 file TamAn-SaoLuu-[tên]-[ngày].json chứa TOÀN BỘ: sơ đồ cây, thành viên, mục tiêu & chỉ tiêu, điểm danh & kế hoạch ngày, KPI, kỹ năng, bánh xe cuộc đời, Năng động, CLB, bảng tầm nhìn, giao diện/nền/nhắc nhở (gom cả dữ liệu trên máy lẫn trên cloud). Bạn cất file ở nơi an toàn (Drive, email cho chính mình…).• ⬆️ Khôi phục từ file — chọn file sao lưu → xác nhận → app ghi đè dữ liệu hiện tại (cả máy này lẫn cloud) rồi tự tải lại. Có hỏi xác nhận rõ ràng trước khi ghi đè.• Nên sao lưu ĐỊNH KỲ (vd mỗi tuần) để luôn có bản mới nhất phòng khi sự cố.'}
   ];
   var h='';
@@ -8128,6 +8189,14 @@ document.addEventListener('click',function(e){
     return;
   }
 
+  // v6.32 — Kế hoạch 20/80: đưa việc trò chuyện mỗi ngày vào Kế hoạch ngày hôm nay
+  t=e.target.closest('[data-pareto-add]');
+  if(t){
+    var _pn=parseInt(t.getAttribute('data-pareto-add'),10)||0;
+    addAct('sang','💬 Trò chuyện/theo sát ít nhất '+_pn+' người (Kế hoạch 20/80)');
+    showToast('✓ Đã thêm vào Kế hoạch ngày hôm nay');
+    return;
+  }
   // v6.29 — "Xem chi tiết →" từ Dòng chảy 3 bước: bấm đúng nút sub-tab thật (giữ highlight đúng)
   t=e.target.closest('[data-goto-sub]');
   if(t){
@@ -8884,6 +8953,8 @@ document.addEventListener('change',function(e){
     renderWheelCompare();
     return;
   }
+  if(t.id==='pareto-goal-inp'){var _pg=parseInt(t.value,10);saveParetoGoal((isNaN(_pg)||_pg<0)?0:_pg);renderPareto();return;} // v6.32
+  if(t.id==='pareto-day-inp'){var _pd=parseInt(t.value,10);paretoDaySet((isNaN(_pd)||_pd<0)?0:_pd);renderPareto();return;}
   if(t.id==='flow3-mem'){_flow3Mid=t.value||null;renderFlow3();return;} // v6.29 — chọn TV cho Dòng chảy 3 bước
   if(t.id==='bc-sel'){renderBcContent(t.value);return;}
   if(t.id==='lk-sel'){lkSelected=t.value;renderBranchStats();return;}
