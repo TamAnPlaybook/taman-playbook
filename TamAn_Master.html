@@ -1,4 +1,4 @@
-<!-- VERSION: v6.30-backup-restore -->
+<!-- VERSION: v6.31-guide-backup-howto -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -7993,7 +7993,7 @@ function renderGuide(){
     {icon:'\uD83C\uDF33',title:'Sơ đồ nhị phân',color:'#E3F2FD',body:'Bấm nút + trên mỗi ô để thêm nhánh Trái/Phải.\u2022 Bấm vào ô để xem chi tiết, sửa, đổi bên.\u2022 Màu dây theo nhánh F1. Đường vàng = ranh giới T3\u2194T4. M\u1EB7t tr\u1EDDi: \u0111\u01B0\u1EDDng xanh=F6\u2194F7, v\u00E0ng=F9\u2194F10.\u2022 \u2B50 = đạt tiêu chí sao Prife (2 F1, mỗi F1 \u22654 ID trong 2 tháng liên tiếp).'},
     {icon:'\uD83C\uDFC6',title:'Cấp bậc & Cảnh báo',color:'#FFF8E1',body:'10 cấp: Future Star \u2192 1\u2605 \u2192 2\u2605 \u2192 3\u2605 \u2192 Sapphire \u2192 Ruby \u2192 Pearl \u2192 Emerald \u2192 Diamond \u2192 Crown Ambassador.\u2022 ID đạt cấp có huy hiệu màu trên sơ đồ.\u2022 ID đạt \u226550% tiêu chí cấp kế tiếp sẽ NHẤP NHÁY + hiện trong bảng cảnh báo vàng phía trên sơ đồ.\u2022 Bấm vào ID trong Hệ mặt trời để xem chi tiết tiêu chí.'},
     {icon:'\uD83D\uDD10',title:'Quản trị & Mã mời',color:'#FFEBEE',body:'Tab Quản trị: Huy bấm Nhận quyền quản trị lần đầu tiên.\u2022 Đặt Mã mời: người mới phải có mã mới đăng ký được.\u2022 Đổi mã bất kỳ lúc nào để chặn người ngoài.\u2022 Xóa tài khoản: làm theo hướng dẫn trong tab (Firebase Console).'},
-    {icon:'\uD83D\uDCBE',title:'Sao lưu & Khôi phục',color:'#FFF3E0',body:'Nút Xuất dữ liệu: tải file JSON backup toàn bộ.\u2022 Nút Import: khôi phục từ file đã xuất.\u2022 Dữ liệu cũng tự động sync lên cloud theo tài khoản.'}
+    {icon:'\uD83D\uDCBE',title:'Sao lưu & Khôi phục',color:'#FFF3E0',body:'Vào nút 🎨 (Giao diện & cá nhân hoá) trên thanh trên cùng → cuối bảng có mục "💾 Sao lưu & Khôi phục dữ liệu" với 2 nút:• ⬇️ Sao lưu ra file — tải về 1 file TamAn-SaoLuu-[tên]-[ngày].json chứa TOÀN BỘ: sơ đồ cây, thành viên, mục tiêu & chỉ tiêu, điểm danh & kế hoạch ngày, KPI, kỹ năng, bánh xe cuộc đời, Năng động, CLB, bảng tầm nhìn, giao diện/nền/nhắc nhở (gom cả dữ liệu trên máy lẫn trên cloud). Bạn cất file ở nơi an toàn (Drive, email cho chính mình…).• ⬆️ Khôi phục từ file — chọn file sao lưu → xác nhận → app ghi đè dữ liệu hiện tại (cả máy này lẫn cloud) rồi tự tải lại. Có hỏi xác nhận rõ ràng trước khi ghi đè.• Nên sao lưu ĐỊNH KỲ (vd mỗi tuần) để luôn có bản mới nhất phòng khi sự cố.'}
   ];
   var h='';
   secs.forEach(function(s,i){
