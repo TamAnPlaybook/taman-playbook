@@ -1,4 +1,4 @@
-<!-- VERSION: v6.34-newid-email-verify-antispam -->
+<!-- VERSION: v6.35-ui-responsive-nolost-dragsafe -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -90,7 +90,7 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .modal-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
 .modal-name{font-size:16px;font-weight:700}
 .modal-x{width:32px;height:32px;border-radius:50%;background:#F0F0F0;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
-.modal-body{overflow-y:auto;flex:1;padding:0 16px 8px}
+.modal-body{overflow-y:auto;overflow-x:hidden;flex:1;padding:0 16px 8px;overscroll-behavior:contain}
 .modal-foot{padding:12px 16px;display:flex;gap:8px;border-top:1px solid #F0F0F0;flex-shrink:0}
 .nmod-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:flex-end;justify-content:center}
 .nmod-ov.open{display:flex}
@@ -772,9 +772,11 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .pm-section{margin-bottom:14px}
 .pm-sec-title{font-size:12px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid #F0F0F0}
 .pm-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.pm-fld{flex:1;min-width:120px}
-.pm-fld label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:3px}
-.pm-fld input,.pm-fld select,.pm-fld textarea{width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 10px;font-size:14px;font-family:Arial;outline:none;background:#fff;box-sizing:border-box}
+.pm-fld{flex:1 1 130px;min-width:0;max-width:100%}
+.pm-fld label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis}
+.pm-fld input,.pm-fld select,.pm-fld textarea{width:100%;min-width:0;max-width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:8px 10px;font-size:14px;font-family:Arial;outline:none;background:#fff;box-sizing:border-box}
+/* iOS: input[type=date] hay có bề rộng nội tại lớn → tràn ô. Ép tôn trọng width. */
+.pm-fld input[type=date]{-webkit-appearance:none;appearance:none}
 .pm-fld input:focus,.pm-fld select:focus,.pm-fld textarea:focus{border-color:#1A7A5E}
 .pm-fu-list{margin-bottom:6px;display:flex;flex-direction:column;gap:6px}
 .pm-fu-item{background:#F5F5F5;border-radius:9px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start}
@@ -10248,6 +10250,20 @@ function bindStatic(){
   document.getElementById('prosp-modal-del').addEventListener('click',function(){if(_prospectEditId)deleteProspect(_prospectEditId);});
   document.getElementById('pm-score')&&document.getElementById('pm-score').addEventListener('input',function(){var n=document.getElementById('pm-score-num');if(n)n.textContent=this.value;});
 
+  // v6.35 — GIỮ POPUP MỞ khi KÉO rồi thả trúng nền mờ (vd kéo bản đồ chọn vị trí ra ngoài khung).
+  // Mọi overlay có id kết thúc '-ov' chỉ đóng khi con trỏ NHẤN XUỐNG đúng trên nền mờ đó;
+  // nếu nhấn bắt đầu từ BÊN TRONG popup (đang kéo) rồi thả ra nền → chặn 'click' → không đóng.
+  (function(){
+    var _ovDown=null;
+    ['pointerdown','mousedown','touchstart'].forEach(function(ev){
+      document.addEventListener(ev,function(e){_ovDown=e.target;},true);
+    });
+    document.addEventListener('click',function(e){
+      var el=e.target;
+      if(el&&el.id&&/-ov$/.test(el.id)&&_ovDown!==el)e.stopPropagation(); // kéo từ trong ra → giữ mở
+    },true);
+  })();
+
   // Cum calc (delegated vì render động)
   document.addEventListener('click',function(e){
     if(e.target&&e.target.id==='btn-cum-calc')calcCum();
@@ -10667,6 +10683,9 @@ function _addProspectFollowup(){
 function saveProspectModal(){
   var name=((document.getElementById('pm-name')||{}).value||'').trim();
   if(!name){showToast('Vui lòng nhập tên');return;}
+  // v6.35 — GIỮ dữ liệu: nếu đang gõ 1 lần theo dõi mà chưa bấm "+ Thêm" → tự thêm vào (tránh mất)
+  var _pfn=((document.getElementById('pm-fu-note')||{}).value||'').trim();
+  if(_pfn){var _pfd=((document.getElementById('pm-fu-date')||{}).value||'').trim()||_todayISO();_prospectModalFus.push({date:_pfd,note:_pfn});}
   var obj={
     id:_prospectEditId||('p'+Date.now()),
     name:name,
