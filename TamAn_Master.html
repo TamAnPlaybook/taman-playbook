@@ -1,4 +1,4 @@
-<!-- VERSION: v6.27.1-nangdong-loss-pct -->
+<!-- VERSION: v6.28-nangdong-3messages -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -5651,7 +5651,13 @@ function renderNangDong(){
   var rootNm=_ndRootName();
   var cy=(new Date()).getFullYear();
   var hm=nd&&nd.m?parseInt(nd.m,10):'',hy=nd&&nd.y?parseInt(nd.y,10):cy;
-  var h='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px;font-family:Arial">Chọn <b>tháng + năm bạn ĐÓNG Năng động gần nhất</b>'+(rootNm?(' cho ID gốc <b>'+escHtml(rootNm)+'</b>'):'')+'. Tháng đó tính là <b>tháng thứ 1</b>. Đến <b>tháng 6</b> nên đóng lại; từ <b>tháng 12</b> có nguy cơ mất doanh số tích luỹ.</div>';
+  // v6.28 — 3 thông điệp MẠNH MẼ (luôn hiện); thông điệp mốc tương ứng trạng thái được làm nổi
+  var h='<div style="border:2px solid #C8A84B;background:linear-gradient(135deg,#FFFDF5,#FFF4D6);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-family:Arial">';
+  h+='<div style="font-size:13.5px;font-weight:800;color:#7A5A0C;line-height:1.55">📢 Năng động HÀNG THÁNG để nhận TRỌN quyền lợi:<div style="color:#5D4409;font-weight:700;margin-top:2px">Nhánh nhỏ · TN/TN · Năng động · Tái tiêu dùng · Lên vị trí…</div></div>';
+  h+='<div style="margin-top:10px;border-radius:9px;padding:9px 11px;background:#FFF3E0;border:1.5px solid #FFB74D;font-size:12.5px;color:#E65100;font-weight:700'+(st.lv==='warn'?';box-shadow:0 0 0 3px rgba(230,81,0,.30)':'')+'">⚠️ <b>Tháng 6</b>: NGUY CƠ MẤT <b>50%</b> doanh số tích luỹ — đóng Năng động để giữ trọn doanh số.</div>';
+  h+='<div style="margin-top:7px;border-radius:9px;padding:9px 11px;background:#FDECEA;border:1.5px solid #EF9A9A;font-size:12.5px;color:#C62828;font-weight:700'+(st.lv==='danger'?';box-shadow:0 0 0 3px rgba(198,40,40,.30)':'')+'">🔴 <b>Từ tháng 12</b>: NGUY CƠ MẤT <b>100%</b> doanh số tích luỹ — ĐÓNG NĂNG ĐỘNG NGAY.</div>';
+  h+='</div>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px;font-family:Arial">Chọn <b>tháng + năm bạn ĐÓNG Năng động gần nhất</b>'+(rootNm?(' cho ID gốc <b>'+escHtml(rootNm)+'</b>'):'')+'. Tháng đó tính là <b>tháng thứ 1</b>; đóng lại thì cập nhật để bộ đếm về tháng 1.</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">';
   h+='<div><div style="font-size:11px;color:#888;margin-bottom:3px">Tháng</div><select id="nd-month" class="nmod-inp" style="min-width:96px"><option value="">— Tháng —</option>';
   for(var mo=1;mo<=12;mo++)h+='<option value="'+mo+'"'+(hm===mo?' selected':'')+'>Tháng '+mo+'</option>';
