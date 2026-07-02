@@ -1,4 +1,4 @@
-<!-- VERSION: v6.35-ui-responsive-nolost-dragsafe -->
+<!-- VERSION: v6.36-online-presence-team-datasync-approve -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1770,6 +1770,94 @@ async function fetchAccounts(){
   snap.forEach(function(d){var v=d.data()||{};out.push({uid:d.id,name:v.name||'',email:v.email||'',createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp});});
   return out;
 }
+// ================================================================
+// v6.36 — AI DANG ONLINE (presence real-time)
+//   • Moi user dang nhap tu "ping" vao accounts/{uid} (lastActive) moi 60s khi tab dang mo.
+//     Rules hien tai DA cho phep (chu tai khoan tu ghi accounts cua minh) → KHONG can Rules moi.
+//   • QTV xem box "Dang online" o tab Quan tri: onSnapshot real-time tren collection accounts.
+// ================================================================
+var _presTimer=null,_presVisHooked=false;          // heartbeat phía user
+var _presUnsub=null,_presTick=null,_presAccts=null; // watcher phía QTV
+var PRESENCE_PING_MS=60000, PRESENCE_ONLINE_MS=150000, PRESENCE_AWAY_MS=600000;
+function presencePing(){
+  if(!fbDb||!fbUser)return;
+  if(document.visibilityState==='hidden')return; // tab ẩn → không tính là đang dùng
+  import(FB_STORE).then(function(m){
+    m.setDoc(m.doc(fbDb,'accounts',fbUser.uid),
+      {lastActive:m.serverTimestamp(),lastActiveIso:new Date().toISOString()},{merge:true}).catch(function(){});
+  }).catch(function(){});
+}
+function startPresence(){
+  presencePing();
+  clearInterval(_presTimer);
+  _presTimer=setInterval(presencePing,PRESENCE_PING_MS);
+  if(!_presVisHooked){
+    _presVisHooked=true;
+    document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')presencePing();});
+  }
+}
+function _presTime(v){
+  // lastActive có thể là Firestore Timestamp (server) hoặc chuỗi ISO (fallback)
+  if(!v)return 0;
+  if(typeof v.toDate==='function'){try{return v.toDate().getTime();}catch(e){return 0;}}
+  var t=new Date(v).getTime();return isNaN(t)?0:t;
+}
+function stopPresenceWatch(){
+  if(_presUnsub){try{_presUnsub();}catch(e){}_presUnsub=null;}
+  if(_presTick){clearInterval(_presTick);_presTick=null;}
+}
+function watchPresence(){
+  stopPresenceWatch();
+  if(!fbDb||!fbUser)return;
+  import(FB_STORE).then(function(m){
+    _presUnsub=m.onSnapshot(m.collection(fbDb,'accounts'),function(snap){
+      var out=[];
+      snap.forEach(function(d){
+        var v=d.data()||{};
+        out.push({uid:d.id,name:v.name||'',email:v.email||'',
+          last:Math.max(_presTime(v.lastActive),_presTime(v.lastActiveIso))});
+      });
+      _presAccts=out;renderPresenceBox();
+    },function(){/* thiếu quyền đọc accounts → im lặng */});
+  }).catch(function(){});
+  _presTick=setInterval(renderPresenceBox,30000); // trạng thái tự "nguội" theo thời gian dù không có sự kiện mới
+}
+function _presAgo(ms){
+  var s=Math.floor(ms/1000);
+  if(s<60)return 'vừa xong';
+  var m2=Math.floor(s/60);if(m2<60)return m2+' phút trước';
+  var h2=Math.floor(m2/60);if(h2<24)return h2+' giờ trước';
+  return Math.floor(h2/24)+' ngày trước';
+}
+function renderPresenceBox(){
+  var el=document.getElementById('presence-list');if(!el)return;
+  if(!_presAccts){el.innerHTML='<div style="font-size:13px;color:#999">Đang kết nối real-time…</div>';return;}
+  var now=Date.now();
+  var rows=_presAccts.slice().map(function(a){
+    var dt=a.last?(now-a.last):Infinity;
+    a._st=dt<=PRESENCE_ONLINE_MS?2:(dt<=PRESENCE_AWAY_MS?1:0);
+    return a;
+  }).sort(function(a,b){
+    if(a._st!==b._st)return b._st-a._st;
+    return (b.last||0)-(a.last||0);
+  });
+  var nOn=rows.filter(function(a){return a._st===2;}).length;
+  var h='<div style="font-size:13.5px;font-weight:800;margin-bottom:8px;color:'+(nOn?'#1A7A5E':'#999')+'">🟢 '+nOn+' đang online / '+rows.length+' tài khoản</div>';
+  rows.forEach(function(a){
+    var me=(fbUser&&a.uid===fbUser.uid);
+    var dot=a._st===2?'#2E7D32':a._st===1?'#F9A825':'#BDBDBD';
+    var stTxt=a._st===2?'<b style="color:#2E7D32">Đang online</b>'
+      :a._st===1?'<b style="color:#B8860B">Vừa hoạt động · '+_presAgo(now-a.last)+'</b>'
+      :(a.last?('Offline · '+_presAgo(now-a.last)):'Offline · chưa rõ');
+    h+='<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #F2F0E9">';
+    h+='<span style="flex:none;width:11px;height:11px;border-radius:50%;background:'+dot+(a._st===2?';box-shadow:0 0 0 3px rgba(46,125,50,.18)':'')+'"></span>';
+    h+='<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.name||'(chưa đặt tên)')+(me?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+'</div>';
+    h+='<div style="font-size:11.5px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.email||'')+'</div></div>';
+    h+='<div style="flex:none;font-size:11.5px">'+stTxt+'</div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
 async function deleteAccountDoc(uid){ // QTV xoá bản ghi accounts/{uid} (v6.3)
   if(!fbReady)await loadFirebase();
   var m=await import(FB_STORE);
@@ -1808,6 +1896,9 @@ async function scanNewIds(){
   var trees=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'tree').catch(function(){return null;});}));
   var seen=_newidLoad(NEWID_SEEN_KEY,{})||{};
   var inbox=newidInbox();
+  // v6.36 — bo sung Email DK cho cac muc CU trong hop thu (tao truoc v6.34 chua luu email)
+  var _emap={};accts.forEach(function(a){_emap[a.uid]=a.email||'';});
+  inbox.forEach(function(it){if(!it.acctEmail&&_emap[it.uid])it.acctEmail=_emap[it.uid];});
   var firstRun=_newidLoad(NEWID_INIT_KEY,'')!=='1';
   var added=0,now=new Date().toISOString();
   accts.forEach(function(a,i){
@@ -1878,6 +1969,209 @@ function mountNewIdInbox(){
     if(r.firstRun)showToast('✅ Đã thiết lập theo dõi ID mới toàn đội ('+r.accounts+' tài khoản)');
     else if(r.added)showToast('🔔 Phát hiện '+r.added+' ID mới trong đội');
   }).catch(function(){renderNewIdInbox(false);});
+}
+
+// ================================================================
+// v6.36 — DONG BO DU LIEU DOI VE CAY QTV (chi QTV; DUYET truoc khi ghi)
+//   • Moi tai khoan co cay ID doc lap (mid khac nhau) → khop thanh vien bang TEN KHONG DAU.
+//   • Quet: Tiem nang (prospects) + du lieu "Muc tieu - Hanh dong - Ket qua" cua ho
+//     (diem danh/KH ngay d_, KPI mo_, ky nang p_ — nam trong users/{uid}/data/localmirror).
+//   • CHI DE XUAT: QTV bam "✔ Cap nhat" moi ghi vao du lieu cua QTV (nmSet → tu dong bo da thiet bi).
+//     "Bo qua" = ghi baseline (ta_admin_dsync_state) → khong hoi lai toi khi TV doi tiep.
+//   • KHONG bao gio XOA du lieu QTV (gia tri TV rong → bo qua). KHONG can Rules moi.
+// ================================================================
+var TSYNC_STATE_KEY='ta_admin_dsync_state';
+var _tsPending=[],_tsScanning=false;
+function _tsState(){return _newidLoad(TSYNC_STATE_KEY,{})||{};}
+function _tsHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h.toString(36);}
+function _tsVal(v){v=String(v==null?'':v);return v.length<=160?v:('#'+v.length+'~'+_tsHash(v));} // baseline gọn (giá trị dài → hash)
+function _tsProsHash(p){
+  return _tsHash(JSON.stringify([p.name,p.contactDate,p.zalo,p.fb,p.phone,p.region,
+    p.businessStage,p.healthStage,p.memberStatus,p.score,p.followups||[]]));
+}
+function _tsLabel(c){
+  if(c.t==='d'){
+    var i=c.rest.indexOf('_'),date=c.rest.slice(0,i),f=c.rest.slice(i+1);
+    var A={sang:'Điểm danh Sáng',trua:'Điểm danh Trưa',toi:'Điểm danh Tối',kh_pct:'% KH ngày (tự đo)'};
+    var fl;
+    if(A[f])fl=A[f];
+    else if(f.indexOf('kh_')===0){var kf=f.slice(3),rp=/_rp$/.test(kf);if(rp)kf=kf.slice(0,-3);fl='KH ngày "'+kf+'"'+(rp?' (báo cáo)':' (kế hoạch)');}
+    else fl=f;
+    return fl+' — '+date;
+  }
+  if(c.t==='mo'){var j=c.rest.indexOf('_');return 'KPI "'+c.rest.slice(j+1)+'" — kỳ '+c.rest.slice(0,j);}
+  return 'Kỹ năng '+c.rest.replace(/^sk_/,'');
+}
+function _tsShort(v){v=String(v==null?'':v);var s=v.slice(0,48);return escHtml(s)+(v.length>48?'…':'');}
+// So khớp 1 tài khoản (thuần — tách riêng để test không cần Firebase)
+function _tsDiffAccount(a,uMembers,kv,uPros,rootName,mmap,dup,stU){
+  var midMap={},nameOf={};
+  uMembers.forEach(function(m){
+    if(!m||!m.id||!m.name)return;
+    nameOf[m.id]=m.name;
+    var k=noAccent(m.name);
+    if(mmap[k]&&!dup[k])midMap[m.id]=mmap[k];
+  });
+  var pfxs=[];
+  Object.keys(midMap).forEach(function(mid){
+    pfxs.push({p:'d_'+mid+'_',t:'d',mid:mid},{p:'mo_'+mid+'_',t:'mo',mid:mid},{p:'p_'+mid+'_',t:'p',mid:mid});
+  });
+  var changes=[];
+  Object.keys(kv||{}).forEach(function(key){
+    for(var j=0;j<pfxs.length;j++){
+      var pf=pfxs[j];
+      if(key.indexOf(pf.p)!==0)continue;
+      var nv=kv[key];
+      if(nv==null||String(nv)==='')return;           // KHÔNG đề xuất xoá dữ liệu của QTV
+      var mapped=pf.t+'_'+midMap[pf.mid]+key.slice((pf.t+'_'+pf.mid).length);
+      var cur=nmGet(mapped);
+      if(String(nv)===String(cur))return;            // đã trùng khớp → không cần
+      if(stU[key]===_tsVal(nv))return;               // đã Bỏ qua đúng giá trị này → không hỏi lại
+      changes.push({srcKey:key,mapped:mapped,member:nameOf[pf.mid]||'',rest:key.slice(pf.p.length),t:pf.t,oldVal:cur,newVal:nv});
+      return;
+    }
+  });
+  var pros=[];
+  (uPros||[]).forEach(function(p){
+    if(!p||!p.id)return;
+    var impId='imp_'+a.uid.slice(0,6)+'_'+p.id;
+    var hash=_tsProsHash(p);
+    var ex=_prospectsAll.find(function(x){return x.id===impId;});
+    if(ex&&ex.srcHash===hash)return;                 // bản đã nhập còn y nguyên
+    if(stU['pros_'+p.id]===hash)return;              // đã Bỏ qua bản này
+    pros.push({impId:impId,src:p,hash:hash,isNew:!ex,name:p.name||'(chưa đặt tên)'});
+  });
+  if(!changes.length&&!pros.length)return null;
+  return {uid:a.uid,acctName:a.name||a.email||'(không tên)',acctEmail:a.email||'',
+    rootName:rootName||'',rootMatched:!!(rootName&&mmap[noAccent(rootName)]&&!dup[noAccent(rootName)]),
+    matched:Object.keys(midMap).length,changes:changes,pros:pros};
+}
+async function scanTeamData(){
+  if(viewOnlyMode)return {accounts:0};
+  var accts=await fetchAccounts().catch(function(){return [];});
+  accts=accts.filter(function(a){return !fbUser||a.uid!==fbUser.uid;}); // bỏ chính mình
+  var mmap={},dup={};
+  members.forEach(function(m){
+    var k=noAccent(m.name);
+    if(mmap[k]&&mmap[k]!==m.id)dup[k]=1;else mmap[k]=m.id;
+  });
+  var st=_tsState();
+  var res=await Promise.all(accts.map(function(a){
+    return Promise.all([
+      fsGetUser(a.uid,'members').catch(function(){return null;}),
+      fsGetUser(a.uid,'localmirror').catch(function(){return null;}),
+      fsGetUser(a.uid,'prospects').catch(function(){return null;}),
+      fsGetUser(a.uid,'tree').catch(function(){return null;})
+    ]);
+  }));
+  var pend=[];
+  accts.forEach(function(a,i){
+    var uMembers=(res[i][0]&&res[i][0].members)||[];
+    var kv=(res[i][1]&&res[i][1].kv)||{};
+    var uPros=(res[i][2]&&res[i][2].list)||[];
+    var nodes=(res[i][3]&&res[i][3].nodes)||[];
+    var root=null;for(var n=0;n<nodes.length;n++){if(nodes[n]&&!nodes[n].parentId){root=nodes[n];break;}}
+    var g=_tsDiffAccount(a,uMembers,kv,uPros,root?root.name:'',mmap,dup,st[a.uid]||{});
+    if(g)pend.push(g);
+  });
+  pend.sort(function(x,y){return (y.changes.length+y.pros.length)-(x.changes.length+x.pros.length);});
+  _tsPending=pend;
+  return {accounts:accts.length,pend:pend.length};
+}
+function tsItemHtml(g){
+  var cAtt=0,cKh=0,cKpi=0,cSk=0;
+  g.changes.forEach(function(c){
+    if(c.t==='mo')cKpi++;else if(c.t==='p')cSk++;
+    else{var f=c.rest.slice(c.rest.indexOf('_')+1);if(f==='sang'||f==='trua'||f==='toi')cAtt++;else cKh++;}
+  });
+  var parts=[];
+  if(cAtt)parts.push('🕗 '+cAtt+' điểm danh');
+  if(cKh)parts.push('📋 '+cKh+' KH ngày');
+  if(cKpi)parts.push('📈 '+cKpi+' KPI');
+  if(cSk)parts.push('🎓 '+cSk+' kỹ năng');
+  if(g.pros.length)parts.push('👥 '+g.pros.length+' tiềm năng');
+  var h='<div style="border:1px solid #C8A84B;background:#FFFBE9;border-radius:10px;padding:10px 12px;margin-bottom:9px;font-family:Arial">';
+  h+='<div style="font-size:13.5px"><b>🌳 '+escHtml(g.acctName)+'</b>'+(g.acctEmail?' <span style="color:#1565C0;font-size:12px">· 📧 '+escHtml(g.acctEmail)+'</span>':'')+'</div>';
+  h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">ID gốc của họ: <b>'+escHtml(g.rootName||'—')+'</b>'
+    +(g.rootName?(g.rootMatched?' <span style="color:#1A7A5E;font-weight:700">✓ có trên cây của bạn</span>':' <span style="color:#E65100;font-weight:700">⚠ chưa thấy trên cây của bạn</span>'):'')
+    +'<br>Khớp được <b>'+g.matched+'</b> ID theo tên · Chờ duyệt: <b>'+parts.join(' · ')+'</b></div>';
+  var rows=[],MAXR=60;
+  g.pros.forEach(function(pr){
+    rows.push('👥 Tiềm năng '+(pr.isNew?'<b style="color:#1A7A5E">MỚI</b>':'<b style="color:#E65100">cập nhật</b>')+': <b>'+escHtml(pr.name)+'</b>');
+  });
+  g.changes.forEach(function(c){
+    var v=(c.oldVal!==''&&c.oldVal!=null)?(_tsShort(c.oldVal)+' → <b>'+_tsShort(c.newVal)+'</b>'):('<span style="color:#1A7A5E">(mới)</span> <b>'+_tsShort(c.newVal)+'</b>');
+    rows.push('👤 <b>'+escHtml(c.member)+'</b> · '+escHtml(_tsLabel(c))+': '+v);
+  });
+  h+='<details style="margin-top:7px"><summary style="cursor:pointer;font-size:12.5px;color:#1565C0;font-weight:700">Xem chi tiết '+rows.length+' mục</summary>';
+  h+='<div style="margin-top:6px;font-size:12px;color:#333;line-height:1.9;max-height:260px;overflow:auto">';
+  rows.slice(0,MAXR).forEach(function(r){h+='<div style="border-bottom:1px dashed #EEE;padding:2px 0">'+r+'</div>';});
+  if(rows.length>MAXR)h+='<div style="color:#999;padding:3px 0">… và '+(rows.length-MAXR)+' mục nữa (vẫn được cập nhật đủ khi bấm ✔)</div>';
+  h+='</div></details>';
+  h+='<div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">';
+  h+='<button class="btn btn-g btn-sm" data-ts-apply="'+escHtml(g.uid)+'">✔ Cập nhật vào cây của tôi</button>';
+  h+='<button class="btn btn-sm" style="background:#ECEAE2;color:#555" data-ts-skip="'+escHtml(g.uid)+'">Bỏ qua (không hỏi lại)</button>';
+  h+='</div></div>';
+  return h;
+}
+function renderTeamSync(scanning){
+  var el=document.getElementById('teamsync-inbox');if(!el)return;
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+  h+='<button class="btn btn-d btn-sm" id="btn-tsync-scan"'+(scanning?' disabled style="opacity:.6"':'')+'>'+(scanning?'⏳ Đang quét…':'🔄 Quét dữ liệu mới ngay')+'</button>';
+  h+='</div>';
+  if(scanning&&!_tsPending.length){
+    el.innerHTML=h+'<div style="font-size:13px;color:#999">Đang đọc dữ liệu các tài khoản trong đội…</div>';return;
+  }
+  if(!_tsPending.length){
+    h+='<div style="font-size:13px;color:#999;line-height:1.7">Không có thông tin mới chờ duyệt. Khi thành viên nhập <b>Tiềm năng</b> hoặc dữ liệu <b>Mục tiêu - Hành động - Kết quả</b> mới trên cây của họ, mục đó sẽ hiện ở đây để bạn <b>duyệt</b> trước khi đưa vào cây của bạn.</div>';
+  }else{
+    var tot=0;_tsPending.forEach(function(g){tot+=g.changes.length+g.pros.length;});
+    h+='<div style="font-size:13px;color:#C62828;font-weight:700;margin-bottom:8px">🔔 '+tot+' thông tin mới từ '+_tsPending.length+' tài khoản — chờ bạn duyệt (chưa ghi gì tới khi bạn bấm ✔)</div>';
+    _tsPending.forEach(function(g){h+=tsItemHtml(g);});
+  }
+  el.innerHTML=h;
+}
+function tsApply(uid2){
+  var g=_tsPending.filter(function(x){return x.uid===uid2;})[0];if(!g)return;
+  if(viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  g.changes.forEach(function(c){nmSet(c.mapped,String(c.newVal));});
+  var touched=false;
+  g.pros.forEach(function(pr){
+    var obj;try{obj=JSON.parse(JSON.stringify(pr.src));}catch(e){return;}
+    obj.id=pr.impId;obj.srcUid=g.uid;obj.srcAcct=g.acctName;obj.srcEmail=g.acctEmail;
+    obj.srcOwner=g.rootName||g.acctName;obj.srcHash=pr.hash;
+    var idx=_prospectsAll.findIndex(function(x){return x.id===pr.impId;});
+    if(idx>=0)_prospectsAll[idx]=obj;else _prospectsAll.push(obj);
+    touched=true;
+  });
+  if(touched)saveProspects();
+  _tsPending=_tsPending.filter(function(x){return x.uid!==uid2;});
+  renderTeamSync(false);
+  try{renderAll();updateStats();}catch(e){}
+  showToast('✅ Đã cập nhật '+(g.changes.length+g.pros.length)+' mục từ '+g.acctName);
+}
+function tsSkip(uid2){
+  var g=_tsPending.filter(function(x){return x.uid===uid2;})[0];if(!g)return;
+  var st=_tsState();if(!st[g.uid])st[g.uid]={};
+  g.changes.forEach(function(c){st[g.uid][c.srcKey]=_tsVal(c.newVal);});
+  g.pros.forEach(function(pr){st[g.uid]['pros_'+pr.src.id]=pr.hash;});
+  _newidSave(TSYNC_STATE_KEY,st);
+  _tsPending=_tsPending.filter(function(x){return x.uid!==uid2;});
+  renderTeamSync(false);
+  showToast('Đã bỏ qua — sẽ chỉ báo lại nếu họ nhập thêm dữ liệu mới');
+}
+function mountTeamSync(){
+  if(_tsScanning)return;
+  _tsScanning=true;
+  renderTeamSync(true);
+  scanTeamData().then(function(){
+    _tsScanning=false;
+    renderTeamSync(false);
+    if(_tsPending.length){
+      var tot=0;_tsPending.forEach(function(g){tot+=g.changes.length+g.pros.length;});
+      showToast('🔔 Có '+tot+' thông tin mới từ '+_tsPending.length+' tài khoản — chờ bạn duyệt');
+    }
+  }).catch(function(){_tsScanning=false;renderTeamSync(false);});
 }
 
 // ================================================================
@@ -3180,7 +3474,8 @@ function enterAppFirebase(user){
   document.getElementById('tb-date').textContent=fmtDate(now);
   renderAll();updateStats();populateBcSel();renderMonthPage();renderReminders();renderGuide();
   loadBranchFeature();
-  recordAccount(user,{entered:true}); // ghi nhận tài khoản + đánh dấu đã vào app (bước cuối)
+  recordAccount(user,{entered:true});
+  startPresence(); // v6.36 — heartbeat "dang online" (ghi accounts/{uid}.lastActive moi 60s) // ghi nhận tài khoản + đánh dấu đã vào app (bước cuối)
   // Mặc định mở tab Sơ đồ: ẩn thanh ngày/thống kê + vẽ cây
   document.getElementById('app').classList.add('hide-topbars');
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
@@ -7482,10 +7777,18 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Hiểu app có thực sự giúp người dùng không — hoạt động (DAU/WAU/MAU), gắn kết, tính năng, giữ chân, phân khúc, App Health, đề xuất cải tiến. Dữ liệu <b>ẩn danh hoá hành vi</b> (không lộ mật khẩu / nội dung riêng tư).</div>';
       h+='<button class="btn btn-d btn-sm" id="btn-load-analytics">📊 Mở bảng phân tích</button>';
       h+='<div id="analytics-content" style="margin-top:12px"></div></div>';
+      // v6.36 — Ai đang online (real-time)
+      h+='<div class="adm-box"><div class="adm-title">🟢 Đang online (real-time)</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Ai đang <b>mở app ngay lúc này</b> — cập nhật tự động theo thời gian thực, không cần bấm gì. 🟢 = đang online (hoạt động trong ~2 phút) · 🟡 = vừa rời (≤10 phút) · ⚪ = offline.</div>';
+      h+='<div id="presence-list"><div style="font-size:13px;color:#999">Đang kết nối real-time…</div></div></div>';
       // v6.25 — Hộp thư ID mới toàn đội (CHỈ QTV; tự quét khi mở trang quản trị)
       h+='<div class="adm-box"><div class="adm-title">🔔 Hộp thư: ID mới toàn đội</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Tự báo khi <b>sơ đồ của bất kỳ tài khoản nào</b> trong đội có thêm <b>ID mới</b> — kèm <b>ai bảo trợ</b> và <b>đặt dưới ai</b>. Chỉ quản trị viên thấy; thành viên KHÔNG biết chức năng này. Lần quét đầu chỉ ghi nền (không báo cả đội), từ đó về sau chỉ báo ID phát sinh thêm.</div>';
       h+='<div id="newid-inbox"></div></div>';
+      // v6.36 — Đồng bộ dữ liệu đội về cây QTV (duyệt trước khi ghi)
+      h+='<div class="adm-box"><div class="adm-title">🔗 Dữ liệu đội chờ duyệt (Tiềm năng + Mục tiêu - Hành động - Kết quả)</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi tài khoản có cây ID độc lập — app tự <b>khớp thành viên theo TÊN</b> (không phân biệt dấu) với cây của bạn, rồi gom <b>DS kim cương Tiềm năng</b> + dữ liệu <b>điểm danh / KH ngày / KPI / kỹ năng</b> mà họ nhập. App <b>chỉ đề xuất</b>: bạn bấm <b>✔ Cập nhật</b> mới ghi vào cây của bạn, <b>Bỏ qua</b> thì không hỏi lại tới khi họ nhập thêm. Không bao giờ xoá dữ liệu bạn đã có.</div>';
+      h+='<div id="teamsync-inbox"></div></div>';
       // v6.27 — Danh sách nhắc đóng Năng động (đọc nangdong của mọi tài khoản)
       h+='<div class="adm-box"><div class="adm-title">📅 Nhắc đóng Năng động</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Tổng hợp <b>tháng đóng Năng động gần nhất</b> mà mỗi thành viên nhập (ở mục 📅 Năng động trên tab Sơ đồ, gắn ID gốc của họ). Ai tới <b>tháng 6</b> (vàng) hoặc <b>tháng ≥12</b> (đỏ) sẽ được nhắc để tránh mất doanh số tích luỹ. Nguy cấp xếp lên trên.</div>';
@@ -7626,6 +7929,8 @@ function renderAdminPage(){
       h+='Sau đó đổi mã mời ở trên để họ không đăng ký lại được.</div></div>';
     }
     el.innerHTML=h;
+    if(document.getElementById('presence-list'))watchPresence();else stopPresenceWatch(); // v6.36 — ai đang online (real-time)
+    if(document.getElementById('teamsync-inbox'))mountTeamSync(); // v6.36 — dữ liệu đội chờ duyệt
     if(document.getElementById('newid-inbox'))mountNewIdInbox(); // v6.25 — tự quét ID mới toàn đội
     if(document.getElementById('nangdong-remind'))mountNangDongRemind(); // v6.27 — danh sách nhắc đóng Năng động
   });
@@ -8190,7 +8495,7 @@ document.addEventListener('click',function(e){
       showAndFitTree();
     }
     if(pg==='tp')renderTpSub(currentSubTab.tp||'goals');
-    if(pg==='admin')renderAdminPage();
+    if(pg==='admin')renderAdminPage();else stopPresenceWatch(); // v6.36 — rời tab Quản trị thì ngắt lắng nghe real-time
     if(pg==='map')renderMapPage();
     if(pg==='prospect')renderProspectPage();
     if(_MAIN_FEAT[pg])trackEvent(_MAIN_FEAT[pg]); // v6.13 — theo dõi điều hướng tab
@@ -8502,6 +8807,11 @@ document.addEventListener('click',function(e){
     saveNangDong(_ndm,_ndy);renderNangDong();showToast('✓ Đã lưu tháng đóng Năng động');return;
   }
   if(e.target.id==='btn-nd-rescan'){mountNangDongRemind();return;}
+  if(e.target.id==='btn-tsync-scan'){mountTeamSync();return;} // v6.36 — quét dữ liệu đội chờ duyệt
+  t=e.target.closest('[data-ts-apply]');
+  if(t){tsApply(t.getAttribute('data-ts-apply'));return;}
+  t=e.target.closest('[data-ts-skip]');
+  if(t){tsSkip(t.getAttribute('data-ts-skip'));return;}
   if(e.target.id==='btn-newid-scan'){mountNewIdInbox();return;}
   if(e.target.id==='btn-newid-readall'){var _ib=newidInbox();_ib.forEach(function(x){x.read=true;});_newidSave(NEWID_INBOX_KEY,_ib);renderNewIdInbox(false);return;}
   if(e.target.id==='btn-newid-clear'){if(!confirm('Xoá toàn bộ hộp thư ID mới?\n\n(Chỉ xoá danh sách thông báo, KHÔNG ảnh hưởng dữ liệu sơ đồ/cây của ai.)'))return;_newidSave(NEWID_INBOX_KEY,[]);renderNewIdInbox(false);return;}
@@ -10565,6 +10875,7 @@ function renderProspectPage(){
       if(p.healthStage&&HSTAGES[p.healthStage])stages.push('<span class="pf-stage hlth">&#127807; '+escHtml(HSTAGES[p.healthStage])+'</span>');
       if(p.memberStatus&&p.memberStatus!=='none')stages.push('<span class="pf-stage mem">&#127894;&#65039; '+escHtml(MSTATUS[p.memberStatus]||p.memberStatus)+'</span>');
       if(stages.length)h+='<div class="pf-stages">'+stages.join('')+'</div>';
+      if(p.srcAcct)h+='<div style="font-size:11px;color:#1565C0;margin-top:3px">&#128229; Từ sơ đồ: <b>'+escHtml(p.srcOwner||p.srcAcct)+'</b>'+(p.srcEmail?' &middot; '+escHtml(p.srcEmail):'')+'</div>'; // v6.36 — tiềm năng nhập từ tài khoản thành viên
       if(lastFu&&lastFu.note)h+='<div class="pf-fu-row"><div class="pf-fu-dot" style="background:'+(_PROSPECT_COLORS[ck]||'#CCC')+'"></div><span style="font-size:11px;color:#999;margin-right:4px">Lần theo dõi '+fu.length+':</span>'+escHtml(lastFu.note)+'</div>';
       h+='</div>';
       h+='<div class="pf-act"><button class="btn btn-o btn-sm" data-prospect-open="'+p.id+'">&#9998; Sửa / Theo dõi</button></div>';
