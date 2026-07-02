@@ -1,4 +1,4 @@
-<!-- VERSION: v6.36-online-presence-team-datasync-approve -->
+<!-- VERSION: v6.37-admin-compact-groups -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -190,6 +190,20 @@ input[type=range]{flex:1;height:6px;accent-color:#1A7A5E;cursor:pointer}
 .pin-btn.on{color:#C8A84B}
 .adm-box{background:white;border:1px solid #E8E8E8;border-radius:12px;padding:14px;margin-bottom:10px}
 .adm-title{font-size:13px;font-weight:700;margin-bottom:10px}
+/* v6.37 — Quan tri gon gang: nhom box + gap/mo (accordion) */
+.adm-grp{margin-bottom:16px}
+.adm-grp-title{font-size:11.5px;font-weight:800;color:#8A7B4F;letter-spacing:.6px;text-transform:uppercase;margin:2px 2px 7px;display:flex;align-items:center;gap:8px}
+.adm-grp-title::after{content:'';flex:1;height:1px;background:#E6E0CE}
+details.adm-acc{padding:0;overflow:hidden;margin-bottom:8px}
+details.adm-acc>summary{list-style:none;cursor:pointer;padding:11px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;user-select:none}
+details.adm-acc>summary::-webkit-details-marker{display:none}
+details.adm-acc>summary::before{content:'\25B8';color:#C8A84B;font-size:12px;flex:none;transition:transform .15s}
+details.adm-acc[open]>summary::before{transform:rotate(90deg)}
+details.adm-acc>summary:hover{background:#FBF9F2}
+.adm-acc-body{padding:0 14px 13px}
+.adm-badge{flex:none;min-width:18px;padding:1px 8px;border-radius:999px;background:#C62828;color:#fff;font-size:11px;font-weight:800;text-align:center;margin-left:auto}
+.adm-badge.ok{background:#1A7A5E}
+.adm-badge.warn{background:#E65100}
 
 #tree-canvas-wrap,#star-canvas-wrap{touch-action:none}
 .lk-pill{display:inline-flex;align-items:center;gap:5px;border-radius:14px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;background:white}
@@ -1842,6 +1856,7 @@ function renderPresenceBox(){
     return (b.last||0)-(a.last||0);
   });
   var nOn=rows.filter(function(a){return a._st===2;}).length;
+  _admSetBadge('presence',nOn?(nOn+' online'):'','ok'); // v6.37 — đếm trên tiêu đề khi gấp
   var h='<div style="font-size:13.5px;font-weight:800;margin-bottom:8px;color:'+(nOn?'#1A7A5E':'#999')+'">🟢 '+nOn+' đang online / '+rows.length+' tài khoản</div>';
   rows.forEach(function(a){
     var me=(fbUser&&a.uid===fbUser.uid);
@@ -1947,6 +1962,7 @@ function newIdItemHtml(it){
 function renderNewIdInbox(scanning){
   var el=document.getElementById('newid-inbox');if(!el)return;
   var inbox=newidInbox();var unread=inbox.filter(function(x){return !x.read;}).length;
+  _admSetBadge('newid',unread||'',''); // v6.37 — đếm trên tiêu đề khi gấp
   var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
   h+='<button class="btn btn-d btn-sm" id="btn-newid-scan"'+(scanning?' disabled style="opacity:.6"':'')+'>'+(scanning?'⏳ Đang quét…':'🔄 Quét ID mới ngay')+'</button>';
   if(inbox.length){
@@ -2116,6 +2132,8 @@ function tsItemHtml(g){
 }
 function renderTeamSync(scanning){
   var el=document.getElementById('teamsync-inbox');if(!el)return;
+  var _tot=0;_tsPending.forEach(function(g){_tot+=g.changes.length+g.pros.length;});
+  _admSetBadge('teamsync',_tsPending.length?_tot:'',''); // v6.37 — đếm trên tiêu đề khi gấp
   var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
   h+='<button class="btn btn-d btn-sm" id="btn-tsync-scan"'+(scanning?' disabled style="opacity:.6"':'')+'>'+(scanning?'⏳ Đang quét…':'🔄 Quét dữ liệu mới ngay')+'</button>';
   h+='</div>';
@@ -6147,6 +6165,7 @@ function renderNangDongRemind(list,loading){
   var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn btn-d btn-sm" id="btn-nd-rescan"'+(loading?' disabled style="opacity:.6"':'')+'>'+(loading?'⏳ Đang quét…':'🔄 Quét lại')+'</button></div>';
   if(!list){el.innerHTML=h+'<div style="font-size:13px;color:#999;padding:6px 0">Đang tải…</div>';return;}
   var due=list.filter(function(x){return x.st.lv==='warn'||x.st.lv==='danger';});
+  _admSetBadge('nangdong',due.length||'','warn'); // v6.37 — đếm trên tiêu đề khi gấp
   h+='<div style="font-size:12.5px;color:#666;margin-bottom:8px">Tổng <b>'+list.length+'</b> người đã nhập · <b style="color:#C62828">'+due.length+'</b> người cần đóng Năng động (tháng ≥ 6).</div>';
   if(!list.length){h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có ai nhập. Khi thành viên nhập ở mục <b>📅 Năng động</b> (tab Sơ đồ) trên ID gốc của họ, danh sách nhắc sẽ tự hiện ở đây — ai tới tháng 6/12 sẽ được tô màu cảnh báo.</div>';el.innerHTML=h;return;}
   list.forEach(function(x){
@@ -7741,6 +7760,80 @@ function celebrateBoxHtml(banner){
   h+='</div></div>';
   return h;
 }
+// ================================================================
+// v6.37 — QUAN TRI GON GANG: gom cac box thanh NHOM + moi box GAP/MO duoc (accordion)
+//   • Chay ngay SAU khi renderAdminPage do HTML (TRUOC cac mount) — CHI sap xep lai DOM,
+//     KHONG doi noi dung/tinh nang box nao; id ben trong giu nguyen nen mount/delegation van chay.
+//   • Nhan dien box bang id phan tu BEN TRONG (khong phu thuoc chu tieu de).
+//   • Trang thai gap/mo nho theo may (ta_admin_acc_open). Mac dinh: chi "Dang online" mo.
+//   • Badge tren tieu de (dem chua doc / cho duyet / can nhac) do cac ham render cap nhat.
+// ================================================================
+var ADM_ACC_KEY='ta_admin_acc_open';
+var ADM_GROUPS=[
+  {id:'watch',ttl:'👁️ Theo dõi đội',keys:['presence','teamsync','newid','nangdong','analytics']},
+  {id:'comms',ttl:'📣 Truyền thông',keys:['announce','celebrate']},
+  {id:'acct',ttl:'🔐 Tài khoản & bảo mật',keys:['accounts','verify','block','invites','rules']},
+  {id:'ops',ttl:'⚙️ Vận hành & quyền',keys:['branchout','branchin','admins']}
+];
+function _admAccStates(){try{var s=localStorage.getItem(ADM_ACC_KEY);return s?JSON.parse(s):{};}catch(e){return {};}}
+function _admAccSave(k,open){try{var st=_admAccStates();st[k]=open?1:0;localStorage.setItem(ADM_ACC_KEY,JSON.stringify(st));}catch(e){}}
+function _admBoxKey(box){
+  var M=[['presence-list','presence'],['teamsync-inbox','teamsync'],['newid-inbox','newid'],
+    ['nangdong-remind','nangdong'],['analytics-content','analytics'],['ann-text','announce'],
+    ['celeb-text','celebrate'],['btn-gen-codes','invites'],['btn-toggle-verify','verify'],
+    ['btn-block-add','block'],['btn-adm-addmail','admins'],['adm-rules2','rules']];
+  for(var i=0;i<M.length;i++){if(box.querySelector('#'+M[i][0]))return M[i][1];}
+  if(box.querySelector('[data-view-uid],[data-del-acct-uid]'))return 'accounts';
+  if(box.querySelector('[data-toggle-branch]'))return 'branchout';
+  if(box.querySelector('[data-toggle-import]'))return 'branchin';
+  if(box.querySelector('#btn-copy-rules'))return 'accounts'; // DS tài khoản khi trống cũng có nút copy Rules
+  return '';
+}
+function _admSetBadge(key,txt,cls){
+  var b=document.querySelector('[data-accbadge="'+key+'"]');if(!b)return;
+  if(txt==null||txt===''||txt==='0'||txt===0){b.style.display='none';return;}
+  b.textContent=txt;b.className='adm-badge'+(cls?' '+cls:'');b.style.display='';
+}
+function compactAdminBoxes(){
+  var el=document.getElementById('admin-content');if(!el)return;
+  if(!el.querySelector('#newid-inbox'))return; // chỉ chạy ở giao diện QTV đầy đủ (không đụng màn claim/không-QTV)
+  var boxes=[].slice.call(el.children).filter(function(b){return b.classList&&b.classList.contains('adm-box');});
+  if(!boxes.length)return;
+  var byKey={},rest=[];
+  boxes.forEach(function(b){var k=_admBoxKey(b);if(k&&!byKey[k])byKey[k]=b;else rest.push(b);});
+  var st=_admAccStates();
+  function toAcc(box,key){
+    if(box.tagName==='DETAILS')return box; // (Rules nâng cao) vốn đã gấp/mở được → giữ nguyên
+    var d=document.createElement('details');
+    d.className='adm-box adm-acc';d.setAttribute('data-acc',key);
+    if(box.getAttribute('style'))d.setAttribute('style',box.getAttribute('style')); // giữ style riêng (vd khung tím Chúc mừng)
+    var sum=document.createElement('summary');
+    var ttl=box.querySelector('.adm-title');
+    if(ttl){while(ttl.firstChild)sum.appendChild(ttl.firstChild);ttl.remove();}
+    var badge=document.createElement('span');badge.className='adm-badge';badge.setAttribute('data-accbadge',key);badge.style.display='none';
+    sum.appendChild(badge);
+    d.appendChild(sum);
+    var body=document.createElement('div');body.className='adm-acc-body';
+    while(box.firstChild)body.appendChild(box.firstChild);
+    d.appendChild(body);
+    var open=(key in st)?!!st[key]:(key==='presence');
+    if(open)d.setAttribute('open','');
+    d.addEventListener('toggle',function(){_admAccSave(key,d.open);});
+    return d;
+  }
+  var frag=document.createDocumentFragment();
+  ADM_GROUPS.forEach(function(gr,gi){
+    var list=gr.keys.map(function(k){return byKey[k]?{k:k,b:byKey[k]}:null;}).filter(Boolean);
+    if(gi===ADM_GROUPS.length-1)rest.forEach(function(b,ri){list.push({k:'other'+ri,b:b});});
+    if(!list.length)return;
+    var wrap=document.createElement('div');wrap.className='adm-grp';
+    var hd=document.createElement('div');hd.className='adm-grp-title';hd.textContent=gr.ttl;
+    wrap.appendChild(hd);
+    list.forEach(function(it){wrap.appendChild(toAcc(it.b,it.k));});
+    frag.appendChild(wrap);
+  });
+  el.innerHTML='';el.appendChild(frag);
+}
 function renderAdminPage(){
   var el=document.getElementById('admin-content');if(!el)return;
   if(!fbUser){el.innerHTML='<div style="color:#999;text-align:center;padding:30px">Cần đăng nhập</div>';return;}
@@ -7929,6 +8022,7 @@ function renderAdminPage(){
       h+='Sau đó đổi mã mời ở trên để họ không đăng ký lại được.</div></div>';
     }
     el.innerHTML=h;
+    compactAdminBoxes(); // v6.37 — gom nhóm + gấp/mở gọn gàng (trước các mount; id giữ nguyên)
     if(document.getElementById('presence-list'))watchPresence();else stopPresenceWatch(); // v6.36 — ai đang online (real-time)
     if(document.getElementById('teamsync-inbox'))mountTeamSync(); // v6.36 — dữ liệu đội chờ duyệt
     if(document.getElementById('newid-inbox'))mountNewIdInbox(); // v6.25 — tự quét ID mới toàn đội
