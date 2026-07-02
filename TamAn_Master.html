@@ -1,4 +1,4 @@
-<!-- VERSION: v6.38-map-single-consolidated -->
+<!-- VERSION: v6.39-prospect-contact-reminders -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -215,6 +215,8 @@ details.map-acc>summary:hover{background:#FBF9F2}
 .map-acc-body>.map-card{border:none;box-shadow:none;padding:0;margin-bottom:12px}
 .map-acc-n{margin-left:auto;background:#EFEAD8;color:#7A6A35;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;min-width:18px;text-align:center}
 #global-map.picking{cursor:crosshair}
+/* v6.39 — badge nhac lien he tren tab DS kim cuong Tiem nang */
+.tab-nudge{display:inline-block;margin-left:5px;min-width:16px;padding:0 5px;border-radius:999px;background:#C62828;color:#fff;font-size:10.5px;font-weight:800;text-align:center;vertical-align:middle;line-height:16px}
 
 #tree-canvas-wrap,#star-canvas-wrap{touch-action:none}
 .lk-pill{display:inline-flex;align-items:center;gap:5px;border-radius:14px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;background:white}
@@ -10036,7 +10038,7 @@ function buildReengageMessage(){
   var openTasks=tasks.filter(function(t){return !t.done&&t.date;});
   var todayAppt=openTasks.filter(function(t){return t.date===today;});
   var overdueAppt=openTasks.filter(function(t){return t.date<today;});
-  var urgentProsp=[];try{urgentProsp=(_prospectsAll||[]).filter(function(p){return _prospectDaysSince(p)>=7;});}catch(e){}
+  var urgentProsp=[];try{urgentProsp=(_prospectsAll||[]).filter(function(p){return !!prospectOverdue(p);});}catch(e){} // v6.39 — theo quy tắc 3n/7n
   var wheelDone=false;try{wheelDone=Object.keys(dayWheel()||{}).length>0;}catch(e){}
   var cta;
   if(todayAppt.length)cta='📅 Hôm nay có '+todayAppt.length+' lịch quan trọng — đừng quên: "'+(todayAppt[0].desc||'')+'".';
@@ -10921,12 +10923,14 @@ function _todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMon
 
 function loadProspects(){
   try{var s=nmGet('prospects_v1');_prospectsAll=s?JSON.parse(s):[];}catch(e){_prospectsAll=[];}
+  updateProspectRemindBadge();_prospRemindNudge(); // v6.39 — nhắc liên hệ khi mở app
   if(fbDb&&fbUser){
     fsGet('prospects').then(function(d){
       if(d&&d.list&&d.list.length){
         _prospectsAll=d.list;nmSet('prospects_v1',JSON.stringify(_prospectsAll));
         if(document.getElementById('page-prospect').classList.contains('on'))renderProspectPage();
         renderActionCenter();
+        updateProspectRemindBadge();_prospRemindNudge(); // v6.39 — dữ liệu cloud về → cập nhật nhắc
       }
     }).catch(function(){});
   }
@@ -10934,6 +10938,7 @@ function loadProspects(){
 function saveProspects(){
   nmSet('prospects_v1',JSON.stringify(_prospectsAll));
   if(fbDb&&fbUser)fsSet('prospects',{list:_prospectsAll}).catch(function(){});
+  updateProspectRemindBadge(); // v6.39 — thêm/sửa/xoá → badge tự cập nhật
 }
 
 function _prospectLastDate(p){
@@ -10958,6 +10963,62 @@ function _prospectColorKey(p){
   return 'darkred';
 }
 
+// ================================================================
+// v6.39 — NHẮC LIÊN HỆ TIỀM NĂNG: CHƯA vào ID → quá 3 ngày; ĐÃ vào ID → quá 7 ngày chưa liên hệ
+//   ("đã vào ID" = memberStatus 'registered' hoặc 'existing'; ngày tính từ lần liên hệ/theo dõi gần nhất)
+// ================================================================
+function prospectJoined(p){return !!p&&(p.memberStatus==='registered'||p.memberStatus==='existing');}
+function prospectContactLimit(p){return prospectJoined(p)?7:3;}
+function prospectOverdue(p){
+  var d=_prospectDaysSince(p);
+  if(d===9999)return null; // chưa có ngày liên hệ nào → không tính (hiếm: form tự điền ngày hôm nay)
+  var lim=prospectContactLimit(p);
+  if(d<=lim)return null;
+  return {days:d,limit:lim,over:d-lim,joined:prospectJoined(p)};
+}
+function prospectOverdueList(){
+  return (_prospectsAll||[]).map(function(p){var o=prospectOverdue(p);return o?{p:p,o:o}:null;})
+    .filter(Boolean).sort(function(a,b){return b.o.over-a.o.over;});
+}
+function updateProspectRemindBadge(){
+  var btn=document.querySelector('.mtab[data-main="prospect"]');if(!btn)return;
+  var old=btn.querySelector('.tab-nudge');if(old)old.remove();
+  var n=prospectOverdueList().length;
+  if(n>0){var s=document.createElement('span');s.className='tab-nudge';s.textContent=String(n);btn.appendChild(s);}
+}
+var _prospNudged=false;
+function _prospRemindNudge(){ // báo 1 lần mỗi phiên khi mở app mà có người cần liên hệ
+  if(_prospNudged||viewOnlyMode)return;
+  var n=prospectOverdueList().length;
+  if(n>0){_prospNudged=true;showToast('🔔 '+n+' người trong DS kim cương Tiềm năng cần liên hệ (chưa vào ID >3 ngày · đã vào ID >7 ngày)');}
+}
+function prospectRemindHtml(){
+  var items=prospectOverdueList();
+  if(!items.length)return '';
+  var noId=items.filter(function(x){return !x.o.joined;}),hasId=items.filter(function(x){return x.o.joined;});
+  var row=function(x){
+    var p=x.p,o=x.o,ck=_prospectColorKey(p);
+    return '<div class="ac-prospect-item" data-prospect-open="'+p.id+'">'+
+      '<div class="ac-prospect-dot" style="background:'+(_PROSPECT_COLORS[ck]||'#CCC')+'"></div>'+
+      '<div class="ac-prospect-name">'+escHtml(p.name||'(Chưa đặt tên)')+'</div>'+
+      '<div class="ac-prospect-since"><b style="color:#C62828">'+o.days+' ngày chưa liên hệ</b> · quá hạn '+o.over+'n</div>'+
+    '</div>';
+  };
+  var MAXR=8,h='';
+  h+='<div style="font-size:14.5px;font-weight:800;color:#B71C1C">🔔 Nhắc liên hệ — '+items.length+' người sắp bị bỏ quên</div>';
+  h+='<div style="font-size:11.5px;color:#8D6E63;margin:3px 0 6px;line-height:1.6">Quy tắc: <b>chưa vào ID</b> → nhắc khi quá <b>3 ngày</b> chưa liên hệ · <b>đã vào ID</b> → quá <b>7 ngày</b> chưa chăm sóc. Bấm tên để mở hồ sơ &amp; ghi lần theo dõi mới.</div>';
+  if(noId.length){
+    h+='<div class="ac-prospect-hd" style="color:#C62828;margin-top:8px">🚨 CHƯA vào ID — quá 3 ngày ('+noId.length+')</div>';
+    noId.slice(0,MAXR).forEach(function(x){h+=row(x);});
+    if(noId.length>MAXR)h+='<div style="font-size:11.5px;color:#999;padding:3px 0">… và '+(noId.length-MAXR)+' người nữa trong danh sách bên dưới</div>';
+  }
+  if(hasId.length){
+    h+='<div class="ac-prospect-hd" style="color:#E65100;margin-top:8px">💎 ĐÃ vào ID — quá 7 ngày chưa chăm sóc ('+hasId.length+')</div>';
+    hasId.slice(0,MAXR).forEach(function(x){h+=row(x);});
+    if(hasId.length>MAXR)h+='<div style="font-size:11.5px;color:#999;padding:3px 0">… và '+(hasId.length-MAXR)+' người nữa trong danh sách bên dưới</div>';
+  }
+  return '<div style="background:#FFF3F0;border:1.5px solid #FFAB91;border-radius:12px;padding:10px 12px;margin-bottom:12px">'+h+'</div>';
+}
 function renderProspectPage(){
   var el=document.getElementById('prospect-content');if(!el)return;
   var q=(_prospectFilter.q||'').toLowerCase();
@@ -10973,6 +11034,7 @@ function renderProspectPage(){
   if(cf)list=list.filter(function(p){return _prospectColorKey(p)===cf;});
 
   var h='';
+  h+=prospectRemindHtml(); // v6.39 — hộp nhắc liên hệ (chưa vào ID >3n · đã vào ID >7n)
   h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
   h+='<div style="font-size:16px;font-weight:800;color:#1A1A1A">&#128101; Danh sách Tiềm năng <span style="font-size:14px;color:#999;font-weight:600">('+_prospectsAll.length+')</span></div>';
   h+='<button class="btn btn-g btn-sm" data-prospect-action="add">+ Thêm mới</button>';
@@ -11032,6 +11094,7 @@ function renderProspectPage(){
   el.innerHTML=h;
   var si=document.getElementById('pf-search');
   if(si)si.addEventListener('input',function(){_prospectFilter.q=this.value;renderProspectPage();});
+  updateProspectRemindBadge(); // v6.39 — đồng bộ badge trên tab
 }
 
 // ── Modal mở/đóng ──
@@ -11182,15 +11245,16 @@ function deleteProspect(id){
 
 // ── Tích hợp Action Center: hiện top tiềm năng cần liên hệ ──
 function _prospectAttentionHtml(){
-  var urgent=_prospectsAll.filter(function(p){return _prospectDaysSince(p)>=4;})
-    .sort(function(a,b){return _prospectDaysSince(b)-_prospectDaysSince(a)})
+  // v6.39 — theo quy tắc nhắc liên hệ: CHƯA vào ID quá 3 ngày · ĐÃ vào ID quá 7 ngày
+  var urgent=_prospectsAll.filter(function(p){return !!prospectOverdue(p);})
+    .sort(function(a,b){return prospectOverdue(b).over-prospectOverdue(a).over;})
     .slice(0,5);
   if(!urgent.length)return '';
   var h='<div class="ac-prospect-hd">&#128204; Tiềm năng cần liên hệ hôm nay</div>';
   urgent.forEach(function(p){
     var ck=_prospectColorKey(p);
     var days=_prospectDaysSince(p);
-    var label=days>=4&&days<=7?'Vàng':days>=8&&days<=14?'Cam':days>=15&&days<=30?'Đỏ':'Đỏ sẫm (>30n)';
+    var _o=prospectOverdue(p)||{joined:false};var label=_o.joined?'đã vào ID · hạn 7n':'chưa vào ID · hạn 3n';
     var fu=p.followups||[];
     var nextLabel='Lần theo dõi #'+(fu.length+1);
     h+='<div class="ac-prospect-item" data-prospect-open="'+p.id+'">'+
