@@ -1,4 +1,4 @@
-<!-- VERSION: v6.42-branch-walls-t1t2 -->
+<!-- VERSION: v6.43-branch-walls-t2t3 -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -6775,7 +6775,7 @@ function renderTree(){
     var _dx=pos[_rb].x+NW/2;
     lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#2979FF" stroke-width="5" stroke-dasharray="10,8" opacity="0.9"/>';
   }
-  // Cột ngăn cách CỨNG (nét liền) giữa nhánh Trái/Phải của từng ID Tầng 1 & Tầng 2 (tương đối gốc đang hiển thị)
+  // Cột ngăn cách CỨNG (nét liền) bắt đầu từ ĐÁY mỗi ID Tầng 2 & Tầng 3 (tương đối gốc đang hiển thị) — ngăn nhánh Trái/Phải các ID bên dưới, không nhánh nào phạm qua
   if(_rb&&pos[_rb]){
     var _chMap={};
     treeNodes.forEach(function(k){
@@ -6795,7 +6795,7 @@ function renderTree(){
     treeNodes.forEach(function(n){
       if(!pos[n.id]||n.id===_rb)return;
       var _lv=relLevelOf(n.id,_rb);
-      if(_lv!==1&&_lv!==2)return;
+      if(_lv!==2&&_lv!==3)return;
       var _kd=_chMap[n.id]||[];
       var _Lc=_kd.find(function(k){return k.side==='L';}),_Rc=_kd.find(function(k){return k.side==='R';});
       if(!_Lc&&!_Rc)return; // chưa có nhánh con → không cần cột
@@ -6806,8 +6806,8 @@ function renderTree(){
       else _wx=_eR.l-HGAP/2;             // chỉ có nhánh Phải → cột sát rìa trái nhánh đang có
       var _wy1=pos[n.id].y+NH;
       var _wy2=Math.max(_eL?_eL.b:0,_eR?_eR.b:0)+NH+VGAP*0.35;
-      var _ww=_lv===1?9:7,_wf=_lv===1?'#37474F':'#607D8B';
-      lines+='<rect class="bw-sep bw-t'+_lv+'" x="'+(_wx-_ww/2)+'" y="'+_wy1+'" width="'+_ww+'" height="'+(_wy2-_wy1)+'" rx="'+(_ww/2)+'" fill="'+_wf+'" opacity="'+(_lv===1?0.85:0.78)+'"/>';
+      var _ww=_lv===2?9:7,_wf=_lv===2?'#37474F':'#607D8B';
+      lines+='<rect class="bw-sep bw-t'+_lv+'" x="'+(_wx-_ww/2)+'" y="'+_wy1+'" width="'+_ww+'" height="'+(_wy2-_wy1)+'" rx="'+(_ww/2)+'" fill="'+_wf+'" opacity="'+(_lv===2?0.85:0.78)+'"/>';
     });
   }
   var _sepRel=4; // Tầng 4 TƯƠNG ĐỐI từ gốc đang hiển thị (focus tính như gốc)
