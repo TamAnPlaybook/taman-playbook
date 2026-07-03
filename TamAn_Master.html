@@ -1,4 +1,4 @@
-<!-- VERSION: v6.41-allusers-match-by-idcode -->
+<!-- VERSION: v6.42-branch-walls-t1t2 -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -6774,6 +6774,41 @@ function renderTree(){
   if(_rb&&pos[_rb]){
     var _dx=pos[_rb].x+NW/2;
     lines+='<line x1="'+_dx+'" y1="'+(pos[_rb].y+NH)+'" x2="'+_dx+'" y2="'+H+'" stroke="#2979FF" stroke-width="5" stroke-dasharray="10,8" opacity="0.9"/>';
+  }
+  // Cột ngăn cách CỨNG (nét liền) giữa nhánh Trái/Phải của từng ID Tầng 1 & Tầng 2 (tương đối gốc đang hiển thị)
+  if(_rb&&pos[_rb]){
+    var _chMap={};
+    treeNodes.forEach(function(k){
+      if(!k.parentId||!pos[k.id])return;
+      (_chMap[k.parentId]=_chMap[k.parentId]||[]).push(k);
+    });
+    var _extOf=function(nid){ // khung bao (mép trái/phải + đáy) của toàn nhánh dưới nid, kể cả nid
+      var _p0=pos[nid],_ex={l:_p0.x,r:_p0.x+NW,b:_p0.y};
+      (_chMap[nid]||[]).forEach(function(k){
+        var _e=_extOf(k.id);
+        if(_e.l<_ex.l)_ex.l=_e.l;
+        if(_e.r>_ex.r)_ex.r=_e.r;
+        if(_e.b>_ex.b)_ex.b=_e.b;
+      });
+      return _ex;
+    };
+    treeNodes.forEach(function(n){
+      if(!pos[n.id]||n.id===_rb)return;
+      var _lv=relLevelOf(n.id,_rb);
+      if(_lv!==1&&_lv!==2)return;
+      var _kd=_chMap[n.id]||[];
+      var _Lc=_kd.find(function(k){return k.side==='L';}),_Rc=_kd.find(function(k){return k.side==='R';});
+      if(!_Lc&&!_Rc)return; // chưa có nhánh con → không cần cột
+      var _eL=_Lc?_extOf(_Lc.id):null,_eR=_Rc?_extOf(_Rc.id):null;
+      var _wx;
+      if(_eL&&_eR)_wx=(_eL.r+_eR.l)/2;   // khe giữa mép phải nhánh Trái và mép trái nhánh Phải → không cắt node nào
+      else if(_eL)_wx=_eL.r+HGAP/2;      // chỉ có nhánh Trái → cột sát rìa phải nhánh đang có
+      else _wx=_eR.l-HGAP/2;             // chỉ có nhánh Phải → cột sát rìa trái nhánh đang có
+      var _wy1=pos[n.id].y+NH;
+      var _wy2=Math.max(_eL?_eL.b:0,_eR?_eR.b:0)+NH+VGAP*0.35;
+      var _ww=_lv===1?9:7,_wf=_lv===1?'#37474F':'#607D8B';
+      lines+='<rect class="bw-sep bw-t'+_lv+'" x="'+(_wx-_ww/2)+'" y="'+_wy1+'" width="'+_ww+'" height="'+(_wy2-_wy1)+'" rx="'+(_ww/2)+'" fill="'+_wf+'" opacity="'+(_lv===1?0.85:0.78)+'"/>';
+    });
   }
   var _sepRel=4; // Tầng 4 TƯƠNG ĐỐI từ gốc đang hiển thị (focus tính như gốc)
   var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4
