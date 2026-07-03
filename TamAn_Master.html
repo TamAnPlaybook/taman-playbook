@@ -1,4 +1,4 @@
-<!-- VERSION: v6.40-merge-online-accounts-attdash-month-overview-allusers-search -->
+<!-- VERSION: v6.41-allusers-match-by-idcode -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -4629,7 +4629,8 @@ function renderFlow3(){
 }
 // ===== v6.40 — TỔNG QUAN TOÀN BỘ USER (QTV): ghép dữ liệu MỌI tài khoản vào tab Tổng quan =====
 //   • Mỗi tài khoản (user) được nhận diện qua ID GỐC trên cây của họ (node không có parentId).
-//   • Ghép vào cây của QTV theo tên ID Gốc (không dấu) → hiện cấp bậc + trạng thái khớp.
+//   • v6.41 — Ghép vào cây của QTV theo MÃ ID (idCode, vd lanchi88hptv — Huy chốt làm căn cứ đồng bộ);
+//     ID Gốc thiếu Mã ID mới rơi về khớp TÊN không dấu. Hiện cấp bậc + trạng thái khớp (Mã ID / tên).
 //   • Chỉ ĐỌC (fsGetUser) — không ghi gì; chỉ QTV thấy (Rules isAdmin mới đọc được users/**).
 var _f3uCache=null,_f3uLoading=false,_f3uQuery='';
 function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã tải → test được
@@ -4651,14 +4652,24 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
   var mk=td.getFullYear()+'-'+td.getMonth();
   var kpi=0;
   uMembers.forEach(function(m){MONTH_KPI.forEach(function(k){kpi+=parseInt(kv['mo_'+m.id+'_'+mk+'_'+k.id]||'0',10)||0;});});
-  // ghép vào cây của tôi theo ID Gốc (tên không dấu)
+  // v6.41 — ghép vào cây của tôi: ƯU TIÊN Mã ID (idCode) của ID Gốc; thiếu Mã ID mới khớp theo tên không dấu
   var rootName=root?String(root.name||''):'';
-  var myNode=rootName?treeNodes.find(function(t){return noAccent(t.name)===noAccent(rootName);}):null;
+  var rootCode=root?String(root.idCode||'').trim():'';
+  var myNode=null,matchBy='';
+  var rc=noAccent(rootCode);
+  if(rc){
+    myNode=treeNodes.find(function(t){return noAccent(t.idCode)===rc;})||null;
+    if(myNode)matchBy='code';
+  }
+  if(!myNode&&rootName){
+    myNode=treeNodes.find(function(t){return noAccent(t.name)===noAccent(rootName);})||null;
+    if(myNode)matchBy='name';
+  }
   return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
-    rootName:rootName,rootJoin:root?(root.joinDate||''):'',
+    rootName:rootName,rootCode:rootCode,rootJoin:root?(root.joinDate||''):'',
     nMembers:uMembers.length,nPros:uPros.length,
     att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
-    matched:!!myNode,rank:myNode?nodeRank(myNode.id):0};
+    matched:!!myNode,matchBy:matchBy,rank:myNode?nodeRank(myNode.id):0};
 }
 function scanF3Users(){
   if(_f3uLoading)return;
@@ -4682,9 +4693,9 @@ function _f3UsersSectionHtml(){
   if(!isBranchAdmin||viewOnlyMode)return '';
   var h='<div style="margin-top:16px;border:1px solid #E7E0CC;border-left:5px solid #C8A84B;border-radius:12px;background:#fff;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.05)">';
   h+='<div style="font-size:15px;font-weight:800;color:#8A6D1A">🌐 Toàn bộ user — ghép theo ID Gốc</div>';
-  h+='<div style="font-size:12px;color:#999;font-style:italic;margin:3px 0 9px">Dữ liệu mỗi tài khoản (họ tự nhập trên cây của họ) được ghép vào đây theo <b>ID Gốc</b>. Chỉ quản trị viên thấy khối này.</div>';
+  h+='<div style="font-size:12px;color:#999;font-style:italic;margin:3px 0 9px">Dữ liệu mỗi tài khoản (họ tự nhập trên cây của họ) được ghép vào đây căn cứ theo <b>Mã ID</b> của ID Gốc (vd lanchi88hptv); ID Gốc chưa có Mã ID thì tạm khớp theo tên. Chỉ quản trị viên thấy khối này.</div>';
   h+='<div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">';
-  h+='<input id="f3u-search" class="nmod-inp" style="flex:1;min-width:0" placeholder="🔎 Tìm theo tên / ID Gốc / email — gõ bất kỳ ký tự nào..." value="'+escHtml(_f3uQuery)+'">';
+  h+='<input id="f3u-search" class="nmod-inp" style="flex:1;min-width:0" placeholder="🔎 Tìm theo tên / Mã ID / email — gõ bất kỳ ký tự nào..." value="'+escHtml(_f3uQuery)+'">';
   h+='<button class="btn btn-d btn-sm" data-f3u-scan="1" title="Tải / làm mới dữ liệu toàn bộ user">🔄</button></div>';
   h+='<div id="f3u-list"></div></div>';
   return h;
@@ -4696,7 +4707,7 @@ function renderF3Users(){
   var q=noAccent(String(_f3uQuery||'').trim());
   var list=_f3uCache.filter(function(u){
     if(!q)return true;
-    return noAccent(u.rootName||'').indexOf(q)>=0||noAccent(u.acctName||'').indexOf(q)>=0||String(u.email||'').toLowerCase().indexOf(q)>=0;
+    return noAccent(u.rootName||'').indexOf(q)>=0||noAccent(u.acctName||'').indexOf(q)>=0||String(u.email||'').toLowerCase().indexOf(q)>=0||noAccent(u.rootCode||'').indexOf(q)>=0;
   });
   list.sort(function(a,b){
     if((b.rank||0)!==(a.rank||0))return (b.rank||0)-(a.rank||0); // cấp bậc cao lên trước
@@ -4710,9 +4721,9 @@ function renderF3Users(){
     h+='<div style="border:1px solid #EFEBDD;border-left:4px solid '+(u.matched?'#1A7A5E':'#E65100')+';border-radius:10px;padding:9px 11px;margin-bottom:8px">';
     h+='<div style="font-size:13.5px;font-weight:800">'+(on?'🟢 ':'')+'🌳 '+escHtml(u.rootName||u.acctName||'(chưa có ID Gốc)');
     if(u.rank>0)h+=' <span class="badge" style="background:'+RANKS[u.rank-1].color+';color:#fff;vertical-align:middle">'+RANKS[u.rank-1].short+'</span>';
-    h+=u.matched?' <span style="color:#1A7A5E;font-size:11px;font-weight:700">✓ có trên cây của bạn</span>':' <span style="color:#E65100;font-size:11px;font-weight:700">⚠ chưa khớp cây của bạn</span>';
+    h+=u.matched?' <span style="color:#1A7A5E;font-size:11px;font-weight:700">✓ khớp '+(u.matchBy==='code'?'Mã ID':'tên')+' trên cây của bạn</span>':' <span style="color:#E65100;font-size:11px;font-weight:700">⚠ chưa khớp cây của bạn'+(u.rootCode?'':' (ID Gốc chưa có Mã ID)')+'</span>';
     h+='</div>';
-    h+='<div style="font-size:11.5px;color:#888;margin-top:2px">👤 '+escHtml(u.acctName||'—')+' · 📧 '+escHtml(u.email||'—')+(u.rootJoin?' · vào ID: '+escHtml(String(u.rootJoin)):'')+(u.last?' · 🕒 '+_presAgo(now-u.last):'')+'</div>';
+    h+='<div style="font-size:11.5px;color:#888;margin-top:2px">'+(u.rootCode?'🔑 Mã ID: <b style="color:#555">'+escHtml(u.rootCode)+'</b> · ':'')+'👤 '+escHtml(u.acctName||'—')+' · 📧 '+escHtml(u.email||'—')+(u.rootJoin?' · vào ID: '+escHtml(String(u.rootJoin)):'')+(u.last?' · 🕒 '+_presAgo(now-u.last):'')+'</div>';
     h+='<div style="font-size:12px;color:#333;margin-top:5px;display:flex;flex-wrap:wrap;gap:6px 14px">';
     h+='<span>👥 <b>'+u.nMembers+'</b> TV</span>';
     h+='<span>🙋 <b style="color:'+(u.att>0?'#1A7A5E':'#999')+'">'+u.att+'</b> có mặt hôm nay</span>';
