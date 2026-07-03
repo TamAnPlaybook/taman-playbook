@@ -1,4 +1,4 @@
-<!-- VERSION: v6.39-prospect-contact-reminders -->
+<!-- VERSION: v6.40-merge-online-accounts-attdash-month-overview-allusers-search -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -948,6 +948,22 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .vb-h-rot{left:50%;top:-30px;margin-left:-11px;cursor:grab;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px}
 .vb-h-rot:after{content:'';position:absolute;left:50%;top:20px;width:2px;height:10px;background:var(--accent);margin-left:-1px}
 @media(max-width:600px){.vb-name-inp{max-width:120px}.vb-tb{padding:8px 9px;font-size:12px}}
+/* v6.40 — bảng hiện diện tháng (attendance dashboard) */
+.adash-box{margin-bottom:12px}
+.adash-ctl{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.adash-ttl{flex:1;text-align:center;font-weight:800;font-size:15px}
+.adash-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #E7E0CC;border-radius:10px;background:#fff}
+table.adash{border-collapse:collapse;font-size:11px;width:100%}
+table.adash th,table.adash td{border:1px solid #F0EDE2;padding:2px 3px;text-align:center}
+table.adash th{background:#FAF8F2;color:#666;font-weight:700}
+table.adash .adash-nm{position:sticky;left:0;background:#fff;text-align:left;min-width:104px;max-width:150px;font-weight:700;font-size:12px;z-index:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+table.adash th.adash-nm{background:#FAF8F2;z-index:3}
+table.adash td.adash-today,table.adash th.adash-today{background:#FFF8E1}
+table.adash td.adash-tot{font-weight:800;color:#1A7A5E}
+.ad-c{display:flex;flex-direction:column;gap:1px;align-items:center}
+.ad-c i{display:block;width:9px;height:5px;border-radius:2px;background:#ECEAE2}
+tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left;font-size:12px;padding:4px 8px}
+tr.adash-sec2 td{background:#F4F2EB;color:#666}
 </style>
 </head>
 <body>
@@ -1097,7 +1113,7 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
         <button class="stab" data-sub="tp:results">&#128202; Kết quả</button>
       </div>
 
-      <!-- 0. TỔNG QUAN — Dòng chảy 3 bước: Mục tiêu → Hành động hôm nay → Kết quả (v6.29) -->
+      <!-- 0. TỔNG QUAN — Dòng chảy 3 bước + v6.40: ghép thông tin TOÀN BỘ user (theo ID Gốc) + ô tìm kiếm -->
       <div class="spg on" id="tp-overview"><div id="flow3-content"></div></div>
 
       <!-- A. MỤC TIÊU (Goals): Kế hoạch 20/80 + Vision Board + Bánh xe cuộc đời + Mục tiêu & chỉ tiêu -->
@@ -1794,7 +1810,8 @@ async function fetchAccounts(){
   var m=await import(FB_STORE);
   var snap=await m.getDocs(m.collection(fbDb,'accounts'));
   var out=[];
-  snap.forEach(function(d){var v=d.data()||{};out.push({uid:d.id,name:v.name||'',email:v.email||'',createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp});});
+  snap.forEach(function(d){var v=d.data()||{};out.push({uid:d.id,name:v.name||'',email:v.email||'',createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp,
+    last:Math.max(_presTime(v.lastActive),_presTime(v.lastActiveIso))});});
   return out;
 }
 // ================================================================
@@ -1842,6 +1859,7 @@ function watchPresence(){
       snap.forEach(function(d){
         var v=d.data()||{};
         out.push({uid:d.id,name:v.name||'',email:v.email||'',
+          createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp,
           last:Math.max(_presTime(v.lastActive),_presTime(v.lastActiveIso))});
       });
       _presAccts=out;renderPresenceBox();
@@ -1856,33 +1874,68 @@ function _presAgo(ms){
   var h2=Math.floor(m2/60);if(h2<24)return h2+' giờ trước';
   return Math.floor(h2/24)+' ngày trước';
 }
+var _presCtx=null; // v6.40 — ngữ cảnh QTV cho danh sách GỘP (Đang online + Tài khoản đã đăng ký): {adminEmailsLc,blockedNow,isMainAdmin}
 function renderPresenceBox(){
   var el=document.getElementById('presence-list');if(!el)return;
   if(!_presAccts){el.innerHTML='<div style="font-size:13px;color:#999">Đang kết nối real-time…</div>';return;}
+  if(!_presAccts.length){
+    el.innerHTML='<div style="font-size:13px;color:#999;padding:4px 0">Chưa ghi nhận tài khoản nào. Nếu trống dù đã có người đăng nhập → cần cập nhật <b>Firestore Rules</b> (thêm mục accounts) rồi Publish lại:</div>'
+      +'<button class="btn btn-d btn-sm" id="btn-copy-rules" style="margin-top:6px">📋 Copy Rules mới</button>';
+    return;
+  }
+  var ctx=_presCtx||{adminEmailsLc:[],blockedNow:[],isMainAdmin:false};
   var now=Date.now();
   var rows=_presAccts.slice().map(function(a){
     var dt=a.last?(now-a.last):Infinity;
     a._st=dt<=PRESENCE_ONLINE_MS?2:(dt<=PRESENCE_AWAY_MS?1:0);
+    var em=String(a.email||'').toLowerCase();
+    a._em=em;
+    a._adm=ctx.adminEmailsLc.indexOf(em)>=0;
+    a._blkRaw=ctx.blockedNow.some(function(x){return String(x).toLowerCase()===em;});
+    a._blk=a._blkRaw&&!a._adm; // bị khoá (không tính QTV) → dồn xuống cuối (giữ quy tắc v6.4)
     return a;
   }).sort(function(a,b){
-    if(a._st!==b._st)return b._st-a._st;
-    return (b.last||0)-(a.last||0);
+    if(a._blk!==b._blk)return a._blk?1:-1;                 // bị khoá xuống cuối
+    if(a._st!==b._st)return b._st-a._st;                   // đang online lên trước
+    if((a.last||0)!==(b.last||0))return (b.last||0)-(a.last||0); // hoạt động gần nhất trước
+    return String(a.createdAt||a.updatedAt||'9999').localeCompare(String(b.createdAt||b.updatedAt||'9999'));
   });
   var nOn=rows.filter(function(a){return a._st===2;}).length;
   _admSetBadge('presence',nOn?(nOn+' online'):'','ok'); // v6.37 — đếm trên tiêu đề khi gấp
   var h='<div style="font-size:13.5px;font-weight:800;margin-bottom:8px;color:'+(nOn?'#1A7A5E':'#999')+'">🟢 '+nOn+' đang online / '+rows.length+' tài khoản</div>';
-  rows.forEach(function(a){
+  rows.forEach(function(a,idx){
     var me=(fbUser&&a.uid===fbUser.uid);
     var dot=a._st===2?'#2E7D32':a._st===1?'#F9A825':'#BDBDBD';
     var stTxt=a._st===2?'<b style="color:#2E7D32">Đang online</b>'
       :a._st===1?'<b style="color:#B8860B">Vừa hoạt động · '+_presAgo(now-a.last)+'</b>'
       :(a.last?('Offline · '+_presAgo(now-a.last)):'Offline · chưa rõ');
-    h+='<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #F2F0E9">';
-    h+='<span style="flex:none;width:11px;height:11px;border-radius:50%;background:'+dot+(a._st===2?';box-shadow:0 0 0 3px rgba(46,125,50,.18)':'')+'"></span>';
-    h+='<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.name||'(chưa đặt tên)')+(me?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+'</div>';
-    h+='<div style="font-size:11.5px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.email||'')+'</div></div>';
-    h+='<div style="flex:none;font-size:11.5px">'+stTxt+'</div>';
+    var verified=a.emailVerified, entered=(a.enteredApp!==false);
+    var emailHtml=verified===true?'<span style="color:#1A7A5E;font-weight:700">✓ Đã xác minh email</span>'
+      :verified===false?'<span style="color:#E53935;font-weight:700">✗ Chưa xác minh email</span>'
+      :'<span style="color:#999">Email: chưa rõ (đăng nhập lại để cập nhật)</span>';
+    var stepHtml=(verified===false)?'<span style="color:#E65100;font-weight:700">Bước 1/3 · chờ xác minh email</span>'
+      :(!entered)?'<span style="color:#1565C0;font-weight:700">Bước 2/3 · chưa vào app</span>'
+      :'<span style="color:#1A7A5E;font-weight:700">Bước 3/3 · đã vào app</span>';
+    h+='<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #F2F0E9">';
+    h+='<div style="flex:none;width:26px;height:26px;border-radius:50%;background:'+dot+';color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center'+(a._st===2?';box-shadow:0 0 0 3px rgba(46,125,50,.18)':'')+'">'+(idx+1)+'</div>';
+    h+='<div style="flex:1;min-width:0">';
+    h+='<div style="font-weight:700;font-size:13px">'+escHtml(a.name||'(chưa đặt tên)')+(me?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+(a._adm?' <span style="color:#1A7A5E;font-size:11px">· QTV</span>':(a._blkRaw?' <span style="color:#E53935;font-size:11px">· đã tắt</span>':''))+'</div>';
+    h+='<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.email||'(chưa có email)')+'</div>';
+    h+='<div style="font-size:11.5px;margin-top:2px">'+stTxt+'</div>';
+    h+='<div style="font-size:11px;color:#666;margin-top:3px;line-height:1.6">🕒 Tạo: '+escHtml(fmtDT(a.createdAt||a.updatedAt))+'<br>'+emailHtml+' · '+stepHtml+'</div>';
+    h+='<div style="font-size:10px;color:#AAA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">ID: '+escHtml(a.uid)+'</div>';
     h+='</div>';
+    h+='<div style="display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end;max-width:40%">';
+    h+='<button class="btn btn-d btn-sm" data-view-uid="'+escHtml(a.uid)+'" data-view-name="'+escHtml(a.name||a.email||'')+'">👁️ Xem</button>';
+    if(ctx.isMainAdmin){
+      if(a._adm){ h+='<span style="font-size:12px;color:#1A7A5E;font-weight:700;align-self:center">Quản trị</span>'; }
+      else{
+        if(a._blkRaw){ h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(a._em)+'">🔓 Mở khoá</button>'; }
+        else{ h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(a._em)+'">🔒 Khoá</button>'; }
+        h+='<button class="btn btn-sm" style="background:#7A1212;color:#fff" data-del-acct-uid="'+escHtml(a.uid)+'" data-del-acct-email="'+escHtml(a._em)+'" data-del-acct-name="'+escHtml(a.name||a.email||'')+'">🗑️ Xoá</button>';
+      }
+    }
+    h+='</div></div>';
   });
   el.innerHTML=h;
 }
@@ -4029,6 +4082,68 @@ function dailyComboCard(m,ord){
   h+='</div>'; // mc
   return h;
 }
+// ===== v6.40 — BẢNG HIỆN DIỆN THÁNG (dashboard: 1 ID hiện diện những ngày nào, Sáng/Trưa/Tối) =====
+var _attDashOpen=false,_attDashM=null; // _attDashM={y,m} (m: 0-11); null = theo tháng của ngày đang xem
+function _attDashBase(){
+  if(_attDashM)return _attDashM;
+  return {y:currentDay.getFullYear(),m:currentDay.getMonth()};
+}
+function dGetAt(mid,y,m1,d,f){return nmGet('d_'+mid+'_'+y+'-'+m1+'-'+d+'_'+f);} // đọc điểm danh 1 ngày bất kỳ (m1: 1-12, không pad — đúng chuẩn dk())
+function attDashHtml(list){
+  var b=_attDashBase(),y=b.y,mo=b.m;
+  var nDays=new Date(y,mo+1,0).getDate();
+  var tNow=new Date();
+  var todayD=(tNow.getFullYear()===y&&tNow.getMonth()===mo)?tNow.getDate():0;
+  // Chia 2 nhóm: khu vực đặc biệt = cấp bậc Future Star / 1★ trở lên; còn lại xuống dưới
+  var stars=[],others=[];
+  list.forEach(function(mm){
+    if(!mm)return;
+    var tn=treeNodes.find(function(t){return t.name===mm.name;});
+    var rk=tn?nodeRank(tn.id):0;
+    var days=[],tot=0;
+    for(var d=1;d<=nDays;d++){
+      var v=[dGetAt(mm.id,y,mo+1,d,'sang'),dGetAt(mm.id,y,mo+1,d,'trua'),dGetAt(mm.id,y,mo+1,d,'toi')];
+      days.push(v);
+      if(v[0]==='yes'||v[1]==='yes'||v[2]==='yes')tot++;
+    }
+    var it={m:mm,rk:rk,days:days,tot:tot};
+    if(rk>=1)stars.push(it);else others.push(it);
+  });
+  function srtIt(a,b){if(a.tot!==b.tot)return b.tot-a.tot;return noAccent(a.m.name).localeCompare(noAccent(b.m.name),undefined,{numeric:true});}
+  stars.sort(srtIt);others.sort(srtIt);
+  var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
+  function rowHtml(it){
+    var hh='<tr><td class="adash-nm" data-open-mid="'+it.m.id+'" data-open-type="kh">'+escHtml(it.m.name);
+    if(it.rk>0)hh+=' <span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span>';
+    hh+='</td>';
+    for(var d=1;d<=nDays;d++){
+      var v=it.days[d-1];
+      hh+='<td'+(d===todayD?' class="adash-today"':'')+'><div class="ad-c">';
+      for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
+      hh+='</div></td>';
+    }
+    hh+='<td class="adash-tot">'+(it.tot||'')+'</td></tr>';
+    return hh;
+  }
+  var cols=nDays+2;
+  var h='<div class="adash-box">';
+  h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
+  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên; bấm tên để mở chi tiết.</div>';
+  h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
+  for(var d2=1;d2<=nDays;d2++)h+='<th'+(d2===todayD?' class="adash-today"':'')+'>'+d2+'</th>';
+  h+='<th>&sum;</th></tr>';
+  if(stars.length){
+    h+='<tr class="adash-sec"><td colspan="'+cols+'">⭐ Future Star &amp; 1★ trở lên ('+stars.length+')</td></tr>';
+    stars.forEach(function(it){h+=rowHtml(it);});
+  }
+  if(others.length){
+    if(stars.length)h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">Các ID còn lại ('+others.length+')</td></tr>';
+    others.forEach(function(it){h+=rowHtml(it);});
+  }
+  if(!stars.length&&!others.length)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:10px;text-align:left">Chưa có thành viên nào</td></tr>';
+  h+='</table></div></div>';
+  return h;
+}
 function renderDailyCombined(){
   var el=document.getElementById('list-ngay');if(!el)return;
   var center=ddKeyNode();
@@ -4044,7 +4159,10 @@ function renderDailyCombined(){
     if(!vis[m.id]||m.name===center.name)return;
     if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
   });
-  function srt(a,b){var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});}
+  // v6.40 — ID đã điểm danh ✓ (hiện diện) trong ngày được ưu tiên đẩy lên trên (sau ghim ★)
+  function srt(a,b){var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;
+    var q=(memberActive(b)?1:0)-(memberActive(a)?1:0);if(q)return q;
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});}
   leftArr.sort(srt);rightArr.sort(srt);
   function colHtml(arr,headTxt,actColor){
     var act=arr.filter(memberActive).length;
@@ -4053,9 +4171,13 @@ function renderDailyCombined(){
     arr.forEach(function(m,i){hh+=dailyComboCard(m,String(i+1));});
     return hh;
   }
-  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi.</div>';
+  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. ID <b>đã điểm danh ✓</b> tự đẩy lên trên.</div>';
   var centerMember=members.find(function(m){return m.name===center.name;});
-  var h=legend;
+  var h='';
+  // v6.40 — bảng hiện diện tháng (dashboard) — nút mở/đóng, nhớ trạng thái trong phiên
+  h+='<div style="margin-bottom:10px"><button class="btn btn-d btn-sm" data-attdash-toggle="1">'+(_attDashOpen?'📊 Ẩn bảng hiện diện tháng':'📊 Xem bảng hiện diện tháng')+'</button></div>';
+  if(_attDashOpen)h+=attDashHtml([centerMember].concat(leftArr,rightArr));
+  h+=legend;
   if(centerMember)h+='<div class="dd-center">'+dailyComboCard(centerMember,'👑')+'</div>';
   h+='<div class="dd-cols">';
   h+='<div class="dd-col">'+colHtml(leftArr,'⬅️ Trái','#1A7A5E')+'</div>';
@@ -4420,6 +4542,7 @@ function renderActionCenter(){
 // v6.29 — TỔNG QUAN "Dòng chảy 3 bước": Mục tiêu → Hành động hôm nay → Kết quả
 //   Đơn giản hoá để ai cũng nhìn ra: nhắm tới gì → hôm nay làm gì → đã đạt tới đâu.
 //   Toàn đội (mặc định) hoặc chọn 1 thành viên. Mỗi bước có nút "Xem chi tiết →".
+//   v6.40 — thêm khối "🌐 Toàn bộ user" (QTV): ghép dữ liệu MỌI tài khoản theo ID Gốc + ô tìm kiếm tên.
 // ================================================================
 var _flow3Mid=null; // null = toàn đội; else id thành viên
 function _f3Bar(pct,color){pct=Math.max(0,Math.min(100,Math.round(pct||0)));return '<div style="height:12px;background:#EEE;border-radius:7px;overflow:hidden;margin:5px 0"><div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:7px"></div></div>';}
@@ -4500,6 +4623,106 @@ function renderFlow3(){
   }else b3+='<div style="font-size:11.5px;color:#999;margin-top:8px">Số liệu KPI của '+escHtml(mem.name)+' — '+escHtml(periodLabel())+'. Nhập/sửa ở "KPI thực đạt".</div>';
   h+=_f3Card(3,'&#128202;','KẾT QUẢ','Tôi đã đạt được gì?','#1565C0',b3,'tp:results','Xem kết quả chi tiết');
 
+  h+=_f3UsersSectionHtml(); // v6.40 — khối "Toàn bộ user" (QTV)
+  el.innerHTML=h;
+  if(isBranchAdmin&&!viewOnlyMode){renderF3Users();if(!_f3uCache&&!_f3uLoading)scanF3Users();}
+}
+// ===== v6.40 — TỔNG QUAN TOÀN BỘ USER (QTV): ghép dữ liệu MỌI tài khoản vào tab Tổng quan =====
+//   • Mỗi tài khoản (user) được nhận diện qua ID GỐC trên cây của họ (node không có parentId).
+//   • Ghép vào cây của QTV theo tên ID Gốc (không dấu) → hiện cấp bậc + trạng thái khớp.
+//   • Chỉ ĐỌC (fsGetUser) — không ghi gì; chỉ QTV thấy (Rules isAdmin mới đọc được users/**).
+var _f3uCache=null,_f3uLoading=false,_f3uQuery='';
+function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã tải → test được
+  var nodes=(tree&&tree.nodes)||[];
+  var root=null;for(var i=0;i<nodes.length;i++){if(nodes[i]&&!nodes[i].parentId){root=nodes[i];break;}}
+  var uMembers=(mem&&mem.members)||[];
+  var kv=(mir&&mir.kv)||{};
+  var acts=(ap&&ap.acts)||{};
+  var uPros=(pros&&pros.list)||[];
+  var td=new Date();var tk=td.getFullYear()+'-'+(td.getMonth()+1)+'-'+td.getDate();
+  // điểm danh hôm nay trong đội của HỌ: số TV có ≥1 buổi ✓
+  var attN=0;
+  uMembers.forEach(function(m){
+    if(['sang','trua','toi'].some(function(s){return kv['d_'+m.id+'_'+tk+'_'+s]==='yes';}))attN++;
+  });
+  // việc hôm nay (Action Center của họ)
+  var dayA=acts[tk]||[];var done=0;dayA.forEach(function(x){if(x&&x.done)done++;});
+  // KPI tháng này (tổng mọi TV, mọi chỉ số) — khoá tháng 'y-m' (m: 0-11, đúng chuẩn pkey)
+  var mk=td.getFullYear()+'-'+td.getMonth();
+  var kpi=0;
+  uMembers.forEach(function(m){MONTH_KPI.forEach(function(k){kpi+=parseInt(kv['mo_'+m.id+'_'+mk+'_'+k.id]||'0',10)||0;});});
+  // ghép vào cây của tôi theo ID Gốc (tên không dấu)
+  var rootName=root?String(root.name||''):'';
+  var myNode=rootName?treeNodes.find(function(t){return noAccent(t.name)===noAccent(rootName);}):null;
+  return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
+    rootName:rootName,rootJoin:root?(root.joinDate||''):'',
+    nMembers:uMembers.length,nPros:uPros.length,
+    att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
+    matched:!!myNode,rank:myNode?nodeRank(myNode.id):0};
+}
+function scanF3Users(){
+  if(_f3uLoading)return;
+  _f3uLoading=true;renderF3Users();
+  fetchAccounts().catch(function(){return [];}).then(function(accts){
+    return Promise.all((accts||[]).map(function(a){
+      return Promise.all([
+        fsGetUser(a.uid,'tree').catch(function(){return null;}),
+        fsGetUser(a.uid,'members').catch(function(){return null;}),
+        fsGetUser(a.uid,'localmirror').catch(function(){return null;}),
+        fsGetUser(a.uid,'actplans').catch(function(){return null;}),
+        fsGetUser(a.uid,'prospects').catch(function(){return null;})
+      ]).then(function(r){try{return _f3uSummary(a,r[0],r[1],r[2],r[3],r[4]);}catch(e){return null;}});
+    }));
+  }).then(function(list){
+    _f3uCache=(list||[]).filter(Boolean);
+    _f3uLoading=false;renderF3Users();
+  }).catch(function(){_f3uLoading=false;if(!_f3uCache)_f3uCache=[];renderF3Users();});
+}
+function _f3UsersSectionHtml(){
+  if(!isBranchAdmin||viewOnlyMode)return '';
+  var h='<div style="margin-top:16px;border:1px solid #E7E0CC;border-left:5px solid #C8A84B;border-radius:12px;background:#fff;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.05)">';
+  h+='<div style="font-size:15px;font-weight:800;color:#8A6D1A">🌐 Toàn bộ user — ghép theo ID Gốc</div>';
+  h+='<div style="font-size:12px;color:#999;font-style:italic;margin:3px 0 9px">Dữ liệu mỗi tài khoản (họ tự nhập trên cây của họ) được ghép vào đây theo <b>ID Gốc</b>. Chỉ quản trị viên thấy khối này.</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">';
+  h+='<input id="f3u-search" class="nmod-inp" style="flex:1;min-width:0" placeholder="🔎 Tìm theo tên / ID Gốc / email — gõ bất kỳ ký tự nào..." value="'+escHtml(_f3uQuery)+'">';
+  h+='<button class="btn btn-d btn-sm" data-f3u-scan="1" title="Tải / làm mới dữ liệu toàn bộ user">🔄</button></div>';
+  h+='<div id="f3u-list"></div></div>';
+  return h;
+}
+function renderF3Users(){
+  var el=document.getElementById('f3u-list');if(!el)return;
+  if(_f3uLoading&&!_f3uCache){el.innerHTML='<div style="font-size:13px;color:#999">⏳ Đang đọc dữ liệu các tài khoản trong đội…</div>';return;}
+  if(!_f3uCache){el.innerHTML='<div style="font-size:13px;color:#999">Bấm 🔄 để tải dữ liệu toàn bộ user.</div>';return;}
+  var q=noAccent(String(_f3uQuery||'').trim());
+  var list=_f3uCache.filter(function(u){
+    if(!q)return true;
+    return noAccent(u.rootName||'').indexOf(q)>=0||noAccent(u.acctName||'').indexOf(q)>=0||String(u.email||'').toLowerCase().indexOf(q)>=0;
+  });
+  list.sort(function(a,b){
+    if((b.rank||0)!==(a.rank||0))return (b.rank||0)-(a.rank||0); // cấp bậc cao lên trước
+    return noAccent(a.rootName||a.acctName).localeCompare(noAccent(b.rootName||b.acctName),undefined,{numeric:true});
+  });
+  var h='<div style="font-size:12.5px;color:#555;margin-bottom:8px">'+(_f3uLoading?'⏳ Đang làm mới… · ':'')+'Hiện <b>'+list.length+'</b>/'+_f3uCache.length+' user'+(q?' khớp tìm kiếm':'')+'</div>';
+  if(!list.length)h+='<div style="font-size:13px;color:#999">Không tìm thấy tên phù hợp.</div>';
+  var now=Date.now();
+  list.forEach(function(u){
+    var on=u.last&&(now-u.last)<=PRESENCE_ONLINE_MS;
+    h+='<div style="border:1px solid #EFEBDD;border-left:4px solid '+(u.matched?'#1A7A5E':'#E65100')+';border-radius:10px;padding:9px 11px;margin-bottom:8px">';
+    h+='<div style="font-size:13.5px;font-weight:800">'+(on?'🟢 ':'')+'🌳 '+escHtml(u.rootName||u.acctName||'(chưa có ID Gốc)');
+    if(u.rank>0)h+=' <span class="badge" style="background:'+RANKS[u.rank-1].color+';color:#fff;vertical-align:middle">'+RANKS[u.rank-1].short+'</span>';
+    h+=u.matched?' <span style="color:#1A7A5E;font-size:11px;font-weight:700">✓ có trên cây của bạn</span>':' <span style="color:#E65100;font-size:11px;font-weight:700">⚠ chưa khớp cây của bạn</span>';
+    h+='</div>';
+    h+='<div style="font-size:11.5px;color:#888;margin-top:2px">👤 '+escHtml(u.acctName||'—')+' · 📧 '+escHtml(u.email||'—')+(u.rootJoin?' · vào ID: '+escHtml(String(u.rootJoin)):'')+(u.last?' · 🕒 '+_presAgo(now-u.last):'')+'</div>';
+    h+='<div style="font-size:12px;color:#333;margin-top:5px;display:flex;flex-wrap:wrap;gap:6px 14px">';
+    h+='<span>👥 <b>'+u.nMembers+'</b> TV</span>';
+    h+='<span>🙋 <b style="color:'+(u.att>0?'#1A7A5E':'#999')+'">'+u.att+'</b> có mặt hôm nay</span>';
+    h+='<span>📋 <b>'+u.actDone+'/'+u.actTot+'</b> việc hôm nay</span>';
+    h+='<span>📈 <b>'+u.kpi+'</b> KPI tháng</span>';
+    h+='<span>💎 <b>'+u.nPros+'</b> tiềm năng</span>';
+    h+='</div>';
+    h+='<div style="margin-top:7px"><button class="btn btn-d btn-sm" data-view-uid="'+escHtml(u.uid)+'" data-view-name="'+escHtml(u.rootName||u.acctName||u.email||'')+'">👁️ Xem chi tiết tài khoản</button></div>';
+    h+='</div>';
+  });
   el.innerHTML=h;
 }
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
@@ -7923,9 +8146,12 @@ function renderAdminPage(){
       h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Hiểu app có thực sự giúp người dùng không — hoạt động (DAU/WAU/MAU), gắn kết, tính năng, giữ chân, phân khúc, App Health, đề xuất cải tiến. Dữ liệu <b>ẩn danh hoá hành vi</b> (không lộ mật khẩu / nội dung riêng tư).</div>';
       h+='<button class="btn btn-d btn-sm" id="btn-load-analytics">📊 Mở bảng phân tích</button>';
       h+='<div id="analytics-content" style="margin-top:12px"></div></div>';
-      // v6.36 — Ai đang online (real-time)
-      h+='<div class="adm-box"><div class="adm-title">🟢 Đang online (real-time)</div>';
-      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Ai đang <b>mở app ngay lúc này</b> — cập nhật tự động theo thời gian thực, không cần bấm gì. 🟢 = đang online (hoạt động trong ~2 phút) · 🟡 = vừa rời (≤10 phút) · ⚪ = offline.</div>';
+      // v6.40 — GỘP "Đang online (real-time)" + "Tài khoản đã đăng ký" thành 1 danh sách (giữ đủ tính năng 2 box cũ)
+      _presCtx={adminEmailsLc:admins.emails.map(function(x){return String(x).toLowerCase();}),
+        blockedNow:(reg&&reg.blockedEmails)||[],
+        isMainAdmin:(admins.emails[0]===myEmail)};
+      h+='<div class="adm-box"><div class="adm-title">🟢 Đang online & Tài khoản đã đăng ký</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây, <b>cập nhật tự động theo thời gian thực</b>. 🟢 = đang online (hoạt động trong ~2 phút) · 🟡 = vừa rời (≤10 phút) · ⚪ = offline. Đang online lên đầu, tài khoản <b>bị khoá</b> tự dồn xuống cuối. Bấm <b>👁️ Xem</b> để xem nội dung bên trong (sơ đồ + thành viên)'+(_presCtx.isMainAdmin?', <b>🔒 Khoá</b> để chặn đăng nhập, <b>🔓 Mở khoá</b> để cho phép lại, <b>🗑️ Xoá</b> để xoá <b>vĩnh viễn</b> tài khoản + toàn bộ dữ liệu cloud của họ (có xác nhận)':'')+'.</div>';
       h+='<div id="presence-list"><div style="font-size:13px;color:#999">Đang kết nối real-time…</div></div></div>';
       // v6.25 — Hộp thư ID mới toàn đội (CHỈ QTV; tự quét khi mở trang quản trị)
       h+='<div class="adm-box"><div class="adm-title">🔔 Hộp thư: ID mới toàn đội</div>';
@@ -7992,54 +8218,7 @@ function renderAdminPage(){
         h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Để nút <b>👁️ Xem</b> đọc được dữ liệu bên trong tài khoản thành viên, cần cập nhật <b>Firestore Rules</b> (bản v4.5) <u>một lần</u>:<br>1. Mở <b>console.firebase.google.com</b> → project <b>taman-playbook</b> → <b>Firestore Database</b> → tab <b>Rules</b>.<br>2. Xóa hết, dán nội dung dưới đây → bấm <b>Publish</b>. (Rules mới chỉ cho QTV <b>ĐỌC</b>, không sửa được dữ liệu người khác — an toàn.)</div>';
         h+='<textarea id="adm-rules2" readonly style="width:100%;height:140px;font-family:monospace;font-size:11px;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px;background:#FAFAFA">'+escHtml(FIRESTORE_RULES)+'</textarea>';
         h+='<button class="btn btn-d btn-sm" id="btn-copy-rules" style="margin-top:8px">📋 Copy Rules (mới nhất)</button></div></details>';
-        // DANH SACH TAI KHOAN DA DANG KY + Tat/Mo quyen truy cap (QTV chinh)
-        var adminEmailsLc=admins.emails.map(function(x){return String(x).toLowerCase();});
-        var blockedNow=(reg&&reg.blockedEmails)||[];
-        h+='<div class="adm-box"><div class="adm-title">👤 Tài khoản đã đăng ký</div>';
-        h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi người đăng nhập sẽ tự xuất hiện ở đây. Bấm <b>👁️ Xem</b> để xem nội dung bên trong (sơ đồ + thành viên), <b>🔒 Khoá</b> để chặn đăng nhập, <b>🔓 Mở khoá</b> để cho phép lại, <b>🗑️ Xoá</b> để xoá <b>vĩnh viễn</b> tài khoản + toàn bộ dữ liệu cloud của họ (có xác nhận). Tài khoản <b>đang hoạt động</b> hiện ở trên, tài khoản <b>bị khoá</b> tự dồn xuống cuối.</div>';
-        if(accounts&&accounts.length){
-          // v6.4 — Tài khoản ĐANG HOẠT ĐỘNG lên trước, tài khoản BỊ KHOÁ xuống cuối; trong mỗi nhóm theo thời gian tạo cũ → mới
-          accounts.sort(function(a,b){
-            var aem=String(a.email||'').toLowerCase(),bem=String(b.email||'').toLowerCase();
-            var aBlk=blockedNow.some(function(x){return String(x).toLowerCase()===aem;})&&adminEmailsLc.indexOf(aem)<0;
-            var bBlk=blockedNow.some(function(x){return String(x).toLowerCase()===bem;})&&adminEmailsLc.indexOf(bem)<0;
-            if(aBlk!==bBlk)return aBlk?1:-1;
-            return String(a.createdAt||a.updatedAt||'9999').localeCompare(String(b.createdAt||b.updatedAt||'9999'));
-          });
-          accounts.forEach(function(ac,idx){
-            var em=String(ac.email||'').toLowerCase();
-            var isBlk=blockedNow.some(function(x){return String(x).toLowerCase()===em;});
-            var isAdm=adminEmailsLc.indexOf(em)>=0;
-            var verified=ac.emailVerified, entered=(ac.enteredApp!==false);
-            var emailHtml=verified===true?'<span style="color:#1A7A5E;font-weight:700">✓ Đã xác minh email</span>'
-              :verified===false?'<span style="color:#E53935;font-weight:700">✗ Chưa xác minh email</span>'
-              :'<span style="color:#999">Email: chưa rõ (đăng nhập lại để cập nhật)</span>';
-            var stepHtml=(verified===false)?'<span style="color:#E65100;font-weight:700">Bước 1/3 · chờ xác minh email</span>'
-              :(!entered)?'<span style="color:#1565C0;font-weight:700">Bước 2/3 · chưa vào app</span>'
-              :'<span style="color:#1A7A5E;font-weight:700">Bước 3/3 · đã vào app</span>';
-            h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F0F0">';
-            h+='<div style="flex:none;width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center">'+(idx+1)+'</div>';
-            h+='<div style="flex:1;min-width:0">';
-            h+='<div style="font-weight:700;font-size:13px">'+escHtml(ac.name||'(chưa đặt tên)')+(isAdm?' <span style="color:#1A7A5E;font-size:11px">· QTV</span>':(isBlk?' <span style="color:#E53935;font-size:11px">· đã tắt</span>':''))+'</div>';
-            h+='<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(ac.email||'(chưa có email)')+'</div>';
-            h+='<div style="font-size:11px;color:#666;margin-top:3px;line-height:1.6">🕒 Tạo: '+escHtml(fmtDT(ac.createdAt||ac.updatedAt))+'<br>'+emailHtml+' · '+stepHtml+'</div>';
-            h+='<div style="font-size:10px;color:#AAA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">ID: '+escHtml(ac.uid)+'</div>';
-            h+='</div>';
-            h+='<div style="display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end">';
-            h+='<button class="btn btn-d btn-sm" data-view-uid="'+escHtml(ac.uid)+'" data-view-name="'+escHtml(ac.name||ac.email||'')+'">👁️ Xem</button>';
-            if(isAdm){ h+='<span style="font-size:12px;color:#1A7A5E;font-weight:700;align-self:center">Quản trị</span>'; }
-            else{
-              if(isBlk){ h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">🔓 Mở khoá</button>'; }
-              else{ h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(em)+'">🔒 Khoá</button>'; }
-              h+='<button class="btn btn-sm" style="background:#7A1212;color:#fff" data-del-acct-uid="'+escHtml(ac.uid)+'" data-del-acct-email="'+escHtml(em)+'" data-del-acct-name="'+escHtml(ac.name||ac.email||'')+'">🗑️ Xoá</button>';
-            }
-            h+='</div></div>';
-          });
-        }else{
-          h+='<div style="font-size:13px;color:#999;padding:4px 0">Chưa ghi nhận tài khoản nào. Nếu trống dù đã có người đăng nhập → cần cập nhật <b>Firestore Rules</b> (thêm mục accounts) rồi Publish lại:</div>';
-          h+='<button class="btn btn-d btn-sm" id="btn-copy-rules" style="margin-top:6px">📋 Copy Rules mới</button>';
-        }
-        h+='</div>';
+        // v6.40 — danh sách tài khoản đã GỘP vào box "Đang online & Tài khoản đã đăng ký" phía trên
       }
       h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Xuất nhánh (tách nhánh)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> = ẩn nút "Xuất nhánh" trên trang <b>thành viên</b> (quản trị viên luôn dùng được).</div>';
@@ -8076,6 +8255,8 @@ function renderAdminPage(){
     }
     el.innerHTML=h;
     compactAdminBoxes(); // v6.37 — gom nhóm + gấp/mở gọn gàng (trước các mount; id giữ nguyên)
+    if(accounts&&accounts.length)_presAccts=accounts; // v6.40 — hiện danh sách ngay từ dữ liệu vừa tải, snapshot real-time sẽ thay thế
+    renderPresenceBox();
     if(document.getElementById('presence-list'))watchPresence();else stopPresenceWatch(); // v6.36 — ai đang online (real-time)
     if(document.getElementById('teamsync-inbox'))mountTeamSync(); // v6.36 — dữ liệu đội chờ duyệt
     if(document.getElementById('newid-inbox'))mountNewIdInbox(); // v6.25 — tự quét ID mới toàn đội
@@ -8665,6 +8846,9 @@ document.addEventListener('click',function(e){
     if(_real)_real.click();
     return;
   }
+  // v6.40 — Tổng quan / Toàn bộ user: tải / làm mới dữ liệu mọi tài khoản
+  t=e.target.closest('[data-f3u-scan]');
+  if(t){scanF3Users();return;}
   // Sub tabs
   t=e.target.closest('[data-sub]');
   if(t){
@@ -8896,6 +9080,17 @@ document.addEventListener('click',function(e){
     var _nv=_cv===''?'yes':_cv==='yes'?'late':_cv==='late'?'no':'';
     dSet(_amid,_ases,_nv);
     renderDailyCombined();updateStats();
+    return;
+  }
+  // v6.40 — bảng hiện diện tháng: mở/đóng + chuyển tháng
+  t=e.target.closest('[data-attdash-toggle]');
+  if(t){_attDashOpen=!_attDashOpen;renderDailyCombined();return;}
+  t=e.target.closest('[data-attdash-nav]');
+  if(t){
+    var _an=parseInt(t.getAttribute('data-attdash-nav'),10)||0;
+    var _ab=_attDashBase(),_ad=new Date(_ab.y,_ab.m+_an,1);
+    _attDashM={y:_ad.getFullYear(),m:_ad.getMonth()};
+    renderDailyCombined();
     return;
   }
   // v6.2 — So sánh TV: bấm cột để sắp xếp
@@ -9433,6 +9628,7 @@ document.addEventListener('change',function(e){
 
 // Search
 document.addEventListener('input',function(e){
+  if(e.target.id==='f3u-search'){_f3uQuery=e.target.value;renderF3Users();} // v6.40 — tìm tên trong "Toàn bộ user" (Tổng quan)
   if(e.target.id==='srch'){renderDdSearchSug(e.target.value);}
   if(e.target.id==='tree-search'){renderSearchSug(e.target.value);}
   if(e.target.id==='club-search'){doClubSearch();}
