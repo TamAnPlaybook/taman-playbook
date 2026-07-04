@@ -1,4 +1,4 @@
-<!-- VERSION: v6.45-gold-silver-ships -->
+<!-- VERSION: v6.46-lock-addroot-btn -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -970,6 +970,8 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
 .shipmx{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
 .shipmx th,.shipmx td{border:1px solid #D8D2C4;padding:7px 8px;text-align:left;vertical-align:top}
 .shipmx th{font-size:13px;text-align:center}
+/* v6.46 — nút + ID Gốc bị khoá khi đã có gốc */
+#btn-add-root:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.5)}
 </style>
 </head>
 <body>
@@ -6732,6 +6734,14 @@ function renderDiscBar(){
   if(discFilter)h+='<button class="disc-btn" data-disc-letter="__clear__">✕ Bỏ lọc</button>';
   el.innerHTML=h;
 }
+// v6.46 — Nút "+ ID Gốc": đã có ID gốc → làm mờ + khoá bấm; ID gốc bị xoá → mở lại
+function updateAddRootBtn(){
+  var b=document.getElementById('btn-add-root');
+  if(!b)return;
+  var hasRoot=treeNodes.some(function(n){return !n.parentId;});
+  b.disabled=hasRoot;
+  b.title=hasRoot?'Đã có ID gốc — nút mở lại khi ID gốc bị xoá':'';
+}
 function renderTree(){
   clearRankMemo();
   syncTreeToMembers(false);
@@ -6868,6 +6878,7 @@ function renderTree(){
   try{renderBranchStats();}catch(e){console.error('renderBranchStats lỗi:',e);}
   try{renderDiscBar();}catch(e){console.error('renderDiscBar lỗi:',e);}
   try{renderRankAlert();}catch(e){console.error('renderRankAlert lỗi:',e);}
+  try{updateAddRootBtn();}catch(e){}
 }
 function applyTreeTransform(){
   document.getElementById('tree-canvas').style.transform='translate('+treeOffset.x+'px,'+treeOffset.y+'px) scale('+treeScale+')';
@@ -7645,6 +7656,7 @@ function renderStarChart(){
   try{renderBranchStats();}catch(e){console.error('renderBranchStats lỗi:',e);}
   try{renderDiscBar();}catch(e){console.error('renderDiscBar lỗi:',e);}
   try{renderRankAlert();}catch(e){console.error('renderRankAlert lỗi:',e);}
+  try{updateAddRootBtn();}catch(e){}
 }
 
 function applyStarTransform(){
@@ -11019,9 +11031,12 @@ function bindStatic(){
     else{starScale=Math.max(starScale/1.2,MINZ);applyStarTransform();}
   });
   document.getElementById('btn-add-root').addEventListener('click',function(){
+    // v6.46 — chặn kép: đã có ID gốc thì không thêm gốc nữa (nút vốn đã disabled)
+    if(treeNodes.some(function(n){return !n.parentId;})){showToast('Đã có ID gốc — xoá ID gốc thì nút này mở lại');return;}
     openAddNodeModal2(null,null);
     attachSelFilter(document.getElementById('nf-f1of-filter'),document.getElementById('nf-f1of-sel'));
   });
+  updateAddRootBtn(); // v6.46 — đặt đúng trạng thái ngay khi vào app
   document.getElementById('btn-export-branch').addEventListener('click',exportSubtree);
   document.getElementById('btn-import-branch').addEventListener('click',importSubtree);
   var _bfs=document.getElementById('btn-fullscreen');if(_bfs)_bfs.addEventListener('click',openFullscreen);
