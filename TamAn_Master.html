@@ -1,4 +1,4 @@
-<!-- VERSION: v6.49-ship-equals-crown-noroot -->
+<!-- VERSION: v6.50-goldnum-always-on -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -1229,7 +1229,6 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn gold" id="btn-export-branch">&#127795; Xuất nhánh</button>
       <button class="tbtn" id="btn-import-branch" style="background:#EDE7F6;border-color:#B39DDB;color:#5E35B1">&#127795; Nhập nhánh</button>
-      <button class="tbtn" id="btn-goldmap" style="background:#FFF8E1;border-color:#E6C34A;color:#8A6A12"></button>
       <span id="tree-total" style="margin-left:auto;font-size:12px;font-weight:700;color:#555;white-space:nowrap"></span>
     </div>
     <div id="tree-search-bar">
@@ -9763,9 +9762,8 @@ function buildLegendHtml(){
 // v6.45 — CON TÀU (Tàu Vàng / Tàu Bạc): phân loại đối tác theo ma trận
 // node.ship = 'vang' | 'bac' | '' — lưu ngay trong treeNodes (tự sync Firestore qua saveTree2)
 // ================================================================
-var goldMapOn=false;
 function shipSVG(kind,size,num){
-  // num (tuỳ chọn): số thứ tự "Sơ đồ tàu vàng" vẽ NGAY TRONG hình con tàu
+  // num (tuỳ chọn): số tầng tàu vàng vẽ NGAY TRONG hình con tàu
   var s=size||14;
   var c=kind==='vang'
     ?{h:'#C9A227',hs:'#8A6A12',sa:'#FFD700',m:'#8A6A12'}
@@ -9838,7 +9836,6 @@ function goldShipOrder(){
   // tàu vàng gần nhất bên dưới nó = 2, tiếp theo = 3... → 2 nhánh khác nhau có thể
   // trùng số (đây là "tầng tàu vàng" của từng nhánh dọc, không phải đếm tổng).
   var out={};
-  if(!goldMapOn)return out;
   var rb=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);
   if(!rb)return out;
   var byParent={},byId={};
@@ -9859,16 +9856,6 @@ function goldShipOrder(){
   }
   walk(rb,0);
   return out;
-}
-function toggleGoldMap(){
-  goldMapOn=!goldMapOn;
-  var b=document.getElementById('btn-goldmap');
-  if(b){
-    b.style.background=goldMapOn?'#FFD700':'#FFF8E1';
-    b.style.boxShadow=goldMapOn?'inset 0 0 0 2px #8A6A12':'';
-  }
-  if(currentTreeMode==='binary')renderTree();else renderStarChart();
-  showToast(goldMapOn?'⚓ Sơ đồ tàu vàng: BẬT — số tầng tàu vàng theo nhánh dọc, không tính ID gốc':'Sơ đồ tàu vàng: TẮT');
 }
 // Đổi ô chọn Con tàu trong modal → cập nhật icon xem trước ngay
 document.addEventListener('change',function(e){
@@ -11071,12 +11058,7 @@ function bindStatic(){
   document.getElementById('btn-legend').addEventListener('click',openLegend);
   document.getElementById('legend-close').addEventListener('click',closeLegend);
   document.getElementById('legend-ov').addEventListener('click',function(e){if(e.target===this)closeLegend();});
-  // v6.45 — nút Sơ đồ tàu vàng + modal ma trận Con tàu
-  var _bgm=document.getElementById('btn-goldmap');
-  if(_bgm){
-    _bgm.innerHTML=shipSVG('vang',15)+' Sơ đồ tàu vàng';
-    _bgm.addEventListener('click',toggleGoldMap);
-  }
+  // v6.45 — modal ma trận Con tàu (số tầng tàu vàng LUÔN hiển thị, không còn nút bật/tắt)
   document.getElementById('shiphelp-close').addEventListener('click',closeShipHelp);
   document.getElementById('shiphelp-ov').addEventListener('click',function(e){if(e.target===this)closeShipHelp();});
   document.getElementById('btn-thangtien').addEventListener('click',openThangTien);
