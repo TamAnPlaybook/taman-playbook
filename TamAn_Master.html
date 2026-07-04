@@ -1,4 +1,4 @@
-<!-- VERSION: v6.46-lock-addroot-btn -->
+<!-- VERSION: v6.47-ship-above-numbered -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -966,7 +966,8 @@ tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left
 tr.adash-sec2 td{background:#F4F2EB;color:#666}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
-.gm-num{position:absolute;top:-9px;left:-9px;min-width:20px;height:20px;padding:0 4px;background:#FFD700;border:2px solid #8A6A12;border-radius:50%;color:#5D4000;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.35);z-index:6;font-family:Arial;box-sizing:border-box}
+.ship-top{position:absolute;left:50%;top:-46px;transform:translateX(-50%);pointer-events:none;z-index:5;line-height:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.ship-top.on-root{top:-86px}
 .shipmx{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
 .shipmx th,.shipmx td{border:1px solid #D8D2C4;padding:7px 8px;text-align:left;vertical-align:top}
 .shipmx th{font-size:13px;text-align:center}
@@ -6842,7 +6843,7 @@ function renderTree(){
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
-    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+(n.ship?shipSVG(n.ship,13)+' ':'')+escHtml(n.name)+'</div>';
+    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;font-weight:600;color:'+_tSub+';margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(n.idCode)h+='<div style="font-family:Arial;font-size:8.5px;font-weight:700;letter-spacing:.3px;color:'+(_onColor?'rgba(255,255,255,.92)':'#6B4FA0')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">M\u00e3: '+escHtml(n.idCode)+'</div>';
     if(_isRoot){
@@ -6864,7 +6865,7 @@ function renderTree(){
       h+='<div class="nm-badge '+nmk+'" style="top:-9px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_nmm)+'</div>';
       h+='<div class="nm-spark" style="top:-8px;right:-4px">✨</div>';
     }
-    if(_gm[n.id])h+='<div class="gm-num">'+_gm[n.id]+'</div>';
+    if(n.ship)h+='<div class="ship-top'+(_isRoot?' on-root':'')+'">'+shipSVG(n.ship,40,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
     if(!hasL&&!viewOnlyMode)h+='<div class="tn-add tn-add-l" data-add-pid="'+n.id+'" data-add-side="L" style="background:'+col+'">+</div>';
     if(!hasR&&!viewOnlyMode)h+='<div class="tn-add tn-add-r" data-add-pid="'+n.id+'" data-add-side="R" style="background:'+col+'">+</div>';
     h+='</div>';
@@ -7634,7 +7635,6 @@ function renderStarChart(){
     h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" data-flvl="'+_fd+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
     h+='<div style="display:flex;align-items:center;gap:4px">';
     h+='<span style="width:14px;height:14px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
-    if(n.ship)h+='<span style="flex-shrink:0;display:inline-flex">'+shipSVG(n.ship,12)+'</span>';
     h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
@@ -7647,7 +7647,7 @@ function renderStarChart(){
       h+='<div class="nm-badge '+nmk+'" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-11)+'px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_snmm)+'</div>';
       h+='<div class="nm-spark" style="left:'+(p.x+ox+NWs-7)+'px;top:'+(p.y+oy-9)+'px">✨</div>';
     }
-    if(_gm[n.id])h+='<div class="gm-num" style="left:'+(p.x+ox-8)+'px;top:'+(p.y+oy-9)+'px">'+_gm[n.id]+'</div>';
+    if(n.ship)h+='<div class="ship-top" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-(!n.parentId?68:33))+'px">'+shipSVG(n.ship,30,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
     if(!n.parentId)h+='<div class="root-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+rootCrownSVG(NWs,'s')+'</div>';
   });
   box.innerHTML=h;
@@ -9765,17 +9765,23 @@ function buildLegendHtml(){
 // node.ship = 'vang' | 'bac' | '' — lưu ngay trong treeNodes (tự sync Firestore qua saveTree2)
 // ================================================================
 var goldMapOn=false;
-function shipSVG(kind,size){
+function shipSVG(kind,size,num){
+  // num (tuỳ chọn): số thứ tự "Sơ đồ tàu vàng" vẽ NGAY TRONG hình con tàu
   var s=size||14;
   var c=kind==='vang'
     ?{h:'#C9A227',hs:'#8A6A12',sa:'#FFD700',m:'#8A6A12'}
     :{h:'#B0BEC5',hs:'#607D8B',sa:'#ECEFF1',m:'#607D8B'};
-  return '<svg class="ship-ico" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'
+  var svg='<svg class="ship-ico" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'
     +'<line x1="12" y1="2.5" x2="12" y2="16" stroke="'+c.m+'" stroke-width="1.5"/>'
     +'<path d="M13 3.5l6 9h-6Z" fill="'+c.sa+'" stroke="'+c.m+'" stroke-width="1.2" stroke-linejoin="round"/>'
     +'<path d="M11 5.5v7H5.5Z" fill="'+c.sa+'" stroke="'+c.m+'" stroke-width="1.2" stroke-linejoin="round"/>'
-    +'<path d="M2.5 15.5h19l-3.4 5.5H5.9Z" fill="'+c.h+'" stroke="'+c.hs+'" stroke-width="1.2" stroke-linejoin="round"/>'
-    +'</svg>';
+    +'<path d="M2.5 15.5h19l-3.4 5.5H5.9Z" fill="'+c.h+'" stroke="'+c.hs+'" stroke-width="1.2" stroke-linejoin="round"/>';
+  if(num!=null){
+    var fs=num>=100?5.5:(num>=10?7:8.5);
+    svg+='<circle cx="12" cy="11.5" r="6" fill="#FFFFFF" stroke="'+c.hs+'" stroke-width="1.5"/>'
+      +'<text x="12" y="11.7" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="'+fs+'" font-weight="800" fill="'+(kind==='vang'?'#8A6A12':'#455A64')+'">'+num+'</text>';
+  }
+  return svg+'</svg>';
 }
 function shipLabel(kind){return kind==='vang'?'Tàu Vàng':(kind==='bac'?'Tàu Bạc':'');}
 function buildShipHelpHtml(){
@@ -9825,7 +9831,7 @@ function goldShipOrder(){
     var cur=q.shift();
     if(seen[cur])continue;seen[cur]=1;
     var n=byId[cur];if(!n)continue;
-    if(n.ship==='vang')out[cur]=num++;
+    if(n.ship==='vang'&&cur!==rb)out[cur]=num++; // KHÔNG tính ID gốc — tàu vàng gần gốc nhất = 1
     var kids=byParent[cur]||[];
     var L=kids.find(function(k){return k.side==='L';}),R=kids.find(function(k){return k.side==='R';});
     if(L)q.push(L.id);
@@ -9841,7 +9847,7 @@ function toggleGoldMap(){
     b.style.boxShadow=goldMapOn?'inset 0 0 0 2px #8A6A12':'';
   }
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
-  showToast(goldMapOn?'⚓ Sơ đồ tàu vàng: BẬT — số 1 = tàu vàng gần gốc nhất':'Sơ đồ tàu vàng: TẮT');
+  showToast(goldMapOn?'⚓ Sơ đồ tàu vàng: BẬT — số 1 = tàu vàng gần ID gốc nhất (không tính gốc)':'Sơ đồ tàu vàng: TẮT');
 }
 // Đổi ô chọn Con tàu trong modal → cập nhật icon xem trước ngay
 document.addEventListener('change',function(e){
