@@ -1,4 +1,4 @@
-<!-- VERSION: v6.41-allusers-match-by-idcode -->
+<!-- VERSION: v6.45-gold-silver-ships -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -964,6 +964,12 @@ table.adash td.adash-tot{font-weight:800;color:#1A7A5E}
 .ad-c i{display:block;width:9px;height:5px;border-radius:2px;background:#ECEAE2}
 tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left;font-size:12px;padding:4px 8px}
 tr.adash-sec2 td{background:#F4F2EB;color:#666}
+/* v6.45 — Con tàu (Tàu Vàng/Bạc) */
+.ship-ico{display:inline-block;vertical-align:-2px}
+.gm-num{position:absolute;top:-9px;left:-9px;min-width:20px;height:20px;padding:0 4px;background:#FFD700;border:2px solid #8A6A12;border-radius:50%;color:#5D4000;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.35);z-index:6;font-family:Arial;box-sizing:border-box}
+.shipmx{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
+.shipmx th,.shipmx td{border:1px solid #D8D2C4;padding:7px 8px;text-align:left;vertical-align:top}
+.shipmx th{font-size:13px;text-align:center}
 </style>
 </head>
 <body>
@@ -1221,6 +1227,7 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn gold" id="btn-export-branch">&#127795; Xuất nhánh</button>
       <button class="tbtn" id="btn-import-branch" style="background:#EDE7F6;border-color:#B39DDB;color:#5E35B1">&#127795; Nhập nhánh</button>
+      <button class="tbtn" id="btn-goldmap" style="background:#FFF8E1;border-color:#E6C34A;color:#8A6A12"></button>
       <span id="tree-total" style="margin-left:auto;font-size:12px;font-weight:700;color:#555;white-space:nowrap"></span>
     </div>
     <div id="tree-search-bar">
@@ -1442,6 +1449,15 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
 </div>
 
 <!-- LEGEND / CHÚ THÍCH MÀU -->
+<div class="nmod-ov" id="shiphelp-ov">
+  <div class="nmod" style="max-width:700px">
+    <div class="nmod-hd">
+      <div class="nmod-title" id="shiphelp-title">Ma tr&#7853;n ph&#226;n lo&#7841;i &#273;&#7889;i t&#225;c</div>
+      <button class="nmod-x" id="shiphelp-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="shiphelp-body"></div>
+  </div>
+</div>
 <div class="nmod-ov" id="legend-ov">
   <div class="nmod">
     <div class="nmod-hd">
@@ -6770,6 +6786,7 @@ function renderTree(){
     }
   });
   var hl=computeBinaryHighlights(pos,_rb);
+  var _gm=goldShipOrder(); // số thứ tự tàu vàng (rỗng khi tắt "Sơ đồ tàu vàng")
   // Đường thẳng từ ID gốc kẻ xuống chia đôi nhánh Trái / nhánh Phải
   if(_rb&&pos[_rb]){
     var _dx=pos[_rb].x+NW/2;
@@ -6815,7 +6832,7 @@ function renderTree(){
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
-    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+escHtml(n.name)+'</div>';
+    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+(n.ship?shipSVG(n.ship,13)+' ':'')+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;font-weight:600;color:'+_tSub+';margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(n.idCode)h+='<div style="font-family:Arial;font-size:8.5px;font-weight:700;letter-spacing:.3px;color:'+(_onColor?'rgba(255,255,255,.92)':'#6B4FA0')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">M\u00e3: '+escHtml(n.idCode)+'</div>';
     if(_isRoot){
@@ -6837,6 +6854,7 @@ function renderTree(){
       h+='<div class="nm-badge '+nmk+'" style="top:-9px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_nmm)+'</div>';
       h+='<div class="nm-spark" style="top:-8px;right:-4px">✨</div>';
     }
+    if(_gm[n.id])h+='<div class="gm-num">'+_gm[n.id]+'</div>';
     if(!hasL&&!viewOnlyMode)h+='<div class="tn-add tn-add-l" data-add-pid="'+n.id+'" data-add-side="L" style="background:'+col+'">+</div>';
     if(!hasR&&!viewOnlyMode)h+='<div class="tn-add tn-add-r" data-add-pid="'+n.id+'" data-add-side="R" style="background:'+col+'">+</div>';
     h+='</div>';
@@ -7080,6 +7098,7 @@ function buildNodeView(n){
   }
   if(n.phone)h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div><div style="font-weight:700">'+escHtml(n.phone)+'</div></div>';
   if(n.disc)h+='<div class="nmod-row"><div class="nmod-lbl">DISC</div><div style="display:flex;gap:4px;justify-content:flex-end">'+String(n.disc).toUpperCase().split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px;font-size:13px">'+ch+'</span>':'';}).join('')+'</div></div>';
+  if(n.ship)h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu</div><div style="font-weight:700;display:flex;align-items:center;gap:6px;justify-content:flex-end;color:'+(n.ship==='vang'?'#8A6A12':'#546E7A')+'">'+shipSVG(n.ship,18)+shipLabel(n.ship)+'<button type="button" class="tbtn" data-ship-help="1" style="padding:2px 8px;font-size:12px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;font-weight:800">?</button></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">F1 b\u1ea3o tr\u1ee3 tr\u1ef1c h\u1ec7</div><div style="font-weight:700">'+spKids.length+' ng\u01b0\u1eddi</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Nh\u00e1nh \u0111\u1eb7t d\u01b0\u1edbi</div><div style="font-weight:700">'+plKids.length+' tr\u1ef1c ti\u1ebfp</div></div>';
   var rk=nodeRank(n.id);
@@ -7175,6 +7194,17 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Nhóm tính cách — gõ chữ: D, I, S hoặc C (vd: D hay DI)</div></div>';
   h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4"></div>';
+  var _shipSel=v.ship||'';
+  h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
+  h+='<div style="display:flex;align-items:center;gap:6px">';
+  h+='<span id="nf-ship-ico" style="display:inline-flex;width:20px;justify-content:center">'+(_shipSel?shipSVG(_shipSel,18):'')+'</span>';
+  h+='<select id="nf-ship" class="nmod-inp" style="width:128px">';
+  h+='<option value=""'+(_shipSel===''?' selected':'')+'>— Chưa chọn —</option>';
+  h+='<option value="vang"'+(_shipSel==='vang'?' selected':'')+'>Tàu Vàng</option>';
+  h+='<option value="bac"'+(_shipSel==='bac'?' selected':'')+'>Tàu Bạc</option>';
+  h+='</select>';
+  h+='<button type="button" class="tbtn" data-ship-help="1" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;padding:4px 10px;font-weight:800">?</button>';
+  h+='</div></div>';
   h+='<div class="nmod-row" style="flex-direction:column;align-items:flex-start;gap:6px"><div class="nmod-lbl">Ghi ch\u00fa</div>';
   h+='<textarea id="nf-note" style="width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px;font-size:14px;font-family:Arial;outline:none;resize:vertical;min-height:56px">'+escHtml(v.note||'')+'</textarea></div>';
   return h;
@@ -7244,7 +7274,8 @@ function saveNodeModal(){
     f1of:inpF1||selF1,
     phone:((document.getElementById('nf-phone')||{}).value||'').trim(),
     disc:((document.getElementById('nf-disc')||{}).value||'').trim().toUpperCase().replace(/[^DISC]/g,''),
-    note:(document.getElementById('nf-note')||{}).value||''
+    note:(document.getElementById('nf-note')||{}).value||'',
+    ship:((document.getElementById('nf-ship')||{}).value||'')
   };
   var _saveMsg='✓ Đã lưu';
   // KIỂM TRA ngày Vào ID: ID tuyến dưới KHÔNG được vào TRƯỚC ID tuyến trên (đặt trên) hoặc người bảo trợ — kể cả phả hệ hay trực hệ
@@ -7294,7 +7325,7 @@ function saveNodeModal(){
       }
       var oldName=n.name;
       n.name=data.name;n.joinDate=data.joinDate;n.idCode=data.idCode;
-      n.f1of=data.f1of;n.phone=data.phone;n.note=data.note;n.disc=data.disc;n.birthday=data.birthday;
+      n.f1of=data.f1of;n.phone=data.phone;n.note=data.note;n.disc=data.disc;n.birthday=data.birthday;n.ship=data.ship;
       if(oldName&&data.name&&oldName!==data.name){
         // \u0110\u1ed4I T\u00caN D\u00c2Y CHUY\u1ec0N: m\u1ecdi ID \u0111ang l\u1ea5y t\u00ean c\u0169 l\u00e0m ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 (F1 + nh\u00e1nh tr\u1ef1c h\u1ec7 d\u01b0\u1edbi)
         // \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt sang t\u00ean m\u1edbi \u2192 xo\u00e1 s\u1ea1ch t\u00ean c\u0169, kh\u00f4ng \u0111\u1ec3 node con m\u1ed3 c\u00f4i.
@@ -7576,6 +7607,7 @@ function renderStarChart(){
   var h='';
   var fSet={};
   _starCenters={};
+  var _gm=goldShipOrder(); // số thứ tự tàu vàng — dùng CHUNG cách đánh số với cây nhị phân
   treeNodes.forEach(function(n){
     var p=pos[n.id];if(!p)return;
     _starCenters[n.id]={cx:p.x+ox+NWs/2,cy:p.y+oy+NHs/2};
@@ -7591,6 +7623,7 @@ function renderStarChart(){
     h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" data-flvl="'+_fd+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
     h+='<div style="display:flex;align-items:center;gap:4px">';
     h+='<span style="width:14px;height:14px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
+    if(n.ship)h+='<span style="flex-shrink:0;display:inline-flex">'+shipSVG(n.ship,12)+'</span>';
     h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
@@ -7603,6 +7636,7 @@ function renderStarChart(){
       h+='<div class="nm-badge '+nmk+'" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-11)+'px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_snmm)+'</div>';
       h+='<div class="nm-spark" style="left:'+(p.x+ox+NWs-7)+'px;top:'+(p.y+oy-9)+'px">✨</div>';
     }
+    if(_gm[n.id])h+='<div class="gm-num" style="left:'+(p.x+ox-8)+'px;top:'+(p.y+oy-9)+'px">'+_gm[n.id]+'</div>';
     if(!n.parentId)h+='<div class="root-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+rootCrownSVG(NWs,'s')+'</div>';
   });
   box.innerHTML=h;
@@ -9491,6 +9525,10 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-focus-sub]');
   if(t){focusSubtree(t.getAttribute('data-focus-sub'));return;}
 
+  // v6.45 — mở ma trận phân loại Con tàu (nút ? trong modal ID)
+  t=e.target.closest('[data-ship-help]');
+  if(t){openShipHelp();return;}
+
   // v6.14 — Xoá cả nhánh từ ID này (mở modal xác nhận + nhập lại mật khẩu)
   t=e.target.closest('[data-del-branch]');
   if(t){openDeleteBranchModal(t.getAttribute('data-del-branch'));return;}
@@ -9710,6 +9748,96 @@ function buildLegendHtml(){
   h+=row(ln('#FFD600',true),'<b>Vạch vàng đứt (ngang)</b>: ranh giới <b>Tầng 3 / Tầng 4</b>.');
   return h;
 }
+// ================================================================
+// v6.45 — CON TÀU (Tàu Vàng / Tàu Bạc): phân loại đối tác theo ma trận
+// node.ship = 'vang' | 'bac' | '' — lưu ngay trong treeNodes (tự sync Firestore qua saveTree2)
+// ================================================================
+var goldMapOn=false;
+function shipSVG(kind,size){
+  var s=size||14;
+  var c=kind==='vang'
+    ?{h:'#C9A227',hs:'#8A6A12',sa:'#FFD700',m:'#8A6A12'}
+    :{h:'#B0BEC5',hs:'#607D8B',sa:'#ECEFF1',m:'#607D8B'};
+  return '<svg class="ship-ico" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">'
+    +'<line x1="12" y1="2.5" x2="12" y2="16" stroke="'+c.m+'" stroke-width="1.5"/>'
+    +'<path d="M13 3.5l6 9h-6Z" fill="'+c.sa+'" stroke="'+c.m+'" stroke-width="1.2" stroke-linejoin="round"/>'
+    +'<path d="M11 5.5v7H5.5Z" fill="'+c.sa+'" stroke="'+c.m+'" stroke-width="1.2" stroke-linejoin="round"/>'
+    +'<path d="M2.5 15.5h19l-3.4 5.5H5.9Z" fill="'+c.h+'" stroke="'+c.hs+'" stroke-width="1.2" stroke-linejoin="round"/>'
+    +'</svg>';
+}
+function shipLabel(kind){return kind==='vang'?'Tàu Vàng':(kind==='bac'?'Tàu Bạc':'');}
+function buildShipHelpHtml(){
+  var rows=[
+    ['Thái độ','Hứng thú, khao khát học hỏi, có mục tiêu rõ ràng.','Có hứng thú nhưng chưa thực sự cam kết, đang tìm hiểu.','Tiêu cực, dễ nản chí, luôn cần thuyết phục.'],
+    ['Hành động','Liên tục gọi điện hỏi, lập danh sách, dùng sản phẩm.','Hoạt động ngắt quãng, thiếu sự chủ động.','Không có danh sách, không có mục tiêu, luôn viện cớ.'],
+    ['Phản ứng khi bạn gọi','Cảm thấy được giúp đỡ. Tông giọng hào hứng.','Bình thường.','Cảm thấy bạn đang gây áp lực hoặc kiểm tra họ.'],
+    ['Chiến lược của bạn','Dành 90% thời gian hỗ trợ và đào tạo họ.','Giúp họ nâng cấp thành Tàu Vàng qua hỗ trợ.','Tránh xa. Đừng để họ kéo bạn chìm theo.']
+  ];
+  var h='<div style="font-weight:800;font-size:15px;color:#1B3A5C;margin-bottom:10px;text-align:center">Bạn đang dành thời gian cho ai?</div>';
+  h+='<div style="overflow-x:auto"><table class="shipmx">';
+  h+='<tr><th style="background:#F3EFE3;color:#333;min-width:86px">Tiêu chí</th>';
+  h+='<th style="background:#C9A227;color:#fff;min-width:130px">'+shipSVG('vang',15)+' Tàu Vàng<br><span style="font-weight:600;font-size:11px">(Gold Ship)</span></th>';
+  h+='<th style="background:#1B3A5C;color:#fff;min-width:130px">'+shipSVG('bac',15)+' Tàu Bạc<br><span style="font-weight:600;font-size:11px">(Silver Ship)</span></th>';
+  h+='<th style="background:#90A4AE;color:#fff;min-width:130px">Tàu Rỗng<br><span style="font-weight:600;font-size:11px">(Empty Ship)</span></th></tr>';
+  rows.forEach(function(r){
+    h+='<tr><td style="font-weight:800;background:#FAF7EE">'+r[0]+':</td>';
+    h+='<td style="background:#FFFBEA">'+r[1]+'</td>';
+    h+='<td style="background:#F4F8FC">'+r[2]+'</td>';
+    h+='<td style="background:#F5F6F7;color:#555">'+r[3]+'</td></tr>';
+  });
+  h+='</table></div>';
+  h+='<div style="margin-top:12px;background:#FFF8E1;border:1px solid #E6C34A;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;color:#5D4000;line-height:1.6">Mọi người mới tham gia đều là Tàu Bạc. Cách bạn làm việc với họ sẽ quyết định họ biến thành Vàng hay Rỗng.</div>';
+  return h;
+}
+function openShipHelp(){
+  document.getElementById('shiphelp-title').innerHTML=shipSVG('vang',17)+' Ma trận phân loại đối tác';
+  document.getElementById('shiphelp-body').innerHTML=buildShipHelpHtml();
+  document.getElementById('shiphelp-ov').classList.add('open');
+}
+function closeShipHelp(){document.getElementById('shiphelp-ov').classList.remove('open');}
+function goldShipOrder(){
+  // Đánh số khi bật "Sơ đồ tàu vàng": BFS từ gốc đang hiển thị (focus tính như gốc)
+  // → tàu vàng GẦN GỐC NHẤT = số 1, cùng khoảng cách thì nhánh Trái trước Phải, tiếp theo 2,3,...
+  var out={};
+  if(!goldMapOn)return out;
+  var rb=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);
+  if(!rb)return out;
+  var byParent={},byId={};
+  treeNodes.forEach(function(n){
+    byId[n.id]=n;
+    if(n.parentId)(byParent[n.parentId]=byParent[n.parentId]||[]).push(n);
+  });
+  var q=[rb],num=1,seen={},g=0;
+  while(q.length&&g<9999){
+    g++;
+    var cur=q.shift();
+    if(seen[cur])continue;seen[cur]=1;
+    var n=byId[cur];if(!n)continue;
+    if(n.ship==='vang')out[cur]=num++;
+    var kids=byParent[cur]||[];
+    var L=kids.find(function(k){return k.side==='L';}),R=kids.find(function(k){return k.side==='R';});
+    if(L)q.push(L.id);
+    if(R)q.push(R.id);
+  }
+  return out;
+}
+function toggleGoldMap(){
+  goldMapOn=!goldMapOn;
+  var b=document.getElementById('btn-goldmap');
+  if(b){
+    b.style.background=goldMapOn?'#FFD700':'#FFF8E1';
+    b.style.boxShadow=goldMapOn?'inset 0 0 0 2px #8A6A12':'';
+  }
+  if(currentTreeMode==='binary')renderTree();else renderStarChart();
+  showToast(goldMapOn?'⚓ Sơ đồ tàu vàng: BẬT — số 1 = tàu vàng gần gốc nhất':'Sơ đồ tàu vàng: TẮT');
+}
+// Đổi ô chọn Con tàu trong modal → cập nhật icon xem trước ngay
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='nf-ship'){
+    var el=document.getElementById('nf-ship-ico');
+    if(el)el.innerHTML=e.target.value?shipSVG(e.target.value,18):'';
+  }
+});
 function openLegend(){
   document.getElementById('legend-body').innerHTML=buildLegendHtml();
   document.getElementById('legend-ov').classList.add('open');
@@ -10901,6 +11029,14 @@ function bindStatic(){
   document.getElementById('btn-legend').addEventListener('click',openLegend);
   document.getElementById('legend-close').addEventListener('click',closeLegend);
   document.getElementById('legend-ov').addEventListener('click',function(e){if(e.target===this)closeLegend();});
+  // v6.45 — nút Sơ đồ tàu vàng + modal ma trận Con tàu
+  var _bgm=document.getElementById('btn-goldmap');
+  if(_bgm){
+    _bgm.innerHTML=shipSVG('vang',15)+' Sơ đồ tàu vàng';
+    _bgm.addEventListener('click',toggleGoldMap);
+  }
+  document.getElementById('shiphelp-close').addEventListener('click',closeShipHelp);
+  document.getElementById('shiphelp-ov').addEventListener('click',function(e){if(e.target===this)closeShipHelp();});
   document.getElementById('btn-thangtien').addEventListener('click',openThangTien);
   document.getElementById('tt-close').addEventListener('click',closeThangTien);
   document.getElementById('tt-ov').addEventListener('click',function(e){if(e.target===this)closeThangTien();});
