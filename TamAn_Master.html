@@ -1,4 +1,4 @@
-<!-- VERSION: v6.48-ship-crownsize-branchtier -->
+<!-- VERSION: v6.49-ship-equals-crown-noroot -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -966,8 +966,7 @@ tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left
 tr.adash-sec2 td{background:#F4F2EB;color:#666}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
-.ship-top{position:absolute;left:50%;top:-58px;transform:translateX(-50%);pointer-events:none;z-index:5;line-height:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
-.ship-top.on-root{top:-96px}
+.ship-top{position:absolute;left:0;top:-42px;width:100%;pointer-events:none;z-index:5;line-height:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .shipmx{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
 .shipmx th,.shipmx td{border:1px solid #D8D2C4;padding:7px 8px;text-align:left;vertical-align:top}
 .shipmx th{font-size:13px;text-align:center}
@@ -6865,7 +6864,7 @@ function renderTree(){
       h+='<div class="nm-badge '+nmk+'" style="top:-9px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_nmm)+'</div>';
       h+='<div class="nm-spark" style="top:-8px;right:-4px">✨</div>';
     }
-    if(n.ship)h+='<div class="ship-top'+(_isRoot?' on-root':'')+'">'+shipSVG(n.ship,52,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
+    if(n.ship&&!_isRoot)h+='<div class="ship-top">'+shipCrownSVG(n.ship,NW,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
     if(!hasL&&!viewOnlyMode)h+='<div class="tn-add tn-add-l" data-add-pid="'+n.id+'" data-add-side="L" style="background:'+col+'">+</div>';
     if(!hasR&&!viewOnlyMode)h+='<div class="tn-add tn-add-r" data-add-pid="'+n.id+'" data-add-side="R" style="background:'+col+'">+</div>';
     h+='</div>';
@@ -7647,7 +7646,7 @@ function renderStarChart(){
       h+='<div class="nm-badge '+nmk+'" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-11)+'px">'+(nmk==='cur'?'✨ MỚI':'MỚI · T'+_snmm)+'</div>';
       h+='<div class="nm-spark" style="left:'+(p.x+ox+NWs-7)+'px;top:'+(p.y+oy-9)+'px">✨</div>';
     }
-    if(n.ship)h+='<div class="ship-top" style="left:'+(p.x+ox+NWs/2)+'px;top:'+(p.y+oy-(!n.parentId?83:49))+'px">'+shipSVG(n.ship,45,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
+    if(n.ship&&n.parentId)h+='<div class="ship-top" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+shipCrownSVG(n.ship,NWs,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
     if(!n.parentId)h+='<div class="root-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+rootCrownSVG(NWs,'s')+'</div>';
   });
   box.innerHTML=h;
@@ -9782,6 +9781,25 @@ function shipSVG(kind,size,num){
       +'<text x="12" y="11.7" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="'+fs+'" font-weight="800" fill="'+(kind==='vang'?'#8A6A12':'#455A64')+'">'+num+'</text>';
   }
   return svg+'</svg>';
+}
+function shipCrownSVG(kind,w,num){
+  // v6.49 — Con tàu BẢN TO trên cây: ĐÚNG kích thước vương miện gốc (cùng viewBox 100x40,
+  // cùng width/height = w × w*0.34) đội trên đầu ID có tàu. ID GỐC KHÔNG áp (chỉ vương miện).
+  w=w||150;var hh=(w*0.34);
+  var c=kind==='vang'
+    ?{h:'#C9A227',hs:'#8A6A12',sa:'#FFD700',sa2:'#FFC400',m:'#8A6A12'}
+    :{h:'#B0BEC5',hs:'#607D8B',sa:'#ECEFF1',sa2:'#CFD8DC',m:'#607D8B'};
+  var s='<svg width="'+w+'" height="'+hh.toFixed(1)+'" viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;margin:0 auto">';
+  s+='<line x1="50" y1="2" x2="50" y2="27" stroke="'+c.m+'" stroke-width="2.6"/>';
+  s+='<path d="M53 3.5L87 24.5H53Z" fill="'+c.sa+'" stroke="'+c.m+'" stroke-width="2" stroke-linejoin="round"/>';
+  s+='<path d="M47 7V24.5H16Z" fill="'+c.sa2+'" stroke="'+c.m+'" stroke-width="2" stroke-linejoin="round"/>';
+  s+='<path d="M5 26.5h90l-10.5 11.5h-69Z" fill="'+c.h+'" stroke="'+c.hs+'" stroke-width="2" stroke-linejoin="round"/>';
+  if(num!=null){
+    var fs=num>=100?9:(num>=10?11:13);
+    s+='<circle cx="50" cy="14.5" r="10" fill="#FFFFFF" stroke="'+c.hs+'" stroke-width="2.2"/>';
+    s+='<text x="50" y="14.8" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="'+fs+'" font-weight="800" fill="'+(kind==='vang'?'#8A6A12':'#455A64')+'">'+num+'</text>';
+  }
+  return s+'</svg>';
 }
 function shipLabel(kind){return kind==='vang'?'Tàu Vàng':(kind==='bac'?'Tàu Bạc':'');}
 function buildShipHelpHtml(){
