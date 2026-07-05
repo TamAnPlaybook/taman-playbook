@@ -1528,6 +1528,7 @@ var SKILLS=[
   {id:'qa',lbl:'Xử lý câu hỏi phổ biến'},
   {id:'close',lbl:'Giúp khách ra quyết định'},
   {id:'onboard',lbl:'Định hướng thành viên mới'},
+  {id:'convert_class',lbl:'Chăm sóc chuyển đổi học viên tại lớp học'},
   {id:'mc_zoom',lbl:'Làm MC Zoom'},
   {id:'coord_zoom',lbl:'Điều phối Zoom tối'},
   {id:'coord_am',lbl:'Điều phối Zoom sáng 4:45'}
@@ -4326,6 +4327,62 @@ function tgBtn(mid,field,val,cur,lbl,cls){
   var on=cur===val?' '+cls:'';
   return '<button class="tgb'+on+'" data-tg-mid="'+mid+'" data-tg-field="'+field+'" data-tg-val="'+val+'">'+lbl+'</button>';
 }
+// ===== BẬC THANG PHÁT TRIỂN (0→10): hình người tiến lên theo % kỹ năng đã đạt =====
+// list: mảng kỹ năng; key: id duy nhất cho gradient; col=màu chính, colLight=màu bậc chưa đạt, colDark=màu người
+function skillStairs(mid,list,key,title,ico,col,colLight,colDark){
+  var total=list.length;
+  var done=list.filter(function(s){return pGet(mid,'sk_'+s.id)==='1';}).length;
+  var pct=total?done/total:0, pctR=Math.round(pct*100);
+  var pos=pct*10, curStep=Math.round(pos);          // bậc người đang đứng (0..10)
+  var N=11, stepW=33, riseH=14, padL=16, padR=16, padTop=48, padBot=26;
+  var svgW=padL+padR+N*stepW, maxH=(N-1)*riseH, svgH=padTop+maxH+padBot, ground=svgH-padBot;
+  function cx(i){return padL+i*stepW+stepW/2;}       // tâm cột i
+  function topY(i){return ground-i*riseH;}           // mặt bậc i (bậc 0 = mặt đất)
+  var gid='grad_'+key;
+  var s='<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;height:auto;max-width:460px;display:block;margin:6px auto 0" role="img" aria-label="Bậc thang phát triển '+pctR+' phần trăm">';
+  s+='<defs><linearGradient id="'+gid+'" x1="0" y1="1" x2="0" y2="0">'
+    +'<stop offset="0" stop-color="'+col+'"/><stop offset="1" stop-color="'+colLight+'" stop-opacity=".55"/></linearGradient></defs>';
+  // các bậc 1..10 (bậc 0 là mặt đất, không vẽ khối)
+  for(var i=1;i<N;i++){
+    var achieved=i<=curStep, x=padL+i*stepW, y=topY(i), hgt=i*riseH;
+    s+='<rect x="'+x+'" y="'+y+'" width="'+stepW+'" height="'+hgt+'" rx="2" '
+      +'fill="'+(achieved?'url(#'+gid+')':colLight)+'" stroke="'+(achieved?col:'#E2E2E2')+'" stroke-width="1"/>';
+    // gạch mặt bậc (tread) cho nổi khối
+    s+='<rect x="'+x+'" y="'+y+'" width="'+stepW+'" height="3" fill="'+(achieved?colDark:'#D5D5D5')+'" opacity="'+(achieved?'.9':'.6')+'"/>';
+  }
+  // nhãn 0..10 dưới chân thang
+  for(var j=0;j<N;j++){
+    var lit=j<=curStep;
+    s+='<text x="'+cx(j)+'" y="'+(ground+16)+'" text-anchor="middle" font-size="10" font-weight="700" '
+      +'fill="'+(lit?colDark:'#BBB')+'" font-family="system-ui,Arial,sans-serif">'+j+'</text>';
+  }
+  // đường mặt đất
+  s+='<line x1="'+padL+'" y1="'+ground+'" x2="'+(svgW-padR)+'" y2="'+ground+'" stroke="#E2E2E2" stroke-width="1.5"/>';
+  // cờ đích trên bậc 10
+  s+='<text x="'+(cx(10)+2)+'" y="'+(topY(10)-4)+'" text-anchor="middle" font-size="17">🚩</text>';
+  // hình người trên bậc hiện tại (mặt hướng lên/phải, đang bước tới)
+  var fx=cx(curStep), fy=topY(curStep);
+  s+='<g stroke="'+colDark+'" stroke-width="3" stroke-linecap="round" fill="none">'
+    +'<line x1="'+fx+'" y1="'+(fy-14)+'" x2="'+(fx+1)+'" y2="'+(fy-25)+'"/>'          // thân
+    +'<line x1="'+fx+'" y1="'+(fy-14)+'" x2="'+(fx+9)+'" y2="'+(fy-1)+'"/>'            // chân trước (bước lên)
+    +'<line x1="'+fx+'" y1="'+(fy-14)+'" x2="'+(fx-6)+'" y2="'+fy+'"/>'                // chân sau
+    +'<line x1="'+(fx+1)+'" y1="'+(fy-23)+'" x2="'+(fx+10)+'" y2="'+(fy-28)+'"/>'      // tay trước (vươn tới)
+    +'<line x1="'+(fx+1)+'" y1="'+(fy-23)+'" x2="'+(fx-6)+'" y2="'+(fy-19)+'"/>'       // tay sau
+    +'</g>';
+  s+='<circle cx="'+(fx+2)+'" cy="'+(fy-30)+'" r="4.6" fill="'+colDark+'"/>';         // đầu
+  // bong bóng % trên đầu người
+  var bx=Math.min(Math.max(fx,padL+16),svgW-padR-16), by=fy-46;
+  s+='<rect x="'+(bx-15)+'" y="'+(by-11)+'" width="30" height="16" rx="8" fill="'+col+'"/>';
+  s+='<text x="'+bx+'" y="'+(by+1)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="system-ui,Arial,sans-serif">'+pctR+'%</text>';
+  s+='</svg>';
+  // khung + tiêu đề + tóm tắt
+  var barCol=pctR>=100?'#1A7A5E':col;
+  return '<div style="background:#fff;border:1px solid #EEE;border-radius:12px;padding:12px 12px 10px;margin-top:8px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+    +'<div style="font-size:12px;font-weight:800;color:'+colDark+'">'+ico+' '+title+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:'+barCol+'">Bậc '+curStep+'/10 · '+done+'/'+total+' kỹ năng · '+pctR+'%</div>'
+    +'</div>'+s+'</div>';
+}
 function buildModalBody(m,type){
   var h='';
   if(type==='sang'||type==='trua'||type==='toi'){
@@ -4344,6 +4401,7 @@ function buildModalBody(m,type){
   }
   if(type==='kn'){
     h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng Thần Tài phát triển hệ thống ('+countSkills(m.id)+'/'+SKILLS.length+')</div>';
+    h+=skillStairs(m.id,SKILLS,'tt','Hành trình Thần Tài','🪙','#D4A72C','#F1E9CF','#8A6D12');
     h+='<div class="skill-grid">';
     SKILLS.forEach(function(s){
       var done=pGet(m.id,'sk_'+s.id)==='1';
@@ -4354,6 +4412,7 @@ function buildModalBody(m,type){
     h+='</div></div>';
     var doneTY=SKILLS_THANY.filter(function(s){return pGet(m.id,'sk_'+s.id)==='1';}).length;
     h+='<div class="msec"><div class="msec-title">🩺 Kỹ năng Thần Y chăm sóc CLB ('+doneTY+'/'+SKILLS_THANY.length+')</div>';
+    h+=skillStairs(m.id,SKILLS_THANY,'ty','Hành trình Thần Y','🩺','#1CA39B','#D8EEEC','#0F6E68');
     h+='<div class="skill-grid">';
     SKILLS_THANY.forEach(function(s){
       var dn=pGet(m.id,'sk_'+s.id)==='1';
@@ -8780,7 +8839,7 @@ function renderGuide(){
     {icon:'🎯',title:'Việc & Hiệu suất (tab gộp)',color:'#FFF3E0',body:'Tab gộp 4 mục theo 1 nhịp làm việc.• 📋 Hôm nay — "Action Center": ghi việc cần làm theo buổi Sáng/Trưa/Tối (thêm/sửa/ghi chú/ưu tiên ⭐/đánh dấu xong), kèm Lịch quan trọng. Việc theo NGÀY — đổi ngày ở thanh ngày trên cùng.• 📊 Hiệu suất: chỉ số tự động (Action Index, Lãnh đạo, Nhân bản) + gợi ý coaching.• 🎯 Mục tiêu: nhập KPI + đo lường mục tiêu theo kỳ.• 📈 Phân tích: biểu đồ 7 ngày, cá nhân, tổng hợp cụm.'},
     {icon:'\uD83D\uDD11',title:'Đăng nhập & Tài khoản',color:'#E8F5F0',body:'Mỗi người đăng ký 1 tài khoản riêng (email hoặc Google).\u2022 Dữ liệu của bạn hoàn toàn riêng biệt, tự động đồng bộ lên cloud.\u2022 Quên mật khẩu: dùng chức năng "Quên mật khẩu" để nhận email khôi phục.'},
     {icon:'\uD83D\uDCCB',title:'Điểm danh hàng ngày',color:'#E3F2FD',body:'Bấm vào tên thành viên để mở bảng điểm danh.\u2022 Chọn Có / Trễ / Vắng cho từng buổi (Sáng - Trưa - Tối).\u2022 Đánh dấu Camera ON nếu bật cam trong Zoom.\u2022 Dùng nút mũi tên \u25B2\u25BC để sắp xếp thứ tự.'},
-    {icon:'\u2B50',title:'Kỹ năng',color:'#FFF8E1',body:'Tab Kỹ năng: bấm vào tên \u2192 tick các kỹ năng đã đạt.\u2022 11 kỹ năng từ DISC đến Điều phối Zoom.\u2022 Đạt đủ 11/11 sẽ được tính vào chỉ số "Đủ kỹ năng".'},
+    {icon:'\u2B50',title:'Kỹ năng',color:'#FFF8E1',body:'Tab Kỹ năng: bấm vào tên \u2192 tick các kỹ năng đã đạt.\u2022 2 bậc thang riêng — Thần Tài (phát triển hệ thống) & Thần Y (chăm sóc CLB), hình người leo từ bậc 0 lên 10 theo % kỹ năng đã đạt.\u2022 Đạt đủ tất cả kỹ năng sẽ được tính vào chỉ số "Đủ kỹ năng".'},
     {icon:'\uD83D\uDC65',title:'Kế hoạch ngày',color:'#F3E5F5',body:'Tab Theo dõi ngày \u2192 Kế hoạch ngày: theo dõi hoạt động mỗi TV.\u2022 Bài đăng Zalo/FB/TikTok, cuộc gọi, follow-up, bảo trợ TV mới.\u2022 Cuối ngày tự đánh giá % hoàn thành.'},
     {icon:'\uD83D\uDCC5',title:'KPI Tháng',color:'#E8F5F0',body:'Tab Tháng: nhập 4 chỉ số mỗi TV.\u2022 Học viên đến lớp, người vào Zoom, ID mới, buổi CLB.\u2022 Tổng cả team hiện tự động ở trên cùng.'},
     {icon:'\uD83C\uDF33',title:'Sơ đồ nhị phân',color:'#E3F2FD',body:'Bấm nút + trên mỗi ô để thêm nhánh Trái/Phải.\u2022 Bấm vào ô để xem chi tiết, sửa, đổi bên.\u2022 Màu dây theo nhánh F1. Đường vàng = ranh giới T3\u2194T4. M\u1EB7t tr\u1EDDi: \u0111\u01B0\u1EDDng xanh=F6\u2194F7, v\u00E0ng=F9\u2194F10.\u2022 \u2B50 = đạt tiêu chí sao Prife (2 F1, mỗi F1 \u22654 ID trong 2 tháng liên tiếp).'},
