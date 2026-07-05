@@ -1,4 +1,4 @@
-<!-- VERSION: v6.51-root-ship-icon -->
+<!-- VERSION: v6.52-root-ship-carries-crown -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -106,6 +106,8 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 /* v4.7+: vương miện ID gốc (khung trên full-width) + tông vàng kim cho popup xem thông tin node */
 .root-crown{position:absolute;z-index:6;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
 .tnode .root-crown{top:-42px;left:0;width:100%}
+.root-ship-crown{position:absolute;z-index:6;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.42))}
+.tnode .root-ship-crown{top:-69px;left:0;width:100%}
 .tnode-box.root-box{border-color:#C8A84B!important;box-shadow:0 0 0 2px #EBCB6A,0 4px 14px rgba(174,123,14,.55)!important}
 /* v4.8: bộ đếm DISC ngoài sơ đồ */
 #disc-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:2px}
@@ -6713,6 +6715,40 @@ function rootCrownSVG(w,sfx){
     '<circle cx="19" cy="33" r="2.3" fill="#1FA85B"/><circle cx="81" cy="33" r="2.3" fill="#1FA85B"/>'+
     '</svg>';
 }
+// v6.52 — CON TÀU (to hơn vương miện) CHỞ vương miện, đặt trên ID Gốc có gán tàu.
+// Vương miện luôn màu vàng; thân tàu theo kind ('vang'/'bac'). viewBox 100x52 → cao = w×0.52.
+function rootShipCrownSVG(kind,w,sfx){
+  w=w||150;var hh=(w*0.52);sfx=sfx||'x';
+  var id='rsG_'+sfx,idb='rsB_'+sfx,idh='rsH_'+sfx;
+  var sh=kind==='bac'
+    ?{top:'#E6ECEF',mid:'#B0BEC5',bot:'#5E7482',stroke:'#3F5561',win:'#F1F6F8'}
+    :{top:'#F7DE8A',mid:'#E7B84B',bot:'#8A6A12',stroke:'#6E520B',win:'#FFF3C4'};
+  var s='<svg width="'+w+'" height="'+hh.toFixed(1)+'" viewBox="0 0 100 52" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;margin:0 auto">';
+  s+='<defs>'+
+    '<linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3AE"/><stop offset="0.42" stop-color="#ECC94F"/><stop offset="1" stop-color="#AE7B0E"/></linearGradient>'+
+    '<linearGradient id="'+idb+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EBCB6A"/><stop offset="1" stop-color="#956B0C"/></linearGradient>'+
+    '<linearGradient id="'+idh+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+sh.top+'"/><stop offset="0.5" stop-color="'+sh.mid+'"/><stop offset="1" stop-color="'+sh.bot+'"/></linearGradient>'+
+    '</defs>';
+  // Vương miện (nhỏ hơn) ngồi trong khoang tàu
+  s+='<g transform="translate(22.5,2) scale(0.55)">'+
+    '<path d="M6 32 L6 22 L14 11 L23 22 L32 6 L41 22 L50 2 L59 22 L68 6 L77 22 L86 11 L94 22 L94 32 Z" fill="url(#'+id+')" stroke="#7A5A0C" stroke-width="1.4" stroke-linejoin="round"/>'+
+    '<rect x="4" y="27.5" width="92" height="10.5" rx="3.2" fill="url(#'+idb+')" stroke="#7A5A0C" stroke-width="1.4"/>'+
+    '<circle cx="14" cy="11" r="2.5" fill="#FFF7DA" stroke="#AE7B0E" stroke-width="0.9"/>'+
+    '<circle cx="32" cy="6" r="2.5" fill="#FFF7DA" stroke="#AE7B0E" stroke-width="0.9"/>'+
+    '<circle cx="50" cy="2.4" r="2.9" fill="#FFF7DA" stroke="#AE7B0E" stroke-width="0.9"/>'+
+    '<circle cx="68" cy="6" r="2.5" fill="#FFF7DA" stroke="#AE7B0E" stroke-width="0.9"/>'+
+    '<circle cx="86" cy="11" r="2.5" fill="#FFF7DA" stroke="#AE7B0E" stroke-width="0.9"/>'+
+    '<ellipse cx="50" cy="33" rx="4.6" ry="3.9" fill="#1FA85B" stroke="#0C6E39" stroke-width="0.8"/>'+
+    '<circle cx="34" cy="33" r="2.7" fill="#D23636"/><circle cx="66" cy="33" r="2.7" fill="#D23636"/>'+
+    '</g>';
+  // Con tàu TO ôm trọn bề ngang, chở vương miện
+  s+='<rect x="1.5" y="23" width="97" height="7" rx="3.4" fill="url(#'+idb+')" stroke="'+sh.stroke+'" stroke-width="1.4"/>';
+  s+='<path d="M3 29 h94 l-12 20 H15 Z" fill="url(#'+idh+')" stroke="'+sh.stroke+'" stroke-width="1.6" stroke-linejoin="round"/>';
+  s+='<circle cx="30" cy="38" r="3" fill="'+sh.win+'" stroke="'+sh.stroke+'" stroke-width="1"/>';
+  s+='<circle cx="50" cy="39" r="3" fill="'+sh.win+'" stroke="'+sh.stroke+'" stroke-width="1"/>';
+  s+='<circle cx="70" cy="38" r="3" fill="'+sh.win+'" stroke="'+sh.stroke+'" stroke-width="1"/>';
+  return s+'</svg>';
+}
 // Bộ đếm DISC toàn Team (chỉ hiện ở Nhị phân); bấm 1 chữ → lọc nổi bật node nhóm đó
 function renderDiscBar(){
   var el=document.getElementById('disc-bar');if(!el)return;
@@ -6826,7 +6862,7 @@ function renderTree(){
     var hasR=kids.some(function(k){return k.side==='R';});
     h+='<div class="tnode" style="left:'+(p.x+NW/2)+'px;top:'+(p.y+NH/2)+'px;width:'+NW+'px;height:'+NH+'px">';
     var _isRoot=!n.parentId;
-    if(_isRoot)h+='<div class="root-crown">'+rootCrownSVG(NW,'b')+'</div>';
+    if(_isRoot)h+=n.ship?'<div class="root-ship-crown">'+rootShipCrownSVG(n.ship,NW,'b')+'</div>':'<div class="root-crown">'+rootCrownSVG(NW,'b')+'</div>';
     var _bg=(hl[n.id]&&hl[n.id].bg)||'white';
     var _blink=(hl[n.id]&&hl[n.id].blink)?' nn-blink':'';
     var _onColor=(_bg!=='white');                       // #2: nền có màu → chữ trắng, đậm
@@ -6841,7 +6877,7 @@ function renderTree(){
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
-    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+(_isRoot&&n.ship?shipSVG(n.ship,15)+' ':'')+escHtml(n.name)+'</div>';
+    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;font-weight:600;color:'+_tSub+';margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(n.idCode)h+='<div style="font-family:Arial;font-size:8.5px;font-weight:700;letter-spacing:.3px;color:'+(_onColor?'rgba(255,255,255,.92)':'#6B4FA0')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">M\u00e3: '+escHtml(n.idCode)+'</div>';
     if(_isRoot){
@@ -7633,7 +7669,7 @@ function renderStarChart(){
     h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" data-flvl="'+_fd+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
     h+='<div style="display:flex;align-items:center;gap:4px">';
     h+='<span style="width:14px;height:14px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
-    h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+((!n.parentId&&n.ship)?shipSVG(n.ship,13)+' ':'')+escHtml(n.name)+'</span>';
+    h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
     var _fLbl=_fd===0?'GỐC':'F'+_fd;
@@ -7646,7 +7682,7 @@ function renderStarChart(){
       h+='<div class="nm-spark" style="left:'+(p.x+ox+NWs-7)+'px;top:'+(p.y+oy-9)+'px">✨</div>';
     }
     if(n.ship&&n.parentId)h+='<div class="ship-top" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+shipCrownSVG(n.ship,NWs,_gm[n.id]!=null?_gm[n.id]:null)+'</div>';
-    if(!n.parentId)h+='<div class="root-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+rootCrownSVG(NWs,'s')+'</div>';
+    if(!n.parentId)h+=n.ship?'<div class="root-ship-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-60)+'px;width:'+NWs+'px">'+rootShipCrownSVG(n.ship,NWs,'s')+'</div>':'<div class="root-crown" style="left:'+(p.x+ox)+'px;top:'+(p.y+oy-36)+'px;width:'+NWs+'px">'+rootCrownSVG(NWs,'s')+'</div>';
   });
   box.innerHTML=h;
   applyStarTransform();
