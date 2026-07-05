@@ -960,6 +960,7 @@ table.adash th,table.adash td{border:1px solid #F0EDE2;padding:2px 3px;text-alig
 table.adash th{background:#FAF8F2;color:#666;font-weight:700}
 table.adash .adash-nm{position:sticky;left:0;background:#fff;text-align:left;min-width:104px;max-width:150px;font-weight:700;font-size:12px;z-index:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 table.adash th.adash-nm{background:#FAF8F2;z-index:3}
+table.adash .adash-ord{display:inline-block;min-width:16px;color:#B8860B;font-weight:800;font-size:11px}
 table.adash td.adash-today,table.adash th.adash-today{background:#FFF8E1}
 table.adash td.adash-tot{font-weight:800;color:#1A7A5E}
 .ad-c{display:flex;flex-direction:column;gap:1px;align-items:center}
@@ -4132,8 +4133,8 @@ function attDashHtml(list){
   function srtIt(a,b){if(a.tot!==b.tot)return b.tot-a.tot;return noAccent(a.m.name).localeCompare(noAccent(b.m.name),undefined,{numeric:true});}
   stars.sort(srtIt);others.sort(srtIt);
   var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
-  function rowHtml(it){
-    var hh='<tr><td class="adash-nm" data-open-mid="'+it.m.id+'" data-open-type="kh">'+escHtml(it.m.name);
+  function rowHtml(it,ord){
+    var hh='<tr><td class="adash-nm" data-open-mid="'+it.m.id+'" data-open-type="kh"><b class="adash-ord">'+ord+'.</b> '+escHtml(it.m.name);
     if(it.rk>0)hh+=' <span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span>';
     hh+='</td>';
     for(var d=1;d<=nDays;d++){
@@ -4154,11 +4155,11 @@ function attDashHtml(list){
   h+='<th>&sum;</th></tr>';
   if(stars.length){
     h+='<tr class="adash-sec"><td colspan="'+cols+'">⭐ Future Star &amp; 1★ trở lên ('+stars.length+')</td></tr>';
-    stars.forEach(function(it){h+=rowHtml(it);});
+    stars.forEach(function(it,i){h+=rowHtml(it,i+1);});
   }
   if(others.length){
     if(stars.length)h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">Các ID còn lại ('+others.length+')</td></tr>';
-    others.forEach(function(it){h+=rowHtml(it);});
+    others.forEach(function(it,i){h+=rowHtml(it,i+1);});
   }
   if(!stars.length&&!others.length)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:10px;text-align:left">Chưa có thành viên nào</td></tr>';
   h+='</table></div></div>';
