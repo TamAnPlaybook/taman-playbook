@@ -1,4 +1,4 @@
-<!-- VERSION: v6.50-goldnum-always-on -->
+<!-- VERSION: v6.51-root-ship-icon -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -6841,7 +6841,7 @@ function renderTree(){
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
-    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+escHtml(n.name)+'</div>';
+    h+='<div style="font-weight:800;font-size:12px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+_tMain+'">'+(_isRoot&&n.ship?shipSVG(n.ship,15)+' ':'')+escHtml(n.name)+'</div>';
     h+='<div style="font-size:9.5px;font-weight:600;color:'+_tSub+';margin-top:1px">T\u1ea7ng '+lvl+(n.joinDate?' \u00B7 v\u00e0o '+escHtml(n.joinDate):'')+'</div>';
     if(n.idCode)h+='<div style="font-family:Arial;font-size:8.5px;font-weight:700;letter-spacing:.3px;color:'+(_onColor?'rgba(255,255,255,.92)':'#6B4FA0')+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">M\u00e3: '+escHtml(n.idCode)+'</div>';
     if(_isRoot){
@@ -7633,7 +7633,7 @@ function renderStarChart(){
     h+='<div class="star-node'+(near?' near-rank':'')+'" data-node-id="'+n.id+'" data-flvl="'+_fd+'" style="position:absolute;left:'+(p.x+ox)+'px;top:'+(p.y+oy)+'px;width:'+NWs+'px;height:'+NHs+'px;background:'+(isRoot?'#1A1A1A':'rgba(30,36,46,.95)')+';border:2px solid '+bdCol+';border-radius:9px;padding:4px 7px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;box-shadow:0 0 '+(rk>0?'12px '+RANKS[rk-1].color:'4px rgba(0,0,0,.4)')+'">';
     h+='<div style="display:flex;align-items:center;gap:4px">';
     h+='<span style="width:14px;height:14px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
-    h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(n.name)+'</span>';
+    h+='<span style="font-size:11px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+((!n.parentId&&n.ship)?shipSVG(n.ship,13)+' ':'')+escHtml(n.name)+'</span>';
     if(rk>0)h+='<span style="margin-left:auto;background:'+RANKS[rk-1].color+';color:white;font-size:8px;font-weight:700;border-radius:6px;padding:0 5px;flex-shrink:0">'+RANKS[rk-1].short+'</span>';
     h+='</div>';
     var _fLbl=_fd===0?'GỐC':'F'+_fd;
