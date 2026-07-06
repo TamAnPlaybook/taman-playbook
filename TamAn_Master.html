@@ -90,7 +90,7 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .modal-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0}
 .modal-name{font-size:16px;font-weight:700}
 .modal-x{width:32px;height:32px;border-radius:50%;background:#F0F0F0;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
-.modal-body{overflow-y:auto;overflow-x:hidden;flex:1;padding:0 16px 8px;overscroll-behavior:contain}
+.modal-body{overflow:auto;flex:1;padding:0 16px 8px;overscroll-behavior:contain}
 .modal-foot{padding:12px 16px;display:flex;gap:8px;border-top:1px solid #F0F0F0;flex-shrink:0}
 .nmod-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:flex-end;justify-content:center}
 .nmod-ov.open{display:flex}
@@ -98,8 +98,18 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .nmod-hd{padding:14px 16px 12px;border-bottom:1px solid #F0F0F0;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .nmod-title{flex:1;font-size:16px;font-weight:700}
 .nmod-x{width:32px;height:32px;border-radius:50%;background:#F0F0F0;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
-.nmod-body{overflow-y:auto;flex:1;padding:12px 16px 8px}
+.nmod-body{overflow:auto;flex:1;padding:12px 16px 8px}
 .nmod-foot{padding:12px 16px;display:flex;gap:8px;border-top:1px solid #F0F0F0;flex-shrink:0}
+/* POPUP linh hoạt: máy tính/tablet canh giữa + KÉO GÓC ĐỔI KÍCH THƯỚC; điện thoại giữ dạng tấm trượt từ dưới. Nội dung luôn cuộn, không bị che. */
+@media(min-width:700px){
+  .modal-ov,.nmod-ov{align-items:center;padding:18px}
+  .modal,.nmod{border-radius:16px;width:min(94vw,680px);max-width:96vw;max-height:92vh;min-width:320px;min-height:220px;resize:both;overflow:hidden}
+}
+@media(min-width:700px){
+  .modal,.nmod{position:relative}
+  /* tay cầm kéo góc cho dễ thấy (bổ trợ cho núm resize gốc của trình duyệt) */
+  .modal::after,.nmod::after{content:"";position:absolute;right:2px;bottom:2px;width:16px;height:16px;border-right:2px solid #BDBDBD;border-bottom:2px solid #BDBDBD;border-bottom-right-radius:6px;pointer-events:none;opacity:.7}
+}
 .nmod-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #F5F5F5;gap:10px}
 .nmod-row:last-child{border-bottom:none}
 .nmod-lbl{flex:1;font-size:14px;font-weight:500}
@@ -145,7 +155,7 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 @media(max-width:600px){.kh-head .kh-h-plan,.kh-head .kh-h-rep,.kh-cell{width:64px}}
 .msec{margin-top:14px}
 .msec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#AAA;margin-bottom:8px}
-.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#EBEBEB;border-radius:10px;overflow:hidden;margin-top:8px}
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:1px;background:#EBEBEB;border-radius:10px;overflow:hidden;margin-top:8px}
 .ski{background:white;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
 .skc{width:22px;height:22px;min-width:22px;border-radius:50%;border:2px solid #DDD;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent}
 .skc.done{background:#1A7A5E;border-color:#1A7A5E;color:white}
@@ -194,8 +204,8 @@ input[type=range]{flex:1;height:6px;accent-color:#1A7A5E;cursor:pointer}
 .cbar{width:28px;border-radius:4px 4px 0 0;min-height:2px}
 .cday{font-size:10px;color:#999}
 .cval{font-size:9px;font-weight:700;color:#666}
-@media(max-width:480px){.skill-grid,.kpi-grid{grid-template-columns:1fr}}
-@media(min-width:700px){.skill-grid{grid-template-columns:repeat(3,1fr)}.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.kpi-grid{grid-template-columns:1fr}}
+@media(min-width:700px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
 
 @keyframes rankpulse{0%{box-shadow:0 0 0 0 rgba(255,143,0,.75)}70%{box-shadow:0 0 0 13px rgba(255,143,0,0)}100%{box-shadow:0 0 0 0 rgba(255,143,0,0)}}
 .near-rank{animation:rankpulse 1.5s infinite}
