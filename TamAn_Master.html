@@ -146,10 +146,22 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .msec{margin-top:14px}
 .msec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#AAA;margin-bottom:8px}
 .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#EBEBEB;border-radius:10px;overflow:hidden;margin-top:8px}
-.ski{background:white;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.ski{background:white;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
 .skc{width:22px;height:22px;min-width:22px;border-radius:50%;border:2px solid #DDD;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent}
 .skc.done{background:#1A7A5E;border-color:#1A7A5E;color:white}
 .sklbl{font-size:12px;line-height:1.3}
+.sk-main{flex:1;min-width:0}
+.sk-links{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sk-link{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#1565C0;background:#E9F2FB;border:1px solid #CFE2F6;border-radius:999px;padding:2px 9px;text-decoration:none;line-height:1.5;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk-link:hover{background:#D8E9FA}
+.sk-link-edit{font-size:11px;font-weight:700;color:#B8860B;background:#FFF6DC;border:1px dashed #E7C55A;border-radius:999px;padding:2px 9px;cursor:pointer}
+.sk-link-edit:hover{background:#FDEFC7}
+.skl-row{display:flex;gap:6px;margin-bottom:10px;align-items:center}
+.skl-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.skl-inp{width:100%;box-sizing:border-box;font-size:13px;padding:9px 11px;border:1px solid #DDD;border-radius:9px;font-family:inherit}
+.skl-inp:focus{outline:none;border-color:#1A7A5E}
+.skl-del{min-width:38px;height:38px;border:1px solid #F0C9C9;background:#FDECEC;color:#C62828;border-radius:9px;cursor:pointer;font-size:15px}
+.skl-del:hover{background:#F9DCDC}
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .kpib{background:#F7F7F7;border-radius:10px;padding:12px;border:1.5px solid #EBEBEB}
 .kpilbl{font-size:11px;color:#888;margin-bottom:4px}
@@ -1405,6 +1417,21 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
     <div class="modal-foot">
       <button class="btn btn-o" id="modal-cancel">Hủy</button>
       <button class="btn btn-g" id="m-save-btn">&#10003; Lưu &amp; Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- QTV: Trình sửa link tài liệu cho 1 kỹ năng (dùng chung toàn team) -->
+<div class="modal-ov" id="sklink-ov" style="z-index:700">
+  <div class="modal">
+    <div class="modal-hd">
+      <div style="flex:1"><div class="modal-name" id="skl-title">&#128279; Link kỹ năng</div><div style="font-size:12px;color:#999" id="skl-sub"></div></div>
+      <button class="modal-x" id="skl-close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="skl-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" id="skl-cancel">Hủy</button>
+      <button class="btn btn-g" id="skl-save">&#10003; Lưu</button>
     </div>
   </div>
 </div>
@@ -3619,6 +3646,7 @@ function enterAppFirebase(user){
   document.getElementById('tb-date').textContent=fmtDate(now);
   renderAll();updateStats();populateBcSel();renderMonthPage();renderReminders();renderGuide();
   loadBranchFeature();
+  loadSkillLinks();
   recordAccount(user,{entered:true});
   startPresence(); // v6.36 — heartbeat "dang online" (ghi accounts/{uid}.lastActive moi 60s) // ghi nhận tài khoản + đánh dấu đã vào app (bước cuối)
   // Mặc định mở tab Sơ đồ: ẩn thanh ngày/thống kê + vẽ cây
@@ -4384,6 +4412,100 @@ function skillStairs(mid,list,key,title,ico,col,colLight,colDark){
     +'<div style="font-size:11px;font-weight:700;color:'+barCol+'">Bậc '+curStep+'/10 · '+done+'/'+total+' kỹ năng · '+pctR+'%</div>'
     +'</div>'+s+'</div>';
 }
+// ===== LINK TÀI LIỆU CHO KỸ NĂNG — QTV thêm link (website/YouTube), cả team bấm xem =====
+// Lưu chung toàn team ở appConfig/skillLinks: { map: { <skillId>: [ {name,url}, ... ] } }
+var skillLinksMap={};
+function loadSkillLinks(){
+  fsGetGlobal('skillLinks').then(function(d){
+    skillLinksMap=(d&&d.map)||{};
+    if(modalMid&&modalType==='kn')refreshModalBody(); // đang mở tab kỹ năng → cập nhật ngay
+  }).catch(function(){});
+}
+function skillLabelById(id){
+  var s=SKILLS.concat(SKILLS_THANY).filter(function(x){return x.id===id;})[0];
+  return s?s.lbl:id;
+}
+// Chuẩn hoá link: tự thêm https:// nếu thiếu; chặn scheme lạ (javascript:, data:...) để an toàn
+function normSkillUrl(u){
+  u=String(u||'').trim();
+  if(!u)return '';
+  if(!/^https?:\/\//i.test(u)){
+    if(/^[a-z][a-z0-9+.\-]*:/i.test(u))return ''; // có scheme nhưng không phải http(s) → bỏ
+    u='https://'+u;
+  }
+  return u;
+}
+function skillCellHtml(mid,s){
+  var done=pGet(mid,'sk_'+s.id)==='1';
+  var links=skillLinksMap[s.id]||[];
+  var h='<div class="ski" data-sk-mid="'+mid+'" data-sk-id="'+s.id+'">';
+  h+='<div class="skc'+(done?' done':'')+'">✓</div>';
+  h+='<div class="sk-main"><div class="sklbl">'+escHtml(s.lbl)+'</div>';
+  var chips='';
+  links.forEach(function(lk){
+    var u=normSkillUrl(lk.url);if(!u)return;
+    chips+='<a class="sk-link" href="'+escHtml(u)+'" target="_blank" rel="noopener noreferrer" title="'+escHtml(u)+'">🔗 '+escHtml(lk.name||u)+'</a>';
+  });
+  if(chips||isBranchAdmin){
+    h+='<div class="sk-links">'+chips;
+    if(isBranchAdmin)h+='<button class="sk-link-edit" data-sklink-edit="'+s.id+'">'+(chips?'✏️ Sửa link':'➕ Thêm link')+'</button>';
+    h+='</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+// ---- Trình sửa link (chỉ QTV) ----
+var _sklEditId=null;
+function openSkillLinkEditor(id){
+  if(!isBranchAdmin)return;
+  _sklEditId=id;
+  document.getElementById('skl-sub').textContent=skillLabelById(id);
+  var links=(skillLinksMap[id]||[]).slice();
+  if(!links.length)links=[{name:'',url:''}];
+  sklRenderRows(links);
+  document.getElementById('sklink-ov').classList.add('open');
+}
+function sklRowHtml(lk){
+  return '<div class="skl-row">'
+    +'<div class="skl-fields">'
+    +'<input class="skl-inp" data-skl-f="name" placeholder="Tên hiển thị (vd: Kỹ năng mời khách)" value="'+escHtml(lk.name||'')+'">'
+    +'<input class="skl-inp" data-skl-f="url" placeholder="Dán link (https://... hoặc link YouTube)" value="'+escHtml(lk.url||'')+'">'
+    +'</div>'
+    +'<button class="skl-del" data-skl-del title="Xoá dòng">🗑️</button>'
+    +'</div>';
+}
+function sklRenderRows(list){
+  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm 1 hoặc nhiều link (website / YouTube) cho kỹ năng này. <b>Tên</b> là chữ cả team nhìn thấy; bấm vào sẽ mở <b>Link</b>. Để trống ô link = xoá dòng đó khi lưu.</div>';
+  h+='<div id="skl-rows">'+list.map(sklRowHtml).join('')+'</div>';
+  h+='<button class="btn btn-o" id="skl-add" style="margin-top:2px">➕ Thêm dòng link</button>';
+  document.getElementById('skl-body').innerHTML=h;
+}
+function sklReadRaw(){
+  var a=[];
+  document.querySelectorAll('#skl-rows .skl-row').forEach(function(r){
+    a.push({name:r.querySelector('[data-skl-f="name"]').value,url:r.querySelector('[data-skl-f="url"]').value});
+  });
+  return a;
+}
+function closeSklEditor(){document.getElementById('sklink-ov').classList.remove('open');_sklEditId=null;}
+function saveSklEditor(){
+  if(!_sklEditId)return;
+  var arr=[];
+  sklReadRaw().forEach(function(row){
+    var u=normSkillUrl(row.url);
+    if(u)arr.push({name:(row.name||'').trim()||u,url:u});
+  });
+  var id=_sklEditId, prev=skillLinksMap[id];
+  if(arr.length)skillLinksMap[id]=arr; else delete skillLinksMap[id];
+  var btn=document.getElementById('skl-save');btn.disabled=true;btn.textContent='Đang lưu...';
+  fsSetGlobal('skillLinks',{map:skillLinksMap}).then(function(){
+    showToast('✓ Đã lưu link kỹ năng');
+    closeSklEditor();refreshModalBody();
+  }).catch(function(e){
+    if(prev===undefined)delete skillLinksMap[id];else skillLinksMap[id]=prev; // khôi phục khi lỗi
+    showToast('Lỗi lưu: '+((e&&e.message)||e));
+  }).finally(function(){btn.disabled=false;btn.innerHTML='✓ Lưu';});
+}
 function buildModalBody(m,type){
   var h='';
   if(type==='sang'||type==='trua'||type==='toi'){
@@ -4404,23 +4526,13 @@ function buildModalBody(m,type){
     h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng Thần Tài phát triển hệ thống ('+countSkills(m.id)+'/'+SKILLS.length+')</div>';
     h+=skillStairs(m.id,SKILLS,'tt','Hành trình Thần Tài','🪙','#D4A72C','#F1E9CF','#8A6D12');
     h+='<div class="skill-grid">';
-    SKILLS.forEach(function(s){
-      var done=pGet(m.id,'sk_'+s.id)==='1';
-      h+='<div class="ski" data-sk-mid="'+m.id+'" data-sk-id="'+s.id+'">';
-      h+='<div class="skc'+(done?' done':'')+'">\u2713</div>';
-      h+='<div class="sklbl">'+s.lbl+'</div></div>';
-    });
+    SKILLS.forEach(function(s){h+=skillCellHtml(m.id,s);});
     h+='</div></div>';
     var doneTY=SKILLS_THANY.filter(function(s){return pGet(m.id,'sk_'+s.id)==='1';}).length;
     h+='<div class="msec"><div class="msec-title">🩺 Kỹ năng Thần Y chăm sóc CLB ('+doneTY+'/'+SKILLS_THANY.length+')</div>';
     h+=skillStairs(m.id,SKILLS_THANY,'ty','Hành trình Thần Y','🩺','#1CA39B','#D8EEEC','#0F6E68');
     h+='<div class="skill-grid">';
-    SKILLS_THANY.forEach(function(s){
-      var dn=pGet(m.id,'sk_'+s.id)==='1';
-      h+='<div class="ski" data-sk-mid="'+m.id+'" data-sk-id="'+s.id+'">';
-      h+='<div class="skc'+(dn?' done':'')+'">✓</div>';
-      h+='<div class="sklbl">'+s.lbl+'</div></div>';
-    });
+    SKILLS_THANY.forEach(function(s){h+=skillCellHtml(m.id,s);});
     h+='</div></div>';
   }
   if(type==='kh'){
@@ -9515,9 +9627,25 @@ document.addEventListener('click',function(e){
     return;
   }
 
+  // QTV: mở trình sửa link tài liệu cho kỹ năng
+  t=e.target.closest('[data-sklink-edit]');
+  if(t){openSkillLinkEditor(t.getAttribute('data-sklink-edit'));return;}
+  // Trình sửa link: thêm dòng
+  if(e.target.closest('#skl-add')){var _cur=sklReadRaw();_cur.push({name:'',url:''});sklRenderRows(_cur);return;}
+  // Trình sửa link: xoá 1 dòng
+  t=e.target.closest('[data-skl-del]');
+  if(t){
+    var _row=t.closest('.skl-row'),_cur2=sklReadRaw();
+    var _i=Array.prototype.indexOf.call(_row.parentNode.children,_row);
+    if(_i>=0)_cur2.splice(_i,1);
+    if(!_cur2.length)_cur2=[{name:'',url:''}];
+    sklRenderRows(_cur2);return;
+  }
+
   // Skill toggle
   t=e.target.closest('[data-sk-mid]');
   if(t){
+    if(e.target.closest('.sk-links'))return; // bấm vào link/khu vực link → không tick kỹ năng (để <a> tự mở)
     var skmid=t.getAttribute('data-sk-mid');
     var skid=t.getAttribute('data-sk-id');
     var curr=pGet(skmid,'sk_'+skid);
@@ -11109,6 +11237,11 @@ function bindStatic(){
   document.getElementById('modal-cancel').addEventListener('click',closeModal);
   document.getElementById('m-save-btn').addEventListener('click',closeModal);
   document.getElementById('modal-ov').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+  document.getElementById('skl-close').addEventListener('click',closeSklEditor);
+  document.getElementById('skl-cancel').addEventListener('click',closeSklEditor);
+  document.getElementById('skl-save').addEventListener('click',saveSklEditor);
+  document.getElementById('sklink-ov').addEventListener('click',function(e){if(e.target===this)closeSklEditor();});
 
   document.getElementById('nmod-close').addEventListener('click',closeNodeModal);
   document.getElementById('nmod-cancel').addEventListener('click',closeNodeModal);
