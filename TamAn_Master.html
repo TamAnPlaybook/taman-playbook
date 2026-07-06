@@ -166,6 +166,9 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .sk-link:hover{background:#D8E9FA}
 .sk-link-edit{font-size:11px;font-weight:700;color:#B8860B;background:#FFF6DC;border:1px dashed #E7C55A;border-radius:999px;padding:2px 9px;cursor:pointer}
 .sk-link-edit:hover{background:#FDEFC7}
+.msec-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sk-cfg-btn{display:inline-block;margin:0 0 8px;font-size:11px;font-weight:700;color:#6A1B9A;background:#F3E9FB;border:1px solid #E1CDF2;border-radius:999px;padding:4px 11px;cursor:pointer}
+.sk-cfg-btn:hover{background:#EADCF7}
 .skl-row{display:flex;gap:6px;margin-bottom:10px;align-items:center}
 .skl-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .skl-inp{width:100%;box-sizing:border-box;font-size:13px;padding:9px 11px;border:1px solid #DDD;border-radius:9px;font-family:inherit}
@@ -1446,6 +1449,22 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   </div>
 </div>
 
+<!-- QTV: Thêm/bớt/sửa các ô kỹ năng (danh sách kỹ năng dùng chung toàn team) -->
+<div class="modal-ov" id="skcfg-ov" style="z-index:700">
+  <div class="modal">
+    <div class="modal-hd">
+      <div style="flex:1"><div class="modal-name">&#9881;&#65039; Sửa các kỹ năng</div><div style="font-size:12px;color:#999" id="skcfg-sub"></div></div>
+      <button class="modal-x" id="skcfg-close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="skcfg-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" id="skcfg-reset" title="Khôi phục danh sách gốc">&#8635; Mặc định</button>
+      <button class="btn btn-o" id="skcfg-cancel">Hủy</button>
+      <button class="btn btn-g" id="skcfg-save">&#10003; Lưu</button>
+    </div>
+  </div>
+</div>
+
 <div id="fs-overlay">
   <div id="fs-head">
     <b style="font-size:15px" id="fs-title">&#x26F6; Xem toàn trang</b>
@@ -1583,6 +1602,9 @@ var SKILLS_THANY=[
   {id:'ty_gioithieu',lbl:'Xin lời giới thiệu'},
   {id:'ty_tailieutrinh',lbl:'Giúp khách tái liệu trình'}
 ];
+// Bản gốc mặc định — dùng để "Khôi phục mặc định" khi QTV chỉnh danh sách kỹ năng
+var DEFAULT_SKILLS=SKILLS.map(function(s){return {id:s.id,lbl:s.lbl};});
+var DEFAULT_SKILLS_THANY=SKILLS_THANY.map(function(s){return {id:s.id,lbl:s.lbl};});
 var KH=[
   {id:'care_self',lbl:'Chăm sóc bản thân',icon:'\uD83D\uDC86',t:'check',note:'Tập thể dục, ăn uống, nghỉ ngơi'},
   {id:'dev_self',lbl:'Phát triển bản thân',icon:'\uD83D\uDCDA',t:'check',note:'Đọc sách, nghe Zoom, luyện kỹ năng'},
@@ -4430,8 +4452,15 @@ var skillLinksMap={};
 function loadSkillLinks(){
   fsGetGlobal('registration').then(function(d){
     skillLinksMap=(d&&d.skillLinks)||{};
+    applySkillCfg(d&&d.skillCfg); // QTV có thể tuỳ biến danh sách kỹ năng
     if(modalMid&&modalType==='kn')refreshModalBody(); // đang mở tab kỹ năng → cập nhật ngay
+    renderAll&&renderAll();updateStats&&updateStats(); // cập nhật số liệu năng lực theo danh sách mới
   }).catch(function(){});
+}
+// Áp cấu hình danh sách kỹ năng do QTV lưu (ghi đè tại chỗ để mọi tham chiếu SKILLS/SKILLS_THANY dùng bản mới)
+function applySkillCfg(cfg){
+  if(cfg&&Array.isArray(cfg.tt)){SKILLS.length=0;cfg.tt.forEach(function(s){if(s&&s.id&&s.lbl)SKILLS.push({id:String(s.id),lbl:String(s.lbl)});});}
+  if(cfg&&Array.isArray(cfg.ty)){SKILLS_THANY.length=0;cfg.ty.forEach(function(s){if(s&&s.id&&s.lbl)SKILLS_THANY.push({id:String(s.id),lbl:String(s.lbl)});});}
 }
 function skillLabelById(id){
   var s=SKILLS.concat(SKILLS_THANY).filter(function(x){return x.id===id;})[0];
@@ -4518,6 +4547,70 @@ function saveSklEditor(){
     showToast('Lỗi lưu: '+((e&&e.message)||e));
   }).finally(function(){btn.disabled=false;btn.innerHTML='✓ Lưu';});
 }
+// ===== QTV: THÊM / BỚT / SỬA CÁC Ô KỸ NĂNG (danh sách kỹ năng) =====
+// Lưu chung toàn team ở field "skillCfg" trong doc appConfig/registration (không cần đổi Rules).
+var _skcfgGroup=null; // 'tt' (Thần Tài) | 'ty' (Thần Y)
+function genSkillId(group){return (group==='ty'?'ty_':'')+'c'+Date.now().toString(36)+Math.floor(Math.random()*46656).toString(36);}
+function skcfgList(group){return group==='ty'?SKILLS_THANY:SKILLS;}
+function skcfgBtn(g){return isBranchAdmin?'<button class="sk-cfg-btn" data-skcfg-edit="'+g+'">⚙️ Sửa các kỹ năng</button>':'';}
+function openSkillCfgEditor(group){
+  if(!isBranchAdmin)return;
+  _skcfgGroup=group;
+  document.getElementById('skcfg-sub').textContent=(group==='ty'?'🩺 Kỹ năng Thần Y chăm sóc CLB':'🪙 Kỹ năng Thần Tài phát triển hệ thống');
+  skcfgRenderRows(skcfgList(group).map(function(s){return {id:s.id,lbl:s.lbl};}));
+  document.getElementById('skcfg-ov').classList.add('open');
+}
+function skcfgRowHtml(s){
+  return '<div class="skl-row" data-skcfg-id="'+escHtml(s.id||'')+'">'
+    +'<input class="skl-inp" data-skcfg-f="lbl" placeholder="Tên kỹ năng (vd: Mời khách 6 bước)" value="'+escHtml(s.lbl||'')+'">'
+    +'<button class="skl-del" data-skcfg-del title="Xoá kỹ năng này">🗑️</button>'
+    +'</div>';
+}
+function skcfgRenderRows(list){
+  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm / bớt / sửa các ô kỹ năng cho <b>cả team</b>. Sửa tên rồi <b>Lưu</b>. Xoá 1 ô = bấm 🗑️. Ô để trống sẽ bị bỏ khi lưu.<br><b>Lưu ý:</b> xoá 1 kỹ năng sẽ ẩn nó khỏi mọi thành viên (dữ liệu đã tick cũ không mất).</div>';
+  h+='<div id="skcfg-rows">'+list.map(skcfgRowHtml).join('')+'</div>';
+  h+='<button class="btn btn-o" id="skcfg-add" style="margin-top:2px">➕ Thêm kỹ năng</button>';
+  document.getElementById('skcfg-body').innerHTML=h;
+}
+function skcfgReadRaw(){
+  var a=[];
+  document.querySelectorAll('#skcfg-rows .skl-row').forEach(function(r){
+    a.push({id:r.getAttribute('data-skcfg-id')||'',lbl:r.querySelector('[data-skcfg-f="lbl"]').value});
+  });
+  return a;
+}
+function closeSkcfgEditor(){document.getElementById('skcfg-ov').classList.remove('open');_skcfgGroup=null;}
+function skcfgResetDefault(){
+  if(!_skcfgGroup)return;
+  if(!confirm('Khôi phục danh sách kỹ năng MẶC ĐỊNH cho phần này? Các thay đổi hiện tại (thêm/sửa/xoá) sẽ bị bỏ.'))return;
+  var def=_skcfgGroup==='ty'?DEFAULT_SKILLS_THANY:DEFAULT_SKILLS;
+  skcfgRenderRows(def.map(function(s){return {id:s.id,lbl:s.lbl};}));
+}
+function saveSkcfgEditor(){
+  if(!_skcfgGroup)return;
+  var group=_skcfgGroup, seen={}, arr=[];
+  skcfgReadRaw().forEach(function(row){
+    var lbl=(row.lbl||'').trim();if(!lbl)return;
+    var id=row.id||genSkillId(group);
+    while(seen[id])id=genSkillId(group); // đảm bảo id không trùng
+    seen[id]=1;arr.push({id:id,lbl:lbl});
+  });
+  if(!arr.length){showToast('Cần ít nhất 1 kỹ năng');return;}
+  // ghi đè tại chỗ danh sách đang chỉnh, giữ nguyên nhóm còn lại
+  var prevTT=SKILLS.map(function(s){return {id:s.id,lbl:s.lbl};});
+  var prevTY=SKILLS_THANY.map(function(s){return {id:s.id,lbl:s.lbl};});
+  var tgt=skcfgList(group);tgt.length=0;arr.forEach(function(s){tgt.push(s);});
+  var cfg={tt:SKILLS.map(function(s){return {id:s.id,lbl:s.lbl};}),ty:SKILLS_THANY.map(function(s){return {id:s.id,lbl:s.lbl};})};
+  var btn=document.getElementById('skcfg-save');btn.disabled=true;btn.textContent='Đang lưu...';
+  fsSetGlobal('registration',{skillCfg:cfg}).then(function(){
+    showToast('✓ Đã lưu danh sách kỹ năng');
+    closeSkcfgEditor();refreshModalBody();renderAll&&renderAll();updateStats&&updateStats();
+  }).catch(function(e){
+    SKILLS.length=0;prevTT.forEach(function(s){SKILLS.push(s);});       // khôi phục khi lỗi
+    SKILLS_THANY.length=0;prevTY.forEach(function(s){SKILLS_THANY.push(s);});
+    showToast('Lỗi lưu: '+((e&&e.message)||e));
+  }).finally(function(){btn.disabled=false;btn.innerHTML='✓ Lưu';});
+}
 function buildModalBody(m,type){
   var h='';
   if(type==='sang'||type==='trua'||type==='toi'){
@@ -4535,13 +4628,13 @@ function buildModalBody(m,type){
     h+='</div></div></div>';
   }
   if(type==='kn'){
-    h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng Thần Tài phát triển hệ thống ('+countSkills(m.id)+'/'+SKILLS.length+')</div>';
+    h+='<div class="msec"><div class="msec-title">\u2B50 Kỹ năng Thần Tài phát triển hệ thống ('+countSkills(m.id)+'/'+SKILLS.length+')</div>'+skcfgBtn('tt');
     h+=skillStairs(m.id,SKILLS,'tt','Hành trình Thần Tài','🪙','#D4A72C','#F1E9CF','#8A6D12');
     h+='<div class="skill-grid">';
     SKILLS.forEach(function(s){h+=skillCellHtml(m.id,s);});
     h+='</div></div>';
     var doneTY=SKILLS_THANY.filter(function(s){return pGet(m.id,'sk_'+s.id)==='1';}).length;
-    h+='<div class="msec"><div class="msec-title">🩺 Kỹ năng Thần Y chăm sóc CLB ('+doneTY+'/'+SKILLS_THANY.length+')</div>';
+    h+='<div class="msec"><div class="msec-title">🩺 Kỹ năng Thần Y chăm sóc CLB ('+doneTY+'/'+SKILLS_THANY.length+')</div>'+skcfgBtn('ty');
     h+=skillStairs(m.id,SKILLS_THANY,'ty','Hành trình Thần Y','🩺','#1CA39B','#D8EEEC','#0F6E68');
     h+='<div class="skill-grid">';
     SKILLS_THANY.forEach(function(s){h+=skillCellHtml(m.id,s);});
@@ -5948,7 +6041,7 @@ var PERF_CFG={
 };
 var LEADING_KH=['post_zalo','post_fb','post_tt','call_new','followup2','care_sys','baotroTV'];
 var CARE_KH=['followup2','care_sys','baotroTV'];
-var SKILL_TOTAL=SKILLS.length+SKILLS_THANY.length;
+function skillTotal(){return SKILLS.length+SKILLS_THANY.length;} // động: QTV có thể thêm/bớt kỹ năng
 function countAllSkills(mid){return SKILLS.concat(SKILLS_THANY).filter(function(s){return pGet(mid,'sk_'+s.id)==='1';}).length;}
 function geoMean(arr){
   var vals=arr.filter(function(v){return v!==null&&v!==undefined&&!isNaN(v);});
@@ -6000,7 +6093,7 @@ function perfMemberMetrics(mid,name,agg,range){
   var downline=name?perfSponsorChildren(name).length:0; // số "người cần follow-up" = nhánh dưới trực tiếp
   var careTarget=Math.max(PERF_CFG.careMinTarget,downline*PERF_CFG.carePerDownline)*scale;
   var care=Math.min(1,a.care/Math.max(1,careTarget));
-  var capability=countAllSkills(mid)/SKILL_TOTAL; // Kỹ năng (vốn)
+  var _skTot=skillTotal();var capability=_skTot?countAllSkills(mid)/_skTot:0; // Kỹ năng (vốn)
   var W=PERF_CFG.actionW;
   var actionIndex=W.skill*capability+W.commit*commitment+W.care*care; // 70/15/15 (Huy chốt)
   var weakest=Math.min(capability,commitment,care);
@@ -6136,7 +6229,7 @@ function renderPerfPage(){
   h+='<div class="chart-wrap"><div class="chart-title">🧭 Chỉ huy hiệu suất — '+escHtml(periodLabel())+'</div>';
   h+='<div class="kpi-grid">';
   h+=perfCard('⚡ Action Index','<b>'+perfPct(teamAction)+'%</b>','Kỹ năng 70% + Cam kết 15% + Chăm sóc 15%',perfColor(teamAction));
-  h+=perfCard('🎓 Năng lực',perfPct(teamCap)+'%','Kỹ năng đã đạt / '+SKILL_TOTAL,perfColor(teamCap));
+  h+=perfCard('🎓 Năng lực',perfPct(teamCap)+'%','Kỹ năng đã đạt / '+skillTotal(),perfColor(teamCap));
   h+=perfCard('🤝 Chỉ số lãnh đạo',perfPct(teamLead)+'%','TB % nhánh dưới đang tạo kết quả',perfColor(teamLead));
   h+=perfCard('🎯 Tỉ lệ đạt mục tiêu',(succ===null?'—':succ+'%'),(succ===null?'Chưa đặt mục tiêu kỳ này':'Theo tab Mục tiêu - kết quả'),succ===null?'#999':perfColor((succ||0)/100));
   h+=perfCard('👑 Tự chủ 90 ngày',perfPct(indepPct)+'%',producingCount+'/'+members.length+' TV tự tạo kết quả',perfColor(indepPct));
@@ -9653,6 +9746,19 @@ document.addEventListener('click',function(e){
     if(!_cur2.length)_cur2=[{name:'',url:''}];
     sklRenderRows(_cur2);return;
   }
+  // QTV: mở trình sửa danh sách kỹ năng (thêm/bớt/sửa ô kỹ năng)
+  t=e.target.closest('[data-skcfg-edit]');
+  if(t){openSkillCfgEditor(t.getAttribute('data-skcfg-edit'));return;}
+  // Trình sửa kỹ năng: thêm ô
+  if(e.target.closest('#skcfg-add')){var _sc=skcfgReadRaw();_sc.push({id:'',lbl:''});skcfgRenderRows(_sc);return;}
+  // Trình sửa kỹ năng: xoá 1 ô
+  t=e.target.closest('[data-skcfg-del]');
+  if(t){
+    var _row2=t.closest('.skl-row'),_sc2=skcfgReadRaw();
+    var _j=Array.prototype.indexOf.call(_row2.parentNode.children,_row2);
+    if(_j>=0)_sc2.splice(_j,1);
+    skcfgRenderRows(_sc2);return;
+  }
 
   // Skill toggle
   t=e.target.closest('[data-sk-mid]');
@@ -11254,6 +11360,12 @@ function bindStatic(){
   document.getElementById('skl-cancel').addEventListener('click',closeSklEditor);
   document.getElementById('skl-save').addEventListener('click',saveSklEditor);
   document.getElementById('sklink-ov').addEventListener('click',function(e){if(e.target===this)closeSklEditor();});
+
+  document.getElementById('skcfg-close').addEventListener('click',closeSkcfgEditor);
+  document.getElementById('skcfg-cancel').addEventListener('click',closeSkcfgEditor);
+  document.getElementById('skcfg-save').addEventListener('click',saveSkcfgEditor);
+  document.getElementById('skcfg-reset').addEventListener('click',skcfgResetDefault);
+  document.getElementById('skcfg-ov').addEventListener('click',function(e){if(e.target===this)closeSkcfgEditor();});
 
   document.getElementById('nmod-close').addEventListener('click',closeNodeModal);
   document.getElementById('nmod-cancel').addEventListener('click',closeNodeModal);
