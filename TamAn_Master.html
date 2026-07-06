@@ -4413,11 +4413,13 @@ function skillStairs(mid,list,key,title,ico,col,colLight,colDark){
     +'</div>'+s+'</div>';
 }
 // ===== LINK TÀI LIỆU CHO KỸ NĂNG — QTV thêm link (website/YouTube), cả team bấm xem =====
-// Lưu chung toàn team ở appConfig/skillLinks: { map: { <skillId>: [ {name,url}, ... ] } }
+// Lưu chung toàn team dưới dạng field "skillLinks" trong doc appConfig/registration
+// (doc này Firestore Rules đã cho: read = mọi người, write = QTV — nên KHÔNG cần đổi Rules).
+// Dạng: { <skillId>: [ {name,url}, ... ] }
 var skillLinksMap={};
 function loadSkillLinks(){
-  fsGetGlobal('skillLinks').then(function(d){
-    skillLinksMap=(d&&d.map)||{};
+  fsGetGlobal('registration').then(function(d){
+    skillLinksMap=(d&&d.skillLinks)||{};
     if(modalMid&&modalType==='kn')refreshModalBody(); // đang mở tab kỹ năng → cập nhật ngay
   }).catch(function(){});
 }
@@ -4498,7 +4500,7 @@ function saveSklEditor(){
   var id=_sklEditId, prev=skillLinksMap[id];
   if(arr.length)skillLinksMap[id]=arr; else delete skillLinksMap[id];
   var btn=document.getElementById('skl-save');btn.disabled=true;btn.textContent='Đang lưu...';
-  fsSetGlobal('skillLinks',{map:skillLinksMap}).then(function(){
+  fsSetGlobal('registration',{skillLinks:skillLinksMap}).then(function(){ // merge → chỉ đụng field skillLinks
     showToast('✓ Đã lưu link kỹ năng');
     closeSklEditor();refreshModalBody();
   }).catch(function(e){
