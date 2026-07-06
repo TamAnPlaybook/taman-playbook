@@ -175,6 +175,10 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .skl-inp:focus{outline:none;border-color:#1A7A5E}
 .skl-del{min-width:38px;height:38px;border:1px solid #F0C9C9;background:#FDECEC;color:#C62828;border-radius:9px;cursor:pointer;font-size:15px}
 .skl-del:hover{background:#F9DCDC}
+.skl-move{display:flex;flex-direction:column;gap:2px}
+.skl-mv{width:30px;height:18px;line-height:1;border:1px solid #D6D6D6;background:#F4F4F4;color:#555;border-radius:6px;cursor:pointer;font-size:10px;padding:0}
+.skl-mv:hover{background:#E7E7E7}
+.skl-mv:active{background:#DADADA}
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .kpib{background:#F7F7F7;border-radius:10px;padding:12px;border:1.5px solid #EBEBEB}
 .kpilbl{font-size:11px;color:#888;margin-bottom:4px}
@@ -1114,6 +1118,7 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   <div class="main-tabs">
     <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="tp">&#127919; Mục tiêu - Hành động - Kết quả</button>
+    <button class="mtab" data-main="kynang">&#11088; Kỹ năng</button>
     <button class="mtab" data-main="prospect">&#128101; DS kim cương Tiềm năng</button>
     <button class="mtab" data-main="map">&#128205; Vị trí các CLB</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
@@ -1180,7 +1185,6 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
         <div class="stabs">
           <button class="stab on" data-sub="act:today">&#128203; Hôm nay</button>
           <button class="stab" data-sub="act:ngay">&#128197; Kế hoạch ngày &amp; Điểm danh</button>
-          <button class="stab" data-sub="act:kn">&#11088; Kỹ năng</button>
         </div>
         <div class="spg on" id="act-today">
           <div id="action-center"></div>
@@ -1188,7 +1192,6 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
           <div id="remind-content"></div>
         </div>
         <div class="spg" id="act-ngay"><div id="list-ngay"></div></div>
-        <div class="spg" id="act-kn"><div id="list-kn"></div></div>
       </div>
 
       <!-- C. KẾT QUẢ (Results): đo lường — thực đạt vs mục tiêu -->
@@ -1298,6 +1301,14 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   </div>
 
   <!-- TIỀM NĂNG & THEO DÕI -->
+  <!-- KỸ NĂNG (tab riêng) -->
+  <div class="page" id="page-kynang">
+    <div class="content">
+      <div class="tp-sec-title">&#11088; Kỹ năng — bấm tên thành viên để xem &amp; cập nhật kỹ năng</div>
+      <div id="list-kn"></div>
+    </div>
+  </div>
+
   <div class="page" id="page-prospect">
     <div class="content">
       <div id="prospect-content"></div>
@@ -4562,12 +4573,22 @@ function openSkillCfgEditor(group){
 }
 function skcfgRowHtml(s){
   return '<div class="skl-row" data-skcfg-id="'+escHtml(s.id||'')+'">'
+    +'<span class="skl-move"><button class="skl-mv" data-skcfg-up title="Dịch lên">▲</button><button class="skl-mv" data-skcfg-down title="Dịch xuống">▼</button></span>'
     +'<input class="skl-inp" data-skcfg-f="lbl" placeholder="Tên kỹ năng (vd: Mời khách 6 bước)" value="'+escHtml(s.lbl||'')+'">'
     +'<button class="skl-del" data-skcfg-del title="Xoá kỹ năng này">🗑️</button>'
     +'</div>';
 }
+// Đổi vị trí 1 ô kỹ năng trong trình sửa (giữ nguyên nội dung đang gõ)
+function skcfgMove(rowEl,dir){
+  var cur=skcfgReadRaw();
+  var i=Array.prototype.indexOf.call(rowEl.parentNode.children,rowEl);
+  var j=i+dir;
+  if(i<0||j<0||j>=cur.length)return;
+  var tmp=cur[i];cur[i]=cur[j];cur[j]=tmp;
+  skcfgRenderRows(cur);
+}
 function skcfgRenderRows(list){
-  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm / bớt / sửa các ô kỹ năng cho <b>cả team</b>. Sửa tên rồi <b>Lưu</b>. Xoá 1 ô = bấm 🗑️. Ô để trống sẽ bị bỏ khi lưu.<br><b>Lưu ý:</b> xoá 1 kỹ năng sẽ ẩn nó khỏi mọi thành viên (dữ liệu đã tick cũ không mất).</div>';
+  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm / bớt / sửa / <b>sắp xếp</b> các ô kỹ năng cho <b>cả team</b>. Dùng ▲ ▼ để <b>dịch lên / xuống</b>, sửa tên rồi <b>Lưu</b>. Xoá 1 ô = bấm 🗑️. Ô để trống sẽ bị bỏ khi lưu.<br><b>Lưu ý:</b> xoá 1 kỹ năng sẽ ẩn nó khỏi mọi thành viên (dữ liệu đã tick cũ không mất).</div>';
   h+='<div id="skcfg-rows">'+list.map(skcfgRowHtml).join('')+'</div>';
   h+='<button class="btn btn-o" id="skcfg-add" style="margin-top:2px">➕ Thêm kỹ năng</button>';
   document.getElementById('skcfg-body').innerHTML=h;
@@ -8038,9 +8059,10 @@ var ANALYTICS_FEATURES=[
   {id:'wheel',lbl:'Bánh xe cuộc đời'},{id:'mirror',lbl:'Tấm gương cuộc đời'},
   {id:'daily',lbl:'Kế hoạch ngày'},{id:'checkin',lbl:'Điểm danh'},
   {id:'prospect',lbl:'DS kim cương Tiềm năng'},{id:'map',lbl:'Vị trí các CLB'},
-  {id:'results',lbl:'Báo cáo & Kết quả'},{id:'guide',lbl:'Hướng dẫn'}
+  {id:'results',lbl:'Báo cáo & Kết quả'},{id:'guide',lbl:'Hướng dẫn'},
+  {id:'skill',lbl:'Kỹ năng'}
 ];
-var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect'};
+var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect',kynang:'skill'};
 // ───── Lớp theo dõi (tracking) ─────
 var _act=null,_actDirty=false,_actLastTick=0,_actTimers=false;
 function _keyTime(k){var p=String(k).split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1).getTime();}
@@ -9193,6 +9215,7 @@ document.addEventListener('click',function(e){
     if(pg==='tp')renderTpSub(currentSubTab.tp||'goals');
     if(pg==='admin')renderAdminPage();else stopPresenceWatch(); // v6.36 — rời tab Quản trị thì ngắt lắng nghe real-time
     if(pg==='map')renderMapPage();
+    if(pg==='kynang')renderList('kn','list-kn');
     if(pg==='prospect')renderProspectPage();
     if(_MAIN_FEAT[pg])trackEvent(_MAIN_FEAT[pg]); // v6.13 — theo dõi điều hướng tab
     return;
@@ -9749,6 +9772,11 @@ document.addEventListener('click',function(e){
   // QTV: mở trình sửa danh sách kỹ năng (thêm/bớt/sửa ô kỹ năng)
   t=e.target.closest('[data-skcfg-edit]');
   if(t){openSkillCfgEditor(t.getAttribute('data-skcfg-edit'));return;}
+  // Trình sửa kỹ năng: dịch 1 ô lên / xuống
+  t=e.target.closest('[data-skcfg-up]');
+  if(t){skcfgMove(t.closest('.skl-row'),-1);return;}
+  t=e.target.closest('[data-skcfg-down]');
+  if(t){skcfgMove(t.closest('.skl-row'),1);return;}
   // Trình sửa kỹ năng: thêm ô
   if(e.target.closest('#skcfg-add')){var _sc=skcfgReadRaw();_sc.push({id:'',lbl:''});skcfgRenderRows(_sc);return;}
   // Trình sửa kỹ năng: xoá 1 ô
