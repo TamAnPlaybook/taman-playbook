@@ -1,4 +1,5 @@
-<!-- VERSION: v6.57-skill-stairs-links-editor-flexible-popups -->
+<!-- VERSION: v6.58-guest-attendance-income-report-admin-notify -->
+<!-- v6.53–6.57 (skill stairs/links/flexible popups/skill tab) GIỮ NGUYÊN; v6.58 thêm: khách điểm danh + Thu nhập CLB/Nhân bản + báo QTV -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -538,6 +539,35 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .prog-line{display:flex;align-items:center;gap:8px;margin-top:4px}
 .prog-pct{font-size:13px;font-weight:800;font-family:Arial;min-width:44px}
 .goal-status{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 10px;font-family:Arial}
+/* v6.53 — Thu nhập (Kế hoạch & Báo cáo) */
+.inc-grid{display:flex;gap:10px;flex-wrap:wrap}
+.inc-fld{flex:1;min-width:130px}
+.inc-lbl{font-size:12px;font-weight:800;color:#666;margin-bottom:4px;font-family:Arial}
+.inc-inp{width:100%;border:1.5px solid #E0E0E0;border-radius:8px;padding:8px 10px;font-size:15px;font-weight:700;font-family:Arial;outline:none;box-sizing:border-box}
+.inc-inp:focus{border-color:#C8A84B}
+.inc-hint{font-size:11px;color:#AAA;margin-top:3px;font-family:Arial;font-weight:700}
+.inc-big{border:1px solid #EFE6C8;background:#FFFDF5;border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.inc-big-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;color:#333;margin-bottom:8px;font-family:Arial}
+.inc-big-top b{font-size:18px}
+.inc-row{margin-bottom:12px}
+.inc-row-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:5px;font-family:Arial}
+.inc-bd-wrap{overflow-x:auto}
+table.inc-bd{width:100%;border-collapse:collapse;font-family:Arial;font-size:12.5px}
+table.inc-bd th{background:#F5F1E4;color:#7A5A0C;font-weight:800;padding:7px 8px;text-align:right;border-bottom:2px solid #E7DDBF;white-space:nowrap}
+table.inc-bd th:first-child{text-align:left}
+table.inc-bd td{padding:7px 8px;text-align:right;border-bottom:1px solid #F0F0F0;white-space:nowrap}
+table.inc-bd td:first-child{text-align:left;font-weight:700;color:#555}
+.inc-bd-row{cursor:pointer}
+.inc-bd-row:hover{background:#FFFBEF}
+.inc-bd-today{background:#FFF8E1}
+.inc-bd-sum td{border-top:2px solid #E7DDBF;font-weight:800;color:#1A1A1A;background:#FAFAFA}
+/* v6.53 — Khách / chưa có ID trong Điểm danh */
+.guest-sec{margin-top:16px;border-top:2px dashed #E1BEE7;padding-top:14px}
+.gc-code-row{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.gc-code-lbl{font-size:12px;color:#8E24AA;font-weight:700;font-family:Arial}
+.gc-code-inp{flex:1;min-width:130px;max-width:220px;font-size:13px;padding:6px 9px}
+.guest-add{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.guest-add .inc-inp{flex:1;min-width:130px}
 /* v5.7 — Bản đồ CLB (Leaflet + OpenStreetMap) */
 #page-map .content{max-width:1000px}
 .map-card{background:white;border-radius:12px;border:1px solid #E8E8E8;padding:14px;margin-bottom:12px}
@@ -1202,13 +1232,16 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
           <button class="stab" data-sub="res:kpi">&#127919; KPI thực đạt</button>
           <button class="stab" data-sub="res:phantich">&#128202; Phân tích</button>
           <button class="stab" data-sub="res:tongket">&#128203; Tổng kết</button>
+          <button class="stab" data-sub="res:thunhap">&#128176; Thu nhập</button>
         </div>
-        <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
-          <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="perf-period-display"></div>
-          <button class="db-today" data-perfnav="cur">Hiện tại</button>
-          <button class="db-btn" data-perfnav="next">&rsaquo;</button>
+        <div id="perf-period-wrap">
+          <div id="perf-period-tabs" class="stabs" style="margin-bottom:10px"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <button class="db-btn" data-perfnav="prev">&lsaquo;</button>
+            <div style="flex:1;text-align:center;font-weight:700;font-size:16px" id="perf-period-display"></div>
+            <button class="db-today" data-perfnav="cur">Hiện tại</button>
+            <button class="db-btn" data-perfnav="next">&rsaquo;</button>
+          </div>
         </div>
         <div class="spg on" id="res-tongquan"><div id="perf-content"></div></div>
         <div class="spg" id="res-sosanh"><div id="compare-content"></div></div>
@@ -1239,6 +1272,7 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
             <button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-send-huy">&#128228; Gửi lên Huy</button>
           </div>
         </div>
+        <div class="spg" id="res-thunhap"><div id="income-content"></div></div>
       </div>
     </div>
   </div>
@@ -1902,6 +1936,7 @@ async function fetchAccounts(){
   var snap=await m.getDocs(m.collection(fbDb,'accounts'));
   var out=[];
   snap.forEach(function(d){var v=d.data()||{};out.push({uid:d.id,name:v.name||'',email:v.email||'',createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp,
+    incomeUpdatedIso:v.incomeUpdatedIso||'',incomeSummary:v.incomeSummary||'',
     last:Math.max(_presTime(v.lastActive),_presTime(v.lastActiveIso))});});
   return out;
 }
@@ -1951,6 +1986,7 @@ function watchPresence(){
         var v=d.data()||{};
         out.push({uid:d.id,name:v.name||'',email:v.email||'',
           createdAt:v.createdAt||'',updatedAt:v.updatedAt||'',emailVerified:v.emailVerified,enteredApp:v.enteredApp,
+          incomeUpdatedIso:v.incomeUpdatedIso||'',incomeSummary:v.incomeSummary||'',
           last:Math.max(_presTime(v.lastActive),_presTime(v.lastActiveIso))});
       });
       _presAccts=out;renderPresenceBox();
@@ -1992,8 +2028,10 @@ function renderPresenceBox(){
     return String(a.createdAt||a.updatedAt||'9999').localeCompare(String(b.createdAt||b.updatedAt||'9999'));
   });
   var nOn=rows.filter(function(a){return a._st===2;}).length;
-  _admSetBadge('presence',nOn?(nOn+' online'):'','ok'); // v6.37 — đếm trên tiêu đề khi gấp
+  var nInc=rows.filter(function(a){return a.incomeUpdatedIso&&(now-_presTime(a.incomeUpdatedIso))<=86400000;}).length; // v6.53 — cập nhật thu nhập trong 24h
+  _admSetBadge('presence',nInc?('🔔'+nInc):(nOn?(nOn+' online'):''),nInc?'':'ok'); // v6.37/v6.53 — đếm trên tiêu đề khi gấp
   var h='<div style="font-size:13.5px;font-weight:800;margin-bottom:8px;color:'+(nOn?'#1A7A5E':'#999')+'">🟢 '+nOn+' đang online / '+rows.length+' tài khoản</div>';
+  if(nInc)h+='<div style="font-size:12.5px;font-weight:800;color:#B8860B;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:6px 9px;margin-bottom:8px">🔔 '+nInc+' tài khoản vừa cập nhật <b>thu nhập</b> (24h). Bấm 👁️ <b>Xem</b> để xem chi tiết (chỉ đọc, họ không hay biết).</div>';
   rows.forEach(function(a,idx){
     var me=(fbUser&&a.uid===fbUser.uid);
     var dot=a._st===2?'#2E7D32':a._st===1?'#F9A825':'#BDBDBD';
@@ -2014,6 +2052,8 @@ function renderPresenceBox(){
     h+='<div style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(a.email||'(chưa có email)')+'</div>';
     h+='<div style="font-size:11.5px;margin-top:2px">'+stTxt+'</div>';
     h+='<div style="font-size:11px;color:#666;margin-top:3px;line-height:1.6">🕒 Tạo: '+escHtml(fmtDT(a.createdAt||a.updatedAt))+'<br>'+emailHtml+' · '+stepHtml+'</div>';
+    if(a.incomeUpdatedIso){var _iAgo=now-_presTime(a.incomeUpdatedIso),_iFresh=_iAgo<=21600000; // v6.53 — thông báo cập nhật thu nhập (🔔 nếu ≤6h)
+      h+='<div style="font-size:11.5px;margin-top:3px;line-height:1.6;color:'+(_iFresh?'#B8860B':'#888')+'">'+(_iFresh?'🔔 ':'💰 ')+'Thu nhập: <b>'+escHtml(a.incomeSummary||'(đã cập nhật)')+'</b> · '+_presAgo(_iAgo)+'</div>';}
     h+='<div style="font-size:10px;color:#AAA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">ID: '+escHtml(a.uid)+'</div>';
     h+='</div>';
     h+='<div style="display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end;max-width:40%">';
@@ -3681,7 +3721,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3855,6 +3895,12 @@ function loadMembers(){
     }).catch(function(){});
   }
 }
+// v6.53 — KHÁCH (người ngoài chưa có ID) — lưu RIÊNG, KHÔNG trộn vào members (tránh lọt vào KPI/So sánh/analytics).
+//   Mỗi khách: {id, name, idCode}. Điểm danh dùng chung cơ chế d_<id>_... (khách.id là mid). Khi tạo ID có Mã ID
+//   trùng idCode → khách thành TV thật với CHÍNH member.id = khách.id nên GIỮ nguyên lịch sử điểm danh (xem syncTreeToMembers).
+function loadGuests(){try{var s=nmGet('guests_v1');var a=s?JSON.parse(s):[];return Array.isArray(a)?a:[];}catch(e){return [];}}
+function saveGuests(a){nmSet('guests_v1',JSON.stringify(a));if(fbDb&&fbUser)fsSet('guests',{guests:a}).catch(function(){});}
+function loadGuestsCloud(){if(!fbDb||!fbUser)return;fsGet('guests').then(function(d){if(d&&d.guests){nmSet('guests_v1',JSON.stringify(d.guests));renderDailyCombined();updateStats();}}).catch(function(){});}
 function saveTree2(){
   nmSet('tree_v2',JSON.stringify(treeNodes));
   if(fbDb&&fbUser)fsSet('tree',{nodes:treeNodes}).catch(function(){});
@@ -4239,7 +4285,11 @@ function attDashHtml(list){
 function renderDailyCombined(){
   var el=document.getElementById('list-ngay');if(!el)return;
   var center=ddKeyNode();
-  if(!members.length||!center){el.innerHTML='<div style="text-align:center;color:#BBB;padding:30px 0;font-size:14px">Chưa có thành viên nào</div>';return;}
+  if(!members.length||!center){
+    var _gl0=loadGuests();
+    if(!_gl0.length){el.innerHTML='<div style="text-align:center;color:#BBB;padding:30px 0;font-size:14px">Chưa có thành viên nào</div>';return;}
+    el.innerHTML=guestSectionHtml(_gl0);return; // chưa có ID nào nhưng đã có khách → vẫn quản lý điểm danh khách
+  }
   var vis={};getFiltered().forEach(function(m){vis[m.id]=1;});
   var ckids=placementChildren(center.id);
   var Lc=ckids.find(function(k){return k.side==='L';});
@@ -4247,6 +4297,7 @@ function renderDailyCombined(){
   var Ln=Lc?placementSubtreeNames(Lc.id):{};
   var Rn=Rc?placementSubtreeNames(Rc.id):{};
   var leftArr=[],rightArr=[];
+  var guestArr=loadGuests(); // v6.53 — khách chưa có ID (điểm danh trước, gán ID sau) — lưu RIÊNG
   members.forEach(function(m){
     if(!vis[m.id]||m.name===center.name)return;
     if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
@@ -4268,14 +4319,43 @@ function renderDailyCombined(){
   var h='';
   // v6.40 — bảng hiện diện tháng (dashboard) — nút mở/đóng, nhớ trạng thái trong phiên
   h+='<div style="margin-bottom:10px"><button class="btn btn-d btn-sm" data-attdash-toggle="1">'+(_attDashOpen?'📊 Ẩn bảng hiện diện tháng':'📊 Xem bảng hiện diện tháng')+'</button></div>';
-  if(_attDashOpen)h+=attDashHtml([centerMember].concat(leftArr,rightArr));
+  if(_attDashOpen)h+=attDashHtml([centerMember].concat(leftArr,rightArr,guestArr));
   h+=legend;
   if(centerMember)h+='<div class="dd-center">'+dailyComboCard(centerMember,'👑')+'</div>';
   h+='<div class="dd-cols">';
   h+='<div class="dd-col">'+colHtml(leftArr,'⬅️ Trái','#1A7A5E')+'</div>';
   h+='<div class="dd-col">'+colHtml(rightArr,'➡️ Phải','#1565C0')+'</div>';
   h+='</div>';
+  h+=guestSectionHtml(guestArr);
   el.innerHTML=h;
+}
+// v6.53 — KHÁCH (người ngoài chưa có ID): thẻ điểm danh + ô "Mã ID dự phòng" (điền sau). Khi tạo ID có Mã ID trùng
+//   (idCode), khách TỰ trở thành thành viên chính thức và GIỮ NGUYÊN lịch sử điểm danh (cùng member.id).
+function guestCard(m){
+  var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
+  var act=memberActive(m);
+  var h='<div class="mc mc-combo">';
+  h+='<div class="mc-hd" style="cursor:default">';
+  h+='<div class="dd-ord" style="background:#9C6ADE">👤</div>';
+  h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách · chưa có ID</span></div>';
+  h+='<div class="gc-code-row"><span class="gc-code-lbl">🔑 Mã ID dự phòng:</span><input class="inc-inp gc-code-inp" data-guest-code="'+m.id+'" value="'+escHtml(m.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
+  h+='<div class="mc-badges"><span class="badge '+(act?'bg':'bgr')+'">'+(act?'✓ Có hoạt động':'— Chưa điểm danh')+'</span></div>';
+  h+='</div>';
+  h+='<div class="sort-btns"><button class="sb" data-del-guest="'+m.id+'" title="Xoá khách" style="color:#C62828">🗑</button></div>';
+  h+='</div>';
+  h+='<div class="mc-att">'+comboAttBtn(m.id,'sang','🌅 Sáng')+comboAttBtn(m.id,'trua','☀️ Trưa')+comboAttBtn(m.id,'toi','🌙 Tối');
+  h+='<span class="att-cam" data-open-mid="'+m.id+'" data-open-type="sang" title="Camera / chi tiết từng buổi">'+(camOn?'📷':'·')+'</span>';
+  h+='</div></div>';
+  return h;
+}
+function guestSectionHtml(guestArr){
+  var h='<div class="guest-sec">';
+  h+='<div class="grp-hd dd-col-hd" style="background:#F3E5F5;color:#5E35B1"><span>👤 Khách / chưa có ID</span><span>'+guestArr.length+'</span></div>';
+  h+='<div class="att-legend" style="background:#FAF5FF;border-color:#E1BEE7">Thêm <b>người ngoài chưa có ID</b> để điểm danh cho hành trình. Điền <b>Mã ID dự phòng</b> — khi bạn tạo ID có Mã ID trùng, người này <b>tự trở thành thành viên chính thức</b> và <b>giữ nguyên lịch sử điểm danh</b> trước đó.</div>';
+  guestArr.forEach(function(m){h+=guestCard(m);});
+  h+='<div class="guest-add"><input id="guest-new-name" class="inc-inp" placeholder="Tên người ngoài"><input id="guest-new-code" class="inc-inp" placeholder="Mã ID dự phòng (tuỳ chọn)"><button class="btn btn-g" data-act="add-guest">➕ Thêm khách</button></div>';
+  h+='</div>';
+  return h;
 }
 function renderLkActivity(){
   var el=document.getElementById('lk-activity');if(!el)return;
@@ -5072,6 +5152,10 @@ function renderPerfPeriodBar(){
   var pd=document.getElementById('perf-period-display');if(pd)pd.textContent=periodLabel();
 }
 function renderResSub(s){ // C. Kết quả
+  // Thu nhập có thanh kỳ RIÊNG (Ngày/Tuần/Tháng/Năm) → ẩn thanh kỳ chung của nhóm Kết quả
+  var _pw=document.getElementById('perf-period-wrap');
+  if(_pw)_pw.style.display=(s==='thunhap')?'none':'';
+  if(s==='thunhap'){renderIncome();return;}
   renderPerfPeriodBar();
   if(s==='sosanh')renderCompare();
   else if(s==='kpi')renderKpiActuals();
@@ -6045,6 +6129,152 @@ function calcCum(){
 }
 
 // ================================================================
+// v6.53 — THU NHẬP (Kế hoạch & Báo cáo theo Ngày/Tuần/Tháng/Năm — CLB & Nhân bản)
+//   • Nhập thu nhập THỰC theo NGÀY (2 dòng: 💰 CLB bán lẻ/CLB · 🌱 Nhân bản hoa hồng mạng lưới).
+//   • Đặt CHỈ TIÊU (kế hoạch) cho từng loại kỳ. Tuần/Tháng/Năm = BÁO CÁO tự cộng từ ngày.
+//   • Lưu users/{uid}/data/income (đồng bộ đám mây) + localStorage income_v1 (mirror actplans/wheel).
+//   • QTV: được báo khi user cập nhật (accounts/{uid}.incomeUpdatedIso) + xem BÍ MẬT qua "Xem toàn bộ app".
+// ================================================================
+var _incPeriod='month',_incRef=new Date();
+var INC_STREAMS=[{id:'clb',lbl:'💰 CLB',c:'#1A7A5E'},{id:'nb',lbl:'🌱 Nhân bản',c:'#6A1B9A'}];
+var INC_PERIODS=[{type:'day',lbl:'Ngày'},{type:'week',lbl:'Tuần'},{type:'month',lbl:'Tháng'},{type:'year',lbl:'Năm'}];
+var INC_PERIOD_UNIT={day:'ngày',week:'tuần',month:'tháng',year:'năm'};
+function loadIncome(){try{var s=nmGet('income_v1');var o=s?JSON.parse(s):null;if(!o||typeof o!=='object')o={};if(!o.entries||typeof o.entries!=='object')o.entries={};if(!o.targets||typeof o.targets!=='object')o.targets={};return o;}catch(e){return {entries:{},targets:{}};}}
+function saveIncome(o){
+  nmSet('income_v1',JSON.stringify(o));
+  if(fbDb&&fbUser){fsSet('income',{income:o}).catch(function(){});_incNotifyAdmin(o);}
+}
+function loadIncomeCloud(){if(!fbDb||!fbUser)return;fsGet('income').then(function(d){if(d&&d.income){nmSet('income_v1',JSON.stringify(d.income));if(document.getElementById('income-content')&&currentSubTab.res==='thunhap'&&!viewOnlyMode)renderIncome();}}).catch(function(){});}
+function _incNum(v){v=parseInt(String(v==null?'':v).replace(/[^0-9\-]/g,''),10);return isNaN(v)?0:v;} // VND = số nguyên đồng; bỏ dấu chấm/phẩy ngăn cách
+function _fmtVnd(n){n=_incNum(n);try{return Math.round(n).toLocaleString('vi-VN')+' đ';}catch(e){return Math.round(n)+' đ';}}
+function _incDayKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function _incParseKey(k){var p=String(k).split('-');if(p.length!==3)return null;var y=+p[0],m=+p[1],d=+p[2];if(!y||!m||!d)return null;var dt=new Date(y,m-1,d);return isNaN(dt.getTime())?null:dt;}
+function _incIsToday(d){var n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
+function _incRange(){
+  var d=new Date(_incRef),y=d.getFullYear(),m=d.getMonth(),s,e,label;
+  function fd(x){return x.getDate()+'/'+(x.getMonth()+1);}
+  if(_incPeriod==='day'){s=new Date(y,m,d.getDate());e=new Date(y,m,d.getDate());label='Ngày '+d.getDate()+'/'+(m+1)+'/'+y;}
+  else if(_incPeriod==='week'){var day=(d.getDay()||7);s=new Date(y,m,d.getDate()-(day-1));e=new Date(s);e.setDate(s.getDate()+6);label='Tuần '+fd(s)+' – '+fd(e)+'/'+e.getFullYear();}
+  else if(_incPeriod==='year'){s=new Date(y,0,1);e=new Date(y,11,31);label='Năm '+y;}
+  else{s=new Date(y,m,1);e=new Date(y,m+1,0);label='Tháng '+(m+1)+'/'+y;}
+  s.setHours(0,0,0,0);e.setHours(23,59,59,999);
+  return {start:s,end:e,label:label};
+}
+function _incStep(dir){
+  var d=_incRef;
+  if(_incPeriod==='day')d.setDate(d.getDate()+dir);
+  else if(_incPeriod==='week')d.setDate(d.getDate()+7*dir);
+  else if(_incPeriod==='year')d.setFullYear(d.getFullYear()+dir);
+  else d.setMonth(d.getMonth()+dir);
+}
+function _incSum(o,start,end){
+  var r={clb:0,nb:0};
+  Object.keys(o.entries||{}).forEach(function(k){
+    var dt=_incParseKey(k);if(!dt)return;
+    if(dt<start||dt>end)return;
+    var en=o.entries[k]||{};r.clb+=_incNum(en.clb);r.nb+=_incNum(en.nb);
+  });
+  return r;
+}
+function _incProg(actual,target){var t=_incNum(target);if(t<=0)return null;return Math.round(_incNum(actual)/t*100);}
+function _incBig(lbl,actual,target,color){
+  var pct=_incProg(actual,target),w=pct==null?0:Math.max(0,Math.min(100,pct));
+  var h='<div class="inc-big"><div class="inc-big-top"><span>'+lbl+'</span><b style="color:'+color+'">'+_fmtVnd(actual)+'</b></div>';
+  if(_incNum(target)>0){
+    h+='<div class="prog-track"><div class="prog-fill" style="width:'+w+'%;background:'+color+'"></div></div>';
+    h+='<div class="prog-line"><span class="prog-pct" style="color:'+color+'">'+pct+'%</span><span style="font-size:12px;color:#888">KH: '+_fmtVnd(target)+'</span></div>';
+  }else h+='<div style="font-size:12px;color:#AAA;margin-top:4px">Chưa đặt chỉ tiêu cho kỳ này</div>';
+  h+='</div>';return h;
+}
+function _incBar(st,actual,target){
+  var pct=_incProg(actual,target),w=pct==null?0:Math.max(0,Math.min(100,pct));
+  var h='<div class="inc-row"><div class="inc-row-top"><span style="color:'+st.c+';font-weight:700">'+st.lbl+'</span><span><b style="color:'+st.c+'">'+_fmtVnd(actual)+'</b>'+(_incNum(target)>0?' <span style="font-size:11px;color:#999">/ '+_fmtVnd(target)+'</span>':'')+'</span></div>';
+  h+='<div class="prog-track"><div class="prog-fill" style="width:'+w+'%;background:'+st.c+'"></div></div>';
+  if(pct!=null)h+='<div style="text-align:right;font-size:11px;color:'+st.c+';font-weight:700">'+pct+'%</div>';
+  h+='</div>';return h;
+}
+function _incBreakdown(o,rg){
+  var rows=[];
+  if(_incPeriod==='week'||_incPeriod==='month'){
+    var cur=new Date(rg.start);
+    while(cur<=rg.end){
+      var k=_incDayKey(cur),en=o.entries[k]||{};
+      rows.push({lbl:cur.getDate()+'/'+(cur.getMonth()+1),clb:_incNum(en.clb),nb:_incNum(en.nb),go:{d:k},today:_incIsToday(cur)});
+      cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1);
+    }
+  }else{ // year → 12 tháng
+    var y=rg.start.getFullYear();
+    for(var mi=0;mi<12;mi++){
+      var ms=new Date(y,mi,1),me=new Date(y,mi+1,0);ms.setHours(0,0,0,0);me.setHours(23,59,59,999);
+      var sm=_incSum(o,ms,me);
+      rows.push({lbl:'Tháng '+(mi+1),clb:sm.clb,nb:sm.nb,go:{m:y+'-'+mi}});
+    }
+  }
+  var h='<div class="chart-wrap"><div class="chart-title">📊 Báo cáo chi tiết — '+escHtml(rg.label)+'</div>';
+  h+='<div style="font-size:12px;color:#888;margin-bottom:8px">Số liệu tự cộng từ thu nhập nhập theo <b>Ngày</b>. Bấm một dòng để mở nhập/sửa.</div>';
+  h+='<div class="inc-bd-wrap"><table class="inc-bd"><tr><th>Kỳ</th><th>💰 CLB</th><th>🌱 Nhân bản</th><th>Tổng</th></tr>';
+  rows.forEach(function(r){
+    var tot=r.clb+r.nb;
+    var goAttr=r.go.d?(' data-incgo-day="'+r.go.d+'"'):(' data-incgo-month="'+r.go.m+'"');
+    h+='<tr class="inc-bd-row'+(r.today?' inc-bd-today':'')+'"'+goAttr+'><td>'+escHtml(r.lbl)+'</td><td>'+(r.clb?_fmtVnd(r.clb):'—')+'</td><td>'+(r.nb?_fmtVnd(r.nb):'—')+'</td><td><b>'+(tot?_fmtVnd(tot):'—')+'</b></td></tr>';
+  });
+  var sum=_incSum(o,rg.start,rg.end);
+  h+='<tr class="inc-bd-sum"><td>Tổng</td><td>'+_fmtVnd(sum.clb)+'</td><td>'+_fmtVnd(sum.nb)+'</td><td>'+_fmtVnd(sum.clb+sum.nb)+'</td></tr>';
+  h+='</table></div></div>';
+  return h;
+}
+function renderIncome(){
+  var el=document.getElementById('income-content');if(!el)return;
+  var o=loadIncome(),rg=_incRange(),sum=_incSum(o,rg.start,rg.end),tgt=o.targets[_incPeriod]||{};
+  var h='';
+  h+='<div class="chart-title" style="margin-bottom:8px">💰 Thu nhập CLB / Nhân bản — Kế hoạch &amp; Báo cáo</div>';
+  h+='<div class="stabs" style="margin-bottom:10px">'+INC_PERIODS.map(function(p){return '<button class="stab'+(_incPeriod===p.type?' on':'')+'" data-incperiod="'+p.type+'">'+p.lbl+'</button>';}).join('')+'</div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">';
+  h+='<button class="db-btn" data-incnav="prev">&lsaquo;</button>';
+  h+='<div style="flex:1;text-align:center;font-weight:700;font-size:16px">'+escHtml(rg.label)+'</div>';
+  h+='<button class="db-today" data-incnav="cur">Hiện tại</button>';
+  h+='<button class="db-btn" data-incnav="next">&rsaquo;</button></div>';
+  // Tổng quan Kế hoạch vs Thực đạt
+  h+='<div class="chart-wrap"><div class="chart-title">💵 Tổng thu nhập — '+escHtml(rg.label)+'</div>';
+  h+=_incBig('Tổng cộng',sum.clb+sum.nb,_incNum(tgt.clb)+_incNum(tgt.nb),'#C8A84B');
+  INC_STREAMS.forEach(function(st){h+=_incBar(st,sum[st.id],tgt[st.id]);});
+  h+='</div>';
+  // Kế hoạch (chỉ tiêu) theo loại kỳ
+  h+='<div class="chart-wrap"><div class="chart-title">🎯 Kế hoạch (chỉ tiêu) — mỗi '+INC_PERIOD_UNIT[_incPeriod]+'</div>';
+  h+='<div class="inc-grid">';
+  INC_STREAMS.forEach(function(st){
+    h+='<div class="inc-fld"><div class="inc-lbl" style="color:'+st.c+'">'+st.lbl+'</div><input type="number" inputmode="numeric" min="0" class="inc-inp" data-inc-target="'+st.id+'" value="'+escHtml(tgt[st.id]||'')+'" placeholder="0"><div class="inc-hint">'+_fmtVnd(tgt[st.id])+'</div></div>';
+  });
+  h+='</div></div>';
+  // Thực đạt: Ngày = nhập; Tuần/Tháng/Năm = báo cáo
+  if(_incPeriod==='day'){
+    var dk2=_incDayKey(_incRef),en=o.entries[dk2]||{};
+    h+='<div class="chart-wrap"><div class="chart-title">✍️ Nhập thu nhập thực — '+escHtml(rg.label)+'</div>';
+    h+='<div class="inc-grid">';
+    INC_STREAMS.forEach(function(st){
+      h+='<div class="inc-fld"><div class="inc-lbl" style="color:'+st.c+'">'+st.lbl+'</div><input type="number" inputmode="numeric" min="0" class="inc-inp" data-inc-entry="'+st.id+'" value="'+escHtml(en[st.id]||'')+'" placeholder="0"><div class="inc-hint">'+_fmtVnd(en[st.id])+'</div></div>';
+    });
+    h+='</div>';
+    h+='<div style="margin-top:12px"><div class="inc-lbl">📝 Ghi chú</div><input type="text" class="inc-inp" data-inc-entry="note" value="'+escHtml(en.note||'')+'" placeholder="Nguồn thu, khách hàng, ghi chú…" style="width:100%;max-width:100%"></div>';
+    h+='</div>';
+  }else{
+    h+=_incBreakdown(o,rg);
+  }
+  el.innerHTML=h;
+}
+function _incNotifyAdmin(o){
+  if(!fbDb||!fbUser||viewOnlyMode)return;
+  // Tín hiệu real-time cho QTV: thời điểm + tóm tắt thu nhập THÁNG hiện tại. User tự ghi accounts/{uid} của mình (Rules đã cho phép).
+  var n=new Date(),ms=new Date(n.getFullYear(),n.getMonth(),1),me=new Date(n.getFullYear(),n.getMonth()+1,0);
+  ms.setHours(0,0,0,0);me.setHours(23,59,59,999);
+  var sm=_incSum(o,ms,me);
+  var summary='T'+(n.getMonth()+1)+'/'+n.getFullYear()+': CLB '+_fmtVnd(sm.clb)+' · NB '+_fmtVnd(sm.nb);
+  import(FB_STORE).then(function(m){
+    m.setDoc(m.doc(fbDb,'accounts',fbUser.uid),{incomeUpdatedIso:new Date().toISOString(),incomeSummary:summary},{merge:true}).catch(function(){});
+  }).catch(function(){});
+}
+
+// ================================================================
 // HIỆU SUẤT — v6.0: chỉ số phái sinh + Replication + Coaching engine
 // Triết lý: Hành động -> Kết quả -> Lãnh đạo -> Nhân bản.
 // MỌI chỉ số tính TỰ ĐỘNG từ dữ liệu đã có (cây + điểm danh + KH + KPI),
@@ -6896,6 +7126,24 @@ function calcFocusRange(){
 function syncTreeToMembers(rerender){
   if(!treeNodes.length)return; // tránh xóa sạch TV khi cây chưa tải xong
   var changed=false;
+  // v6.53 — THĂNG CẤP KHÁCH: khách có "Mã ID dự phòng" trùng idCode 1 ID trên cây → thành TV thật.
+  //   Member.id MỚI = khách.id nên toàn bộ lịch sử điểm danh (d_<id>_...) được kế thừa nguyên vẹn.
+  var _guests=loadGuests();
+  if(_guests.length){
+    var byCode={};
+    treeNodes.forEach(function(t){var c=noAccent(String(t.idCode||'').trim());if(c&&!byCode[c])byCode[c]=t;});
+    var keepG=[],gchanged=false,promotedName={};
+    _guests.forEach(function(g){
+      var gc=noAccent(String(g.idCode||'').trim());
+      var t=(gc&&byCode[gc])?byCode[gc]:null;
+      if(t&&!promotedName[t.name]){
+        members=members.filter(function(m){return m.name!==t.name;}); // gỡ TV auto-tạo (nếu có) để khách kế thừa lịch sử
+        members.push({id:g.id,name:t.name,role:'Thành viên',fromTree:true});
+        promotedName[t.name]=1;gchanged=true;changed=true;
+      }else keepG.push(g);
+    });
+    if(gchanged)saveGuests(keepG);
+  }
   var nameSet={};
   treeNodes.forEach(function(t){nameSet[t.name]=1;});
   // Thêm TV cho ID mới trên cây
@@ -6905,7 +7153,7 @@ function syncTreeToMembers(rerender){
       changed=true;
     }
   });
-  // KHỚP CÂY 100%: xóa TV không còn tên trên cây (mồ côi do đổi tên/xóa ID)
+  // KHỚP CÂY 100%: xóa TV không còn tên trên cây (mồ côi do đổi tên/xóa ID). Khách lưu RIÊNG nên không bị đụng.
   var before=members.length;
   members=members.filter(function(m){return nameSet[m.name];});
   if(members.length!==before)changed=true;
@@ -8711,7 +8959,7 @@ function importData(){
 //   Firestore của user (kể cả bảng tầm nhìn). Khôi phục → ghi lại cả localStorage
 //   lẫn Firestore của tài khoản HIỆN TẠI rồi tải lại app.
 // ================================================================
-var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity'];
+var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','wheel','wheelgoal','anngoals','income','guests','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity'];
 function _dlJson(obj,fname){
   var blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
@@ -9367,6 +9615,38 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-del-goal]');
   if(t){var _gid=t.getAttribute('data-del-goal');var _gs2=loadGoals().filter(function(x){return x.id!==_gid;});saveGoals(_gs2);renderMonthPage();return;}
 
+  // v6.53 — Thu nhập: đổi kỳ / điều hướng / bấm dòng báo cáo để nhập nhanh
+  t=e.target.closest('[data-incperiod]');
+  if(t){_incPeriod=t.getAttribute('data-incperiod');renderIncome();return;}
+  t=e.target.closest('[data-incnav]');
+  if(t){var _iv=t.getAttribute('data-incnav');if(_iv==='cur')_incRef=new Date();else _incStep(_iv==='next'?1:-1);renderIncome();return;}
+  t=e.target.closest('[data-incgo-day]');
+  if(t){var _igd=_incParseKey(t.getAttribute('data-incgo-day'));if(_igd){_incRef=_igd;_incPeriod='day';renderIncome();}return;}
+  t=e.target.closest('[data-incgo-month]');
+  if(t){var _igm=String(t.getAttribute('data-incgo-month')).split('-');_incRef=new Date(+_igm[0],+_igm[1],1);_incPeriod='month';renderIncome();return;}
+  // v6.53 — Điểm danh: thêm / xoá KHÁCH (người ngoài chưa có ID) — lưu RIÊNG (guests)
+  t=e.target.closest('[data-act="add-guest"]');
+  if(t){
+    var _gnm=((document.getElementById('guest-new-name')||{}).value||'').trim();
+    if(!_gnm){showToast('Nhập tên người ngoài');return;}
+    var _gcd=((document.getElementById('guest-new-code')||{}).value||'').trim();
+    var _gl=loadGuests();_gl.push({id:uid(),name:_gnm,idCode:_gcd});saveGuests(_gl);
+    syncTreeToMembers(false); // nếu Mã ID trùng 1 ID đã có trên cây → thăng cấp ngay
+    renderDailyCombined();updateStats();
+    showToast('✓ Đã thêm khách: '+_gnm);
+    return;
+  }
+  t=e.target.closest('[data-del-guest]');
+  if(t){
+    var _dgid=t.getAttribute('data-del-guest');
+    var _dg=loadGuests().find(function(m){return m.id===_dgid;});
+    if(_dg&&confirm('Xoá khách "'+_dg.name+'" khỏi danh sách điểm danh?')){
+      saveGuests(loadGuests().filter(function(m){return m.id!==_dgid;}));
+      renderDailyCombined();updateStats();
+    }
+    return;
+  }
+
   // v6.5 — Kế hoạch năm (top-down goals)
   t=e.target.closest('[data-act="add-anngoal"]');
   if(t){
@@ -10016,6 +10296,31 @@ document.addEventListener('change',function(e){
     saveGoals(_gs);renderMonthPage();
     return;
   }
+  // v6.53 — Thu nhập: đặt chỉ tiêu (kế hoạch) theo kỳ
+  if(t.hasAttribute&&t.hasAttribute('data-inc-target')){
+    var _itf=t.getAttribute('data-inc-target'),_io=loadIncome();
+    if(!_io.targets[_incPeriod])_io.targets[_incPeriod]={};
+    var _itv=String(t.value).trim();
+    if(_itv==='')delete _io.targets[_incPeriod][_itf];else _io.targets[_incPeriod][_itf]=_itv;
+    saveIncome(_io);renderIncome();
+    return;
+  }
+  // v6.53 — Thu nhập: nhập thực đạt theo NGÀY (CLB / Nhân bản / ghi chú)
+  if(t.hasAttribute&&t.hasAttribute('data-inc-entry')){
+    var _ief=t.getAttribute('data-inc-entry'),_ieo=loadIncome(),_iek=_incDayKey(_incRef);
+    if(!_ieo.entries[_iek])_ieo.entries[_iek]={};
+    var _iev=String(t.value).trim();
+    if(_iev==='')delete _ieo.entries[_iek][_ief];else _ieo.entries[_iek][_ief]=_iev;
+    if(!Object.keys(_ieo.entries[_iek]).length)delete _ieo.entries[_iek];
+    saveIncome(_ieo);renderIncome();
+    return;
+  }
+  // v6.53 — Điểm danh: sửa Mã ID dự phòng của KHÁCH (khớp ID trên cây → tự thăng cấp)
+  if(t.hasAttribute&&t.hasAttribute('data-guest-code')){
+    var _gcid=t.getAttribute('data-guest-code'),_gl2=loadGuests(),_gm=_gl2.find(function(m){return m.id===_gcid;});
+    if(_gm){_gm.idCode=String(t.value).trim();saveGuests(_gl2);syncTreeToMembers(false);renderDailyCombined();updateStats();}
+    return;
+  }
   // v6.5 — Kế hoạch năm: sửa tên/mục tiêu/đơn vị
   if(t.hasAttribute&&t.hasAttribute('data-anng-field')){
     var _ai=t.getAttribute('data-anng-id'),_af=t.getAttribute('data-anng-field');
@@ -10393,7 +10698,7 @@ function openAccountView(uid,name){
   document.getElementById('acctview-title').innerHTML='👁️ '+avEsc(name||'Tài khoản');
   document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải toàn bộ nội dung tài khoản…</div>';
   ov.classList.add('open');
-  var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','location','clubs','vbindex','localmirror','nangdong','activity'];
+  var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','income','guests','location','clubs','vbindex','localmirror','nangdong','activity'];
   Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})).then(function(r){
     var data={};docs.forEach(function(d,i){data[d]=r[i];});
     var idx=(data.vbindex&&data.vbindex.boards)||[];
@@ -10450,6 +10755,8 @@ function enterFullAccountView(){
   if(d.wheel&&d.wheel.wheel)_fvPut('wheel_v1',J(d.wheel.wheel));
   if(d.wheelgoal&&d.wheelgoal.goal)_fvPut('wheelgoal_v1',J(d.wheelgoal.goal));
   if(d.anngoals&&d.anngoals.ann)_fvPut('anngoals_v1',J(d.anngoals.ann));
+  if(d.income&&d.income.income)_fvPut('income_v1',J(d.income.income)); // v6.53 — QTV xem BÍ MẬT thu nhập của user (chỉ đọc)
+  if(d.guests&&d.guests.guests)_fvPut('guests_v1',J(d.guests.guests)); // v6.53 — QTV xem cả khách chưa có ID (chỉ đọc)
   if(d.location)_fvPut('location',J(d.location));
   if(d.clubs&&d.clubs.list)_fvPut('clubs',J({list:d.clubs.list}));
   if(d.nangdong&&d.nangdong.m)_fvPut('nangdong',J(d.nangdong));
