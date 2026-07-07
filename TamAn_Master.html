@@ -1,5 +1,5 @@
-<!-- VERSION: v6.59-skill-media-images-docs -->
-<!-- v6.53–6.58 GIỮ NGUYÊN; v6.59 thêm: QTV đính kèm HÌNH ẢNH + TỆP TÀI LIỆU (docx/pdf…) cho mỗi kỹ năng (cả team xem). ⚠ CẦN publish Rules mới (skillmedia). -->
+<!-- VERSION: v6.60-realtime-attendance-sync -->
+<!-- v6.53–6.59 GIỮ NGUYÊN; v6.60 sửa: đồng bộ REAL-TIME điểm danh/KPI/kỹ năng/mục tiêu (localmirror) giữa các thiết bị bằng onSnapshot (watchLocalMirror) — KHÔNG cần Rules mới. -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -3758,7 +3758,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();watchLocalMirror();loadNangDongCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3805,6 +3805,7 @@ function doLogout(){
   fbSignOut().then(function(){
     NS='';members=[];treeNodes=[];
     stopBanner(); // v6.5 — dừng banner khi thoát
+    stopLocalMirrorWatch(); // v6.60 — gỡ listener real-time điểm danh/KPI/kỹ năng
     unwatchPublicClubs(); // v6.8 — gỡ listener real-time CLB
     document.getElementById('setup-screen').style.display='flex';
     document.getElementById('app').style.display='none';
@@ -3881,7 +3882,7 @@ function collectLocalMirror(){
   }}catch(e){}
   return kv;
 }
-var _lmTimer=null,_LM_TS='localmirror_ts';
+var _lmTimer=null,_LM_TS='localmirror_ts',_lmLastPushTs='',_lmUnsub=null; // v6.60 — echo-guard + listener real-time
 function scheduleLocalMirrorPush(){
   if(!fbDb||!fbUser||viewOnlyMode)return;
   clearTimeout(_lmTimer);_lmTimer=setTimeout(pushLocalMirror,1500); // gộp nhiều thay đổi trong 1.5s
@@ -3890,6 +3891,7 @@ function pushLocalMirror(){
   if(!fbDb||!fbUser||viewOnlyMode)return;
   var kv=collectLocalMirror();
   var ts=new Date().toISOString();
+  _lmLastPushTs=ts; // v6.60 — nhớ ts vừa đẩy để bỏ qua "echo" onSnapshot của chính máy này
   try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,ts);}catch(e){}
   try{if(JSON.stringify(kv).length>900000){console.warn('localmirror quá lớn (>900KB) — bỏ qua đồng bộ lần này');return;}}catch(e){}
   fsSet('localmirror',{kv:kv,ts:ts}).catch(function(){});
@@ -3914,6 +3916,32 @@ function loadLocalMirrorCloud(){
     }else{ // máy này mới hơn → ĐẨY LÊN cloud
       pushLocalMirror();
     }
+  }).catch(function(){});
+}
+// v6.60 — ĐỒNG BỘ REAL-TIME điểm danh (d_) / KPI (mo_) / kỹ năng (p_) / mục tiêu (goals_)...
+//   Trước đây chỉ kéo dữ liệu 1 lần lúc đăng nhập → máy đang mở KHÔNG thấy thay đổi từ máy khác.
+//   Nay lắng nghe onSnapshot doc localmirror: máy khác lưu → cloud đổi → máy này áp NGAY (bản mới nhất thắng).
+function stopLocalMirrorWatch(){if(_lmUnsub){try{_lmUnsub();}catch(e){}_lmUnsub=null;}}
+// Áp 1 bản localmirror từ cloud (bản mới hơn thắng). Trả về true nếu đã áp. Tách riêng để test không cần Firebase.
+function _lmApplyRemote(d){
+  if(viewOnlyMode)return false;         // đang XEM tài khoản khác → không đụng dữ liệu của mình
+  if(!d||!d.ts)return false;
+  if(d.ts===_lmLastPushTs)return false; // echo chính máy này vừa đẩy → bỏ qua
+  var localTs=localStorage.getItem('ta_'+NS+'_'+_LM_TS)||'';
+  if(d.ts<=localTs)return false;        // không mới hơn → bỏ qua
+  applyLocalMirror(d.kv||{});
+  try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,d.ts);}catch(e){}
+  try{renderAll();updateStats();}catch(e){}
+  try{var pg=(document.querySelector('.page.on')||{}).id;if(pg==='page-tp'&&typeof renderTpSub==='function')renderTpSub(currentSubTab.tp);}catch(e){}
+  return true;
+}
+function watchLocalMirror(){
+  stopLocalMirrorWatch();
+  if(!fbDb||!fbUser)return;
+  import(FB_STORE).then(function(m){
+    _lmUnsub=m.onSnapshot(m.doc(fbDb,'users',fbUser.uid,'data','localmirror'),function(snap){
+      if(snap.exists())_lmApplyRemote(snap.data());
+    },function(){/* thiếu quyền hoặc mạng → im lặng */});
   }).catch(function(){});
 }
 
