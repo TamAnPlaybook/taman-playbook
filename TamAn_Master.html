@@ -1,5 +1,5 @@
-<!-- VERSION: v6.60-realtime-attendance-sync -->
-<!-- v6.53–6.59 GIỮ NGUYÊN; v6.60 sửa: đồng bộ REAL-TIME điểm danh/KPI/kỹ năng/mục tiêu (localmirror) giữa các thiết bị bằng onSnapshot (watchLocalMirror) — KHÔNG cần Rules mới. -->
+<!-- VERSION: v6.61-sharded-realtime-mirror-sync -->
+<!-- v6.60 CHƯA đủ: 1 doc localmirror >1MB (296 TV) bị Firestore từ chối → không đồng bộ. v6.61 CHIA NHỎ vào 16 mảnh users/{uid}/lmshards/{i} (mỗi mảnh <1MB) + onSnapshot cả collection + hợp nhất ưu tiên ô đã điểm danh (không mất mark). KHÔNG cần Rules mới. -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -2309,7 +2309,7 @@ async function scanTeamData(){
   var res=await Promise.all(accts.map(function(a){
     return Promise.all([
       fsGetUser(a.uid,'members').catch(function(){return null;}),
-      fsGetUser(a.uid,'localmirror').catch(function(){return null;}),
+      fsGetUserMirror(a.uid).catch(function(){return null;}), // v6.61 — gộp doc cũ + mảnh shard
       fsGetUser(a.uid,'prospects').catch(function(){return null;}),
       fsGetUser(a.uid,'tree').catch(function(){return null;})
     ]);
@@ -3758,7 +3758,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();watchLocalMirror();loadNangDongCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -3882,67 +3882,113 @@ function collectLocalMirror(){
   }}catch(e){}
   return kv;
 }
-var _lmTimer=null,_LM_TS='localmirror_ts',_lmLastPushTs='',_lmUnsub=null; // v6.60 — echo-guard + listener real-time
+// v6.61 — CHIA NHỎ (shard) localmirror: 1 doc Firestore tối đa 1MB; team 296 TV → blob >1MB nên bản CŨ (1 doc)
+//   bị bỏ qua đồng bộ (guard >900KB) → điện thoại có, máy tính không. Nay chia keys vào LM_SHARDS mảnh
+//   users/{uid}/lmshards/{0..N-1}, mỗi mảnh nhỏ gọn → ghi được + onSnapshot real-time cả collection.
+var LM_SHARDS=16;
+var _lmTimer=null,_LM_TS='localmirror_ts',_lmLastPushTs='',_lmUnsub=null,_lmWatchInit=false;
+function _lmHash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h;}
+function _lmShardOf(key){return Math.abs(_lmHash(String(key)))%LM_SHARDS;}
+function _lmShardTsKey(id){return 'ta_'+NS+'_lmshard_ts_'+id;}
 function scheduleLocalMirrorPush(){
   if(!fbDb||!fbUser||viewOnlyMode)return;
   clearTimeout(_lmTimer);_lmTimer=setTimeout(pushLocalMirror,1500); // gộp nhiều thay đổi trong 1.5s
 }
+// HỢP NHẤT bản cloud vào máy: KHÔNG để giá trị RỖNG từ cloud xoá mất giá trị đã có ở máy
+//   → chống mất điểm danh khi 2 máy có dữ liệu khác nhau (điểm danh thật luôn thắng ô trống).
+function _lmMerge(kv){
+  if(!kv)return;var pfx='ta_'+NS+'_';
+  Object.keys(kv).forEach(function(bare){
+    var cv=kv[bare],lk=pfx+bare,lv=localStorage.getItem(lk);
+    if((cv===''||cv==null)&&lv!==null&&lv!=='')return; // cloud rỗng nhưng máy đã có → giữ của máy
+    try{localStorage.setItem(lk,cv);}catch(e){}
+  });
+}
+function applyLocalMirror(kv){ // ghi đè trực tiếp (giữ cho tương thích — không kích hoạt push lại)
+  if(!kv)return;var pfx='ta_'+NS+'_';
+  Object.keys(kv).forEach(function(bare){try{localStorage.setItem(pfx+bare,kv[bare]);}catch(e){}});
+}
 function pushLocalMirror(){
   if(!fbDb||!fbUser||viewOnlyMode)return;
   var kv=collectLocalMirror();
+  var buckets=[];for(var i=0;i<LM_SHARDS;i++)buckets.push({});
+  Object.keys(kv).forEach(function(k){buckets[_lmShardOf(k)][k]=kv[k];});
   var ts=new Date().toISOString();
-  _lmLastPushTs=ts; // v6.60 — nhớ ts vừa đẩy để bỏ qua "echo" onSnapshot của chính máy này
+  _lmLastPushTs=ts; // bỏ qua "echo" onSnapshot của chính máy này (mọi mảnh cùng ts)
   try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,ts);}catch(e){}
-  try{if(JSON.stringify(kv).length>900000){console.warn('localmirror quá lớn (>900KB) — bỏ qua đồng bộ lần này');return;}}catch(e){}
-  fsSet('localmirror',{kv:kv,ts:ts}).catch(function(){});
-}
-function applyLocalMirror(kv){
-  if(!kv)return;var pfx='ta_'+NS+'_';
-  Object.keys(kv).forEach(function(bare){try{localStorage.setItem(pfx+bare,kv[bare]);}catch(e){}}); // setItem trực tiếp → không kích hoạt push lại
-}
-function loadLocalMirrorCloud(){
-  if(!fbDb||!fbUser)return;
-  fsGet('localmirror').then(function(d){
-    var localTs=localStorage.getItem('ta_'+NS+'_'+_LM_TS)||'';
-    if(!d||!d.ts){ // chưa có bản cloud → seed từ máy này nếu đang có dữ liệu
-      if(Object.keys(collectLocalMirror()).length)pushLocalMirror();
-      return;
+  import(FB_STORE).then(function(m){
+    var batch=m.writeBatch(fbDb),wrote=0;
+    for(var s=0;s<LM_SHARDS;s++){
+      var bkStr=JSON.stringify(buckets[s]);
+      if(bkStr==='{}')continue;                 // mảnh rỗng → bỏ qua
+      if(bkStr.length>950000){console.warn('lmshard '+s+' >950KB — bỏ qua');continue;}
+      batch.set(m.doc(fbDb,'users',fbUser.uid,'lmshards',String(s)),{kv:buckets[s],ts:ts});
+      try{localStorage.setItem(_lmShardTsKey(String(s)),ts);}catch(e){}
+      wrote++;
     }
-    if(d.ts>=localTs){ // cloud mới hơn (hoặc bằng) → KÉO VỀ máy này (bản mới nhất thắng)
-      applyLocalMirror(d.kv||{});
-      try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,d.ts);}catch(e){}
-      try{renderAll();updateStats();}catch(e){}
-      try{var pg=(document.querySelector('.page.on')||{}).id;if(pg==='page-tp'&&typeof renderTpSub==='function')renderTpSub(currentSubTab.tp);}catch(e){}
-    }else{ // máy này mới hơn → ĐẨY LÊN cloud
-      pushLocalMirror();
-    }
+    if(wrote)batch.commit().catch(function(){});
   }).catch(function(){});
 }
-// v6.60 — ĐỒNG BỘ REAL-TIME điểm danh (d_) / KPI (mo_) / kỹ năng (p_) / mục tiêu (goals_)...
-//   Trước đây chỉ kéo dữ liệu 1 lần lúc đăng nhập → máy đang mở KHÔNG thấy thay đổi từ máy khác.
-//   Nay lắng nghe onSnapshot doc localmirror: máy khác lưu → cloud đổi → máy này áp NGAY (bản mới nhất thắng).
-function stopLocalMirrorWatch(){if(_lmUnsub){try{_lmUnsub();}catch(e){}_lmUnsub=null;}}
-// Áp 1 bản localmirror từ cloud (bản mới hơn thắng). Trả về true nếu đã áp. Tách riêng để test không cần Firebase.
-function _lmApplyRemote(d){
+function _lmRerender(){
+  try{renderAll();updateStats();}catch(e){}
+  try{var pg=(document.querySelector('.page.on')||{}).id;if(pg==='page-tp'&&typeof renderTpSub==='function')renderTpSub(currentSubTab.tp);}catch(e){}
+}
+// MIGRATE 1 lần: nếu CHƯA có mảnh (lmshards) mà còn doc CŨ 'localmirror' → gộp vào máy; rồi BẬT watch (watch tự đẩy seed).
+function loadLocalMirrorCloud(){
+  if(!fbDb||!fbUser)return;
+  import(FB_STORE).then(function(m){
+    m.getDocs(m.collection(fbDb,'users',fbUser.uid,'lmshards')).then(function(snap){
+      if(snap&&!snap.empty){watchLocalMirror();return;} // đã có mảnh → để watch lo phần còn lại
+      m.getDoc(m.doc(fbDb,'users',fbUser.uid,'data','localmirror')).then(function(od){
+        var old=(od&&od.exists())?od.data():null;
+        if(old&&old.kv){_lmMerge(old.kv);_lmRerender();}
+        watchLocalMirror(); // lần snapshot đầu của watch sẽ đẩy dữ liệu máy (đã gộp doc cũ) lên seed mảnh
+      }).catch(function(){watchLocalMirror();});
+    }).catch(function(){watchLocalMirror();});
+  }).catch(function(){});
+}
+// v6.61 — ĐỒNG BỘ REAL-TIME qua onSnapshot cả collection lmshards (thay cho 1 doc — vượt giới hạn 1MB).
+//   Lần snapshot ĐẦU: HỢP NHẤT mọi mảnh vào máy (giữ dữ liệu máy) + đẩy union lên (máy này góp phần).
+//   Các lần sau: máy khác đổi mảnh → áp NGAY (hợp nhất, ô trống KHÔNG xoá điểm danh đã có).
+function stopLocalMirrorWatch(){if(_lmUnsub){try{_lmUnsub();}catch(e){}_lmUnsub=null;}_lmWatchInit=false;}
+// Áp 1 mảnh shard mới từ cloud. Trả về true nếu đã áp. Tách riêng để test không cần Firebase.
+function _lmApplyShard(id,d){
   if(viewOnlyMode)return false;         // đang XEM tài khoản khác → không đụng dữ liệu của mình
   if(!d||!d.ts)return false;
   if(d.ts===_lmLastPushTs)return false; // echo chính máy này vừa đẩy → bỏ qua
-  var localTs=localStorage.getItem('ta_'+NS+'_'+_LM_TS)||'';
-  if(d.ts<=localTs)return false;        // không mới hơn → bỏ qua
-  applyLocalMirror(d.kv||{});
-  try{localStorage.setItem('ta_'+NS+'_'+_LM_TS,d.ts);}catch(e){}
-  try{renderAll();updateStats();}catch(e){}
-  try{var pg=(document.querySelector('.page.on')||{}).id;if(pg==='page-tp'&&typeof renderTpSub==='function')renderTpSub(currentSubTab.tp);}catch(e){}
+  var prev=localStorage.getItem(_lmShardTsKey(id))||'';
+  if(d.ts<=prev)return false;           // không mới hơn → bỏ qua
+  _lmMerge(d.kv||{});                    // hợp nhất — ô trống KHÔNG xoá mark đã có
+  try{localStorage.setItem(_lmShardTsKey(id),d.ts);}catch(e){}
   return true;
 }
 function watchLocalMirror(){
   stopLocalMirrorWatch();
   if(!fbDb||!fbUser)return;
   import(FB_STORE).then(function(m){
-    _lmUnsub=m.onSnapshot(m.doc(fbDb,'users',fbUser.uid,'data','localmirror'),function(snap){
-      if(snap.exists())_lmApplyRemote(snap.data());
+    _lmUnsub=m.onSnapshot(m.collection(fbDb,'users',fbUser.uid,'lmshards'),function(snap){
+      if(viewOnlyMode)return;
+      var changed=false;
+      if(!_lmWatchInit){
+        _lmWatchInit=true;
+        snap.forEach(function(doc){var d=doc.data();if(!d)return;_lmMerge(d.kv||{});if(d.ts){try{localStorage.setItem(_lmShardTsKey(doc.id),d.ts);}catch(e){}}changed=true;});
+        if(changed)_lmRerender();
+        if(Object.keys(collectLocalMirror()).length)pushLocalMirror(); // góp dữ liệu máy này lên cloud
+      }else{
+        snap.docChanges().forEach(function(ch){if(ch.type!=='removed'&&_lmApplyShard(ch.doc.id,ch.doc.data()))changed=true;});
+        if(changed)_lmRerender();
+      }
     },function(){/* thiếu quyền hoặc mạng → im lặng */});
   }).catch(function(){});
+}
+// Gộp dữ liệu localmirror của 1 TÀI KHOẢN (doc cũ + mọi mảnh) → {kv,ts}. Dùng cho QTV xem/đồng bộ đội.
+async function fsGetUserMirror(uid){
+  if(!fbDb||!fbUser||!uid)return null;
+  var m=await import(FB_STORE);
+  var kv={},ts='';
+  try{var od=await m.getDoc(m.doc(fbDb,'users',uid,'data','localmirror'));if(od.exists()){var d=od.data()||{};if(d.kv)Object.keys(d.kv).forEach(function(k){kv[k]=d.kv[k];});if(d.ts&&d.ts>ts)ts=d.ts;}}catch(e){}
+  try{var snap=await m.getDocs(m.collection(fbDb,'users',uid,'lmshards'));snap.forEach(function(doc){var d=doc.data()||{};if(d.kv)Object.keys(d.kv).forEach(function(k){kv[k]=d.kv[k];});if(d.ts&&d.ts>ts)ts=d.ts;});}catch(e){}
+  return {kv:kv,ts:ts};
 }
 
 function saveMembers(){
@@ -5240,7 +5286,7 @@ function scanF3Users(){
       return Promise.all([
         fsGetUser(a.uid,'tree').catch(function(){return null;}),
         fsGetUser(a.uid,'members').catch(function(){return null;}),
-        fsGetUser(a.uid,'localmirror').catch(function(){return null;}),
+        fsGetUserMirror(a.uid).catch(function(){return null;}), // v6.61 — gộp doc cũ + mảnh shard
         fsGetUser(a.uid,'actplans').catch(function(){return null;}),
         fsGetUser(a.uid,'prospects').catch(function(){return null;})
       ]).then(function(r){try{return _f3uSummary(a,r[0],r[1],r[2],r[3],r[4]);}catch(e){return null;}});
@@ -10882,8 +10928,9 @@ function openAccountView(uid,name){
   document.getElementById('acctview-body').innerHTML='<div style="color:#999;text-align:center;padding:24px">Đang tải toàn bộ nội dung tài khoản…</div>';
   ov.classList.add('open');
   var docs=['tree','members','prospects','actplans','tasks','wheel','wheelgoal','anngoals','income','guests','location','clubs','vbindex','localmirror','nangdong','activity'];
-  Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})).then(function(r){
-    var data={};docs.forEach(function(d,i){data[d]=r[i];});
+  Promise.all([Promise.all(docs.map(function(d){return fsGetUser(uid,d).catch(function(){return null;});})),fsGetUserMirror(uid).catch(function(){return null;})]).then(function(rr){
+    var r=rr[0];var data={};docs.forEach(function(d,i){data[d]=r[i];});
+    if(rr[1])data.localmirror=rr[1]; // v6.61 — dùng bản gộp doc cũ + mảnh shard (điểm danh/KPI/kỹ năng đầy đủ)
     var idx=(data.vbindex&&data.vbindex.boards)||[];
     return Promise.all(idx.slice(0,12).map(function(it){return fsGetUser(uid,'vboard_'+it.id).catch(function(){return null;});})).then(function(bs){
       data.vboards=bs.map(function(x){return x&&x.board;}).filter(Boolean);
