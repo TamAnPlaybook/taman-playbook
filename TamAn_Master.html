@@ -1,5 +1,5 @@
-<!-- VERSION: v6.61-sharded-realtime-mirror-sync -->
-<!-- v6.60 CHƯA đủ: 1 doc localmirror >1MB (296 TV) bị Firestore từ chối → không đồng bộ. v6.61 CHIA NHỎ vào 16 mảnh users/{uid}/lmshards/{i} (mỗi mảnh <1MB) + onSnapshot cả collection + hợp nhất ưu tiên ô đã điểm danh (không mất mark). KHÔNG cần Rules mới. -->
+<!-- VERSION: v6.62-unified-flexible-search -->
+<!-- v6.62 — MỌI ô tìm (tất cả tab/subtab) DÙNG CHUNG chuẩn: bỏ dấu + không phân biệt hoa/thường + khớp CHUỖI CON ở bất kỳ đâu trong tên/thuộc tính + nhiều TỪ KHOÁ (AND) → gõ 1 ký tự đã hiện mọi tên liên quan. Nâng cấp ô Tiềm năng (bỏ dấu) + Toàn bộ user (nhiều từ khoá) + tăng số gợi ý 15→50 (còn nữa báo "gõ thêm"). -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -5311,16 +5311,16 @@ function renderF3Users(){
   var el=document.getElementById('f3u-list');if(!el)return;
   if(_f3uLoading&&!_f3uCache){el.innerHTML='<div style="font-size:13px;color:#999">⏳ Đang đọc dữ liệu các tài khoản trong đội…</div>';return;}
   if(!_f3uCache){el.innerHTML='<div style="font-size:13px;color:#999">Bấm 🔄 để tải dữ liệu toàn bộ user.</div>';return;}
-  var q=noAccent(String(_f3uQuery||'').trim());
+  var _f3Toks=searchTokens(_f3uQuery); // v6.62 — CHUẨN TÌM: bỏ dấu + nhiều từ khoá + chuỗi con ở bất kỳ đâu
   var list=_f3uCache.filter(function(u){
-    if(!q)return true;
-    return noAccent(u.rootName||'').indexOf(q)>=0||noAccent(u.acctName||'').indexOf(q)>=0||String(u.email||'').toLowerCase().indexOf(q)>=0||noAccent(u.rootCode||'').indexOf(q)>=0;
+    if(!_f3Toks.length)return true;
+    return tokensMatchAll(noAccent([u.rootName,u.acctName,u.email,u.rootCode].join(' ')),_f3Toks);
   });
   list.sort(function(a,b){
     if((b.rank||0)!==(a.rank||0))return (b.rank||0)-(a.rank||0); // cấp bậc cao lên trước
     return noAccent(a.rootName||a.acctName).localeCompare(noAccent(b.rootName||b.acctName),undefined,{numeric:true});
   });
-  var h='<div style="font-size:12.5px;color:#555;margin-bottom:8px">'+(_f3uLoading?'⏳ Đang làm mới… · ':'')+'Hiện <b>'+list.length+'</b>/'+_f3uCache.length+' user'+(q?' khớp tìm kiếm':'')+'</div>';
+  var h='<div style="font-size:12.5px;color:#555;margin-bottom:8px">'+(_f3uLoading?'⏳ Đang làm mới… · ':'')+'Hiện <b>'+list.length+'</b>/'+_f3uCache.length+' user'+(_f3Toks.length?' khớp tìm kiếm':'')+'</div>';
   if(!list.length)h+='<div style="font-size:13px;color:#999">Không tìm thấy tên phù hợp.</div>';
   var now=Date.now();
   list.forEach(function(u){
@@ -7720,6 +7720,11 @@ function noAccent(s){
 //   Thuộc tính gộp: tên, mã ID, SĐT, DISC (chữ + tên nhóm), người bảo trợ, ngày vào ID, cấp bậc, Tầng, F-số.
 function searchTokens(q){return noAccent(q).split(/\s+/).filter(Boolean);}
 function tokensMatchAll(text,toks){for(var i=0;i<toks.length;i++){if(text.indexOf(toks[i])<0)return false;}return true;}
+// v6.62 — CHUẨN TÌM DUY NHẤT cho MỌI ô tìm: bỏ dấu + không phân biệt hoa/thường + khớp CHUỖI CON ở BẤT KỲ đâu
+//   trong tên/thuộc tính + nhiều TỪ KHOÁ (AND) → gõ 1 ký tự đã hiện mọi tên có ký tự đó. Rỗng = khớp tất cả.
+function smartMatchText(text,q){var toks=searchTokens(q);return !toks.length||tokensMatchAll(noAccent(String(text||'')),toks);}
+var SUG_MAX=50; // số gợi ý hiển thị tối đa (hộp cuộn được); còn nữa → báo "gõ thêm để thu hẹp"
+function sugMoreHtml(total){return total>SUG_MAX?('<div class="srch-sug-empty" style="color:#B8860B;text-align:center">…còn '+(total-SUG_MAX)+' kết quả nữa — gõ thêm để thu hẹp</div>'):'';}
 function nodeSearchText(n){
   if(!n)return '';
   var parts=[n.name,n.idCode,n.phone,n.f1of,n.joinDate];
@@ -7758,7 +7763,7 @@ function renderSearchSug(q){
   var cands=filterByTokens(searchCandidates(),q,candSearchText,function(c){return c.name;});
   if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
   var h='';
-  cands.slice(0,15).forEach(function(c){
+  cands.slice(0,SUG_MAX).forEach(function(c){
     if(c.isNode){
       var nd=treeNodes.find(function(x){return x.id===c.nid;});
       var si=sponsorInfo(nd);
@@ -7768,6 +7773,7 @@ function renderSearchSug(q){
       h+='<div class="srch-sug" data-search-ext="'+escHtml(c.name)+'"><span class="srch-sug-name">'+escHtml(c.name)+'</span><span class="srch-sug-tag" style="color:#999">ngoài sơ đồ</span></div>';
     }
   });
+  h+=sugMoreHtml(cands.length);
   box.innerHTML=h;box.style.display='block';
 }
 function hideSearchSug(){
@@ -7829,7 +7835,7 @@ function renderDdSearchSug(q){
   var cands=filterByTokens(searchCandidates(),q,candSearchText,function(c){return c.name;});
   if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
   var h='';
-  cands.slice(0,15).forEach(function(c){
+  cands.slice(0,SUG_MAX).forEach(function(c){
     if(c.isNode){
       var nd=treeNodes.find(function(x){return x.id===c.nid;});
       var si=sponsorInfo(nd);
@@ -7839,6 +7845,7 @@ function renderDdSearchSug(q){
       h+='<div class="srch-sug" data-ddsearch-name="'+escHtml(c.name)+'" data-ddsearch-ext="'+escHtml(c.name)+'"><span class="srch-sug-name">'+escHtml(c.name)+'</span><span class="srch-sug-tag" style="color:#999">cả nhánh F1 (ngoài sơ đồ)</span></div>';
     }
   });
+  h+=sugMoreHtml(cands.length);
   box.innerHTML=h;box.style.display='block';
 }
 function lkAddCandidates(){
@@ -7856,11 +7863,12 @@ function renderLkAddSug(q){
   var cands=filterByTokens(lkAddCandidates(),q,function(c){return nodeSearchText(c);},function(c){return c.name;});
   if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp (ID đã là đầu nhánh/LK thì không cần thêm)</div>';return;}
   var h='';
-  cands.slice(0,15).forEach(function(c){
+  cands.slice(0,SUG_MAX).forEach(function(c){
     var si=sponsorInfo(c);
     var tag=si.depth>0?('F'+si.depth+' · Tầng '+computeLevel2(c.id)):'Gốc';
     h+='<div class="srch-sug" data-lkadd-nid="'+c.id+'" data-lkadd-name="'+escHtml(c.name)+'"><span class="srch-sug-name">'+escHtml(c.name)+'</span><span class="srch-sug-tag">'+tag+'</span></div>';
   });
+  h+=sugMoreHtml(cands.length);
   box.innerHTML=h;box.style.display='block';
 }
 
@@ -9388,11 +9396,12 @@ function renderImpPosSug(q){
   var cands=filterByTokens(treeNodes,q,function(c){return nodeSearchText(c);},function(c){return c.name;});
   if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có ID khớp</div>';return;}
   var h='';
-  cands.slice(0,15).forEach(function(c){
+  cands.slice(0,SUG_MAX).forEach(function(c){
     var si=sponsorInfo(c);
     var tag=si.depth>0?('F'+si.depth+' · Tầng '+computeLevel2(c.id)):'Gốc';
     h+='<div class="srch-sug" data-imppos-nid="'+c.id+'" data-imppos-name="'+escHtml(c.name)+'"><span class="srch-sug-name">'+escHtml(c.name)+'</span><span class="srch-sug-tag">'+tag+'</span></div>';
   });
+  h+=sugMoreHtml(cands.length);
   box.innerHTML=h;box.style.display='block';
 }
 function renderImpPosPicked(){
@@ -12313,15 +12322,17 @@ function prospectRemindHtml(){
 }
 function renderProspectPage(){
   var el=document.getElementById('prospect-content');if(!el)return;
-  var q=(_prospectFilter.q||'').toLowerCase();
+  var q=(_prospectFilter.q||'');
   var cf=_prospectFilter.color;
   var list=_prospectsAll.slice().sort(function(a,b){
     var da=_prospectDaysSince(a),db=_prospectDaysSince(b);
     if(da!==db)return db-da;
     return (b.score||1)-(a.score||1);
   });
-  if(q)list=list.filter(function(p){
-    return (p.name||'').toLowerCase().indexOf(q)>=0||(p.region||'').toLowerCase().indexOf(q)>=0||(p.phone||'').indexOf(q)>=0;
+  var _pToks=searchTokens(q); // v6.62 — CHUẨN TÌM: bỏ dấu + nhiều từ khoá + chuỗi con ở bất kỳ đâu, trên mọi thuộc tính
+  if(_pToks.length)list=list.filter(function(p){
+    var fu=Array.isArray(p.followups)?p.followups.map(function(f){return f&&(f.note||f.text||f.content||'');}).join(' '):'';
+    return tokensMatchAll(noAccent([p.name,p.region,p.phone,p.zalo,p.fb,p.businessStage,p.healthStage,p.memberStatus,fu].join(' ')),_pToks);
   });
   if(cf)list=list.filter(function(p){return _prospectColorKey(p)===cf;});
 
