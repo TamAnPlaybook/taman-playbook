@@ -1,5 +1,5 @@
-<!-- VERSION: v6.58-guest-attendance-income-report-admin-notify -->
-<!-- v6.53–6.57 (skill stairs/links/flexible popups/skill tab) GIỮ NGUYÊN; v6.58 thêm: khách điểm danh + Thu nhập CLB/Nhân bản + báo QTV -->
+<!-- VERSION: v6.59-skill-media-images-docs -->
+<!-- v6.53–6.58 GIỮ NGUYÊN; v6.59 thêm: QTV đính kèm HÌNH ẢNH + TỆP TÀI LIỆU (docx/pdf…) cho mỗi kỹ năng (cả team xem). ⚠ CẦN publish Rules mới (skillmedia). -->
 <!--
   ============================================================================
   © 2026 Hồ Tấn Huy (Tâm An TTHC). BẢN QUYỀN & SỞ HỮU TRÍ TUỆ thuộc về Hồ Tấn Huy.
@@ -167,6 +167,22 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .sk-link:hover{background:#D8E9FA}
 .sk-link-edit{font-size:11px;font-weight:700;color:#B8860B;background:#FFF6DC;border:1px dashed #E7C55A;border-radius:999px;padding:2px 9px;cursor:pointer}
 .sk-link-edit:hover{background:#FDEFC7}
+/* v6.59 — chip ảnh/tài liệu kỹ năng */
+.sk-media{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sk-media-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#6A1B9A;background:#F3E9FB;border:1px solid #E1CDF2;border-radius:999px;padding:2px 9px;cursor:pointer;line-height:1.5;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk-media-chip:hover{background:#EADCF7}
+.sk-media-edit{color:#6A1B9A;background:#F3E9FB;border-color:#E1CDF2}
+.sk-media-edit:hover{background:#EADCF7}
+.skm-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.skm-item{display:flex;align-items:center;gap:9px;background:#FAFAFA;border:1px solid #EEE;border-radius:9px;padding:8px 10px}
+.skm-ico{font-size:16px}
+.skm-nm{flex:1;min-width:0;font-size:13px;font-weight:600;color:#1565C0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skm-nm:hover{text-decoration:underline}
+.skm-add{display:inline-flex;align-items:center;cursor:pointer}
+.skmv-wrap{max-width:94vw;max-height:92vh;display:flex;flex-direction:column;gap:8px}
+.skmv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;font-size:13px;font-weight:700}
+.skmv-img{max-width:94vw;max-height:84vh;border-radius:10px;background:#fff;object-fit:contain}
+#skmedia-view-ov.open{display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.86)}
 .msec-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .sk-cfg-btn{display:inline-block;margin:0 0 8px;font-size:11px;font-weight:700;color:#6A1B9A;background:#F3E9FB;border:1px solid #E1CDF2;border-radius:999px;padding:4px 11px;cursor:pointer}
 .sk-cfg-btn:hover{background:#EADCF7}
@@ -1491,6 +1507,27 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
       <button class="btn btn-o" id="skl-cancel">Hủy</button>
       <button class="btn btn-g" id="skl-save">&#10003; Lưu</button>
     </div>
+  </div>
+</div>
+
+<!-- v6.59 — QTV: Quản lý hình ảnh & tệp tài liệu của 1 kỹ năng -->
+<div class="modal-ov" id="skmedia-mgr-ov" style="z-index:710">
+  <div class="modal">
+    <div class="modal-hd">
+      <div style="flex:1"><div class="modal-name">&#128247; Ảnh &amp; tài liệu kỹ năng</div><div style="font-size:12px;color:#999" id="skmedia-mgr-sub"></div></div>
+      <button class="modal-x" id="skmedia-mgr-close">&#10005;</button>
+    </div>
+    <div class="modal-body" id="skmedia-mgr-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-g" id="skmedia-mgr-done">&#10003; Xong</button>
+    </div>
+  </div>
+</div>
+<!-- v6.59 — Xem ảnh kỹ năng phóng to (lightbox) -->
+<div class="modal-ov" id="skmedia-view-ov" style="z-index:720">
+  <div class="skmv-wrap">
+    <div class="skmv-top"><span id="skmedia-view-name"></span><button class="modal-x" id="skmedia-view-close" style="color:#fff">&#10005;</button></div>
+    <img id="skmedia-view-img" alt="" class="skmv-img">
   </div>
 </div>
 
@@ -4540,9 +4577,11 @@ function skillStairs(mid,list,key,title,ico,col,colLight,colDark){
 // (doc này Firestore Rules đã cho: read = mọi người, write = QTV — nên KHÔNG cần đổi Rules).
 // Dạng: { <skillId>: [ {name,url}, ... ] }
 var skillLinksMap={};
+var skillMediaMap={}; // v6.59 — { <skillId>: [ {id,kind:'image'|'file',name,mime,size} ] } — metadata (blob nằm ở skillmedia/{id})
 function loadSkillLinks(){
   fsGetGlobal('registration').then(function(d){
     skillLinksMap=(d&&d.skillLinks)||{};
+    skillMediaMap=(d&&d.skillMedia)||{};
     applySkillCfg(d&&d.skillCfg); // QTV có thể tuỳ biến danh sách kỹ năng
     if(modalMid&&modalType==='kn')refreshModalBody(); // đang mở tab kỹ năng → cập nhật ngay
     renderAll&&renderAll();updateStats&&updateStats(); // cập nhật số liệu năng lực theo danh sách mới
@@ -4581,6 +4620,17 @@ function skillCellHtml(mid,s){
   if(chips||isBranchAdmin){
     h+='<div class="sk-links">'+chips;
     if(isBranchAdmin)h+='<button class="sk-link-edit" data-sklink-edit="'+s.id+'">'+(chips?'✏️ Sửa link':'➕ Thêm link')+'</button>';
+    h+='</div>';
+  }
+  // v6.59 — Hình ảnh & tệp tài liệu đính kèm (cả team xem; QTV thêm/xoá)
+  var media=skillMediaMap[s.id]||[];
+  var mchips='';
+  media.forEach(function(mm){
+    mchips+='<button class="sk-media-chip" data-skmedia-view="'+escHtml(mm.id)+'" title="'+escHtml(mm.name||'')+'">'+(mm.kind==='image'?'🖼️':'📎')+' '+escHtml(mm.name||'tệp')+'</button>';
+  });
+  if(mchips||isBranchAdmin){
+    h+='<div class="sk-media">'+mchips;
+    if(isBranchAdmin)h+='<button class="sk-link-edit sk-media-edit" data-skmedia-edit="'+s.id+'">'+(media.length?'🖼️ Sửa ảnh/tài liệu':'🖼️ Thêm ảnh/tài liệu')+'</button>';
     h+='</div>';
   }
   h+='</div></div>';
@@ -4638,6 +4688,92 @@ function saveSklEditor(){
     showToast('Lỗi lưu: '+((e&&e.message)||e));
   }).finally(function(){btn.disabled=false;btn.innerHTML='✓ Lưu';});
 }
+// ===== v6.59 — HÌNH ẢNH & TỆP TÀI LIỆU đính kèm mỗi kỹ năng (QTV thêm, cả team xem) =====
+//   • Metadata (nhẹ) ở appConfig/registration.skillMedia → chip hiển thị ngay, tải cùng danh sách kỹ năng.
+//   • Blob (base64) ở collection skillmedia/{fileId} → chỉ tải khi bấm xem/tải (nhẹ cho lần mở app).
+//   • Ảnh tự nén (~≤900KB base64). Tệp tài liệu (docx/pdf/xls/ppt…) đọc base64, GIỚI HẠN ~1MB (giới hạn 1 doc Firestore).
+//   ⚠ Cần Rules v6.59 (match /skillmedia/{fileId}) để đọc/ghi blob — trước khi publish: metadata lưu OK nhưng tải/xem tệp sẽ báo lỗi quyền.
+var _skMediaMgrId=null;
+var SKMEDIA_MAX=1000000; // độ dài base64 tối đa (~750KB tệp gốc) để vừa 1 doc Firestore (1MB)
+async function fsSetSkillMedia(fileId,data){if(!fbReady)await loadFirebase();var m=await import(FB_STORE);await m.setDoc(m.doc(fbDb,'skillmedia',fileId),data);}
+async function fsGetSkillMedia(fileId){if(!fbReady)await loadFirebase();var m=await import(FB_STORE);var s=await m.getDoc(m.doc(fbDb,'skillmedia',fileId));return s.exists()?s.data():null;}
+async function fsDelSkillMedia(fileId){if(!fbReady)await loadFirebase();var m=await import(FB_STORE);await m.deleteDoc(m.doc(fbDb,'skillmedia',fileId));}
+function _readFileDataUrl(file,cb){try{var rd=new FileReader();rd.onload=function(e){cb(e.target.result);};rd.onerror=function(){cb(null);};rd.readAsDataURL(file);}catch(e){cb(null);}}
+function _skmGenId(){return 'skm'+Date.now().toString(36)+Math.floor(Math.random()*1e8).toString(36);}
+function openSkMediaMgr(skillId){if(!isBranchAdmin)return;_skMediaMgrId=skillId;renderSkMediaMgr(skillId);document.getElementById('skmedia-mgr-ov').classList.add('open');}
+function closeSkMediaMgr(){document.getElementById('skmedia-mgr-ov').classList.remove('open');_skMediaMgrId=null;}
+function renderSkMediaMgr(skillId){
+  var sub=document.getElementById('skmedia-mgr-sub');if(sub)sub.textContent=skillLabelById(skillId);
+  var list=skillMediaMap[skillId]||[];
+  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.5">Tải lên <b>hình ảnh</b> hoặc <b>tệp tài liệu</b> (Word .docx, PDF, Excel, PowerPoint, .txt…) cho kỹ năng này — <b>cả team</b> xem/tải được. Ảnh tự nén; mỗi tệp tối đa ~750KB.</div>';
+  if(list.length){
+    h+='<div class="skm-list">';
+    list.forEach(function(mm){
+      h+='<div class="skm-item"><span class="skm-ico">'+(mm.kind==='image'?'🖼️':'📎')+'</span>'
+        +'<span class="skm-nm" data-skmedia-view="'+escHtml(mm.id)+'" title="Bấm để xem/tải">'+escHtml(mm.name||'tệp')+'</span>'
+        +'<button class="skl-del" data-skmedia-del="'+escHtml(mm.id)+'" title="Xoá">🗑️</button></div>';
+    });
+    h+='</div>';
+  }else h+='<div style="color:#AAA;font-size:13px;margin:6px 0 12px">Chưa có ảnh/tài liệu nào.</div>';
+  h+='<label class="btn btn-g skm-add"><span>📎 Chọn ảnh / tệp tài liệu</span>'
+    +'<input type="file" id="skmedia-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" style="display:none"></label>';
+  document.getElementById('skmedia-mgr-body').innerHTML=h;
+}
+function uploadSkillMediaFiles(skillId,fileList){
+  if(!isBranchAdmin||!skillId)return;
+  var files=Array.prototype.slice.call(fileList||[]);
+  if(!files.length)return;
+  (function next(i){
+    if(i>=files.length){renderSkMediaMgr(skillId);refreshModalBody();return;}
+    var f=files[i];
+    function afterData(dataUrl,kind,mime){
+      if(!dataUrl){showToast('Không đọc được tệp: '+f.name);return next(i+1);}
+      if(dataUrl.length>SKMEDIA_MAX){showToast('Tệp quá lớn (giới hạn ~750KB): '+f.name);return next(i+1);}
+      var fileId=_skmGenId();
+      showToast('Đang tải lên: '+f.name+'…');
+      fsSetSkillMedia(fileId,{skillId:skillId,kind:kind,name:f.name,mime:mime,data:dataUrl}).then(function(){
+        if(!skillMediaMap[skillId])skillMediaMap[skillId]=[];
+        skillMediaMap[skillId].push({id:fileId,kind:kind,name:f.name,mime:mime,size:f.size||0});
+        return fsSetGlobal('registration',{skillMedia:skillMediaMap});
+      }).then(function(){
+        showToast('✓ Đã thêm: '+f.name);renderSkMediaMgr(skillId);next(i+1);
+      }).catch(function(e){
+        showToast('Lỗi tải lên (có thể cần publish Rules mới): '+((e&&e.message)||e));next(i+1);
+      });
+    }
+    if(/^image\//.test(f.type||''))_compressToLimit(f,1280,0.72,900000,function(u){afterData(u,'image','image/jpeg');});
+    else _readFileDataUrl(f,function(u){afterData(u,'file',f.type||'application/octet-stream');});
+  })(0);
+}
+function removeSkillMedia(fileId,skillId){
+  if(!isBranchAdmin)return;
+  var prev=(skillMediaMap[skillId]||[]).slice();
+  skillMediaMap[skillId]=(skillMediaMap[skillId]||[]).filter(function(x){return x.id!==fileId;});
+  if(!skillMediaMap[skillId].length)delete skillMediaMap[skillId];
+  fsSetGlobal('registration',{skillMedia:skillMediaMap}).then(function(){
+    return fsDelSkillMedia(fileId).catch(function(){}); // xoá blob (best-effort — thiếu quyền cũng không sao)
+  }).then(function(){
+    showToast('✓ Đã xoá');renderSkMediaMgr(skillId);refreshModalBody();
+  }).catch(function(e){
+    skillMediaMap[skillId]=prev;showToast('Lỗi xoá: '+((e&&e.message)||e));renderSkMediaMgr(skillId);
+  });
+}
+function viewSkillMedia(fileId){
+  var meta=null;Object.keys(skillMediaMap).forEach(function(sid){(skillMediaMap[sid]||[]).forEach(function(x){if(x.id===fileId)meta=x;});});
+  showToast('Đang tải…');
+  fsGetSkillMedia(fileId).then(function(d){
+    if(!d||!d.data){showToast('Không tải được tệp (có thể cần publish Rules mới)');return;}
+    if(d.kind==='image')openSkMediaLightbox(d.data,d.name||'');
+    else{var a=document.createElement('a');a.href=d.data;a.download=d.name||'tai-lieu';document.body.appendChild(a);a.click();a.remove();showToast('✓ Đang tải: '+(d.name||'tệp'));}
+  }).catch(function(e){showToast('Lỗi tải tệp: '+((e&&e.message)||e));});
+}
+function openSkMediaLightbox(dataUrl,name){
+  var ov=document.getElementById('skmedia-view-ov');if(!ov)return;
+  document.getElementById('skmedia-view-img').src=dataUrl;
+  document.getElementById('skmedia-view-name').textContent=name||'';
+  ov.classList.add('open');
+}
+function closeSkMediaLightbox(){var ov=document.getElementById('skmedia-view-ov');if(ov){ov.classList.remove('open');document.getElementById('skmedia-view-img').src='';}}
 // ===== QTV: THÊM / BỚT / SỬA CÁC Ô KỸ NĂNG (danh sách kỹ năng) =====
 // Lưu chung toàn team ở field "skillCfg" trong doc appConfig/registration (không cần đổi Rules).
 var _skcfgGroup=null; // 'tt' (Thần Tài) | 'ty' (Thần Y)
@@ -8582,6 +8718,11 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "      allow read: if true;\n"+
 "      allow write: if isAdmin();\n"+
 "    }\n"+
+"    // v6.59 — Hình ảnh & tệp tài liệu (docx/pdf...) đính kèm mỗi kỹ năng: QTV tải lên, cả team xem\n"+
+"    match /skillmedia/{fileId} {\n"+
+"      allow read: if request.auth != null;\n"+
+"      allow write, delete: if isAdmin();\n"+
+"    }\n"+
 "    match /appConfig/banner {\n"+
 "      allow read: if true;\n"+
 "      allow write: if isAdmin();\n"+
@@ -10049,6 +10190,14 @@ document.addEventListener('click',function(e){
     if(!_cur2.length)_cur2=[{name:'',url:''}];
     sklRenderRows(_cur2);return;
   }
+  // v6.59 — Ảnh/tài liệu kỹ năng: mở quản lý (QTV) · xem/tải (cả team) · xoá (QTV)
+  t=e.target.closest('[data-skmedia-edit]');
+  if(t){openSkMediaMgr(t.getAttribute('data-skmedia-edit'));return;}
+  t=e.target.closest('[data-skmedia-view]');
+  if(t){viewSkillMedia(t.getAttribute('data-skmedia-view'));return;}
+  t=e.target.closest('[data-skmedia-del]');
+  if(t){var _smid=t.getAttribute('data-skmedia-del');if(confirm('Xoá ảnh/tài liệu này khỏi kỹ năng?'))removeSkillMedia(_smid,_skMediaMgrId);return;}
+
   // QTV: mở trình sửa danh sách kỹ năng (thêm/bớt/sửa ô kỹ năng)
   t=e.target.closest('[data-skcfg-edit]');
   if(t){openSkillCfgEditor(t.getAttribute('data-skcfg-edit'));return;}
@@ -10267,6 +10416,12 @@ document.addEventListener('click',function(e){
 // Input changes (KH numbers, KPI, role, name)
 document.addEventListener('change',function(e){
   var t=e.target;
+  if(t.id==='skmedia-file'){ // v6.59 — QTV chọn ảnh/tệp tài liệu đính kèm kỹ năng
+    var _fs=t.files?Array.prototype.slice.call(t.files):[]; // sao ra mảng TRƯỚC khi reset (t.value='' xoá FileList)
+    t.value=''; // reset để chọn lại cùng tệp vẫn kích hoạt change
+    if(_fs.length)uploadSkillMediaFiles(_skMediaMgrId,_fs);
+    return;
+  }
   if(t.id==='clx-photo-file'){ // v6.22 — chọn ảnh CLB → nén (giới hạn ~70KB cho bản công khai) → xem trước
     var f=t.files&&t.files[0];if(!f)return;
     showToast('Đang xử lý ảnh…');
@@ -11695,6 +11850,13 @@ function bindStatic(){
   document.getElementById('skl-cancel').addEventListener('click',closeSklEditor);
   document.getElementById('skl-save').addEventListener('click',saveSklEditor);
   document.getElementById('sklink-ov').addEventListener('click',function(e){if(e.target===this)closeSklEditor();});
+
+  // v6.59 — modal quản lý ảnh/tài liệu kỹ năng + lightbox xem ảnh
+  document.getElementById('skmedia-mgr-close').addEventListener('click',closeSkMediaMgr);
+  document.getElementById('skmedia-mgr-done').addEventListener('click',closeSkMediaMgr);
+  document.getElementById('skmedia-mgr-ov').addEventListener('click',function(e){if(e.target===this)closeSkMediaMgr();});
+  document.getElementById('skmedia-view-close').addEventListener('click',closeSkMediaLightbox);
+  document.getElementById('skmedia-view-ov').addEventListener('click',function(e){if(e.target===this)closeSkMediaLightbox();});
 
   document.getElementById('skcfg-close').addEventListener('click',closeSkcfgEditor);
   document.getElementById('skcfg-cancel').addEventListener('click',closeSkcfgEditor);
