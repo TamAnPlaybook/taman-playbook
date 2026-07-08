@@ -29,7 +29,9 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .setup-input{width:100%;padding:12px 14px;border:1.5px solid #E0E0E0;border-radius:10px;font-size:16px;font-family:Arial;outline:none;margin-bottom:12px}
 .setup-input:focus{border-color:#C8A84B}
 .setup-btn{width:100%;padding:14px;background:#1A1A1A;color:#C8A84B;border:none;border-radius:10px;font-size:16px;font-weight:700;font-family:Arial;cursor:pointer}
-.setup-err{color:#E53935;font-size:13px;margin-bottom:8px;min-height:18px}
+.setup-err{color:#E53935;font-size:13px;margin-bottom:8px;min-height:18px;line-height:1.5}
+.setup-retry-btn{margin-top:8px;padding:9px 16px;background:#1A7A5E;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.setup-retry-btn:hover{background:#156B52}
 .setup-note{font-size:12px;color:#BBB;margin-top:12px;text-align:center;line-height:1.5}
 .gbtn{width:100%;padding:11px;background:white;border:1px solid #E0E0E0;border-radius:10px;font-size:14px;font-family:Arial;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#444}
 .flink{font-size:12px;color:#C8A84B;cursor:pointer;text-decoration:underline}
@@ -1770,7 +1772,7 @@ async function loadFirebase(){
   // Hoàn tất đăng nhập nếu quay về từ Google redirect
   authM.getRedirectResult(fbAuth).catch(function(e){
     if(e&&e.code&&e.code!=='auth/no-auth-event')
-      showLoginErr('login',FB_ERRS[e.code]||e.message);
+      reportAuthErr('login',e,function(){location.reload();});
   });
 }
 async function fbSignIn(email,pwd){
@@ -3639,21 +3641,44 @@ function showFbForm(name){
     var e=document.getElementById(id);if(e)e.textContent='';
   });
 }
-function showLoginErr(formName,msg){
+// Hiển thị lỗi thân thiện; nếu truyền retryFn sẽ kèm nút "Thử lại"
+function showLoginErr(formName,msg,retryFn){
   var e=document.getElementById('err-'+formName);
-  if(e){e.style.color='#E53935';e.textContent=msg;}
+  if(!e)return;
+  e.style.color='#E53935';
+  e.innerHTML='';
+  var t=document.createElement('div');t.textContent=msg;e.appendChild(t);
+  if(retryFn){
+    var b=document.createElement('button');
+    b.type='button';b.className='setup-retry-btn';b.innerHTML='🔄 Thử lại';
+    b.onclick=function(){e.innerHTML='';try{retryFn();}catch(_e){location.reload();}};
+    e.appendChild(b);
+  }
 }
 var FB_ERRS={
   'auth/user-not-found':'Email chưa đăng ký',
   'auth/wrong-password':'Mật khẩu không đúng',
   'auth/invalid-email':'Email không hợp lệ',
-  'auth/too-many-requests':'Quá nhiều lần thử. Thử lại sau',
+  'auth/too-many-requests':'Quá nhiều lần thử. Vui lòng đợi ít phút rồi thử lại.',
   'auth/invalid-credential':'Email hoặc mật khẩu không đúng',
   'auth/email-already-in-use':'Email này đã được đăng ký',
   'auth/weak-password':'Mật khẩu quá yếu',
   'auth/popup-blocked':'Popup bị chặn. Cho phép popup rồi thử lại',
-  'auth/unauthorized-domain':'Domain chưa được phép trong Firebase Console'
+  'auth/unauthorized-domain':'Domain chưa được phép trong Firebase Console',
+  // Nhóm lỗi "trục trặc tạm thời" — kèm nút Thử lại
+  'auth/firebase-app-check-token-is-invalid':'Bước xác minh chống bot bị gián đoạn (thường do trình duyệt chặn tạm thời). Bấm "Thử lại"; nếu vẫn lỗi, tải lại trang hoặc thử trình duyệt khác.',
+  'auth/network-request-failed':'Mất kết nối mạng. Kiểm tra internet rồi thử lại.',
+  'auth/internal-error':'Hệ thống trục trặc tạm thời. Vui lòng thử lại.',
+  'auth/timeout':'Kết nối quá lâu. Vui lòng thử lại.'
 };
+// Các lỗi nên hiện nút "Thử lại" (trục trặc tạm thời, không phải sai mật khẩu)
+var FB_RETRY_ERRS={'auth/firebase-app-check-token-is-invalid':1,'auth/network-request-failed':1,'auth/internal-error':1,'auth/timeout':1,'auth/too-many-requests':1};
+// Chọn thông điệp + có kèm nút Thử lại hay không, rồi hiển thị
+function reportAuthErr(formName,e,retryFn){
+  var code=(e&&e.code)||'';
+  var msg=FB_ERRS[code]||(e&&e.message)||'Có lỗi xảy ra. Vui lòng thử lại.';
+  showLoginErr(formName,msg,(FB_RETRY_ERRS[code]&&retryFn)?retryFn:null);
+}
 async function doLogin(){
   var email=(document.getElementById('fb-email')||{}).value||'';
   var pwd=(document.getElementById('fb-pwd')||{}).value||'';
@@ -3661,7 +3686,7 @@ async function doLogin(){
   if(!email||!pwd){showLoginErr('login','Vui lòng nhập email và mật khẩu');return;}
   var btn=document.getElementById('btn-login');btn.textContent='Đang đăng nhập...';btn.disabled=true;
   try{await fbSignIn(email,pwd);}
-  catch(e){showLoginErr('login',FB_ERRS[e.code]||e.message);}
+  catch(e){reportAuthErr('login',e,doLogin);}
   btn.textContent='Đăng nhập \u2192';btn.disabled=false;
 }
 async function doRegister(){
@@ -3694,7 +3719,7 @@ async function doRegister(){
     showFbForm('verify');
     var ve=document.getElementById('verify-email');if(ve)ve.textContent=email;
   }
-  catch(e){showLoginErr('register',FB_ERRS[e.code]||e.message);}
+  catch(e){reportAuthErr('register',e,doRegister);}
   btn.textContent='Tạo tài khoản \u2192';btn.disabled=false;
 }
 async function doForgot(){
@@ -3705,7 +3730,7 @@ async function doForgot(){
     await fbResetPassword(email);
     var e=document.getElementById('err-forgot');
     if(e){e.style.color='#1A7A5E';e.textContent='\u2713 Đã gửi email! Kiểm tra hộp thư.';}
-  }catch(e){showLoginErr('forgot',FB_ERRS[e.code]||e.message);}
+  }catch(e){reportAuthErr('forgot',e,doForgot);}
   btn.textContent='Gửi email đặt lại \u2192';btn.disabled=false;
 }
 async function doGoogle(){
@@ -3714,7 +3739,7 @@ async function doGoogle(){
   try{await fbGoogleSignIn();}
   catch(e){
     if(e.code!=='auth/popup-closed-by-user')
-      showLoginErr('login',FB_ERRS[e.code]||('Lỗi Google: '+e.message));
+      reportAuthErr('login',e,doGoogle);
   }
   btn.style.opacity='1';
 }
