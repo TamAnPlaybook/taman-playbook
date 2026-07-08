@@ -4865,6 +4865,7 @@ function openSkillLinkEditor(id){
 }
 function sklRowHtml(lk){
   return '<div class="skl-row">'
+    +'<span class="skl-move"><button class="skl-mv" data-skl-up title="Dịch lên">▲</button><button class="skl-mv" data-skl-down title="Dịch xuống">▼</button></span>'
     +'<div class="skl-fields">'
     +'<input class="skl-inp" data-skl-f="name" placeholder="Tên hiển thị (vd: Kỹ năng mời khách)" value="'+escHtml(lk.name||'')+'">'
     +'<input class="skl-inp" data-skl-f="url" placeholder="Dán link (https://... hoặc link YouTube)" value="'+escHtml(lk.url||'')+'">'
@@ -4872,8 +4873,17 @@ function sklRowHtml(lk){
     +'<button class="skl-del" data-skl-del title="Xoá dòng">🗑️</button>'
     +'</div>';
 }
+// Đổi vị trí 1 dòng link trong trình sửa (giữ nguyên nội dung đang gõ)
+function sklMove(rowEl,dir){
+  var cur=sklReadRaw();
+  var i=Array.prototype.indexOf.call(rowEl.parentNode.children,rowEl);
+  var j=i+dir;
+  if(i<0||j<0||j>=cur.length)return;
+  var tmp=cur[i];cur[i]=cur[j];cur[j]=tmp;
+  sklRenderRows(cur);
+}
 function sklRenderRows(list){
-  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm 1 hoặc nhiều link (website / YouTube) cho kỹ năng này. <b>Tên</b> là chữ cả team nhìn thấy; bấm vào sẽ mở <b>Link</b>. Để trống ô link = xoá dòng đó khi lưu.</div>';
+  var h='<div style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.4">Thêm 1 hoặc nhiều link (website / YouTube) cho kỹ năng này. <b>Tên</b> là chữ cả team nhìn thấy; bấm vào sẽ mở <b>Link</b>. Dùng ▲ ▼ để <b>sắp xếp thứ tự</b>. Để trống ô link = xoá dòng đó khi lưu.</div>';
   h+='<div id="skl-rows">'+list.map(sklRowHtml).join('')+'</div>';
   h+='<button class="btn btn-o" id="skl-add" style="margin-top:2px">➕ Thêm dòng link</button>';
   document.getElementById('skl-body').innerHTML=h;
@@ -10404,6 +10414,11 @@ document.addEventListener('click',function(e){
   if(t){openSkillLinkEditor(t.getAttribute('data-sklink-edit'));return;}
   // Trình sửa link: thêm dòng
   if(e.target.closest('#skl-add')){var _cur=sklReadRaw();_cur.push({name:'',url:''});sklRenderRows(_cur);return;}
+  // Trình sửa link: dịch 1 dòng lên / xuống
+  t=e.target.closest('[data-skl-up]');
+  if(t){sklMove(t.closest('.skl-row'),-1);return;}
+  t=e.target.closest('[data-skl-down]');
+  if(t){sklMove(t.closest('.skl-row'),1);return;}
   // Trình sửa link: xoá 1 dòng
   t=e.target.closest('[data-skl-del]');
   if(t){
