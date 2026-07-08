@@ -255,6 +255,9 @@ details.adm-acc>summary::before{content:'\25B8';color:#C8A84B;font-size:12px;fle
 details.adm-acc[open]>summary::before{transform:rotate(90deg)}
 details.adm-acc>summary:hover{background:#FBF9F2}
 .adm-acc-body{padding:0 14px 13px}
+.adm-subh{font-size:12px;font-weight:800;color:#7A5E12;margin:12px 0 6px}
+.adm-acc-body>.adm-subh:first-child,.adm-box>.adm-subh:first-of-type{margin-top:2px}
+.adm-div{height:1px;background:#EFE8D6;margin:16px 0 2px}
 .adm-badge{flex:none;min-width:18px;padding:1px 8px;border-radius:999px;background:#C62828;color:#fff;font-size:11px;font-weight:800;text-align:center;margin-left:auto}
 .adm-badge.ok{background:#1A7A5E}
 .adm-badge.warn{background:#E65100}
@@ -2311,7 +2314,7 @@ function _tsDiffAccount(a,uMembers,kv,uPros,rootName,mmap,dup,stU){
     }
   });
   var pros=[];
-  (uPros||[]).forEach(function(p){
+  (uPros||[]).forEach(function(p){return;/*bo dong bo DS Tiem nang*/
     if(!p||!p.id)return;
     var impId='imp_'+a.uid.slice(0,6)+'_'+p.id;
     var hash=_tsProsHash(p);
@@ -9046,10 +9049,10 @@ function celebrateBoxHtml(banner){
 // ================================================================
 var ADM_ACC_KEY='ta_admin_acc_open';
 var ADM_GROUPS=[
-  {id:'watch',ttl:'👁️ Theo dõi đội',keys:['presence','teamsync','newid','nangdong','analytics']},
-  {id:'comms',ttl:'📣 Truyền thông',keys:['announce','celebrate']},
-  {id:'acct',ttl:'🔐 Tài khoản & bảo mật',keys:['accounts','verify','block','invites','rules']},
-  {id:'ops',ttl:'⚙️ Vận hành & quyền',keys:['branchout','branchin','admins']}
+  {id:'acct',ttl:'\uD83C\uDF9F\uFE0F Mời & Tài khoản',keys:['invites','presence','admins']},
+  {id:'watch',ttl:'\uD83D\uDC41\uFE0F Theo dõi đội',keys:['teamsync','nangdong','analytics']},
+  {id:'comms',ttl:'\uD83D\uDCE3 Truyền thông',keys:['announce']},
+  {id:'ops',ttl:'\u2699\uFE0F Vận hành & quyền',keys:['branchout','rules']}
 ];
 function _admAccStates(){try{var s=localStorage.getItem(ADM_ACC_KEY);return s?JSON.parse(s):{};}catch(e){return {};}}
 function _admAccSave(k,open){try{var st=_admAccStates();st[k]=open?1:0;localStorage.setItem(ADM_ACC_KEY,JSON.stringify(st));}catch(e){}}
@@ -9070,9 +9073,25 @@ function _admSetBadge(key,txt,cls){
   if(txt==null||txt===''||txt==='0'||txt===0){b.style.display='none';return;}
   b.textContent=txt;b.className='adm-badge'+(cls?' '+cls:'');b.style.display='';
 }
+function _admMerge(el,selA,selB,title,subA,subB){
+  var boxes=[].slice.call(el.querySelectorAll('.adm-box'));
+  var A=boxes.filter(function(b){return b.querySelector(selA);})[0];
+  var B=boxes.filter(function(b){return b.querySelector(selB);})[0];
+  if(!A||!B||A===B)return;
+  var tA=A.querySelector('.adm-title'); if(tA&&title)tA.textContent=title;
+  if(subA){var sh=document.createElement('div');sh.className='adm-subh';sh.textContent=subA;if(tA)tA.insertAdjacentElement('afterend',sh);else A.insertBefore(sh,A.firstChild);}
+  var dv=document.createElement('div');dv.className='adm-div';A.appendChild(dv);
+  if(subB){var shb=document.createElement('div');shb.className='adm-subh';shb.textContent=subB;A.appendChild(shb);}
+  var bt=B.querySelector('.adm-title');if(bt)bt.remove();
+  while(B.firstChild)A.appendChild(B.firstChild);
+  B.remove();
+}
 function compactAdminBoxes(){
   var el=document.getElementById('admin-content');if(!el)return;
-  if(!el.querySelector('#newid-inbox'))return; // chỉ chạy ở giao diện QTV đầy đủ (không đụng màn claim/không-QTV)
+  if(!el.querySelector('#newid-inbox'))return;
+  _admMerge(el,'#teamsync-inbox','#newid-inbox','\uD83D\uDD17 Dữ liệu đội & Hộp thư ID mới','\uD83D\uDD17 Dữ liệu đội chờ duyệt (Mục tiêu · Hành động · Kết quả)','\uD83D\uDD14 Hộp thư: ID mới toàn đội');
+  _admMerge(el,'#ann-text','#celeb-text','\uD83D\uDCE3 Truyền thông đội nhóm','\uD83D\uDCE2 Bảng thông báo (chạy chữ trên đầu)','\uD83C\uDF89 Chúc mừng đội nhóm');
+  _admMerge(el,'[data-toggle-branch]','[data-toggle-import]','\uD83C\uDF3F Xuất & Nhập nhánh','\uD83C\uDF3F Xuất nhánh (tách nhánh)','\uD83C\uDF3F Nhập nhánh (ghép nhánh)'); // chỉ chạy ở giao diện QTV đầy đủ (không đụng màn claim/không-QTV)
   var boxes=[].slice.call(el.children).filter(function(b){return b.classList&&b.classList.contains('adm-box');});
   if(!boxes.length)return;
   var byKey={},rest=[];
@@ -9159,7 +9178,7 @@ function renderAdminPage(){
       h+='<div id="newid-inbox"></div></div>';
       // v6.36 — Đồng bộ dữ liệu đội về cây QTV (duyệt trước khi ghi)
       h+='<div class="adm-box"><div class="adm-title">🔗 Dữ liệu đội chờ duyệt (Tiềm năng + Mục tiêu - Hành động - Kết quả)</div>';
-      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi tài khoản có cây ID độc lập — app tự <b>khớp thành viên theo TÊN</b> (không phân biệt dấu) với cây của bạn, rồi gom <b>DS kim cương Tiềm năng</b> + dữ liệu <b>điểm danh / KH ngày / KPI / kỹ năng</b> mà họ nhập. App <b>chỉ đề xuất</b>: bạn bấm <b>✔ Cập nhật</b> mới ghi vào cây của bạn, <b>Bỏ qua</b> thì không hỏi lại tới khi họ nhập thêm. Không bao giờ xoá dữ liệu bạn đã có.</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Mỗi tài khoản có cây ID độc lập — app tự <b>khớp thành viên theo TÊN</b> (không phân biệt dấu) với cây của bạn, rồi gom dữ liệu <b>điểm danh / KH ngày / KPI / kỹ năng</b> mà họ nhập. App <b>chỉ đề xuất</b>: bạn bấm <b>✔ Cập nhật</b> mới ghi vào cây của bạn, <b>Bỏ qua</b> thì không hỏi lại tới khi họ nhập thêm. Không bao giờ xoá dữ liệu bạn đã có.</div>';
       h+='<div id="teamsync-inbox"></div></div>';
       // v6.27 — Danh sách nhắc đóng Năng động (đọc nangdong của mọi tài khoản)
       h+='<div class="adm-box"><div class="adm-title">📅 Nhắc đóng Năng động</div>';
@@ -9196,24 +9215,6 @@ function renderAdminPage(){
       var importOn=!(reg&&reg.branchImportEnabled===false);
       // KHOA DANG NHAP TAI KHOAN - chi QTV CHINH duoc lam
       if(isMainAdmin){
-        var verifyOn=!!(reg&&reg.requireEmailVerify);
-        h+='<div class="adm-box"><div class="adm-title">📧 Bắt buộc xác minh email</div>';
-        h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">BẬT = người mới phải bấm link xác minh trong email mới vào được app (đăng nhập Google đã tự xác minh; quản trị viên không bị chặn). Chống tài khoản email ảo.</div>';
-        h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(verifyOn?'#1A7A5E':'#E53935')+'">'+(verifyOn?'Đang BẬT':'Đang TẮT')+'</b></div>';
-        h+='<button class="btn '+(verifyOn?'btn-r':'btn-g')+' btn-sm" id="btn-toggle-verify" style="margin-top:8px">'+(verifyOn?'Tắt xác minh email':'Bật xác minh email')+'</button></div>';
-        var blockedList=(reg&&reg.blockedEmails)||[];
-        h+='<div class="adm-box"><div class="adm-title">🔒 Khoá đăng nhập tài khoản</div>';
-        h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Nhập email tài khoản để <b>chặn đăng nhập</b>. Tài khoản bị khoá sẽ bị đăng xuất ở lần tải trang kế tiếp và không vào lại được tới khi mở khoá. Không khoá được tài khoản quản trị viên.</div>';
-        if(blockedList.length){
-          blockedList.forEach(function(em){
-            h+='<div class="nmod-row"><div class="nmod-lbl" style="color:#E53935">🔒 '+escHtml(em)+'</div><button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'">Mở khoá</button></div>';
-          });
-        }else{
-          h+='<div style="font-size:13px;color:#999;padding:2px 0">Chưa khoá tài khoản nào.</div>';
-        }
-        h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-blockmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
-        h+='<button class="btn btn-r btn-sm" id="btn-block-add">🔒 Khoá đăng nhập</button></div></div>';
-        // CAP NHAT RULES v4.5 — bat buoc Publish 1 lan de nut "Xem" doc duoc du lieu tai khoan khac
         h+='<details class="adm-box" style="padding:0;margin-bottom:10px"><summary style="cursor:pointer;padding:13px 14px;font-weight:700;font-size:15px">🔧 Firestore Rules nâng cao — bấm để mở (đã publish thì bỏ qua)</summary><div style="padding:0 14px 14px">';
         h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Để nút <b>👁️ Xem</b> đọc được dữ liệu bên trong tài khoản thành viên, cần cập nhật <b>Firestore Rules</b> (bản v4.5) <u>một lần</u>:<br>1. Mở <b>console.firebase.google.com</b> → project <b>taman-playbook</b> → <b>Firestore Database</b> → tab <b>Rules</b>.<br>2. Xóa hết, dán nội dung dưới đây → bấm <b>Publish</b>. (Rules mới chỉ cho QTV <b>ĐỌC</b>, không sửa được dữ liệu người khác — an toàn.)</div>';
         h+='<textarea id="adm-rules2" readonly style="width:100%;height:140px;font-family:monospace;font-size:11px;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px;background:#FAFAFA">'+escHtml(FIRESTORE_RULES)+'</textarea>';
