@@ -40,7 +40,8 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 #app{display:none}
 .topbar{background:#1A1A1A;height:52px;display:flex;align-items:center;padding:0 12px;gap:8px;position:sticky;top:0;z-index:300}
 .tb-logo{font-size:17px;font-weight:700;color:#C8A84B;flex:1}
-.tb-ns{font-size:11px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);padding:3px 8px;border-radius:20px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.tb-ns{font-size:11px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);padding:3px 8px;border-radius:20px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.tb-ns:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.7)}
 .tb-date{font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap}
 .tb-out{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);padding:4px 10px;border-radius:6px;font-size:11px;font-family:Arial;cursor:pointer;flex-shrink:0}
 .main-tabs{background:#111;display:flex;overflow-x:auto;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.06)}
@@ -198,6 +199,9 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .skl-mv{width:30px;height:18px;line-height:1;border:1px solid #D6D6D6;background:#F4F4F4;color:#555;border-radius:6px;cursor:pointer;font-size:10px;padding:0}
 .skl-mv:hover{background:#E7E7E7}
 .skl-mv:active{background:#DADADA}
+.acc-sec{}
+.acc-h{font-size:12px;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.acc-btn{margin-top:10px;width:100%}
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .kpib{background:#F7F7F7;border-radius:10px;padding:12px;border:1.5px solid #EBEBEB}
 .kpilbl{font-size:11px;color:#888;margin-bottom:4px}
@@ -1549,6 +1553,14 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   </div>
 </div>
 
+<!-- TÀI KHOẢN: đổi tên hiển thị & mật khẩu (sau khi đăng nhập) -->
+<div class="nmod-ov" id="account-ov">
+  <div class="nmod">
+    <div class="nmod-hd"><div class="nmod-title">&#128100; Tài khoản của tôi</div><button class="nmod-x" id="account-close">&#10005;</button></div>
+    <div class="nmod-body" id="account-body"></div>
+  </div>
+</div>
+
 <div id="fs-overlay">
   <div id="fs-head">
     <b style="font-size:15px" id="fs-title">&#x26F6; Xem toàn trang</b>
@@ -1796,6 +1808,21 @@ async function fbResetPassword(email){
   if(!fbReady)await loadFirebase();
   var m=await import(FB_AUTH);
   await m.sendPasswordResetEmail(fbAuth,email);
+}
+// Đổi tên hiển thị của tài khoản đang đăng nhập
+async function fbUpdateName(name){
+  if(!fbReady)await loadFirebase();
+  var m=await import(FB_AUTH);
+  await m.updateProfile(fbAuth.currentUser,{displayName:name});
+}
+// Đổi mật khẩu: xác thực lại bằng mật khẩu hiện tại rồi đặt mật khẩu mới
+async function fbChangePassword(cur,nw){
+  if(!fbReady)await loadFirebase();
+  var m=await import(FB_AUTH);
+  var user=fbAuth.currentUser;
+  var cred=m.EmailAuthProvider.credential(user.email,cur);
+  await m.reauthenticateWithCredential(user,cred);
+  await m.updatePassword(user,nw);
 }
 // ── #1 Xác minh email + #2 Mã mời 1 lần ──
 async function fbResendVerify(){
@@ -3679,14 +3706,46 @@ function reportAuthErr(formName,e,retryFn){
   var msg=FB_ERRS[code]||(e&&e.message)||'Có lỗi xảy ra. Vui lòng thử lại.';
   showLoginErr(formName,msg,(FB_RETRY_ERRS[code]&&retryFn)?retryFn:null);
 }
+// ===== BẢO VỆ NGẦM: khoá tạm sau nhiều lần sai mật khẩu (client-side, KHÔNG cần cấu hình/khoá) =====
+var LOGIN_FAIL_MAX=5; // số lần sai liên tiếp trước khi bắt đầu khoá tạm
+function _loginFails(){try{return JSON.parse(localStorage.getItem('ta_login_fails')||'{}');}catch(e){return {};}}
+function _saveLoginFails(o){try{localStorage.setItem('ta_login_fails',JSON.stringify(o));}catch(e){}}
+function loginLockRemaining(email){var r=_loginFails()[(email||'').toLowerCase()];return (r&&r.until)?Math.max(0,Math.ceil((r.until-Date.now())/1000)):0;}
+function registerLoginFail(email){
+  email=(email||'').toLowerCase();var o=_loginFails();var r=o[email]||{n:0};
+  r.n=(r.n||0)+1;
+  if(r.n>=LOGIN_FAIL_MAX){var over=r.n-LOGIN_FAIL_MAX;r.until=Date.now()+Math.min(300,30*Math.pow(2,over))*1000;} // 30s,60s,120s,240s,tối đa 300s
+  o[email]=r;_saveLoginFails(o);
+}
+function clearLoginFails(email){var o=_loginFails();delete o[(email||'').toLowerCase()];_saveLoginFails(o);}
+var _lockTimer=null;
+function showLoginLock(email){
+  var btn=document.getElementById('btn-login');
+  function tick(){
+    var rem=loginLockRemaining(email),e=document.getElementById('err-login');
+    if(rem<=0){if(_lockTimer){clearInterval(_lockTimer);_lockTimer=null;}if(btn){btn.disabled=false;btn.textContent='Đăng nhập →';}if(e)e.textContent='';return;}
+    if(btn){btn.disabled=true;btn.textContent='Đăng nhập →';}
+    if(e){e.style.color='#E53935';e.textContent='🔒 Sai mật khẩu nhiều lần. Vui lòng thử lại sau '+rem+' giây.';}
+  }
+  if(_lockTimer)clearInterval(_lockTimer);
+  tick();_lockTimer=setInterval(tick,1000);
+}
 async function doLogin(){
   var email=(document.getElementById('fb-email')||{}).value||'';
   var pwd=(document.getElementById('fb-pwd')||{}).value||'';
   email=email.trim();
   if(!email||!pwd){showLoginErr('login','Vui lòng nhập email và mật khẩu');return;}
+  if(loginLockRemaining(email)>0){showLoginLock(email);return;}
   var btn=document.getElementById('btn-login');btn.textContent='Đang đăng nhập...';btn.disabled=true;
-  try{await fbSignIn(email,pwd);}
-  catch(e){reportAuthErr('login',e,doLogin);}
+  try{
+    await fbSignIn(email,pwd);
+    clearLoginFails(email);
+  }catch(e){
+    var _c=(e&&e.code)||'';
+    if(_c==='auth/wrong-password'||_c==='auth/invalid-credential')registerLoginFail(email);
+    if(loginLockRemaining(email)>0){showLoginLock(email);return;}
+    reportAuthErr('login',e,doLogin);
+  }
   btn.textContent='Đăng nhập \u2192';btn.disabled=false;
 }
 async function doRegister(){
@@ -3835,6 +3894,61 @@ function doLogout(){
     document.getElementById('setup-screen').style.display='flex';
     document.getElementById('app').style.display='none';
   }).catch(function(){});
+}
+// ===== TÀI KHOẢN: đổi tên hiển thị & mật khẩu (sau khi đăng nhập) =====
+function openAccountModal(){
+  var u=fbAuth&&fbAuth.currentUser;if(!u)return;
+  var hasPwd=(u.providerData||[]).some(function(p){return p.providerId==='password';});
+  var h='';
+  h+='<div class="acc-sec"><div class="acc-h">✏️ Tên hiển thị</div>';
+  h+='<input id="acc-name" class="skl-inp" value="'+escHtml(u.displayName||'')+'" placeholder="Tên của bạn" maxlength="60">';
+  h+='<button class="btn btn-g acc-btn" data-account-action="save-name">✓ Lưu tên</button></div>';
+  h+='<div class="acc-sec" style="margin-top:18px"><div class="acc-h">🔑 Đổi mật khẩu</div>';
+  if(hasPwd){
+    h+='<input id="acc-cur" type="password" class="skl-inp" placeholder="Mật khẩu hiện tại" autocomplete="current-password">';
+    h+='<input id="acc-new" type="password" class="skl-inp" style="margin-top:8px" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" autocomplete="new-password">';
+    h+='<input id="acc-new2" type="password" class="skl-inp" style="margin-top:8px" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">';
+    h+='<button class="btn btn-g acc-btn" data-account-action="save-pwd">✓ Đổi mật khẩu</button>';
+  }else{
+    h+='<div style="font-size:13px;color:#888;line-height:1.5">Bạn đăng nhập bằng <b>Google</b> — mật khẩu do Google quản lý. Đổi mật khẩu trong tài khoản Google của bạn.</div>';
+  }
+  h+='</div>';
+  h+='<div id="acc-msg" style="margin-top:14px;font-size:13px;min-height:18px;line-height:1.4"></div>';
+  document.getElementById('account-body').innerHTML=h;
+  document.getElementById('account-ov').classList.add('open');
+}
+function closeAccountModal(){document.getElementById('account-ov').classList.remove('open');}
+function accMsg(msg,ok){var e=document.getElementById('acc-msg');if(e){e.style.color=ok?'#1A7A5E':'#E53935';e.textContent=msg;}}
+async function doSaveAccName(){
+  var name=((document.getElementById('acc-name')||{}).value||'').trim();
+  if(!name){accMsg('Vui lòng nhập tên');return;}
+  accMsg('Đang lưu...',true);
+  try{
+    await fbUpdateName(name);
+    _meName=name;
+    var tb=document.getElementById('tb-ns');if(tb)tb.textContent='👤 '+name;
+    try{recordAccount(fbAuth.currentUser,{});}catch(e){}
+    accMsg('✓ Đã đổi tên hiển thị thành: '+name,true);
+  }catch(e){accMsg('Lỗi: '+(FB_ERRS[(e&&e.code)]||(e&&e.message)||e));}
+}
+async function doSaveAccPwd(){
+  var cur=(document.getElementById('acc-cur')||{}).value||'';
+  var nw=(document.getElementById('acc-new')||{}).value||'';
+  var nw2=(document.getElementById('acc-new2')||{}).value||'';
+  if(!cur){accMsg('Nhập mật khẩu hiện tại');return;}
+  if(nw.length<6){accMsg('Mật khẩu mới tối thiểu 6 ký tự');return;}
+  if(nw!==nw2){accMsg('Mật khẩu mới nhập lại không khớp');return;}
+  if(nw===cur){accMsg('Mật khẩu mới trùng mật khẩu cũ');return;}
+  accMsg('Đang đổi...',true);
+  try{
+    await fbChangePassword(cur,nw);
+    ['acc-cur','acc-new','acc-new2'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    accMsg('✓ Đã đổi mật khẩu thành công!',true);
+  }catch(e){
+    var code=(e&&e.code)||'';
+    var msg=(code==='auth/wrong-password'||code==='auth/invalid-credential')?'Mật khẩu hiện tại không đúng':(FB_ERRS[code]||(e&&e.message)||e);
+    accMsg('Lỗi: '+msg);
+  }
 }
 
 // ================================================================
@@ -10324,6 +10438,9 @@ document.addEventListener('click',function(e){
     if(_j>=0)_sc2.splice(_j,1);
     skcfgRenderRows(_sc2);return;
   }
+  // Tài khoản: lưu tên / đổi mật khẩu
+  t=e.target.closest('[data-account-action]');
+  if(t){var _aa=t.getAttribute('data-account-action');if(_aa==='save-name')doSaveAccName();else if(_aa==='save-pwd')doSaveAccPwd();return;}
 
   // Skill toggle
   t=e.target.closest('[data-sk-mid]');
@@ -11972,6 +12089,12 @@ function bindStatic(){
   document.getElementById('skcfg-save').addEventListener('click',saveSkcfgEditor);
   document.getElementById('skcfg-reset').addEventListener('click',skcfgResetDefault);
   document.getElementById('skcfg-ov').addEventListener('click',function(e){if(e.target===this)closeSkcfgEditor();});
+
+  // Tài khoản: bấm tên trên thanh trên cùng để mở đổi tên / mật khẩu
+  var _tbns=document.getElementById('tb-ns');
+  if(_tbns){_tbns.title='Bấm để đổi tên / mật khẩu';_tbns.addEventListener('click',openAccountModal);}
+  document.getElementById('account-close').addEventListener('click',closeAccountModal);
+  document.getElementById('account-ov').addEventListener('click',function(e){if(e.target===this)closeAccountModal();});
 
   document.getElementById('nmod-close').addEventListener('click',closeNodeModal);
   document.getElementById('nmod-cancel').addEventListener('click',closeNodeModal);
