@@ -4835,7 +4835,7 @@ function skillCellHtml(mid,s){
   h+='<div class="skc'+(done?' done':'')+'">✓</div>';
   h+='<div class="sk-main"><div class="sklbl">'+escHtml(s.lbl)+'</div>';
   // v6.63 — Kỹ năng DISC: nút "📝 Đo DISC" mở bài đo cho đúng thành viên này
-  if(s.id==='disc' && typeof discFromSkill==='function'){
+  if(typeof isDiscSkill==='function' && isDiscSkill(s) && typeof discFromSkill==='function'){
     var _dnd=(typeof discNodeByMemberId==='function')?discNodeByMemberId(mid):null;
     var _dcur=(_dnd&&_dnd.disc)?String(_dnd.disc).toUpperCase().replace(/[^DISC]/g,'')[0]:'';
     h+='<div class="sk-links"><button class="sk-link-edit" style="border-color:#F07B30;color:#F07B30" onclick="discFromSkill(\''+mid+'\')">📝 '+(_dcur?'Đo lại DISC (hiện: '+_dcur+')':'Đo DISC')+'</button>';
@@ -8173,8 +8173,11 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-f1of" class="nmod-inp" style="width:160px" value="'+escHtml(defF1)+'" placeholder="Ho\u1eb7c nh\u1eadp t\u00ean..."></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div>';
   h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Nhóm tính cách — gõ chữ: D, I, S hoặc C (vd: D hay DI)</div></div>';
-  h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4"></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Gõ tay D/I/S/C — hoặc bấm "Đo DISC" để làm bài</div></div>';
+  h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
+  h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4">';
+  if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
+  h+='</div></div>';
   var _shipSel=v.ship||'';
   h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
   h+='<div style="display:flex;align-items:center;gap:6px">';
@@ -12874,6 +12877,8 @@ var D_TYPES={
 var _discTestNode=null, _discView='map';
 
 function dnorm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,'');}
+/* Nhận diện kỹ năng DISC kể cả khi QTV đã đổi id/nhãn (khớp id 'disc' hoặc nhãn có chữ "disc") */
+function isDiscSkill(s){return !!(s && (s.id==='disc' || /disc/i.test(s.lbl||'')));}
 /* Ánh xạ 1 thành viên (members) sang node trên cây (treeNodes) — khớp theo tên, dự phòng theo Mã ID */
 function discNodeByMemberId(mid){
   var m=(typeof members!=='undefined'&&members)?members.find(function(x){return x.id===mid;}):null;
