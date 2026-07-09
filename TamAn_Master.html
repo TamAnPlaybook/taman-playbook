@@ -1,4 +1,5 @@
-<!-- VERSION: v6.62-unified-flexible-search -->
+<!-- VERSION: v6.63-diemdanh-ship-icon -->
+<!-- v6.63 — THẺ ĐIỂM DANH (Kế hoạch ngày & Điểm danh): thay NÚT NGÔI SAO ghim ★/☆ ở góc phải mỗi thẻ THÀNH icon con tàu VÀNG/BẠC (lấy theo dữ liệu node.ship đã nhập ở Sơ đồ/nhị phân — shipSVG). TV chưa gán tàu thì góc phải để trống. Chức năng "Ghim lên đầu" chuyển sang danh sách tab Kỹ năng (memberCard vẫn còn nút ghim); trạng thái pinned vẫn đẩy TV lên đầu như cũ. CSS .mc-ship. -->
 <!-- v6.62 — MỌI ô tìm (tất cả tab/subtab) DÙNG CHUNG chuẩn: bỏ dấu + không phân biệt hoa/thường + khớp CHUỖI CON ở bất kỳ đâu trong tên/thuộc tính + nhiều TỪ KHOÁ (AND) → gõ 1 ký tự đã hiện mọi tên liên quan. Nâng cấp ô Tiềm năng (bỏ dấu) + Toàn bộ user (nhiều từ khoá) + tăng số gợi ý 15→50 (còn nữa báo "gõ thêm"). -->
 <!--
   ============================================================================
@@ -1053,6 +1054,8 @@ tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left
 tr.adash-sec2 td{background:#F4F2EB;color:#666}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
+.mc-ship{display:inline-flex;align-items:center;justify-content:center;padding:3px 6px;flex-shrink:0} /* v6.63 — icon tàu thay nút ghim ở góc thẻ điểm danh */
+.mc-ship .ship-ico{vertical-align:0}
 .ship-top{position:absolute;left:0;top:-42px;width:100%;pointer-events:none;z-index:5;line-height:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .shipmx{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
 .shipmx th,.shipmx td{border:1px solid #D8D2C4;padding:7px 8px;text-align:left;vertical-align:top}
@@ -4461,7 +4464,8 @@ function dailyComboCard(m,ord){
   var act=memberActive(m);
   h+='<span class="badge '+(act?'bg':'bgr')+'">'+(act?'✓ Có hoạt động':'— Chưa điểm danh')+'</span>';
   h+='</div></div>';
-  h+='<div class="sort-btns"><button class="sb pin-btn'+(m.pinned?' on':'')+'" data-pin-mid="'+m.id+'" title="Ghim lên đầu">'+(m.pinned?'★':'☆')+'</button></div>';
+  // v6.63 — góc phải hiển thị CON TÀU (Vàng/Bạc) theo dữ liệu Sơ đồ (node.ship); TV chưa gán tàu → để trống. (Ghim lên đầu chuyển sang tab Kỹ năng.)
+  if(tn&&tn.ship)h+='<div class="sort-btns"><span class="mc-ship" title="'+shipLabel(tn.ship)+'">'+shipSVG(tn.ship,22)+'</span></div>';
   h+='</div>'; // mc-hd
   var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
   h+='<div class="mc-att">';
