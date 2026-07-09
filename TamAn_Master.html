@@ -4593,7 +4593,7 @@ function renderDailyCombined(){
 function guestCard(m){
   var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
   var act=memberActive(m);
-  var h='<div class="mc mc-combo">';
+  var h='<div class="mc mc-combo" id="gcard-'+m.id+'">';
   h+='<div class="mc-hd" style="cursor:default">';
   h+='<div class="dd-ord" style="background:#9C6ADE">👤</div>';
   h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách · chưa có ID</span></div>';
@@ -4611,7 +4611,11 @@ function guestSectionHtml(guestArr){
   var h='<div class="guest-sec">';
   h+='<div class="grp-hd dd-col-hd" style="background:#F3E5F5;color:#5E35B1"><span>👤 Khách / chưa có ID</span><span>'+guestArr.length+'</span></div>';
   h+='<div class="att-legend" style="background:#FAF5FF;border-color:#E1BEE7">Thêm <b>người ngoài chưa có ID</b> để điểm danh cho hành trình. Điền <b>Mã ID dự phòng</b> — khi bạn tạo ID có Mã ID trùng, người này <b>tự trở thành thành viên chính thức</b> và <b>giữ nguyên lịch sử điểm danh</b> trước đó.</div>';
-  guestArr.forEach(function(m){h+=guestCard(m);});
+  // v6.63 — khách ĐÃ điểm danh ✓ tự đẩy lên trên (giống ID); còn lại xếp A,B,C
+  var _garr=guestArr.slice().sort(function(a,b){
+    var q=(memberActive(b)?1:0)-(memberActive(a)?1:0);if(q)return q;
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});});
+  _garr.forEach(function(m){h+=guestCard(m);});
   h+='<div class="guest-add"><input id="guest-new-name" class="inc-inp" placeholder="Tên người ngoài"><input id="guest-new-code" class="inc-inp" placeholder="Mã ID dự phòng (tuỳ chọn)"><button class="btn btn-g" data-act="add-guest">➕ Thêm khách</button></div>';
   h+='</div>';
   return h;
@@ -7999,7 +8003,14 @@ function renderDdSearchSug(q){
   q=q||'';
   if(!q.trim()){box.style.display='none';box.innerHTML='';return;}
   var cands=filterByTokens(searchCandidates(),q,candSearchText,function(c){return c.name;});
-  if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
+  // v6.63 — KHÁCH (người ngoài chưa có ID) cũng vào danh sách sổ xuống; bấm để tới thẻ điểm danh của họ
+  var gHtml='';var _gq=noAccent(q).toLowerCase().trim();
+  if(_gq){loadGuests().forEach(function(g){
+    if(noAccent(g.name).toLowerCase().indexOf(_gq)>=0){
+      var _ga=memberActive(g)?' ✓':'';
+      gHtml+='<div class="srch-sug" data-ddsearch-guest="'+escHtml(g.id)+'"><span class="srch-sug-name">'+escHtml(g.name)+'</span><span class="srch-sug-tag" style="color:#8E24AA">👤 Khách'+_ga+'</span></div>';
+    }});}
+  if(!cands.length && !gHtml){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
   var h='';
   cands.slice(0,SUG_MAX).forEach(function(c){
     if(c.isNode){
@@ -8012,6 +8023,7 @@ function renderDdSearchSug(q){
     }
   });
   h+=sugMoreHtml(cands.length);
+  h+=gHtml;
   box.innerHTML=h;box.style.display='block';
 }
 function lkAddCandidates(){
@@ -9803,6 +9815,23 @@ document.addEventListener('click',function(e){
 
   // Tìm kiếm Điểm danh: chọn gợi ý → LỌC DANH SÁCH theo CẢ NHÁNH của ID đó
   // (đồng bộ chuẩn tab Sơ đồ: "tìm thấy tên → hiện cả cây ID đó trở xuống")
+  // v6.63 — chọn KHÁCH từ ô tìm "đưa ra giữa": mở Kế hoạch ngày & Điểm danh và cuộn tới thẻ khách
+  t=e.target.closest('[data-ddsearch-guest]');
+  if(t){
+    var _gid=t.getAttribute('data-ddsearch-guest');
+    var _si0=document.getElementById('srch');if(_si0)_si0.value='';
+    var _ss0=document.getElementById('srch-sug');if(_ss0)_ss0.style.display='none';
+    var _mt=document.querySelector('.mtab[data-main="tp"]');if(_mt)_mt.click();
+    var _st1=document.querySelector('.stab[data-sub="tp:actions"]');if(_st1)_st1.click();
+    var _st2=document.querySelector('.stab[data-sub="act:ngay"]');if(_st2)_st2.click();
+    setTimeout(function(){
+      var card=document.getElementById('gcard-'+_gid);
+      if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+        var _o=card.style.boxShadow;card.style.boxShadow='0 0 0 3px #F07B30';
+        setTimeout(function(){card.style.boxShadow=_o;},1500);}
+    },240);
+    return;
+  }
   t=e.target.closest('[data-ddsearch-name]');
   if(t){
     var _dnid=t.getAttribute('data-ddsearch-nid');
