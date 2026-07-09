@@ -1,4 +1,5 @@
-<!-- VERSION: v6.64-club-branchhead-peer-reviews -->
+<!-- VERSION: v6.65-admin-edit-branchhead -->
+<!-- v6.65 — Áp NỐT dropdown BẮT BUỘC "Hãy liên hệ đầu nhánh của tôi" (BRANCH_HEADS) vào modal "Sửa câu lạc bộ (QTV)" (openAdminClubEdit, ô ce-contact input tự do → select) + validation chưa chọn thì báo lỗi trong saveAdminClubEdit. (Bổ sung theo yêu cầu Huy: v6.64 mới đổi form "Thêm/Sửa CLB của tôi", form QTV sửa CLB người khác chưa đổi.) -->
 <!-- v6.64 — VỊ TRÍ CLB, form "Thêm/Sửa CLB của tôi": (I) thay ô "Liên hệ (SĐT/ID)" (nhập tự do) THÀNH dropdown BẮT BUỘC "Hãy liên hệ đầu nhánh của tôi" (6 đầu nhánh cố định BRANCH_HEADS) — chưa chọn thì báo lỗi khi lưu; giá trị lưu vào ownerContact. (II) BỎ ô tự chấm "Đánh giá 1–10 sao" của chủ CLB → thay bằng ĐÁNH GIÁ KHÁCH QUAN do NGƯỜI KHÁC chấm: mỗi user bấm "⭐ Chấm" trên CLB người khác (Danh bạ + popup bản đồ) → cửa sổ chấm 2 sao 1–5 (🛎️ Dịch vụ + ⚖️ Đạo lý/quy tắc hành xử) + 2 ô nhận xét; CLB hiện điểm TRUNG BÌNH + danh sách nhận xét (kèm tên người chấm). Lưu collection MỚI clubReviews/{ownerUid__cid__raterUid} (1 người 1 lần/CLB, sửa được). ⚠ CẦN Huy PUBLISH Rules v6.64 (match /clubReviews) thì gửi/đọc đánh giá mới chạy. Hàm: reviewKeyOf/reviewAgg/reviewSummaryHtml/reviewsListHtml/loadClubReviews/openRateClub/submitClubReview. -->
 <!-- v6.63 — THẺ ĐIỂM DANH (Kế hoạch ngày & Điểm danh): thay NÚT NGÔI SAO ghim ★/☆ ở góc phải mỗi thẻ THÀNH icon con tàu VÀNG/BẠC (lấy theo dữ liệu node.ship đã nhập ở Sơ đồ/nhị phân — shipSVG). TV chưa gán tàu thì góc phải để trống. Chức năng "Ghim lên đầu" chuyển sang danh sách tab Kỹ năng (memberCard vẫn còn nút ghim); trạng thái pinned vẫn đẩy TV lên đầu như cũ. CSS .mc-ship. -->
 <!-- v6.62 — MỌI ô tìm (tất cả tab/subtab) DÙNG CHUNG chuẩn: bỏ dấu + không phân biệt hoa/thường + khớp CHUỖI CON ở bất kỳ đâu trong tên/thuộc tính + nhiều TỪ KHOÁ (AND) → gõ 1 ký tự đã hiện mọi tên liên quan. Nâng cấp ô Tiềm năng (bỏ dấu) + Toàn bộ user (nhiều từ khoá) + tăng số gợi ý 15→50 (còn nữa báo "gõ thêm"). -->
@@ -3734,7 +3735,7 @@ function openAdminClubEdit(uid,primary,id){
   h+='<div class="map-row2"><div class="map-fld"><label>Thành phố / Tỉnh</label><input class="map-inp" id="ce-city" list="vn-provinces" placeholder="Chọn hoặc gõ Tỉnh/Thành..." value="'+g(c.city)+'"></div>'+
      '<div class="map-fld"><label>Quốc gia</label><input class="map-inp" id="ce-country" value="'+g(c.country)+'"></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Chủ CLB</label><input class="map-inp" id="ce-owner" value="'+g(c.ownerName)+'"></div>'+
-     '<div class="map-fld"><label>Liên hệ</label><input class="map-inp" id="ce-contact" value="'+g(c.ownerContact)+'"></div></div>';
+     '<div class="map-fld"><label>Hãy liên hệ đầu nhánh của tôi <span style="color:#E53935">*</span></label><select class="map-inp" id="ce-contact">'+branchHeadOptions(c.ownerContact)+'</select></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Vĩ độ (lat)</label><input class="map-inp" id="ce-lat" value="'+ll(c.lat)+'"></div>'+
      '<div class="map-fld"><label>Kinh độ (lng)</label><input class="map-inp" id="ce-lng" value="'+ll(c.lng)+'"></div></div>';
   var body=document.getElementById('clubedit-body');if(body)body.innerHTML=h;
@@ -3764,6 +3765,8 @@ function _readAdminClubForm(){
 function saveAdminClubEdit(){
   if(!_admClubEdit){closeAdminClubEdit();return;}
   var ed=_admClubEdit,f=_readAdminClubForm();
+  // v6.65 — BẮT BUỘC chọn đầu nhánh liên hệ (giống form thêm/sửa CLB của tôi)
+  if(!f.ownerContact){showToast('⚠ Hãy chọn "đầu nhánh của tôi" để liên hệ trước khi lưu');var _e=document.getElementById('ce-contact');if(_e&&_e.focus)try{_e.focus();}catch(x){}return;}
   if(f.lat==null||f.lng==null){showToast('Cần toạ độ — bấm 🔍 Tìm toạ độ hoặc nhập lat/lng');return;}
   var job;
   if(ed.primary){
