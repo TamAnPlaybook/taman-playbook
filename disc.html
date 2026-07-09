@@ -160,6 +160,14 @@
   .del-btn { background: none; border: none; cursor: pointer; color: var(--text-soft); font-size: 18px; padding: 4px 8px; border-radius: 6px; }
   .del-btn:hover { background: var(--D-soft); color: var(--D); }
 
+  .tnode { display:flex; align-items:center; gap: 10px; padding: 9px 12px; border:1px solid var(--border); border-left-width:4px; border-radius: 10px; margin-bottom: 7px; background:#fff; position: relative; }
+  .tnode .tbadge { width: 26px; height: 26px; border-radius: 7px; color:#fff; font-weight: 900; display:grid; place-items:center; font-size: 13px; flex-shrink:0; }
+  .tnode .tname { font-weight: 700; }
+  .tnode .tid { font-size: 12px; color: var(--blue); background: var(--bg); padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+  .tnode .tmeta { font-size: 12px; color: var(--text-soft); margin-left: auto; margin-right: 4px; }
+  .tnode .torphan { font-size: 11.5px; color: var(--orange); font-style: italic; }
+  .troot-label { font-size: 12px; font-weight: 700; color: var(--text-soft); margin: 14px 0 6px; text-transform: uppercase; letter-spacing:.5px; }
+
   .compo { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 6px 0 18px; }
   .compo-cell { border-radius: 14px; padding: 16px; text-align: center; border: 2px solid; }
   .compo-cell .n { font-size: 30px; font-weight: 900; }
@@ -269,9 +277,11 @@
       <div class="u-line"></div>
       <p class="lead">Gồm <b>2 phần</b> để tăng độ chính xác: Phần 1 — 24 nhóm từ (chọn <b style="color:var(--green)">Giống nhất</b> & <b style="color:var(--D)">Ít nhất</b>); Phần 2 — 10 tình huống thực tế (chọn 1 phương án đúng bạn nhất). Trả lời theo phản xạ đầu tiên, trung thực. Mất khoảng 7–10 phút.</p>
       <div class="name-row">
-        <input id="memberName" type="text" placeholder="Họ tên của bạn (để lưu vào đội nhóm)" />
-        <input id="memberRole" type="text" placeholder="Vai trò / Ghi chú (tuỳ chọn)" />
+        <input id="memberName" type="text" placeholder="Họ tên của bạn" />
+        <input id="memberIdCode" type="text" placeholder="Mã ID của bạn (vd: lanchi88hptv)" />
+        <input id="memberUpline" type="text" placeholder="Mã ID tuyến trên / Bảo trợ (nếu có)" />
       </div>
+      <p class="matrix-note">🔑 <b>Mã ID</b> giúp khớp kết quả của bạn vào đúng vị trí trên <b>cây đội nhóm</b>. Nhập <b>Mã ID tuyến trên</b> để báo cáo tự gom lên tuyến trên khi Mã ID khớp nhau.</p>
     </div>
 
     <div class="progress-wrap">
@@ -296,9 +306,14 @@
   <!-- ============ TEAM ============ -->
   <div class="view" id="view-team">
     <div class="card">
-      <h2>Bản đồ DISC đội nhóm</h2>
+      <h2>Bản đồ DISC đội nhóm (theo cây tuyến)</h2>
       <div class="u-line"></div>
-      <p class="lead">Mỗi thành viên làm bài và lưu kết quả sẽ xuất hiện tại đây (lưu trên trình duyệt của bạn). Dùng bản đồ này để phân vai, ghép cặp và cân bằng đội nhóm.</p>
+      <p class="lead">Các thành viên được xếp thành <b>cây theo Mã ID tuyến trên</b>. Downline bấm <b>"Xuất để gửi tuyến trên"</b> ở màn hình kết quả rồi gửi file cho bạn; bạn bấm <b>"Nhập file"</b> — hệ thống tự khớp đúng vị trí trên cây theo Mã ID (mỗi Mã ID giữ 1 kết quả mới nhất).</p>
+      <div class="btn-row" style="margin-bottom:16px">
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📥 Nhập file kết quả</button>
+        <button class="btn btn-ghost" onclick="exportTeam()">📤 Xuất toàn bộ đội nhóm</button>
+        <input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importTeam(this)" />
+      </div>
       <div id="teamContent"></div>
     </div>
     <div class="card" id="compoCard" style="display:none">
@@ -488,7 +503,7 @@ const TYPES = {
 };
 
 const ORDER = ["D","I","S","C"];
-const STORE_KEY = "taman_disc_team_v2";
+const STORE_KEY = "taman_disc_team_v3";
 
 /* ===================== ĐIỀU HƯỚNG ===================== */
 function go(view){
@@ -603,8 +618,9 @@ function computeResult(){
   ORDER.forEach(k=> pct[k] = Math.max(0,Math.min(100, Math.round((score[k]+24)/58*100))));
   const ranked = [...ORDER].sort((a,b)=> pct[b]-pct[a]);
   const name = (document.getElementById('memberName').value||'').trim() || 'Bạn';
-  const role = (document.getElementById('memberRole').value||'').trim();
-  const data = { name, role, pct, ranked, primary:ranked[0], secondary:ranked[1], ts:Date.now() };
+  const idCode = norm(document.getElementById('memberIdCode').value||'');
+  const uplineCode = norm(document.getElementById('memberUpline').value||'');
+  const data = { name, idCode, uplineCode, pct, ranked, primary:ranked[0], secondary:ranked[1], ts:Date.now() };
   window.__lastResult = data;
   renderResult(data);
   document.getElementById('tabResult').style.display='';
@@ -639,7 +655,7 @@ function renderResult(d){
 
   document.getElementById('resultContent').innerHTML = `
     <div class="result-hero" style="background:linear-gradient(135deg,${c},${shade(c,-18)})">
-      <div class="rname">Kết quả DISC của ${escapeHtml(d.name)}${d.role?' · '+escapeHtml(d.role):''}</div>
+      <div class="rname">Kết quả DISC của ${escapeHtml(d.name)}${d.idCode?' · 🔑 '+escapeHtml(d.idCode):''}${d.uplineCode?' · ⬆ tuyến trên: '+escapeHtml(d.uplineCode):''}</div>
       <h2>${t.emoji} ${t.name}</h2>
       <div class="rtag">${t.tag} · "${t.alias}"</div>
       <div class="badges">
@@ -689,6 +705,7 @@ function renderResult(d){
     <div class="card">
       <div class="btn-row">
         <button class="btn btn-primary" onclick="saveToTeam()">💾 Lưu vào đội nhóm</button>
+        <button class="btn btn-ghost" onclick="exportMine()">📤 Xuất để gửi tuyến trên</button>
         <button class="btn btn-ghost" onclick="window.print()">🖨️ In / Lưu PDF</button>
         <button class="btn btn-ghost" onclick="retake()">🔄 Làm lại</button>
       </div>
@@ -704,40 +721,120 @@ function appTab(el,id){
 }
 function retake(){
   buildQuestions(); buildScenarios(); updateProgress();
-  document.getElementById('memberName').value=''; document.getElementById('memberRole').value='';
+  document.getElementById('memberName').value='';
+  document.getElementById('memberIdCode').value='';
+  document.getElementById('memberUpline').value='';
   go('test');
 }
 
-/* ===================== ĐỘI NHÓM ===================== */
+/* ===================== ĐỘI NHÓM (theo cây Mã ID) ===================== */
+function norm(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,''); }
 function loadTeam(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||[]; }catch(e){ return []; } }
 function saveTeamArr(arr){ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+
 function saveToTeam(){
   const d = window.__lastResult; if(!d) return;
-  const arr = loadTeam(); arr.push(d); saveTeamArr(arr);
   const msg = document.getElementById('saveMsg');
-  if(msg) msg.textContent = `✅ Đã lưu "${d.name}" vào bản đồ đội nhóm (${arr.length} thành viên).`;
-}
-function delMember(idx){
+  if(!d.idCode){ if(msg) msg.textContent = '⚠️ Vui lòng nhập Mã ID ở bước làm bài để lưu và khớp vào cây đội nhóm.'; return; }
   const arr = loadTeam();
-  if(!confirm(`Xoá "${arr[idx]?.name}" khỏi đội nhóm?`)) return;
-  arr.splice(idx,1); saveTeamArr(arr); renderTeam();
+  const ix = arr.findIndex(x=> x.idCode===d.idCode);
+  let word;
+  if(ix>=0){ arr[ix]=d; word='cập nhật'; } else { arr.push(d); word='lưu'; }
+  saveTeamArr(arr);
+  if(msg) msg.textContent = `✅ Đã ${word} "${d.name}" (🔑 ${d.idCode}) vào bản đồ đội nhóm (${arr.length} thành viên).`;
 }
+function delMemberById(enc){
+  const idCode = decodeURIComponent(enc);
+  const arr = loadTeam();
+  const ix = arr.findIndex(m=> m.idCode===idCode);
+  if(ix<0) return;
+  if(!confirm(`Xoá "${arr[ix].name}" (🔑 ${idCode}) khỏi đội nhóm?`)) return;
+  arr.splice(ix,1); saveTeamArr(arr); renderTeam();
+}
+
+/* Xuất / Nhập để khớp cây giữa các thành viên/thiết bị */
+function downloadJson(obj, name){
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+function exportMine(){
+  const d = window.__lastResult; if(!d) return;
+  if(!d.idCode){ alert('Bạn cần nhập Mã ID để xuất file khớp cây.'); return; }
+  downloadJson([d], `disc-${d.idCode}.json`);
+}
+function exportTeam(){
+  const arr = loadTeam();
+  if(!arr.length){ alert('Chưa có dữ liệu để xuất.'); return; }
+  downloadJson(arr, 'disc-doi-nhom.json');
+}
+function importTeam(input){
+  const f = input.files && input.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      let data = JSON.parse(rd.result);
+      if(!Array.isArray(data)) data = [data];
+      const arr = loadTeam(); let added=0, updated=0, skipped=0;
+      data.forEach(m=>{
+        if(!m || !m.primary || !m.pct){ skipped++; return; }
+        m.idCode = norm(m.idCode); m.uplineCode = norm(m.uplineCode);
+        if(!m.idCode){ arr.push(m); added++; return; }
+        const ix = arr.findIndex(x=> x.idCode===m.idCode);
+        if(ix>=0){ if((m.ts||0) >= (arr[ix].ts||0)){ arr[ix]=m; updated++; } else skipped++; }
+        else { arr.push(m); added++; }
+      });
+      saveTeamArr(arr); renderTeam();
+      alert(`Đã nhập: thêm ${added}, cập nhật ${updated}${skipped?`, bỏ qua ${skipped}`:''}. Hệ thống tự khớp vào cây theo Mã ID.`);
+    }catch(e){ alert('File không hợp lệ: '+e.message); }
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+
+function renderNode(m, childrenOf, depth, seen){
+  if(seen.has(m.idCode||m.name)) return ''; seen.add(m.idCode||m.name);
+  const t = TYPES[m.primary];
+  const enc = encodeURIComponent(m.idCode||'');
+  const kids = (m.idCode && childrenOf[m.idCode]) ? childrenOf[m.idCode] : [];
+  let h = `<div class="tnode" style="margin-left:${depth*22}px;border-left-color:${t.color}">
+    <span class="tbadge" style="background:${t.color}">${m.primary}</span>
+    <span class="tname">${escapeHtml(m.name)}</span>
+    ${m.idCode?`<span class="tid">🔑 ${escapeHtml(m.idCode)}</span>`:'<span class="torphan">(chưa có Mã ID)</span>'}
+    <span class="tmeta">${m.primary}${m.secondary} · ${new Date(m.ts).toLocaleDateString('vi-VN')}</span>
+    ${m.idCode?`<button class="del-btn" onclick="delMemberById('${enc}')" title="Xoá">🗑️</button>`:''}
+  </div>`;
+  kids.forEach(k=> h += renderNode(k, childrenOf, depth+1, seen));
+  return h;
+}
+
 function renderTeam(){
   const arr = loadTeam();
   const wrap = document.getElementById('teamContent'), compoCard = document.getElementById('compoCard');
   if(!arr.length){
-    wrap.innerHTML = `<div class="team-empty">👥 Chưa có thành viên nào.<br>Hãy làm bài đo lường và bấm <b>"Lưu vào đội nhóm"</b> để bắt đầu.</div>
+    wrap.innerHTML = `<div class="team-empty">👥 Chưa có thành viên nào.<br>Hãy làm bài đo lường, nhập <b>Mã ID</b> và bấm <b>"Lưu vào đội nhóm"</b> — hoặc <b>"Nhập file"</b> kết quả từ thành viên khác.</div>
       <div class="btn-row" style="justify-content:center"><button class="btn btn-primary" onclick="go('test')">Làm bài ngay →</button></div>`;
     compoCard.style.display='none'; return;
   }
-  wrap.innerHTML = arr.map((m,i)=>{
-    const t = TYPES[m.primary];
-    return `<div class="member-row">
-      <div><div class="member-name">${escapeHtml(m.name)}</div><div class="member-sub">${m.role?escapeHtml(m.role)+' · ':''}Kiểu ${m.primary}${m.secondary} · ${new Date(m.ts).toLocaleDateString('vi-VN')}</div></div>
-      <span class="style-badge" style="background:${t.color}">${m.primary} ${t.emoji}</span>
-      <button class="del-btn" onclick="delMember(${i})" title="Xoá">🗑️</button>
-    </div>`;
-  }).join('');
+  // Dựng cây theo uplineCode → idCode
+  const byId = {}; arr.forEach(m=>{ if(m.idCode) byId[m.idCode]=m; });
+  const childrenOf = {}; const roots = [];
+  arr.forEach(m=>{
+    const up = m.uplineCode;
+    if(up && byId[up] && up!==m.idCode){ (childrenOf[up]=childrenOf[up]||[]).push(m); }
+    else roots.push(m);
+  });
+  const seen = new Set();
+  let html = '';
+  roots.forEach(r=>{
+    const orphanUp = r.uplineCode && !byId[r.uplineCode];
+    if(orphanUp) html += `<div class="troot-label">⬆ Tuyến trên "<b>${escapeHtml(r.uplineCode)}</b>" chưa có trong dữ liệu — hiển thị như gốc tạm</div>`;
+    html += renderNode(r, childrenOf, 0, seen);
+  });
+  // phòng trường hợp còn sót (vòng lặp) — hiện phẳng
+  arr.forEach(m=>{ if(!seen.has(m.idCode||m.name)) html += renderNode(m, childrenOf, 0, seen); });
+  wrap.innerHTML = html;
+
   const count = {D:0,I:0,S:0,C:0}; arr.forEach(m=> count[m.primary]++);
   const total = arr.length;
   document.getElementById('compoGrid').innerHTML = ORDER.map(k=>{
