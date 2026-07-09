@@ -4834,6 +4834,14 @@ function skillCellHtml(mid,s){
   var h='<div class="ski" data-sk-mid="'+mid+'" data-sk-id="'+s.id+'">';
   h+='<div class="skc'+(done?' done':'')+'">✓</div>';
   h+='<div class="sk-main"><div class="sklbl">'+escHtml(s.lbl)+'</div>';
+  // v6.63 — Kỹ năng DISC: nút "📝 Đo DISC" mở bài đo cho đúng thành viên này
+  if(s.id==='disc' && typeof discFromSkill==='function'){
+    var _dnd=(typeof discNodeByMemberId==='function')?discNodeByMemberId(mid):null;
+    var _dcur=(_dnd&&_dnd.disc)?String(_dnd.disc).toUpperCase().replace(/[^DISC]/g,'')[0]:'';
+    h+='<div class="sk-links"><button class="sk-link-edit" style="border-color:#F07B30;color:#F07B30" onclick="discFromSkill(\''+mid+'\')">📝 '+(_dcur?'Đo lại DISC (hiện: '+_dcur+')':'Đo DISC')+'</button>';
+    if(_dcur)h+='<button class="sk-link-edit" style="border-color:#1B4F8A;color:#1B4F8A" onclick="discProfileFromSkill(\''+mid+'\')">📊 Xem hồ sơ</button>';
+    h+='</div>';
+  }
   var chips='';
   links.forEach(function(lk){
     var u=normSkillUrl(lk.url);if(!u)return;
@@ -12861,6 +12869,28 @@ var D_TYPES={
 var _discTestNode=null, _discView='map';
 
 function dnorm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,'');}
+/* Ánh xạ 1 thành viên (members) sang node trên cây (treeNodes) — khớp theo tên, dự phòng theo Mã ID */
+function discNodeByMemberId(mid){
+  var m=(typeof members!=='undefined'&&members)?members.find(function(x){return x.id===mid;}):null;
+  if(!m||typeof treeNodes==='undefined'||!treeNodes)return null;
+  var nm=treeNodes.find(function(x){return x.name===m.name;});
+  if(nm)return nm;
+  var c=dnorm(m.idCode||'');
+  return c?treeNodes.find(function(x){return dnorm(x.idCode)===c;}):null;
+}
+/* Từ thẻ Kỹ năng: mở tab Đo DISC và bắt đầu bài đo cho đúng người */
+function discFromSkill(mid){
+  var node=discNodeByMemberId(mid);
+  if(!node){showToast('Chưa tìm thấy người này trên cây Sơ đồ — hãy thêm ID trước');return;}
+  var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();
+  discStartTest(node.id);
+}
+function discProfileFromSkill(mid){
+  var node=discNodeByMemberId(mid);
+  if(!node){showToast('Chưa tìm thấy người này trên cây Sơ đồ');return;}
+  var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();
+  discViewProfile(node.id);
+}
 function loadDisc(){try{var s=nmGet('disc_v1');var o=s?JSON.parse(s):{};return (o&&typeof o==='object')?o:{};}catch(e){return {};}}
 function saveDisc(o){nmSet('disc_v1',JSON.stringify(o));if(typeof fbDb!=='undefined'&&fbDb&&fbUser)fsSet('disc',{disc:o}).catch(function(){});}
 function loadDiscCloud(){if(typeof fbDb==='undefined'||!fbDb||!fbUser)return;fsGet('disc').then(function(d){if(d&&d.disc){nmSet('disc_v1',JSON.stringify(d.disc));var pg=document.getElementById('page-disc');if(pg&&pg.classList.contains('on'))renderDiscPage();}}).catch(function(){});}
