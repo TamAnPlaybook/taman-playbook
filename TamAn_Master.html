@@ -5442,11 +5442,30 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
     myNode=treeNodes.find(function(t){return noAccent(t.name)===noAccent(rootName);})||null;
     if(myNode)matchBy='name';
   }
+  // v6.63 — DISC của ID Gốc tuyến dưới (họ tự đo trên tài khoản của họ) để đồng bộ lên cây tuyến trên theo Mã ID
+  var rootDisc=root?String(root.disc||'').toUpperCase().replace(/[^DISC]/g,''):'';
   return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
     rootName:rootName,rootCode:rootCode,rootJoin:root?(root.joinDate||''):'',
     nMembers:uMembers.length,nPros:uPros.length,
     att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
-    matched:!!myNode,matchBy:matchBy,rank:myNode?nodeRank(myNode.id):0};
+    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,
+    rank:myNode?nodeRank(myNode.id):0};
+}
+// v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
+function applyDownlineDiscToTree(list){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
+  var changed=false,cnt=0;
+  (list||[]).forEach(function(u){
+    if(!u||!u.matched||!u.myNodeId||!u.rootDisc)return;
+    var n=treeNodes.find(function(x){return x.id===u.myNodeId;});
+    if(n&&String(n.disc||'').toUpperCase()!==u.rootDisc){n.disc=u.rootDisc;changed=true;cnt++;}
+  });
+  if(changed){
+    saveTree2();
+    try{if(document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}
+    showToast('✓ Đã đồng bộ DISC từ '+cnt+' tuyến dưới lên cây (theo Mã ID)');
+  }
+  return cnt;
 }
 function scanF3Users(){
   if(_f3uLoading)return;
@@ -5463,6 +5482,7 @@ function scanF3Users(){
     }));
   }).then(function(list){
     _f3uCache=(list||[]).filter(Boolean);
+    try{applyDownlineDiscToTree(_f3uCache);}catch(e){} // v6.63 — tự cập nhật DISC tuyến dưới lên cây theo Mã ID
     _f3uLoading=false;renderF3Users();
   }).catch(function(){_f3uLoading=false;if(!_f3uCache)_f3uCache=[];renderF3Users();});
 }
@@ -8176,8 +8196,8 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-join" class="nmod-inp" style="width:90px" value="'+escHtml(v.joinDate||'')+'" placeholder="5.25"></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt<div style="font-size:11px;color:#AAA">Ng\u00e0y/th\u00e1ng (VD: 5/9) ho\u1eb7c c\u00f3 n\u0103m 5/9/1990</div></div>';
   h+='<input id="nf-bday" class="nmod-inp" style="width:120px" value="'+escHtml(v.birthday||'')+'" placeholder="5/9"></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID</div>';
-  h+='<input id="nf-idcode" class="nmod-inp" style="width:130px" value="'+escHtml(v.idCode||'')+'" placeholder="ID12345"></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 v\u00e0o web <b>PRIFE</b> l\u1ea5y M\u00e3 ID chu\u1ea9n (vd: lanchi88hptv). \u0110\u00e2y l\u00e0 c\u0103n c\u1ee9 \u0111\u1ed3ng b\u1ed9 tuy\u1ebfn d\u01b0\u1edbi \u2192 tuy\u1ebfn tr\u00ean.</div></div>';
+  h+='<input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai)<div style="font-size:11px;color:#AAA">Ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 tr\u1ef1c ti\u1ebfp. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
   h+='<div style="display:flex;flex-direction:column;gap:4px">';
   h+='<input id="nf-f1of-filter" class="sel-filter" style="width:160px;margin-bottom:4px" placeholder="\uD83D\uDD0D G\u00f5 t\u00ecm t\u00ean...">';
@@ -8274,6 +8294,12 @@ function saveNodeModal(){
     ship:((document.getElementById('nf-ship')||{}).value||'')
   };
   var _saveMsg='✓ Đã lưu';
+  // v6.63 — BẮT BUỘC Mã ID: mọi thông tin đồng bộ tuyến dưới → tuyến trên đều căn cứ Mã ID chuẩn (PRIFE)
+  if(!data.idCode){
+    showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
+    var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
+    return;
+  }
   // KIỂM TRA ngày Vào ID: ID tuyến dưới KHÔNG được vào TRƯỚC ID tuyến trên (đặt trên) hoặc người bảo trợ — kể cả phả hệ hay trực hệ
   var _ndate=parseVaoID(data.joinDate);
   if(_ndate!=null){
