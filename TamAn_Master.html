@@ -1205,6 +1205,7 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
     <button class="mtab" data-main="kynang">&#11088; Kỹ năng</button>
     <button class="mtab" data-main="prospect">&#128101; DS kim cương Tiềm năng</button>
     <button class="mtab" data-main="map">&#128205; Vị trí các CLB</button>
+    <button class="mtab" data-main="disc">&#129517; Đo DISC</button>
     <button class="mtab" data-main="guide">&#128214; Hướng dẫn</button>
     <button class="mtab" id="tab-admin" data-main="admin" style="display:none">&#9881;&#65039; Quản trị</button>
   </div>
@@ -1406,6 +1407,11 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   <!-- HƯỚNG DẪN -->
   <div class="page" id="page-guide">
     <div class="content" id="guide-content"></div>
+  </div>
+
+  <!-- ĐO LƯỜNG DISC -->
+  <div class="page" id="page-disc">
+    <div class="content" id="disc-content"></div>
   </div>
 
   <!-- QUẢN TRỊ -->
@@ -3993,7 +3999,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -4736,7 +4742,7 @@ function renderDailyCombined(){
 function guestCard(m){
   var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
   var act=memberActive(m);
-  var h='<div class="mc mc-combo">';
+  var h='<div class="mc mc-combo" id="gcard-'+m.id+'">';
   h+='<div class="mc-hd" style="cursor:default">';
   h+='<div class="dd-ord" style="background:#9C6ADE">👤</div>';
   h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách · chưa có ID</span></div>';
@@ -4754,7 +4760,11 @@ function guestSectionHtml(guestArr){
   var h='<div class="guest-sec">';
   h+='<div class="grp-hd dd-col-hd" style="background:#F3E5F5;color:#5E35B1"><span>👤 Khách / chưa có ID</span><span>'+guestArr.length+'</span></div>';
   h+='<div class="att-legend" style="background:#FAF5FF;border-color:#E1BEE7">Thêm <b>người ngoài chưa có ID</b> để điểm danh cho hành trình. Điền <b>Mã ID dự phòng</b> — khi bạn tạo ID có Mã ID trùng, người này <b>tự trở thành thành viên chính thức</b> và <b>giữ nguyên lịch sử điểm danh</b> trước đó.</div>';
-  guestArr.forEach(function(m){h+=guestCard(m);});
+  // v6.63 — khách ĐÃ điểm danh ✓ tự đẩy lên trên (giống ID); còn lại xếp A,B,C
+  var _garr=guestArr.slice().sort(function(a,b){
+    var q=(memberActive(b)?1:0)-(memberActive(a)?1:0);if(q)return q;
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});});
+  _garr.forEach(function(m){h+=guestCard(m);});
   h+='<div class="guest-add"><input id="guest-new-name" class="inc-inp" placeholder="Tên người ngoài"><input id="guest-new-code" class="inc-inp" placeholder="Mã ID dự phòng (tuỳ chọn)"><button class="btn btn-g" data-act="add-guest">➕ Thêm khách</button></div>';
   h+='</div>';
   return h;
@@ -4977,6 +4987,14 @@ function skillCellHtml(mid,s){
   var h='<div class="ski" data-sk-mid="'+mid+'" data-sk-id="'+s.id+'">';
   h+='<div class="skc'+(done?' done':'')+'">✓</div>';
   h+='<div class="sk-main"><div class="sklbl">'+escHtml(s.lbl)+'</div>';
+  // v6.63 — Kỹ năng DISC: nút "📝 Đo DISC" mở bài đo cho đúng thành viên này
+  if(typeof isDiscSkill==='function' && isDiscSkill(s) && typeof discFromSkill==='function'){
+    var _dnd=(typeof discNodeByMemberId==='function')?discNodeByMemberId(mid):null;
+    var _dcur=(_dnd&&_dnd.disc)?String(_dnd.disc).toUpperCase().replace(/[^DISC]/g,'')[0]:'';
+    h+='<div class="sk-links"><button class="sk-link-edit" style="border-color:#F07B30;color:#F07B30" onclick="discFromSkill(\''+mid+'\')">📝 '+(_dcur?'Đo lại DISC (hiện: '+_dcur+')':'Đo DISC')+'</button>';
+    if(_dcur)h+='<button class="sk-link-edit" style="border-color:#1B4F8A;color:#1B4F8A" onclick="discProfileFromSkill(\''+mid+'\')">📊 Xem hồ sơ</button>';
+    h+='</div>';
+  }
   var chips='';
   links.forEach(function(lk){
     var u=normSkillUrl(lk.url);if(!u)return;
@@ -5573,11 +5591,30 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
     myNode=treeNodes.find(function(t){return noAccent(t.name)===noAccent(rootName);})||null;
     if(myNode)matchBy='name';
   }
+  // v6.63 — DISC của ID Gốc tuyến dưới (họ tự đo trên tài khoản của họ) để đồng bộ lên cây tuyến trên theo Mã ID
+  var rootDisc=root?String(root.disc||'').toUpperCase().replace(/[^DISC]/g,''):'';
   return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
     rootName:rootName,rootCode:rootCode,rootJoin:root?(root.joinDate||''):'',
     nMembers:uMembers.length,nPros:uPros.length,
     att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
-    matched:!!myNode,matchBy:matchBy,rank:myNode?nodeRank(myNode.id):0};
+    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,
+    rank:myNode?nodeRank(myNode.id):0};
+}
+// v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
+function applyDownlineDiscToTree(list){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
+  var changed=false,cnt=0;
+  (list||[]).forEach(function(u){
+    if(!u||!u.matched||!u.myNodeId||!u.rootDisc)return;
+    var n=treeNodes.find(function(x){return x.id===u.myNodeId;});
+    if(n&&String(n.disc||'').toUpperCase()!==u.rootDisc){n.disc=u.rootDisc;changed=true;cnt++;}
+  });
+  if(changed){
+    saveTree2();
+    try{if(document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}
+    showToast('✓ Đã đồng bộ DISC từ '+cnt+' tuyến dưới lên cây (theo Mã ID)');
+  }
+  return cnt;
 }
 function scanF3Users(){
   if(_f3uLoading)return;
@@ -5594,6 +5631,7 @@ function scanF3Users(){
     }));
   }).then(function(list){
     _f3uCache=(list||[]).filter(Boolean);
+    try{applyDownlineDiscToTree(_f3uCache);}catch(e){} // v6.63 — tự cập nhật DISC tuyến dưới lên cây theo Mã ID
     _f3uLoading=false;renderF3Users();
   }).catch(function(){_f3uLoading=false;if(!_f3uCache)_f3uCache=[];renderF3Users();});
 }
@@ -8134,7 +8172,14 @@ function renderDdSearchSug(q){
   q=q||'';
   if(!q.trim()){box.style.display='none';box.innerHTML='';return;}
   var cands=filterByTokens(searchCandidates(),q,candSearchText,function(c){return c.name;});
-  if(!cands.length){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
+  // v6.63 — KHÁCH (người ngoài chưa có ID) cũng vào danh sách sổ xuống; bấm để tới thẻ điểm danh của họ
+  var gHtml='';var _gq=noAccent(q).toLowerCase().trim();
+  if(_gq){loadGuests().forEach(function(g){
+    if(noAccent(g.name).toLowerCase().indexOf(_gq)>=0){
+      var _ga=memberActive(g)?' ✓':'';
+      gHtml+='<div class="srch-sug" data-ddsearch-guest="'+escHtml(g.id)+'"><span class="srch-sug-name">'+escHtml(g.name)+'</span><span class="srch-sug-tag" style="color:#8E24AA">👤 Khách'+_ga+'</span></div>';
+    }});}
+  if(!cands.length && !gHtml){box.style.display='block';box.innerHTML='<div class="srch-sug-empty">Không có tên khớp</div>';return;}
   var h='';
   cands.slice(0,SUG_MAX).forEach(function(c){
     if(c.isNode){
@@ -8147,6 +8192,7 @@ function renderDdSearchSug(q){
     }
   });
   h+=sugMoreHtml(cands.length);
+  h+=gHtml;
   box.innerHTML=h;box.style.display='block';
 }
 function lkAddCandidates(){
@@ -8208,7 +8254,12 @@ function buildNodeView(n){
     h+='<div class="nmod-row"><div class="nmod-lbl">\u0110\u1eb7t d\u01b0\u1edbi (v\u1ecb tr\u00ed)</div><div style="font-weight:700">'+escHtml(par.name)+' ('+(n.side==='L'?'Tr\u00e1i':'Ph\u1ea3i')+')'+(ph?' <span style="color:#8E24AA">\u00B7 PH</span>':'')+'</div></div>';
   }
   if(n.phone)h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div><div style="font-weight:700">'+escHtml(n.phone)+'</div></div>';
-  if(n.disc)h+='<div class="nmod-row"><div class="nmod-lbl">DISC</div><div style="display:flex;gap:4px;justify-content:flex-end">'+String(n.disc).toUpperCase().split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px;font-size:13px">'+ch+'</span>':'';}).join('')+'</div></div>';
+  // v6.63 — DISC: luôn hiện dòng có nút "Đo DISC" (mở bài đo cho chính node này)
+  h+='<div class="nmod-row"><div class="nmod-lbl">DISC</div><div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">';
+  if(n.disc)h+=String(n.disc).toUpperCase().split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px;font-size:13px">'+ch+'</span>':'';}).join('');
+  if(typeof viewOnlyMode==='undefined'||!viewOnlyMode)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+n.id+'\')">📝 '+(n.disc?'Đo lại':'Đo DISC')+'</button>';
+  if(n.disc)h+='<button type="button" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discProfileFromNode(\''+n.id+'\')">📊 Hồ sơ</button>';
+  h+='</div></div>';
   if(n.ship)h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu</div><div style="font-weight:700;display:flex;align-items:center;gap:6px;justify-content:flex-end;color:'+(n.ship==='vang'?'#8A6A12':'#546E7A')+'">'+shipSVG(n.ship,18)+shipLabel(n.ship)+'<button type="button" class="tbtn" data-ship-help="1" style="padding:2px 8px;font-size:12px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;font-weight:800">?</button></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">F1 b\u1ea3o tr\u1ee3 tr\u1ef1c h\u1ec7</div><div style="font-weight:700">'+spKids.length+' ng\u01b0\u1eddi</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Nh\u00e1nh \u0111\u1eb7t d\u01b0\u1edbi</div><div style="font-weight:700">'+plKids.length+' tr\u1ef1c ti\u1ebfp</div></div>';
@@ -8294,8 +8345,8 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-join" class="nmod-inp" style="width:90px" value="'+escHtml(v.joinDate||'')+'" placeholder="5.25"></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt<div style="font-size:11px;color:#AAA">Ng\u00e0y/th\u00e1ng (VD: 5/9) ho\u1eb7c c\u00f3 n\u0103m 5/9/1990</div></div>';
   h+='<input id="nf-bday" class="nmod-inp" style="width:120px" value="'+escHtml(v.birthday||'')+'" placeholder="5/9"></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID</div>';
-  h+='<input id="nf-idcode" class="nmod-inp" style="width:130px" value="'+escHtml(v.idCode||'')+'" placeholder="ID12345"></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 v\u00e0o web <b>PRIFE</b> l\u1ea5y M\u00e3 ID chu\u1ea9n (vd: lanchi88hptv). \u0110\u00e2y l\u00e0 c\u0103n c\u1ee9 \u0111\u1ed3ng b\u1ed9 tuy\u1ebfn d\u01b0\u1edbi \u2192 tuy\u1ebfn tr\u00ean.</div></div>';
+  h+='<input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai)<div style="font-size:11px;color:#AAA">Ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 tr\u1ef1c ti\u1ebfp. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
   h+='<div style="display:flex;flex-direction:column;gap:4px">';
   h+='<input id="nf-f1of-filter" class="sel-filter" style="width:160px;margin-bottom:4px" placeholder="\uD83D\uDD0D G\u00f5 t\u00ecm t\u00ean...">';
@@ -8303,8 +8354,11 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-f1of" class="nmod-inp" style="width:160px" value="'+escHtml(defF1)+'" placeholder="Ho\u1eb7c nh\u1eadp t\u00ean..."></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div>';
   h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Nhóm tính cách — gõ chữ: D, I, S hoặc C (vd: D hay DI)</div></div>';
-  h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4"></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Gõ tay D/I/S/C — hoặc bấm "Đo DISC" để làm bài</div></div>';
+  h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
+  h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4">';
+  if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
+  h+='</div></div>';
   var _shipSel=v.ship||'';
   h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
   h+='<div style="display:flex;align-items:center;gap:6px">';
@@ -8389,6 +8443,12 @@ function saveNodeModal(){
     ship:((document.getElementById('nf-ship')||{}).value||'')
   };
   var _saveMsg='✓ Đã lưu';
+  // v6.63 — BẮT BUỘC Mã ID: mọi thông tin đồng bộ tuyến dưới → tuyến trên đều căn cứ Mã ID chuẩn (PRIFE)
+  if(!data.idCode){
+    showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
+    var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
+    return;
+  }
   // KIỂM TRA ngày Vào ID: ID tuyến dưới KHÔNG được vào TRƯỚC ID tuyến trên (đặt trên) hoặc người bảo trợ — kể cả phả hệ hay trực hệ
   var _ndate=parseVaoID(data.joinDate);
   if(_ndate!=null){
@@ -9936,6 +9996,23 @@ document.addEventListener('click',function(e){
 
   // Tìm kiếm Điểm danh: chọn gợi ý → LỌC DANH SÁCH theo CẢ NHÁNH của ID đó
   // (đồng bộ chuẩn tab Sơ đồ: "tìm thấy tên → hiện cả cây ID đó trở xuống")
+  // v6.63 — chọn KHÁCH từ ô tìm "đưa ra giữa": mở Kế hoạch ngày & Điểm danh và cuộn tới thẻ khách
+  t=e.target.closest('[data-ddsearch-guest]');
+  if(t){
+    var _gid=t.getAttribute('data-ddsearch-guest');
+    var _si0=document.getElementById('srch');if(_si0)_si0.value='';
+    var _ss0=document.getElementById('srch-sug');if(_ss0)_ss0.style.display='none';
+    var _mt=document.querySelector('.mtab[data-main="tp"]');if(_mt)_mt.click();
+    var _st1=document.querySelector('.stab[data-sub="tp:actions"]');if(_st1)_st1.click();
+    var _st2=document.querySelector('.stab[data-sub="act:ngay"]');if(_st2)_st2.click();
+    setTimeout(function(){
+      var card=document.getElementById('gcard-'+_gid);
+      if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
+        var _o=card.style.boxShadow;card.style.boxShadow='0 0 0 3px #F07B30';
+        setTimeout(function(){card.style.boxShadow=_o;},1500);}
+    },240);
+    return;
+  }
   t=e.target.closest('[data-ddsearch-name]');
   if(t){
     var _dnid=t.getAttribute('data-ddsearch-nid');
@@ -9994,6 +10071,7 @@ document.addEventListener('click',function(e){
     if(pg==='map')renderMapPage();
     if(pg==='kynang')renderList('kn','list-kn');
     if(pg==='prospect')renderProspectPage();
+    if(pg==='disc')renderDiscPage();
     if(_MAIN_FEAT[pg])trackEvent(_MAIN_FEAT[pg]); // v6.13 — theo dõi điều hướng tab
     return;
   }
@@ -12921,6 +12999,327 @@ window.addEventListener('load',function(){
     console.warn('Firebase preload:',e.message);
   });
 });
+</script>
+<script>
+/* ===== DISC MODULE (tích hợp đo lường DISC vào cây user) ===== */
+/* ============================================================
+   MÔ-ĐUN ĐO LƯỜNG DISC — tích hợp vào cây user (n.disc + disc_v1)
+   Kết quả ghi vào node.disc (đã dùng ở bộ đếm/lọc/tìm/tooltip) và
+   lưu hồ sơ đầy đủ trong disc_v1 (đồng bộ Firestore như các tính năng khác).
+   ============================================================ */
+var D_ORDER=['D','I','S','C'];
+var D_GROUPS=[
+ [["Quyết đoán","D"],["Sôi nổi","I"],["Kiên nhẫn","S"],["Cẩn thận","C"]],
+ [["Mạnh mẽ","D"],["Vui vẻ","I"],["Điềm tĩnh","S"],["Chính xác","C"]],
+ [["Thẳng thắn","D"],["Thuyết phục","I"],["Trung thành","S"],["Logic","C"]],
+ [["Cạnh tranh","D"],["Nhiệt tình","I"],["Ổn định","S"],["Phân tích","C"]],
+ [["Dám mạo hiểm","D"],["Hoà đồng","I"],["Nhẹ nhàng","S"],["Ngăn nắp","C"]],
+ [["Chủ động","D"],["Lạc quan","I"],["Lắng nghe","S"],["Kỹ lưỡng","C"]],
+ [["Kiên quyết","D"],["Lôi cuốn","I"],["Hỗ trợ","S"],["Nguyên tắc","C"]],
+ [["Táo bạo","D"],["Truyền cảm hứng","I"],["Hoà nhã","S"],["Thận trọng","C"]],
+ [["Hướng kết quả","D"],["Cởi mở","I"],["Bền bỉ","S"],["Tỉ mỉ","C"]],
+ [["Độc lập","D"],["Duyên dáng","I"],["Tận tâm","S"],["Có hệ thống","C"]],
+ [["Tự tin","D"],["Nói nhiều","I"],["Chu đáo","S"],["Chuẩn mực","C"]],
+ [["Dứt khoát","D"],["Hài hước","I"],["Nhất quán","S"],["Chi tiết","C"]],
+ [["Thích dẫn dắt","D"],["Thân thiện","I"],["Khiêm tốn","S"],["Khách quan","C"]],
+ [["Nhanh nhạy","D"],["Năng động","I"],["Dịu dàng","S"],["Cân nhắc","C"]],
+ [["Quả quyết","D"],["Vui tính","I"],["Đáng tin cậy","S"],["Nghiêm túc","C"]],
+ [["Gan dạ","D"],["Nhiệt huyết","I"],["Ôn hoà","S"],["Cầu toàn","C"]],
+ [["Quyền lực","D"],["Biểu cảm","I"],["Kiên định","S"],["Dè dặt","C"]],
+ [["Xông xáo","D"],["Cuốn hút","I"],["Nhường nhịn","S"],["Có kế hoạch","C"]],
+ [["Thích thử thách","D"],["Giao tiếp tốt","I"],["Hợp tác","S"],["Thực tế","C"]],
+ [["Nóng vội","D"],["Bốc đồng","I"],["Chậm rãi","S"],["Hoài nghi","C"]],
+ [["Áp đặt","D"],["Ba hoa","I"],["Do dự","S"],["Máy móc","C"]],
+ [["Thẳng tính","D"],["Phóng khoáng","I"],["Nhẫn nhịn","S"],["Kỹ tính","C"]],
+ [["Hiếu thắng","D"],["Thích thể hiện","I"],["An phận","S"],["Bảo thủ","C"]],
+ [["Cứng rắn","D"],["Hướng ngoại","I"],["Điềm đạm","S"],["Trầm tĩnh","C"]]
+];
+var D_SCEN=[
+ ["Trong một cuộc họp nhóm, bạn thường là người:",[["Đưa ra quyết định và thúc đẩy mọi người hành động","D"],["Khuấy động không khí, tung ý tưởng, kết nối mọi người","I"],["Lắng nghe, hỗ trợ và giữ hoà khí","S"],["Đặt câu hỏi, phân tích dữ liệu, chỉ ra rủi ro","C"]]],
+ ["Khi gặp deadline gấp và áp lực lớn, bạn:",[["Tăng tốc, ra quyết định, làm cho xong bằng mọi giá","D"],["Rủ mọi người cùng làm, giữ tinh thần lạc quan","I"],["Bình tĩnh làm từng bước đều đặn, không hoảng","S"],["Rà lại kế hoạch, đảm bảo không sai sót","C"]]],
+ ["Khi mua một món đồ giá trị lớn, bạn quan tâm nhất:",[["Kết quả/hiệu quả nó mang lại — nhanh gọn, đáng tiền","D"],["Trải nghiệm, thương hiệu, người bán có hợp 'gu' không","I"],["Có đáng tin không, bảo hành ra sao, ai dùng rồi khuyên","S"],["Thông số, so sánh chi tiết, bằng chứng rõ ràng","C"]]],
+ ["Người khác thường nhận xét bạn là người:",[["Mạnh mẽ, thẳng thắn, quyết đoán","D"],["Vui vẻ, hoà đồng, cuốn hút","I"],["Điềm đạm, chân thành, đáng tin","S"],["Cẩn thận, kỹ tính, logic","C"]]],
+ ["Điều khiến bạn khó chịu nhất:",[["Sự chậm chạp, thiếu quyết đoán, vòng vo","D"],["Bị phớt lờ, môi trường buồn tẻ, gò bó","I"],["Xung đột, thay đổi đột ngột, bị hối thúc","S"],["Làm ẩu, thiếu chính xác, phá vỡ nguyên tắc","C"]]],
+ ["Cách bạn thường ra quyết định:",[["Nhanh, dựa trên mục tiêu và bản năng","D"],["Theo cảm xúc và ý kiến của người mình quý","I"],["Từ từ, cân nhắc ảnh hưởng tới mọi người","S"],["Chậm, dựa trên dữ liệu và phân tích kỹ","C"]]],
+ ["Trong bữa tiệc đông người lạ, bạn:",[["Chủ động tiếp cận người quan trọng, nói chuyện có mục đích","D"],["Trò chuyện với thật nhiều người, dễ thành trung tâm","I"],["Trò chuyện sâu với vài người quen, thấy thoải mái hơn","S"],["Quan sát, chọn lọc, chỉ nói khi cần","C"]]],
+ ["Khi làm việc nhóm, bạn ghét nhất khi:",[["Bị quản lý vi mô, mất quyền quyết định","D"],["Phải làm một mình, không được ghi nhận","I"],["Bị đẩy vào xung đột, môi trường bất ổn","S"],["Phải làm vội mà bỏ qua chất lượng","C"]]],
+ ["Không gian/bàn làm việc của bạn thường:",[["Gọn, tối giản, chỉ giữ thứ phục vụ mục tiêu","D"],["Nhiều màu sắc, ảnh, đồ vui — đôi khi hơi bừa","I"],["Ấm cúng, có ảnh gia đình, ổn định lâu dài","S"],["Ngăn nắp, sắp xếp theo hệ thống, có trật tự","C"]]],
+ ["Lời khen khiến bạn vui nhất:",[["“Bạn làm được việc, đạt kết quả xuất sắc!”","D"],["“Bạn thật cuốn hút, ai cũng quý bạn!”","I"],["“Có bạn thật yên tâm, bạn rất đáng tin cậy!”","S"],["“Bạn làm rất chuẩn xác, chất lượng cao!”","C"]]]
+];
+var D_TYPES={
+ D:{name:"D · Thủ lĩnh (Dominance)",alias:"Director",tag:"Quyết đoán · Mạnh mẽ · Hướng kết quả",emoji:"🦁",
+  overview:"Người hành động, hướng kết quả, không sợ thử thách. Thích kiểm soát, quyết định nhanh, đi thẳng vấn đề. Động lực: chiến thắng, thành tựu, tự do làm theo cách của mình.",
+  strengths:["Dẫn dắt, ra quyết định dứt khoát","Dám nhận thử thách, chịu áp lực tốt","Tập trung mục tiêu, thúc đẩy nhanh","Tự tin, độc lập, chủ động","Nhìn ra cơ hội và dám hành động","Giải quyết vấn đề trực diện"],
+  watch:["Nóng vội, thiếu kiên nhẫn","Dễ áp đặt, lấn át người khác","Ít lắng nghe cảm xúc đồng đội","Bỏ qua chi tiết vì muốn nhanh","Dễ nổi nóng khi bị cản trở","Khó ủy quyền"],
+  recognition:{first:"Bước vào là 'chiếm' không gian — nhanh, mạnh, đi thẳng vào việc.",enter:"Bắt tay chắc mạnh; đi nhanh dứt khoát; chào ngắn rồi vào việc.",body:"Mắt trực diện; tư thế thẳng; cử chỉ dứt khoát, chỉ tay.",voice:"Giọng to, rõ, nhịp nhanh; nói ngắn, ngắt câu chắc.",words:"“kết quả”, “nhanh lên”, “vào thẳng vấn đề”, “bao lâu?”",decide:"Rất nhanh, ngay tại chỗ; ghét lằng nhằng.",env:"Bàn gọn, tối giản; treo bằng khen, cúp; đồ thể hiện vị thế.",stress:"Độc đoán, nóng nảy, mất kiên nhẫn, 'đè' người khác."},
+  platinum:{rule:"Đi thẳng, tôn trọng thời gian và quyền quyết định của họ.",pace:"NHANH — vào việc luôn.",do:"Nói ngắn gọn, tập trung KẾT QUẢ & lợi ích, cho 2-3 lựa chọn để họ tự quyết.",dont:"Đừng lan man, than vãn, thiếu quyết đoán hay kiểm soát tiểu tiết họ."},
+  convert:"CHỐT SALE: vào đề trong 30 giây — “Cái này giúp anh/chị đạt [kết quả] nhanh hơn X%”. Cho 2 gói để CHỌN. Nhấn ROI, tiết kiệm thời gian. Chốt dứt khoát: “Mình bắt đầu luôn nhé?”",
+  biz:{role:"Khai phá thị trường, chốt sale, dẫn dắt mục tiêu.",motto:"Cho tôi mục tiêu và quyền tự quyết.",lead:"Giao mục tiêu rõ + quyền tự chủ, đừng quản vi mô, ghi nhận công khai.",grow:"Học kiên nhẫn, lắng nghe, ủy quyền, quan tâm cảm xúc."},
+  fam:{desc:"Trụ cột quyết đoán, bảo vệ, định hướng, nhưng dễ 'ra lệnh' với người thân.",need:"Được tôn trọng và có tiếng nói quyết định.",tip:"Hạ giọng, hỏi nhiều hơn ra lệnh; lắng nghe thay vì chỉ đưa giải pháp; ghi nhận nỗ lực."},
+  rel:{style:"Thẳng, mạnh, đi vào trọng tâm.",connect:"Tự tin, đi thẳng vấn đề, tôn trọng thời gian của họ.",do:"Nói ngắn gọn, tập trung giải pháp, để họ chủ động.",dont:"Đừng lan man, than vãn, thiếu quyết đoán."}},
+ I:{name:"I · Truyền cảm hứng (Influence)",alias:"Socializer",tag:"Sôi nổi · Lạc quan · Kết nối",emoji:"🌟",
+  overview:"Nguồn năng lượng tích cực, giỏi kết nối và truyền cảm hứng. Hướng ngoại, lạc quan, thuyết phục bằng nhiệt tình. Động lực: được công nhận, được yêu quý, tạo ảnh hưởng.",
+  strengths:["Giao tiếp cuốn hút, tạo thiện cảm nhanh","Truyền năng lượng, tạo không khí tích cực","Thuyết phục và tạo động lực giỏi","Sáng tạo, linh hoạt, cởi mở","Kết nối mạng lưới rộng","Lạc quan, phục hồi nhanh"],
+  watch:["Thiếu tập trung, hay bỏ dở chi tiết","Nói nhiều hơn làm, dễ hứa quá lời","Quyết định theo cảm xúc","Ngại xung đột & số liệu","Mất kiên nhẫn với việc lặp lại","Cần được chú ý"],
+  recognition:{first:"Cười tươi, nói nhiều, cuốn cả phòng vào câu chuyện của mình.",enter:"Bắt tay nhiệt tình kèm chạm vai/cười lớn; chào nồng nhiệt.",body:"Biểu cảm phong phú, nói bằng cả tay và cơ thể; cười nhiều.",voice:"Giọng ấm, biểu cảm, lên xuống; nói nhanh, hào hứng.",words:"“tuyệt vời”, “vui”, “mọi người”, “cảm giác”, hay khen.",decide:"Nhanh theo cảm xúc; dễ bị thuyết phục nếu thích người bán.",env:"Bàn nhiều màu sắc, ảnh chụp chung, đồ vui; hơi lộn xộn.",stress:"Nói lan man, thiếu nhất quán, né việc khó, tìm công nhận thái quá."},
+  platinum:{rule:"Tạo không khí vui, khen chân thành, để họ toả sáng.",pace:"NHANH & ẤM — nhiều năng lượng.",do:"Tạo không khí vui, kể chuyện, nói về TRẢI NGHIỆM & con người, khen chân thành.",dont:"Đừng sa đà số liệu khô khan, lạnh lùng hay chỉ trích nơi đông người."},
+  convert:"CHỐT SALE: bán bằng CÂU CHUYỆN & cảm xúc — “Chị A dùng xong tự tin hẳn, ai cũng khen…”. Khen thật, tạo trải nghiệm vui, cảm giác cộng đồng + ưu đãi có hạn để chốt nhanh.",
+  biz:{role:"Xây quan hệ, tuyển dụng, tạo động lực & thương hiệu.",motto:"Cho tôi được ghi nhận và kết nối.",lead:"Khen công khai, cho không gian thể hiện, hỗ trợ deadline & chi tiết.",grow:"Học kỷ luật, tập trung, theo dõi chi tiết, giữ lời hứa."},
+  fam:{desc:"Mang lại tiếng cười, ấm áp, gắn kết, nhưng dễ thiếu nhất quán kỷ luật.",need:"Được lắng nghe, được khen, chia sẻ cảm xúc.",tip:"Dành thời gian trò chuyện, khen thật; cùng lập thói quen nhỏ; đừng chỉ trích nơi đông người."},
+  rel:{style:"Nồng nhiệt, biểu cảm, thích trò chuyện.",connect:"Thân thiện, nụ cười, quan tâm đến câu chuyện của họ.",do:"Hào hứng, khen ngợi, tạo niềm vui, hỏi về họ.",dont:"Đừng lạnh lùng, chỉ trích công khai hay khô khan."}},
+ S:{name:"S · Người đồng hành (Steadiness)",alias:"Relater",tag:"Kiên nhẫn · Trung thành · Ổn định",emoji:"🌿",
+  overview:"Chỗ dựa vững chắc, kiên nhẫn, tận tâm. Coi trọng hài hòa, ổn định, quan hệ lâu dài. Động lực: an toàn, giúp đỡ người khác, môi trường ổn định.",
+  strengths:["Đáng tin cậy, kiên trì, bền bỉ","Lắng nghe và hỗ trợ tận tâm","Giữ hòa khí, gắn kết đội","Bình tĩnh, nhất quán","Trung thành, giữ cam kết lâu dài","Đồng cảm, đọc cảm xúc người khác"],
+  watch:["Ngại thay đổi, chậm thích nghi","Khó nói 'không', dễ ôm việc","Né tránh xung đột, giấu cảm xúc","Thiếu quyết đoán khi cần nhanh","Dễ bị lợi dụng lòng tốt","Ít nói ra nhu cầu bản thân"],
+  recognition:{first:"Điềm đạm, ấm áp, lắng nghe nhiều hơn nói — khiến bạn thấy an toàn.",enter:"Bắt tay nhẹ, ấm; chào từ tốn, chân thành; hỏi thăm bạn trước.",body:"Cử chỉ chậm, mềm; gật đầu lắng nghe; mắt hiền.",voice:"Giọng nhỏ, đều, ấm; nói chậm rãi, ít ngắt lời.",words:"“cùng nhau”, “chúng ta”, “giúp”, “từ từ”, “bạn thấy sao?”",decide:"Chậm; cần thời gian, cần an toàn; ngại bị hối thúc.",env:"Ấm cúng, ảnh gia đình, đồ gắn bó lâu năm, thân thiện.",stress:"Im lặng chịu đựng, rút lui, đồng ý ngoài mặt nhưng bất an."},
+  platinum:{rule:"Đi từ từ, chân thành, tạo cảm giác an toàn — đừng ép.",pace:"CHẬM & ẤM — kiên nhẫn xây niềm tin.",do:"Xây NIỀM TIN từ từ, chân thành; nhấn an toàn, bảo đảm; cho họ thời gian.",dont:"Đừng ép quyết định gấp, gây áp lực hay thay đổi đột ngột."},
+  convert:"CHỐT SALE: đừng vội. Xây quan hệ, hỏi han, lắng nghe. Nhấn AN TOÀN — bảo hành, đổi trả, người thật đã hài lòng. Chốt nhẹ: “Em đồng hành cùng anh/chị suốt quá trình, mình yên tâm nhé.”",
+  biz:{role:"Chăm sóc khách hàng, giữ chân đội, vận hành & hậu cần.",motto:"Cho tôi sự ổn định và được giúp đỡ.",lead:"Môi trường ổn định, báo trước thay đổi, ghi nhận riêng tư, giao việc rõ từng bước.",grow:"Học chủ động, dám nói ý kiến, đón nhận thay đổi, ưu tiên bản thân."},
+  fam:{desc:"Người giữ tổ ấm — kiên nhẫn, hy sinh, luôn hiện diện, nhưng dễ nén cảm xúc.",need:"An toàn, ổn định và được trân trọng.",tip:"Chủ động hỏi han cảm xúc của họ; báo trước thay đổi lớn; cảm ơn sự hy sinh thầm lặng cụ thể."},
+  rel:{style:"Nhẹ nhàng, chân thành, lắng nghe nhiều.",connect:"Chân thành, kiên nhẫn, quan tâm đều đặn.",do:"Lắng nghe, giữ lời hứa, tạo cảm giác an toàn, đi từ từ.",dont:"Đừng gây áp lực, thay đổi đột ngột hay ép quyết định nhanh."}},
+ C:{name:"C · Chuyên gia (Conscientiousness)",alias:"Thinker",tag:"Cẩn trọng · Logic · Chuẩn xác",emoji:"🔬",
+  overview:"Người của chất lượng, logic, độ chính xác. Phân tích kỹ trước khi quyết định, coi trọng nguyên tắc, dữ liệu. Động lực: làm đúng, chất lượng cao, được tin về chuyên môn.",
+  strengths:["Tỉ mỉ, chính xác, chất lượng cao","Tư duy logic, phân tích sâu","Có kế hoạch, ngăn nắp, hệ thống","Đáng tin về chuyên môn & số liệu","Khách quan, công tâm","Lường trước rủi ro, ít sai sót"],
+  watch:["Cầu toàn, chậm ra quyết định","Quá phê phán, khó hài lòng","Ngại rủi ro, phân tích thái quá","Ít bộc lộ cảm xúc, dễ bị thấy 'lạnh'","Khó linh hoạt khi kế hoạch đổi","Dễ sa đà tiểu tiết"],
+  recognition:{first:"Điềm tĩnh, giữ khoảng cách, đặt câu hỏi sâu và chính xác.",enter:"Bắt tay vừa phải, hơi dè dặt; chào lịch sự, giữ khoảng cách.",body:"Cử chỉ tiết chế, ít biểu cảm; quan sát nhiều; mắt cân nhắc.",voice:"Giọng đều, bình thản, ít cảm xúc; nói chính xác, chọn từ cẩn thận.",words:"“tại sao”, “bằng chứng”, “số liệu”, “chính xác”, “cho tôi xem chi tiết”.",decide:"Rất chậm; cần đủ thông tin, so sánh, kiểm chứng.",env:"Bàn ngăn nắp, tài liệu xếp hệ thống, mọi thứ đúng chỗ.",stress:"Xét nét quá mức, phân tích tê liệt, rút lui, lạnh lùng, phê phán."},
+  platinum:{rule:"Chuẩn bị kỹ, nói có căn cứ, cho họ thời gian & không gian.",pace:"CHẬM & CHÍNH XÁC — logic, dữ liệu.",do:"Chuẩn bị DỮ LIỆU, bằng chứng, chi tiết rõ ràng; trả lời chính xác từng câu hỏi.",dont:"Đừng thổi phồng, ép cảm xúc, hối thúc hay nói chung chung thiếu căn cứ."},
+  convert:"CHỐT SALE: cung cấp đầy đủ thông tin — thông số, so sánh, review, chính sách. Thừa nhận cả nhược điểm để tạo uy tín. Cho thời gian & tài liệu. Chốt bằng logic: “Với các số liệu này, đây là lựa chọn tối ưu.”",
+  biz:{role:"Xây quy trình, phân tích số liệu, kiểm soát chất lượng, đào tạo bài bản.",motto:"Cho tôi thông tin đầy đủ và tiêu chuẩn rõ ràng.",lead:"Tiêu chuẩn & kỳ vọng rõ, cho thời gian làm kỹ, tôn trọng chuyên môn, phản hồi bằng dữ liệu.",grow:"Học quyết định nhanh hơn, chấp nhận 'đủ tốt', linh hoạt, bộc lộ cảm xúc."},
+  fam:{desc:"Người lo toan chu đáo, có kế hoạch, trách nhiệm, nhưng đôi khi khắt khe và ít thể hiện tình cảm.",need:"Sự đúng đắn, không gian riêng, được tôn trọng lý lẽ.",tip:"Trao đổi bằng lý lẽ rõ ràng, tránh chỉ trích cảm tính; thể hiện tình cảm bằng hành động cụ thể; đừng ép quyết vội."},
+  rel:{style:"Điềm đạm, chính xác, coi trọng logic.",connect:"Chuẩn bị kỹ, trung thực, tôn trọng nguyên tắc của họ.",do:"Nói có căn cứ, giữ đúng hẹn, cho họ thời gian & không gian.",dont:"Đừng phóng đại, hối thúc hay quá suồng sã, cảm tính."}}
+};
+var _discTestNode=null, _discView='map';
+
+function dnorm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,'');}
+/* Nhận diện kỹ năng DISC kể cả khi QTV đã đổi id/nhãn (khớp id 'disc' hoặc nhãn có chữ "disc") */
+function isDiscSkill(s){return !!(s && (s.id==='disc' || /disc/i.test(s.lbl||'')));}
+/* Ánh xạ 1 thành viên (members) sang node trên cây (treeNodes) — khớp theo tên, dự phòng theo Mã ID */
+function discNodeByMemberId(mid){
+  var m=(typeof members!=='undefined'&&members)?members.find(function(x){return x.id===mid;}):null;
+  if(!m||typeof treeNodes==='undefined'||!treeNodes)return null;
+  var nm=treeNodes.find(function(x){return x.name===m.name;});
+  if(nm)return nm;
+  var c=dnorm(m.idCode||'');
+  return c?treeNodes.find(function(x){return dnorm(x.idCode)===c;}):null;
+}
+/* Từ thẻ Kỹ năng: mở tab Đo DISC và bắt đầu bài đo cho đúng người */
+function discFromSkill(mid){
+  var node=discNodeByMemberId(mid);
+  if(!node){showToast('Chưa tìm thấy người này trên cây Sơ đồ — hãy thêm ID trước');return;}
+  var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();
+  discStartTest(node.id);
+}
+function discProfileFromSkill(mid){
+  var node=discNodeByMemberId(mid);
+  if(!node){showToast('Chưa tìm thấy người này trên cây Sơ đồ');return;}
+  var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();
+  discViewProfile(node.id);
+}
+/* Từ popup chi tiết node ở tab Sơ đồ */
+function _discCloseNodeModal(){try{var ov=document.getElementById('nmod-ov');if(ov)ov.classList.remove('open');}catch(e){}}
+function discFromNode(nid){_discCloseNodeModal();var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();discStartTest(nid);}
+function discProfileFromNode(nid){_discCloseNodeModal();var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();discViewProfile(nid);}
+function loadDisc(){try{var s=nmGet('disc_v1');var o=s?JSON.parse(s):{};return (o&&typeof o==='object')?o:{};}catch(e){return {};}}
+function saveDisc(o){nmSet('disc_v1',JSON.stringify(o));if(typeof fbDb!=='undefined'&&fbDb&&fbUser)fsSet('disc',{disc:o}).catch(function(){});}
+function loadDiscCloud(){if(typeof fbDb==='undefined'||!fbDb||!fbUser)return;fsGet('disc').then(function(d){if(d&&d.disc){nmSet('disc_v1',JSON.stringify(d.disc));var pg=document.getElementById('page-disc');if(pg&&pg.classList.contains('on'))renderDiscPage();}}).catch(function(){});}
+
+function discColor(k){return (typeof DISC_COLORS!=='undefined'&&DISC_COLORS[k])||({D:'#E53935',I:'#FB8C00',S:'#43A047',C:'#1E88E5'})[k];}
+
+function renderDiscPage(){
+  var el=document.getElementById('disc-content');if(!el)return;
+  var nav='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
+    +discNavBtn('map','🗺️ Bản đồ DISC đội nhóm')
+    +discNavBtn('recognize','🔍 Nhận diện nhanh 3–10 phút')
+    +'</div>';
+  var body='';
+  if(_discView==='recognize')body=discRenderRecognize();
+  else if(_discView==='test')body=discRenderTest();
+  else if(_discView==='profile')body=discRenderProfile();
+  else body=discRenderMap();
+  el.innerHTML='<div style="max-width:960px;margin:0 auto">'
+    +'<div style="background:linear-gradient(135deg,#1B4F8A,#2E6CB5);color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:16px">'
+    +'<div style="font-size:22px;font-weight:800">🧭 Đo lường DISC đội nhóm</div>'
+    +'<div style="opacity:.92;font-size:14px;margin-top:4px">Đo tính cách từng thành viên trên cây — kết quả tự gắn vào node (bộ đếm, lọc, tìm kiếm) và gom lên tuyến trên theo cây.</div></div>'
+    +nav+body+'</div>';
+}
+function discNavBtn(v,label){
+  var on=_discView===v||(v==='map'&&(_discView==='test'||_discView==='profile'));
+  return '<button onclick="discGo(\''+v+'\')" style="padding:9px 15px;border-radius:10px;border:1.5px solid '+(on?'#1B4F8A':'#E3E9F0')+';background:'+(on?'#1B4F8A':'#fff')+';color:'+(on?'#fff':'#5A6B7B')+';font-weight:700;font-size:13.5px;cursor:pointer">'+label+'</button>';
+}
+function discGo(v){_discView=v;renderDiscPage();window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ---------- Bản đồ DISC (theo cây parentId) ---------- */
+function discRenderMap(){
+  var nodes=(typeof treeNodes!=='undefined'&&treeNodes)?treeNodes:[];
+  if(!nodes.length)return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:24px;text-align:center;color:#5A6B7B">Chưa có ai trên cây. Hãy thêm ID ở tab <b>Sơ đồ</b> trước, rồi quay lại đây để đo DISC.</div>';
+  // thống kê
+  var cnt={D:0,I:0,S:0,C:0},done=0;
+  nodes.forEach(function(n){var L=(String(n.disc||'').toUpperCase()[0]);if(cnt[L]!==undefined){cnt[L]++;done++;}});
+  var compo='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">';
+  D_ORDER.forEach(function(k){compo+='<div style="border:2px solid '+discColor(k)+';background:'+discColor(k)+'14;border-radius:12px;padding:12px;text-align:center">'
+    +'<div style="font-size:26px;font-weight:900;color:'+discColor(k)+'">'+cnt[k]+'</div><div style="font-size:12px;font-weight:700;color:'+discColor(k)+'">'+k+' · '+(D_TYPES[k].emoji)+'</div></div>';});
+  compo+='</div>';
+  // cây theo parentId
+  var byId={};nodes.forEach(function(n){byId[n.id]=n;});
+  var childrenOf={},roots=[];
+  nodes.forEach(function(n){var p=n.parentId;if(p&&byId[p]){(childrenOf[p]=childrenOf[p]||[]).push(n);}else roots.push(n);});
+  var seen={};var rows='';
+  function walk(n,depth){
+    if(seen[n.id])return;seen[n.id]=1;
+    rows+=discNodeRow(n,depth);
+    (childrenOf[n.id]||[]).forEach(function(c){walk(c,depth+1);});
+  }
+  roots.forEach(function(r){walk(r,0);});
+  nodes.forEach(function(n){if(!seen[n.id])walk(n,0);});
+  var note='<div style="font-size:13px;color:#5A6B7B;margin:6px 0 12px">Đã đo <b>'+done+'/'+nodes.length+'</b> thành viên. Bấm <b>Đo DISC</b> ở từng người — kết quả ghi thẳng vào node và hiện trên Sơ đồ.</div>';
+  return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">'
+    +'<div style="font-size:16px;font-weight:800;color:#1B4F8A;margin-bottom:10px">Thành phần DISC đội nhóm</div>'
+    +compo+note+rows+'</div>';
+}
+function discNodeRow(n,depth){
+  var L=String(n.disc||'').toUpperCase()[0];
+  var has=D_TYPES[L]!==undefined;
+  var badge=has
+    ?'<span style="background:'+discColor(L)+';color:#fff;font-weight:900;border-radius:7px;padding:3px 9px;font-size:13px">'+L+' '+D_TYPES[L].emoji+'</span>'
+    :'<span style="color:#B0B7C0;font-size:12.5px;font-style:italic">Chưa đo</span>';
+  var code=n.idCode?'<span style="font-size:11.5px;color:#1565C0;background:#F0F5FB;padding:2px 7px;border-radius:6px;font-weight:600">🔑 '+escHtml(n.idCode)+'</span>':'';
+  var btns='<button onclick="discStartTest(\''+n.id+'\')" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;cursor:pointer">'+(has?'Đo lại':'📝 Đo DISC')+'</button>';
+  if(has)btns+=' <button onclick="discViewProfile(\''+n.id+'\')" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;cursor:pointer">Hồ sơ</button>';
+  return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #E3E9F0;border-left:4px solid '+(has?discColor(L):'#E3E9F0')+';border-radius:10px;margin-bottom:7px;margin-left:'+(depth*22)+'px;background:#fff">'
+    +'<span style="font-weight:700">'+escHtml(n.name||'(chưa đặt tên)')+'</span>'+code
+    +'<span style="margin-left:auto;display:flex;gap:6px;align-items:center">'+badge+btns+'</span></div>';
+}
+
+/* ---------- Làm bài ---------- */
+function discStartTest(nodeId){_discTestNode=nodeId;_discView='test';renderDiscPage();window.scrollTo({top:0,behavior:'smooth'});}
+function discRenderTest(){
+  var n=(treeNodes||[]).find(function(x){return x.id===_discTestNode;});
+  if(!n)return '<div>Không tìm thấy thành viên.</div>';
+  var g=D_GROUPS.map(function(grp,i){
+    var rows=grp.map(function(w,j){return '<tr><td style="padding:6px;font-weight:600">'+w[0]+'</td>'
+      +'<td style="text-align:center;width:70px"><input type="radio" name="dm-'+i+'" value="'+j+'" onchange="discPick('+i+')" style="width:19px;height:19px;accent-color:#43A047"></td>'
+      +'<td style="text-align:center;width:60px"><input type="radio" name="dl-'+i+'" value="'+j+'" onchange="discPick('+i+')" style="width:19px;height:19px;accent-color:#E53935"></td></tr>';}).join('');
+    return '<div id="dq-'+i+'" style="border:1px solid #E3E9F0;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff">'
+      +'<div style="font-weight:800;color:#1B4F8A;font-size:14px;margin-bottom:4px">Nhóm '+(i+1)+'/24</div>'
+      +'<table style="width:100%;border-collapse:collapse"><tr><th style="text-align:left;font-size:11px;color:#5A6B7B">TÍNH TỪ</th><th style="font-size:11px;color:#43A047">GIỐNG NHẤT</th><th style="font-size:11px;color:#E53935">ÍT NHẤT</th></tr>'+rows+'</table></div>';
+  }).join('');
+  var sc=D_SCEN.map(function(s,i){
+    var opts=s[1].map(function(o,j){return '<label id="ds-'+i+'-'+j+'" style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1.5px solid #E3E9F0;border-radius:9px;margin-bottom:7px;cursor:pointer">'
+      +'<input type="radio" name="dsc-'+i+'" value="'+j+'" onchange="discScen('+i+','+j+')" style="margin-top:3px;width:17px;height:17px;accent-color:#1B4F8A"><span style="font-size:14px">'+o[0]+'</span></label>';}).join('');
+    return '<div id="dsc-blk-'+i+'" style="border:1px solid #E3E9F0;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff"><div style="font-weight:700;font-size:14px;margin-bottom:8px">'+(i+1)+'. '+s[0]+'</div>'+opts+'</div>';
+  }).join('');
+  return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">'
+    +'<div style="font-size:16px;font-weight:800;color:#1B4F8A">Đo DISC cho: '+escHtml(n.name||'')+(n.idCode?' · 🔑 '+escHtml(n.idCode):'')+'</div>'
+    +'<div style="font-size:13.5px;color:#5A6B7B;margin:6px 0 14px">Phần 1: mỗi nhóm chọn 1 từ <b style="color:#43A047">Giống nhất</b> & 1 từ <b style="color:#E53935">Ít nhất</b>. Phần 2: chọn 1 phương án đúng bạn nhất.</div>'
+    +'<div style="position:sticky;top:0;background:#fff;padding:8px 0;z-index:5"><div style="height:9px;background:#E3E9F0;border-radius:5px;overflow:hidden"><div id="dprog" style="height:100%;width:0;background:linear-gradient(90deg,#43A047,#1B4F8A)"></div></div><div id="dprogt" style="font-size:12.5px;color:#5A6B7B;margin-top:5px;font-weight:600">0/34</div></div>'
+    +'<div style="font-weight:800;color:#1B4F8A;margin:8px 0">PHẦN 1 · Bộ từ</div>'+g
+    +'<div style="font-weight:800;color:#1B4F8A;margin:14px 0 8px">PHẦN 2 · Tình huống</div>'+sc
+    +'<div style="display:flex;gap:10px;margin-top:14px"><button onclick="discCompute()" style="flex:1;padding:13px;border:none;border-radius:11px;background:#F07B30;color:#fff;font-weight:800;font-size:15px;cursor:pointer">Lưu kết quả DISC →</button>'
+    +'<button onclick="discGo(\'map\')" style="padding:13px 18px;border:1.5px solid #E3E9F0;border-radius:11px;background:#F4F7FB;color:#1B4F8A;font-weight:700;cursor:pointer">Huỷ</button></div></div>';
+}
+function discPick(i){
+  var m=document.querySelector('input[name="dm-'+i+'"]:checked'),l=document.querySelector('input[name="dl-'+i+'"]:checked');
+  if(m&&l&&m.value===l.value){l.checked=false;}
+  discProg();
+}
+function discScen(i,j){
+  var blk=document.getElementById('dsc-blk-'+i);
+  if(blk)blk.querySelectorAll('label').forEach(function(x){x.style.borderColor='#E3E9F0';x.style.background='#fff';});
+  var lab=document.getElementById('ds-'+i+'-'+j);if(lab){lab.style.borderColor='#43A047';lab.style.background='#FBFEFC';}
+  discProg();
+}
+function discProg(){
+  var done=0;
+  for(var i=0;i<D_GROUPS.length;i++)if(document.querySelector('input[name="dm-'+i+'"]:checked')&&document.querySelector('input[name="dl-'+i+'"]:checked'))done++;
+  for(var s=0;s<D_SCEN.length;s++)if(document.querySelector('input[name="dsc-'+s+'"]:checked'))done++;
+  var total=D_GROUPS.length+D_SCEN.length;
+  var pf=document.getElementById('dprog'),pt=document.getElementById('dprogt');
+  if(pf)pf.style.width=Math.round(done/total*100)+'%';
+  if(pt)pt.textContent=done+'/'+total;
+  return done;
+}
+function discCompute(){
+  var total=D_GROUPS.length+D_SCEN.length,done=discProg();
+  if(done<total){
+    var tgt=null;
+    for(var i=0;i<D_GROUPS.length&&!tgt;i++)if(!(document.querySelector('input[name="dm-'+i+'"]:checked')&&document.querySelector('input[name="dl-'+i+'"]:checked')))tgt=document.getElementById('dq-'+i);
+    for(var s=0;s<D_SCEN.length&&!tgt;s++)if(!document.querySelector('input[name="dsc-'+s+'"]:checked'))tgt=document.getElementById('dsc-blk-'+s);
+    if(tgt){tgt.scrollIntoView({behavior:'smooth',block:'center'});tgt.style.borderColor='#E53935';}
+    showToast('Còn '+(total-done)+' mục chưa trả lời');return;
+  }
+  var score={D:0,I:0,S:0,C:0};
+  for(var i2=0;i2<D_GROUPS.length;i2++){
+    var mm=+document.querySelector('input[name="dm-'+i2+'"]:checked').value;
+    var ll=+document.querySelector('input[name="dl-'+i2+'"]:checked').value;
+    score[D_GROUPS[i2][mm][1]]+=1;score[D_GROUPS[i2][ll][1]]-=1;
+  }
+  for(var s2=0;s2<D_SCEN.length;s2++){var v=+document.querySelector('input[name="dsc-'+s2+'"]:checked').value;score[D_SCEN[s2][1][v][1]]+=1;}
+  var pct={};D_ORDER.forEach(function(k){pct[k]=Math.max(0,Math.min(100,Math.round((score[k]+24)/58*100)));});
+  var ranked=D_ORDER.slice().sort(function(a,b){return pct[b]-pct[a];});
+  var n=(treeNodes||[]).find(function(x){return x.id===_discTestNode;});
+  if(!n){showToast('Không tìm thấy thành viên');return;}
+  n.disc=ranked[0]; // ghi vào field sẵn có -> bộ đếm/lọc/tìm/tooltip tự cập nhật
+  if(typeof saveTree2==='function')saveTree2();
+  var store=loadDisc();
+  store[n.id]={pct:pct,ranked:ranked,primary:ranked[0],secondary:ranked[1],ts:Date.now(),name:n.name||'',idCode:n.idCode||''};
+  saveDisc(store);
+  try{if(typeof syncTreeToMembers==='function')syncTreeToMembers(false);}catch(e){}
+  try{if(document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}
+  showToast('✓ Đã lưu DISC: '+ranked[0]+' cho '+(n.name||''));
+  discViewProfile(n.id);
+}
+
+/* ---------- Hồ sơ ---------- */
+function discViewProfile(nodeId){_discTestNode=nodeId;_discView='profile';renderDiscPage();window.scrollTo({top:0,behavior:'smooth'});}
+function discRenderProfile(){
+  var n=(treeNodes||[]).find(function(x){return x.id===_discTestNode;});
+  var store=loadDisc();var d=n?store[n.id]:null;
+  if(!n||!d)return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">Chưa có hồ sơ. <button onclick="discGo(\'map\')" style="color:#1B4F8A;font-weight:700;background:none;border:none;cursor:pointer">← Quay lại bản đồ</button></div>';
+  var t=D_TYPES[d.primary],t2=D_TYPES[d.secondary],c=discColor(d.primary),r=t.recognition,p=t.platinum;
+  var bars=d.ranked.map(function(k){var tt=D_TYPES[k];return '<div style="display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;margin-bottom:10px">'
+    +'<div style="font-weight:700;font-size:13.5px"><span style="background:'+discColor(k)+';color:#fff;font-weight:900;border-radius:7px;padding:2px 8px;margin-right:6px">'+k+'</span>'+tt.name.split('·')[1].split('(')[0].trim()+'</div>'
+    +'<div style="height:20px;background:#F4F7FB;border-radius:10px;overflow:hidden"><div style="height:100%;width:'+d.pct[k]+'%;background:'+discColor(k)+';border-radius:10px"></div></div>'
+    +'<div style="font-weight:800;text-align:right;color:'+discColor(k)+'">'+d.pct[k]+'</div></div>';}).join('');
+  function li(a){return a.map(function(x){return '<li style="margin-bottom:5px">'+x+'</li>';}).join('');}
+  function row(ic,lb,tx){return '<div style="display:flex;gap:9px;padding:9px 0;border-bottom:1px dashed #E3E9F0;font-size:14px"><span>'+ic+'</span><div><b style="color:#1B4F8A">'+lb+':</b> '+tx+'</div></div>';}
+  return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">'
+    +'<button onclick="discGo(\'map\')" style="color:#1B4F8A;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px">← Bản đồ DISC</button>'
+    +'<div style="border-radius:14px;padding:20px;color:#fff;background:linear-gradient(135deg,'+c+','+dShade(c,-18)+');margin-bottom:16px">'
+    +'<div style="font-size:13px;opacity:.9">Hồ sơ DISC · '+escHtml(n.name||'')+(n.idCode?' · 🔑 '+escHtml(n.idCode):'')+'</div>'
+    +'<div style="font-size:24px;font-weight:800">'+t.emoji+' '+t.name+'</div><div style="opacity:.95">'+t.tag+' · "'+t.alias+'"</div></div>'
+    +'<div style="font-weight:800;color:#1B4F8A;margin-bottom:10px">📊 Biểu đồ 4 chiều</div>'+bars
+    +'<p style="color:#5A6B7B;margin:12px 0">'+t.overview+' Phong cách phụ <b style="color:'+discColor(d.secondary)+'">'+d.secondary+'</b> bổ sung nét '+t2.tag.toLowerCase()+'.</p>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">'
+    +'<div style="background:#E7F5EE;border-radius:12px;padding:14px"><b>💪 Điểm mạnh</b><ul style="margin:8px 0 0 16px;font-size:13.5px">'+li(t.strengths)+'</ul></div>'
+    +'<div style="background:#FDEDE8;border-radius:12px;padding:14px"><b>⚠️ Điểm mù</b><ul style="margin:8px 0 0 16px;font-size:13.5px">'+li(t.watch)+'</ul></div></div>'
+    +'<div style="background:#FEF7DE;border:1px solid #F1DFA0;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px">🔥 <b>Khi căng thẳng:</b> '+r.stress+'</div>'
+    +'<div style="font-weight:800;color:#1B4F8A;margin:6px 0">🔍 Người khác nhận ra qua (3–10 phút)</div>'
+    +row('🤝','Chào & cơ thể',r.enter+' '+r.body)+row('🔊','Giọng nói',r.voice)+row('💬','Hay nói',r.words)+row('⏱️','Ra quyết định',r.decide)
+    +'<div style="font-weight:800;color:#1B4F8A;margin:14px 0 6px">💼 Kinh doanh & chốt sale (Platinum)</div>'
+    +row('💎','Ứng xử Platinum',p.do+' <em>Tránh:</em> '+p.dont)+row('🎯','Chốt sale',t.convert)+row('🧭','Dẫn dắt',t.biz.lead)
+    +'<div style="font-weight:800;color:#1B4F8A;margin:14px 0 6px">👨‍👩‍👧 Gia đình</div>'+row('❤️','Nhu cầu',t.fam.need)+row('💡','Bí quyết',t.fam.tip)
+    +'<div style="font-weight:800;color:#1B4F8A;margin:14px 0 6px">🤝 Mối quan hệ</div>'+row('✅','Nên',t.rel.do)+row('🚫','Tránh',t.rel.dont)
+    +'<div style="display:flex;gap:10px;margin-top:16px"><button onclick="discStartTest(\''+n.id+'\')" style="padding:11px 18px;border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:10px;font-weight:700;cursor:pointer">🔄 Đo lại</button></div></div>';
+}
+
+/* ---------- Nhận diện nhanh ---------- */
+function discRenderRecognize(){
+  var cards=D_ORDER.map(function(k){var t=D_TYPES[k],r=t.recognition,p=t.platinum,c=discColor(k);
+    function rr(lb,tx){return '<div style="display:flex;gap:9px;padding:7px 0;border-bottom:1px dashed #E3E9F0;font-size:13.5px"><span style="font-weight:700;color:#5A6B7B;min-width:88px">'+lb+'</span><span>'+tx+'</span></div>';}
+    return '<div style="border:2px solid '+c+';border-radius:14px;overflow:hidden;margin-bottom:14px">'
+      +'<div style="background:'+c+';color:#fff;padding:14px 16px"><div style="font-size:22px;font-weight:900">'+k+' '+t.emoji+'</div>'
+      +'<div style="font-size:15px;font-weight:700">'+t.name.split('(')[0].trim()+'</div><div style="font-size:12px;font-style:italic;opacity:.92">'+t.tag+' · "'+t.alias+'"</div></div>'
+      +'<div style="padding:12px 16px;background:#fff">'
+      +rr('⚡ Trong 10\'','<b>'+r.first+'</b>')+rr('🤝 Chào hỏi',r.enter)+rr('🧍 Cơ thể',r.body)+rr('🔊 Giọng nói',r.voice)+rr('💬 Hay nói',r.words)+rr('⏱️ Quyết định',r.decide)+rr('🗂️ Không gian',r.env)+rr('🔥 Khi stress',r.stress)
+      +'<div style="margin-top:10px;padding:11px 13px;border-radius:10px;background:'+c+'14;font-size:13.5px"><b style="color:'+c+'">💎 Platinum:</b> '+p.rule+'<br><b>✅ Nên:</b> '+p.do+'<br><b>🚫 Tránh:</b> '+p.dont+'</div></div></div>';}).join('');
+  return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">'
+    +'<div style="font-size:16px;font-weight:800;color:#1B4F8A;margin-bottom:6px">Nhận diện nhóm DISC trong 3–10 phút đầu</div>'
+    +'<div style="font-size:13.5px;color:#5A6B7B;margin-bottom:14px">Quan sát <b>tốc độ</b> (nhanh=D/I, chậm=S/C) và <b>trọng tâm</b> (việc=D/C, người=I/S) để đoán nhóm — rồi ứng xử theo ô Platinum.</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+cards+'</div></div>';
+}
+
+function dShade(hex,pct){var n=parseInt(hex.slice(1),16);var r=(n>>16)&255,g=(n>>8)&255,b=n&255;r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+
 </script>
 </body>
 </html>

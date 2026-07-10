@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công cụ đo lường DISC chuyên sâu – Tâm An Academy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --blue: #1B4F8A; --blue-light: #2E6CB5; --green: #2E8B57; --orange: #F07B30; --purple: #7B5EB5;
+    --bg: #F4F7FB; --card-bg: #FFFFFF; --text: #1F2A37; --text-soft: #5A6B7B; --border: #E3E9F0;
+    --D: #E4572E; --I: #F2B807; --S: #2E8B57; --C: #2E6CB5;
+    --D-soft: #FDEDE8; --I-soft: #FEF7DE; --S-soft: #E7F5EE; --C-soft: #E7F0FA;
+  }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { text-decoration: none; color: inherit; }
+
+  header { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+  .nav-wrap { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 44px; height: 44px; }
+  .logo-text small { display: block; font-size: 11px; color: var(--text-soft); letter-spacing: 1px; font-weight: 600; }
+  .logo-text strong { display: block; font-size: 20px; color: var(--blue); font-weight: 800; letter-spacing: 1px; line-height: 1; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--blue); background: var(--bg); transition: .2s; }
+  .back-link:hover { background: var(--blue); color: #fff; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .hero { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%); color: #fff; border-radius: 22px; padding: 40px 34px; margin-bottom: 26px; box-shadow: 0 14px 34px rgba(27,79,138,0.28); position: relative; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.08); }
+  .hero .tag { display:inline-block; background: rgba(255,255,255,0.18); padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing: 1px; margin-bottom: 14px; }
+  .hero h1 { font-size: 30px; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+  .hero p { font-size: 16px; opacity: 0.94; max-width: 640px; }
+  .disc-chips { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+  .disc-chip { background: rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .disc-chip b { font-size: 22px; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color:#fff; }
+  .disc-chip span { font-size: 13px; line-height: 1.3; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+  .tab-btn { padding: 10px 18px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; font-size: 14px; font-weight: 700; color: var(--text-soft); cursor: pointer; transition: .2s; display: inline-flex; align-items: center; gap: 7px; }
+  .tab-btn:hover { border-color: var(--blue-light); color: var(--blue); }
+  .tab-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 6px 16px rgba(27,79,138,0.22); }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity:1; transform:none; } }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 26px; margin-bottom: 20px; box-shadow: 0 4px 18px rgba(0,0,0,0.04); }
+  .card h2 { font-size: 21px; color: var(--blue); margin-bottom: 6px; }
+  .card h3 { font-size: 17px; margin-bottom: 12px; }
+  .lead { color: var(--text-soft); margin-bottom: 18px; }
+  .u-line { width: 54px; height: 4px; background: var(--orange); border-radius: 3px; margin: 8px 0 18px; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(215px,1fr)); gap: 16px; margin-top: 10px; }
+  .type-card { border-radius: 16px; padding: 20px; border: 2px solid; position: relative; overflow:hidden; }
+  .type-card .big { font-size: 30px; font-weight: 900; line-height: 1; }
+  .type-card h4 { font-size: 16px; margin: 6px 0 2px; }
+  .type-card .al { font-size: 12px; font-style: italic; color: var(--text-soft); margin-bottom: 4px; }
+  .type-card .kw { font-size: 13px; color: var(--text-soft); }
+  .type-card ul { margin: 12px 0 0 16px; font-size: 13.5px; }
+  .type-card ul li { margin-bottom: 3px; }
+  .type-D { background: var(--D-soft); border-color: var(--D); } .type-I { background: var(--I-soft); border-color: var(--I); }
+  .type-S { background: var(--S-soft); border-color: var(--S); } .type-C { background: var(--C-soft); border-color: var(--C); }
+  .type-D .big { color: var(--D);} .type-I .big{color:#C99700;} .type-S .big{color:var(--S);} .type-C .big{color:var(--C);}
+
+  .btn { display: inline-flex; align-items:center; gap: 8px; justify-content:center; padding: 13px 26px; border-radius: 12px; border: none; cursor: pointer; font-size: 15px; font-weight: 700; transition: .2s; }
+  .btn-primary { background: var(--orange); color: #fff; box-shadow: 0 8px 20px rgba(240,123,48,0.32); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(240,123,48,0.4); }
+  .btn-ghost { background: var(--bg); color: var(--blue); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--blue); }
+  .btn-block { width: 100%; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+  .name-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .name-row input { flex: 1; min-width: 200px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; }
+  .name-row input:focus { outline: none; border-color: var(--blue-light); }
+
+  .progress-wrap { position: sticky; top: 70px; z-index: 20; background: var(--bg); padding: 10px 0 14px; }
+  .progress-bar { height: 10px; background: var(--border); border-radius: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg,var(--green),var(--blue)); transition: width .3s; }
+  .progress-txt { font-size: 13px; color: var(--text-soft); margin-top: 6px; font-weight: 600; }
+
+  .part-head { margin: 6px 0 14px; padding: 12px 16px; border-radius: 12px; background: var(--blue); color:#fff; }
+  .part-head b { font-size: 15px; } .part-head span { font-size: 13px; opacity:.9; display:block; }
+
+  .q-block { border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 14px; background:#fff; }
+  .q-block.answered { border-color: var(--green); background: #FBFEFC; }
+  .q-head { display:flex; justify-content: space-between; align-items:center; margin-bottom: 6px; }
+  .q-num { font-weight: 800; color: var(--blue); font-size: 15px; }
+  .q-hint { font-size: 12.5px; color: var(--text-soft); }
+  .q-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .q-table th { font-size: 12px; color: var(--text-soft); font-weight: 700; padding: 4px 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .q-table th.wcol { text-align: left; }
+  .q-table td { padding: 7px 6px; border-top: 1px solid var(--border); }
+  .q-word { font-size: 15px; font-weight: 600; }
+  .q-table td.cc { text-align: center; width: 62px; }
+  .q-table input[type=radio] { width: 20px; height: 20px; cursor: pointer; }
+  .pick-most { accent-color: var(--green); } .pick-least { accent-color: var(--D); }
+
+  .scenario .s-q { font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+  .s-opt { display:flex; gap: 10px; align-items:flex-start; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: .15s; }
+  .s-opt:hover { border-color: var(--blue-light); background: var(--bg); }
+  .s-opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--blue); cursor:pointer; }
+  .s-opt.sel { border-color: var(--green); background: #FBFEFC; }
+  .s-opt span { font-size: 14.5px; }
+
+  .sticky-actions { position: sticky; bottom: 0; background: linear-gradient(transparent, var(--bg) 30%); padding: 16px 0 6px; }
+
+  .result-hero { border-radius: 18px; padding: 26px; color: #fff; margin-bottom: 20px; }
+  .result-hero .rname { font-size: 14px; opacity: .9; font-weight: 600; }
+  .result-hero h2 { color:#fff; font-size: 28px; margin: 2px 0 4px; }
+  .result-hero .rtag { font-size: 16px; opacity: .95; }
+  .badges { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .badge { background: rgba(255,255,255,0.2); padding: 8px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 700; }
+
+  .bars { display: grid; gap: 14px; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 48px; align-items: center; gap: 12px; }
+  .bar-label { font-weight: 700; font-size: 14px; display:flex; align-items:center; gap:8px; }
+  .bar-dot { width: 26px; height: 26px; border-radius: 8px; color:#fff; font-weight: 900; display:grid; place-items:center; font-size: 15px; }
+  .bar-track { height: 22px; background: var(--bg); border-radius: 11px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 11px; transition: width .8s cubic-bezier(.2,.8,.2,1); min-width: 2px; }
+  .bar-val { font-weight: 800; text-align: right; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mini { border-radius: 14px; padding: 18px; }
+  .mini h4 { font-size: 15px; margin-bottom: 10px; display:flex; align-items:center; gap: 8px; }
+  .mini ul { margin-left: 18px; font-size: 14px; }
+  .mini ul li { margin-bottom: 6px; }
+  .good { background: var(--S-soft); } .watch { background: var(--D-soft); }
+  .stress { background: var(--I-soft); border:1px solid #F1DFA0; border-radius:12px; padding:14px 16px; margin-top:16px; font-size:14.5px; }
+
+  .app-tabs { display: flex; gap: 8px; margin: 4px 0 16px; flex-wrap: wrap; }
+  .app-tab { padding: 9px 16px; border-radius: 20px; font-size: 13.5px; font-weight: 700; cursor: pointer; background: var(--bg); color: var(--text-soft); border: 1.5px solid var(--border); }
+  .app-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .app-panel { display: none; } .app-panel.active { display: block; }
+  .app-panel p { margin-bottom: 10px; font-size: 14.5px; }
+  .info-line { display:flex; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 14.5px; }
+  .info-line .ic { font-size: 18px; flex-shrink:0; }
+  .info-line:last-child { border-bottom: none; }
+  .info-line strong { color: var(--blue); }
+
+  /* Recognition reference */
+  .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .rec-card { border-radius: 16px; border: 2px solid; overflow: hidden; }
+  .rec-top { padding: 16px 18px; color:#fff; }
+  .rec-top .rt-big { font-size: 26px; font-weight: 900; line-height:1; }
+  .rec-top h4 { font-size: 16px; margin: 4px 0 0; }
+  .rec-top .rt-al { font-size: 12.5px; font-style: italic; opacity: .92; }
+  .rec-body { padding: 14px 18px; background:#fff; }
+  .rec-row { display:flex; gap:10px; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13.8px; }
+  .rec-row:last-child { border-bottom:none; }
+  .rec-row .rl { font-weight: 700; min-width: 92px; color: var(--text-soft); }
+  .plat { margin-top: 10px; padding: 12px 14px; border-radius: 10px; font-size: 13.8px; }
+
+  .team-empty { text-align:center; padding: 30px; color: var(--text-soft); }
+  .member-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background:#fff; }
+  .member-name { font-weight: 700; }
+  .member-sub { font-size: 12.5px; color: var(--text-soft); }
+  .style-badge { padding: 5px 11px; border-radius: 8px; font-weight: 800; color: #fff; font-size: 13px; }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--text-soft); font-size: 18px; padding: 4px 8px; border-radius: 6px; }
+  .del-btn:hover { background: var(--D-soft); color: var(--D); }
+
+  .tnode { display:flex; align-items:center; gap: 10px; padding: 9px 12px; border:1px solid var(--border); border-left-width:4px; border-radius: 10px; margin-bottom: 7px; background:#fff; position: relative; }
+  .tnode .tbadge { width: 26px; height: 26px; border-radius: 7px; color:#fff; font-weight: 900; display:grid; place-items:center; font-size: 13px; flex-shrink:0; }
+  .tnode .tname { font-weight: 700; }
+  .tnode .tid { font-size: 12px; color: var(--blue); background: var(--bg); padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+  .tnode .tmeta { font-size: 12px; color: var(--text-soft); margin-left: auto; margin-right: 4px; }
+  .tnode .torphan { font-size: 11.5px; color: var(--orange); font-style: italic; }
+  .troot-label { font-size: 12px; font-weight: 700; color: var(--text-soft); margin: 14px 0 6px; text-transform: uppercase; letter-spacing:.5px; }
+
+  .compo { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 6px 0 18px; }
+  .compo-cell { border-radius: 14px; padding: 16px; text-align: center; border: 2px solid; }
+  .compo-cell .n { font-size: 30px; font-weight: 900; }
+  .compo-cell .l { font-size: 13px; font-weight: 700; } .compo-cell .pct { font-size: 12px; color: var(--text-soft); }
+
+  .insight { display:flex; gap: 12px; padding: 14px; border-radius: 12px; background: var(--I-soft); border: 1px solid #F1DFA0; margin-bottom: 12px; font-size: 14.5px; }
+  .insight .ic { font-size: 20px; }
+  .matrix-note { font-size: 13px; color: var(--text-soft); margin-top: 8px; }
+  table.pair { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 6px; }
+  table.pair th, table.pair td { border: 1px solid var(--border); padding: 9px 10px; text-align: left; vertical-align: top; }
+  table.pair th { background: var(--bg); font-weight: 700; }
+  table.pair td b { color: var(--blue); }
+  .src { font-size: 12.5px; color: var(--text-soft); line-height:1.7; }
+  .footer-note { text-align:center; color: var(--text-soft); font-size: 13px; margin-top: 30px; }
+
+  @media (max-width: 720px) {
+    .split, .rec-grid { grid-template-columns: 1fr; }
+    .compo { grid-template-columns: repeat(2,1fr); }
+    .bar-row { grid-template-columns: 104px 1fr 40px; }
+    .hero h1 { font-size: 24px; } .logo-text strong { font-size: 17px; }
+  }
+  @media print { header, .tabs, .sticky-actions, .btn, .app-tabs .app-tab:not(.active) { display: none !important; } body { background: #fff; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-wrap">
+    <a href="index.html" class="logo">
+      <svg class="logo-icon" viewBox="0 0 48 48" fill="none">
+        <path d="M24 6C16 6 10 12 10 20c0 4 2 7 4 9-2 1-4 3-4 6 0 4 6 7 14 7s14-3 14-7c0-3-2-5-4-6 2-2 4-5 4-9 0-8-6-14-14-14z" fill="#2E8B57" opacity="0.9"/>
+        <path d="M24 10c-5 0-9 4-9 10 0 3 1 5 3 7h12c2-2 3-4 3-7 0-6-4-10-9-10z" fill="#1B4F8A"/>
+        <circle cx="24" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <div class="logo-text"><small>TÂM AN</small><strong>ACADEMY</strong></div>
+    </a>
+    <a href="index.html" class="back-link">← Về Học viện</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <span class="tag">🧭 CÔNG CỤ THẤU HIỂU CON NGƯỜI · BẢN CHUYÊN SÂU</span>
+    <h1>Đo lường DISC của đội nhóm</h1>
+    <p>Nhận diện rõ nhóm tính cách của bản thân và của người đối diện chỉ trong <b>3–10 phút đầu gặp gỡ</b>. Nắm điểm mạnh – điểm yếu từng nhóm và cách ứng xử <b>Platinum</b> giúp giao tiếp đúng "gu" — tăng thiện cảm và tỷ lệ chuyển đổi trong <b>Kinh doanh</b>, <b>Gia đình</b> và <b>Mối quan hệ</b>.</p>
+    <div class="disc-chips">
+      <div class="disc-chip"><b style="background:var(--D)">D</b><span><b>Thủ lĩnh</b><br>Quyết đoán · Kết quả</span></div>
+      <div class="disc-chip"><b style="background:var(--I)">I</b><span><b>Truyền cảm hứng</b><br>Sôi nổi · Kết nối</span></div>
+      <div class="disc-chip"><b style="background:var(--S)">S</b><span><b>Người đồng hành</b><br>Ổn định · Tận tâm</span></div>
+      <div class="disc-chip"><b style="background:var(--C)">C</b><span><b>Chuyên gia</b><br>Cẩn trọng · Chuẩn xác</span></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-view="intro">📖 Giới thiệu</button>
+    <button class="tab-btn" data-view="recognize">🔍 Nhận diện nhanh 3–10 phút</button>
+    <button class="tab-btn" data-view="test">📝 Làm bài đo lường</button>
+    <button class="tab-btn" data-view="result" id="tabResult" style="display:none">📊 Kết quả của tôi</button>
+    <button class="tab-btn" data-view="team">👥 Bản đồ đội nhóm</button>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <div class="view active" id="view-intro">
+    <div class="card">
+      <h2>DISC là gì?</h2>
+      <div class="u-line"></div>
+      <p class="lead">DISC là mô hình phân loại hành vi do nhà tâm lý học <b>William Moulton Marston</b> đặt nền móng (1928), phân con người theo 4 xu hướng hành vi chủ đạo, dựa trên 2 trục: <b>Hướng nhiệm vụ ↔ Hướng con người</b> và <b>Chủ động/nhanh ↔ Thận trọng/chậm</b>. Không nhóm nào "tốt" hay "xấu" — mỗi người là sự pha trộn cả 4, và mỗi nhóm là một món quà cho đội nhóm.</p>
+      <div class="type-grid">
+        <div class="type-card type-D"><div class="big">D</div><h4>Dominance – Thủ lĩnh</h4><div class="al">Alessandra gọi: "Director"</div><div class="kw">Quyết đoán · Mạnh mẽ · Hướng kết quả</div><ul><li>Thích thử thách, dẫn dắt</li><li>Ra quyết định nhanh</li><li>Thẳng thắn, không vòng vo</li><li>Câu hỏi lớn: "CÁI GÌ?"</li></ul></div>
+        <div class="type-card type-I"><div class="big">I</div><h4>Influence – Truyền cảm hứng</h4><div class="al">Alessandra gọi: "Socializer"</div><div class="kw">Sôi nổi · Lạc quan · Kết nối</div><ul><li>Hoạt ngôn, thích giao lưu</li><li>Truyền năng lượng tích cực</li><li>Thuyết phục bằng cảm xúc</li><li>Câu hỏi lớn: "AI?"</li></ul></div>
+        <div class="type-card type-S"><div class="big">S</div><h4>Steadiness – Người đồng hành</h4><div class="al">Alessandra gọi: "Relater"</div><div class="kw">Kiên nhẫn · Trung thành · Ổn định</div><ul><li>Lắng nghe, hỗ trợ người khác</li><li>Bền bỉ, đáng tin cậy</li><li>Thích hài hòa, tránh xung đột</li><li>Câu hỏi lớn: "NHƯ THẾ NÀO?"</li></ul></div>
+        <div class="type-card type-C"><div class="big">C</div><h4>Conscientiousness – Chuyên gia</h4><div class="al">Alessandra gọi: "Thinker"</div><div class="kw">Cẩn trọng · Logic · Chuẩn xác</div><ul><li>Tỉ mỉ, coi trọng chất lượng</li><li>Phân tích trước khi quyết định</li><li>Tuân thủ nguyên tắc, số liệu</li><li>Câu hỏi lớn: "TẠI SAO?"</li></ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💎 Nguyên tắc Platinum — trái tim của công cụ này</h3>
+      <div class="u-line"></div>
+      <p class="lead"><b>Quy tắc Vàng</b> nói: "Đối xử với người khác theo cách BẠN muốn được đối xử." Nhưng chuyên gia <b>Tony Alessandra</b> (tác giả <i>The Platinum Rule</i>) chỉ ra một tầng cao hơn:</p>
+      <div class="insight"><span class="ic">💎</span><div><b>Quy tắc Bạch Kim (Platinum):</b> "Đối xử với người khác theo cách <b>HỌ</b> muốn được đối xử." Muốn vậy, bạn phải đọc được nhóm DISC của họ — rồi <b>điều chỉnh</b> cách nói, tốc độ và trọng tâm cho khớp. Đây là chìa khóa tạo thiện cảm nhanh và chuyển đổi cao.</div></div>
+      <div class="info-line"><span class="ic">💼</span><div><strong>Kinh doanh:</strong> Bán đúng "gu" khách, chốt sale nhanh, phân vai đúng người, giảm mâu thuẫn nội bộ.</div></div>
+      <div class="info-line"><span class="ic">👨‍👩‍👧</span><div><strong>Gia đình:</strong> Hiểu vợ/chồng, con cái, cha mẹ để yêu thương đúng cách.</div></div>
+      <div class="info-line"><span class="ic">🤝</span><div><strong>Mối quan hệ:</strong> "Nói ngôn ngữ" của người đối diện, xây niềm tin bền vững.</div></div>
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn btn-primary" onclick="go('test')">Bắt đầu đo lường ngay →</button>
+        <button class="btn btn-ghost" onclick="go('recognize')">🔍 Học cách nhận diện nhanh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RECOGNIZE ============ -->
+  <div class="view" id="view-recognize">
+    <div class="card">
+      <h2>Nhận diện nhóm DISC trong 3–10 phút đầu</h2>
+      <div class="u-line"></div>
+      <p class="lead">Không cần người đối diện làm bài test — bạn vẫn "đọc" được nhóm của họ qua <b>cách bước vào, ngôn ngữ cơ thể, giọng nói, từ ngữ và cách ra quyết định</b>. Học thuộc bảng này để áp dụng ngay khi gặp khách hàng, đối tác hay người thân. Sau khi nhận diện, dùng ô <b>Ứng xử Platinum</b> để giao tiếp đúng cách.</p>
+      <div class="rec-grid" id="recGrid"></div>
+      <p class="matrix-note" style="margin-top:16px">💡 Mẹo của chuyên gia: quan sát <b>tốc độ</b> (nhanh = D/I, chậm = S/C) và <b>trọng tâm</b> (việc = D/C, người = I/S). Giao điểm 2 trục cho bạn nhóm chính chỉ trong vài phút.</p>
+    </div>
+  </div>
+
+  <!-- ============ TEST ============ -->
+  <div class="view" id="view-test">
+    <div class="card">
+      <h2>Bài đo lường DISC chuyên sâu</h2>
+      <div class="u-line"></div>
+      <p class="lead">Gồm <b>2 phần</b> để tăng độ chính xác: Phần 1 — 24 nhóm từ (chọn <b style="color:var(--green)">Giống nhất</b> & <b style="color:var(--D)">Ít nhất</b>); Phần 2 — 10 tình huống thực tế (chọn 1 phương án đúng bạn nhất). Trả lời theo phản xạ đầu tiên, trung thực. Mất khoảng 7–10 phút.</p>
+      <div class="name-row">
+        <input id="memberName" type="text" placeholder="Họ tên của bạn" />
+        <input id="memberIdCode" type="text" placeholder="Mã ID của bạn (vd: lanchi88hptv)" />
+        <input id="memberUpline" type="text" placeholder="Mã ID tuyến trên / Bảo trợ (nếu có)" />
+      </div>
+      <p class="matrix-note">🔑 <b>Mã ID</b> giúp khớp kết quả của bạn vào đúng vị trí trên <b>cây đội nhóm</b>. Nhập <b>Mã ID tuyến trên</b> để báo cáo tự gom lên tuyến trên khi Mã ID khớp nhau.</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-txt" id="progTxt">Đã hoàn thành 0/34 mục</div>
+    </div>
+
+    <div class="part-head"><b>PHẦN 1 · Bộ từ mô tả bản thân</b><span>Mỗi nhóm: chọn 1 từ GIỐNG bạn nhất và 1 từ ÍT giống bạn nhất.</span></div>
+    <div id="questions"></div>
+
+    <div class="part-head"><b>PHẦN 2 · Tình huống thực tế</b><span>Chọn 1 phương án phản ánh đúng bạn nhất trong mỗi tình huống.</span></div>
+    <div id="scenarios"></div>
+
+    <div class="sticky-actions">
+      <button class="btn btn-primary btn-block" id="submitBtn" onclick="computeResult()">Xem kết quả DISC của tôi →</button>
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div class="view" id="view-result"><div id="resultContent"></div></div>
+
+  <!-- ============ TEAM ============ -->
+  <div class="view" id="view-team">
+    <div class="card">
+      <h2>Bản đồ DISC đội nhóm (theo cây tuyến)</h2>
+      <div class="u-line"></div>
+      <p class="lead">Các thành viên được xếp thành <b>cây theo Mã ID tuyến trên</b>. Downline bấm <b>"Xuất để gửi tuyến trên"</b> ở màn hình kết quả rồi gửi file cho bạn; bạn bấm <b>"Nhập file"</b> — hệ thống tự khớp đúng vị trí trên cây theo Mã ID (mỗi Mã ID giữ 1 kết quả mới nhất).</p>
+      <div class="btn-row" style="margin-bottom:16px">
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📥 Nhập file kết quả</button>
+        <button class="btn btn-ghost" onclick="exportTeam()">📤 Xuất toàn bộ đội nhóm</button>
+        <input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importTeam(this)" />
+      </div>
+      <div id="teamContent"></div>
+    </div>
+    <div class="card" id="compoCard" style="display:none">
+      <h3>📊 Thành phần đội nhóm</h3><div class="u-line"></div>
+      <div class="compo" id="compoGrid"></div>
+      <div id="teamInsights"></div>
+    </div>
+    <div class="card">
+      <h3>🔗 Cẩm nang ghép cặp & phối hợp</h3><div class="u-line"></div>
+      <div style="overflow-x:auto;">
+        <table class="pair">
+          <tr><th>Cặp</th><th>Điểm mạnh khi kết hợp</th><th>Lưu ý tránh xung đột</th></tr>
+          <tr><td><b>D + I</b></td><td>Vừa quyết liệt vừa cuốn hút — bộ đôi tăng trưởng & bán hàng mạnh.</td><td>Cả hai nói nhiều, thiếu người lo chi tiết & theo dõi.</td></tr>
+          <tr><td><b>D + S</b></td><td>Thủ lĩnh + người thực thi ổn định — giao việc chạy êm.</td><td>D dễ lấn át; cần cho S thời gian và sự tôn trọng.</td></tr>
+          <tr><td><b>D + C</b></td><td>Tốc độ + độ chính xác — quyết định nhanh mà vẫn chắc.</td><td>D nôn nóng, C muốn phân tích kỹ → dễ va nhịp độ.</td></tr>
+          <tr><td><b>I + S</b></td><td>Không khí ấm áp, gắn kết — nuôi dưỡng văn hóa đội.</td><td>Cả hai ngại xung đột, dễ nể nang, bỏ qua deadline.</td></tr>
+          <tr><td><b>I + C</b></td><td>Ý tưởng bay bổng + kiểm chứng thực tế — sáng tạo có nền.</td><td>I ngẫu hứng, C cầu toàn → cần thống nhất kỳ vọng.</td></tr>
+          <tr><td><b>S + C</b></td><td>Bền bỉ + kỹ lưỡng — bộ đôi vận hành, hậu cần đáng tin.</td><td>Cả hai ngại thay đổi, cần cú hích để bứt phá.</td></tr>
+        </table>
+      </div>
+      <p class="matrix-note">💡 Nguyên tắc Platinum: <b>Đối xử với người khác theo cách HỌ muốn được đối xử</b> — không phải cách bạn muốn.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📚 Nguồn tham khảo phương pháp</h3><div class="u-line"></div>
+    <p class="src">
+      • <b>William Moulton Marston</b> — <i>Emotions of Normal People</i> (1928), nền tảng mô hình DISC.<br>
+      • <b>Tony Alessandra & Michael O'Connor</b> — <i>The Platinum Rule</i> (Director/Socializer/Relater/Thinker) & <i>The Platinum Rule for Sales Mastery</i>.<br>
+      • <b>Patti Wood</b> — nhận diện nhóm DISC qua ngôn ngữ cơ thể & ấn tượng đầu tiên.<br>
+      • Ứng dụng DISC trong bán hàng & xây dựng đội nhóm tại Việt Nam (tham khảo các chương trình đào tạo của <b>Lê Minh Tuấn</b> và cộng đồng DISC Việt).<br>
+      <span style="font-style:italic">Công cụ được biên soạn cho mục đích huấn luyện nội bộ Tâm An — kết quả mang tính tham khảo, không thay thế đánh giá chuyên môn có bản quyền.</span>
+    </p>
+  </div>
+
+  <div class="footer-note">Công cụ DISC chuyên sâu · Tâm An Academy — Tâm An · Hạnh phúc · Thịnh vượng</div>
+</div>
+
+<script>
+/* ===================== PHẦN 1: 24 NHÓM TỪ ===================== */
+const GROUPS = [
+  [["Quyết đoán","D"],["Sôi nổi","I"],["Kiên nhẫn","S"],["Cẩn thận","C"]],
+  [["Mạnh mẽ","D"],["Vui vẻ","I"],["Điềm tĩnh","S"],["Chính xác","C"]],
+  [["Thẳng thắn","D"],["Thuyết phục","I"],["Trung thành","S"],["Logic","C"]],
+  [["Cạnh tranh","D"],["Nhiệt tình","I"],["Ổn định","S"],["Phân tích","C"]],
+  [["Dám mạo hiểm","D"],["Hoà đồng","I"],["Nhẹ nhàng","S"],["Ngăn nắp","C"]],
+  [["Chủ động","D"],["Lạc quan","I"],["Lắng nghe","S"],["Kỹ lưỡng","C"]],
+  [["Kiên quyết","D"],["Lôi cuốn","I"],["Hỗ trợ","S"],["Nguyên tắc","C"]],
+  [["Táo bạo","D"],["Truyền cảm hứng","I"],["Hoà nhã","S"],["Thận trọng","C"]],
+  [["Hướng kết quả","D"],["Cởi mở","I"],["Bền bỉ","S"],["Tỉ mỉ","C"]],
+  [["Độc lập","D"],["Duyên dáng","I"],["Tận tâm","S"],["Có hệ thống","C"]],
+  [["Tự tin","D"],["Nói nhiều","I"],["Chu đáo","S"],["Chuẩn mực","C"]],
+  [["Dứt khoát","D"],["Hài hước","I"],["Nhất quán","S"],["Chi tiết","C"]],
+  [["Thích dẫn dắt","D"],["Thân thiện","I"],["Khiêm tốn","S"],["Khách quan","C"]],
+  [["Nhanh nhạy","D"],["Năng động","I"],["Dịu dàng","S"],["Cân nhắc","C"]],
+  [["Quả quyết","D"],["Vui tính","I"],["Đáng tin cậy","S"],["Nghiêm túc","C"]],
+  [["Gan dạ","D"],["Nhiệt huyết","I"],["Ôn hoà","S"],["Cầu toàn","C"]],
+  [["Quyền lực","D"],["Biểu cảm","I"],["Kiên định","S"],["Dè dặt","C"]],
+  [["Xông xáo","D"],["Cuốn hút","I"],["Nhường nhịn","S"],["Có kế hoạch","C"]],
+  [["Thích thử thách","D"],["Giao tiếp tốt","I"],["Hợp tác","S"],["Thực tế","C"]],
+  [["Nóng vội","D"],["Bốc đồng","I"],["Chậm rãi","S"],["Hoài nghi","C"]],
+  [["Áp đặt","D"],["Ba hoa","I"],["Do dự","S"],["Máy móc","C"]],
+  [["Thẳng tính","D"],["Phóng khoáng","I"],["Nhẫn nhịn","S"],["Kỹ tính","C"]],
+  [["Hiếu thắng","D"],["Thích thể hiện","I"],["An phận","S"],["Bảo thủ","C"]],
+  [["Cứng rắn","D"],["Hướng ngoại","I"],["Điềm đạm","S"],["Trầm tĩnh","C"]]
+];
+
+/* ===================== PHẦN 2: 10 TÌNH HUỐNG ===================== */
+const SCEN = [
+  ["Trong một cuộc họp nhóm, bạn thường là người:", [["Đưa ra quyết định và thúc đẩy mọi người hành động","D"],["Khuấy động không khí, tung ý tưởng, kết nối mọi người","I"],["Lắng nghe, hỗ trợ và giữ hoà khí","S"],["Đặt câu hỏi, phân tích dữ liệu, chỉ ra rủi ro","C"]]],
+  ["Khi gặp deadline gấp và áp lực lớn, bạn:", [["Tăng tốc, ra quyết định, làm cho xong bằng mọi giá","D"],["Rủ mọi người cùng làm, giữ tinh thần lạc quan","I"],["Bình tĩnh làm từng bước đều đặn, không hoảng","S"],["Rà lại kế hoạch, đảm bảo không sai sót","C"]]],
+  ["Khi mua một món đồ giá trị lớn, bạn quan tâm nhất:", [["Kết quả/hiệu quả nó mang lại — nhanh gọn, đáng đồng tiền","D"],["Trải nghiệm, thương hiệu, người bán có hợp 'gu' không","I"],["Có đáng tin không, bảo hành ra sao, ai dùng rồi khuyên","S"],["Thông số, so sánh chi tiết, bằng chứng rõ ràng","C"]]],
+  ["Người khác thường nhận xét bạn là người:", [["Mạnh mẽ, thẳng thắn, quyết đoán","D"],["Vui vẻ, hoà đồng, cuốn hút","I"],["Điềm đạm, chân thành, đáng tin","S"],["Cẩn thận, kỹ tính, logic","C"]]],
+  ["Điều khiến bạn khó chịu nhất:", [["Sự chậm chạp, thiếu quyết đoán, vòng vo","D"],["Bị phớt lờ, môi trường buồn tẻ, gò bó","I"],["Xung đột, thay đổi đột ngột, bị hối thúc","S"],["Làm ẩu, thiếu chính xác, phá vỡ nguyên tắc","C"]]],
+  ["Cách bạn thường ra quyết định:", [["Nhanh, dựa trên mục tiêu và bản năng","D"],["Theo cảm xúc và ý kiến của người mình quý","I"],["Từ từ, cân nhắc ảnh hưởng tới mọi người","S"],["Chậm, dựa trên dữ liệu và phân tích kỹ","C"]]],
+  ["Trong bữa tiệc đông người lạ, bạn:", [["Chủ động tiếp cận người quan trọng, nói chuyện có mục đích","D"],["Trò chuyện với thật nhiều người, dễ thành trung tâm","I"],["Trò chuyện sâu với vài người quen, thấy thoải mái hơn","S"],["Quan sát, chọn lọc, chỉ nói khi cần","C"]]],
+  ["Khi làm việc nhóm, bạn ghét nhất khi:", [["Bị quản lý vi mô, mất quyền quyết định","D"],["Phải làm một mình, không được ghi nhận","I"],["Bị đẩy vào xung đột, môi trường bất ổn","S"],["Phải làm vội mà bỏ qua chất lượng","C"]]],
+  ["Không gian/bàn làm việc của bạn thường:", [["Gọn, tối giản, chỉ giữ thứ phục vụ mục tiêu","D"],["Nhiều màu sắc, ảnh, đồ vui — đôi khi hơi bừa","I"],["Ấm cúng, có ảnh gia đình, ổn định lâu dài","S"],["Ngăn nắp, sắp xếp theo hệ thống, có trật tự","C"]]],
+  ["Lời khen khiến bạn vui nhất:", [["“Bạn làm được việc, đạt kết quả xuất sắc!”","D"],["“Bạn thật cuốn hút, ai cũng quý bạn!”","I"],["“Có bạn thật yên tâm, bạn rất đáng tin cậy!”","S"],["“Bạn làm rất chuẩn xác, chất lượng cao!”","C"]]]
+];
+
+/* ===================== DỮ LIỆU CÁC NHÓM ===================== */
+const TYPES = {
+  D: { name:"D · Thủ lĩnh (Dominance)", alias:"Director", tag:"Quyết đoán · Mạnh mẽ · Hướng kết quả", color:"#E4572E", emoji:"🦁",
+    overview:"Bạn là người hành động, hướng kết quả và không sợ thử thách. Bạn thích kiểm soát, quyết định nhanh và đi thẳng vấn đề. Động lực lớn nhất là chiến thắng, thành tựu và sự tự do làm theo cách của mình.",
+    strengths:["Dẫn dắt, ra quyết định dứt khoát","Dám nhận thử thách, chịu áp lực tốt","Tập trung mục tiêu, thúc đẩy tiến độ nhanh","Tự tin, độc lập, chủ động","Nhìn ra cơ hội và dám hành động","Giải quyết vấn đề trực diện"],
+    watch:["Nóng vội, thiếu kiên nhẫn","Dễ áp đặt, lấn át người khác","Ít lắng nghe cảm xúc đồng đội","Bỏ qua chi tiết vì muốn nhanh","Dễ nổi nóng khi bị cản trở","Ôm quá nhiều việc, khó ủy quyền"],
+    recognition:{ first:"Bước vào phòng là 'chiếm' không gian — nhanh, mạnh, đi thẳng vào việc.",
+      enter:"Bắt tay chắc, mạnh; đi nhanh, dứt khoát; chào hỏi ngắn rồi vào việc ngay.",
+      body:"Giao tiếp mắt trực diện, mạnh; tư thế thẳng, cử chỉ dứt khoát, chỉ tay ra lệnh.",
+      voice:"Giọng to, rõ, nhịp nhanh; nói ngắn gọn, ngắt câu chắc nịch.",
+      words:"“Kết quả”, “nhanh lên”, “vào thẳng vấn đề”, “được/không được”, “bao lâu?”",
+      decide:"Rất nhanh, ngay tại chỗ; ghét lằng nhằng, muốn chốt liền.",
+      env:"Bàn gọn, tối giản; treo bằng khen, cúp; đồ vật thể hiện vị thế.",
+      stress:"Trở nên độc đoán, nóng nảy, mất kiên nhẫn, 'đè' người khác." },
+    platinum:{ rule:"Đi thẳng, tôn trọng thời gian và quyền quyết định của họ.", pace:"NHANH — vào việc luôn, đừng vòng vo.",
+      trust:"Chứng minh bằng kết quả và sự tự tin. Nói được làm được.",
+      do:"Nói ngắn gọn, tập trung KẾT QUẢ & lợi ích, cho họ 2-3 lựa chọn để họ tự quyết.",
+      dont:"Đừng lan man, than vãn, tỏ ra thiếu quyết đoán hay kiểm soát tiểu tiết họ." },
+    convert:"CHỐT SALE với D: Vào đề trong 30 giây — “Sản phẩm này giúp anh/chị đạt [kết quả] nhanh hơn X%”. Cho 2 gói để họ CHỌN (không hỏi có/không). Nhấn ROI, tiết kiệm thời gian, lợi thế cạnh tranh. Dứt khoát đề nghị chốt: “Vậy mình bắt đầu luôn nhé?”",
+    biz:{ role:"Khai phá thị trường, chốt sale, dẫn dắt mục tiêu tăng trưởng.", motto:"Cho tôi mục tiêu và quyền tự quyết.",
+      lead:"Giao mục tiêu rõ + quyền tự chủ, đừng quản vi mô, ghi nhận thành tích công khai.",
+      grow:"Cần học: kiên nhẫn, lắng nghe, ủy quyền, quan tâm cảm xúc đồng đội." },
+    fam:{ desc:"Trong gia đình, D là trụ cột quyết đoán, bảo vệ và định hướng, nhưng dễ vô tình 'ra lệnh' với người thân.",
+      need:"Cần được tôn trọng và có tiếng nói quyết định.",
+      tip:"Hạ giọng, hỏi nhiều hơn ra lệnh. Lắng nghe con/bạn đời thay vì chỉ đưa giải pháp. Ghi nhận nỗ lực, không chỉ kết quả." },
+    rel:{ style:"Thẳng, mạnh, đi vào trọng tâm.", connect:"Kết nối bằng sự tự tin và đi thẳng vấn đề; tôn trọng thời gian của họ.",
+      do:"Nói ngắn gọn, tập trung giải pháp, để họ chủ động.", dont:"Đừng lan man, than vãn hay tỏ ra thiếu quyết đoán." } },
+
+  I: { name:"I · Truyền cảm hứng (Influence)", alias:"Socializer", tag:"Sôi nổi · Lạc quan · Kết nối", color:"#D69E00", emoji:"🌟",
+    overview:"Bạn là nguồn năng lượng tích cực, giỏi kết nối và truyền cảm hứng. Bạn hướng ngoại, lạc quan, thuyết phục bằng nhiệt tình. Động lực lớn nhất là được công nhận, được yêu quý và tạo ảnh hưởng.",
+    strengths:["Giao tiếp cuốn hút, tạo thiện cảm nhanh","Truyền năng lượng, tạo không khí tích cực","Thuyết phục và tạo động lực giỏi","Sáng tạo, linh hoạt, cởi mở","Kết nối mạng lưới quan hệ rộng","Lạc quan, phục hồi nhanh sau thất bại"],
+    watch:["Thiếu tập trung, hay bỏ dở chi tiết","Nói nhiều hơn làm, dễ hứa quá lời","Ra quyết định theo cảm xúc","Ngại đối mặt xung đột & số liệu","Dễ mất kiên nhẫn với việc lặp lại","Cần được chú ý, dễ tự ái khi bị phớt lờ"],
+    recognition:{ first:"Cười tươi, nói nhiều, cuốn cả phòng vào câu chuyện của mình.",
+      enter:"Bắt tay nhiệt tình kèm chạm vai/cười lớn; chào hỏi nồng nhiệt, hỏi thăm rôm rả.",
+      body:"Biểu cảm phong phú, nói bằng cả tay và cơ thể; cười nhiều, chạm nhẹ khi nói.",
+      voice:"Giọng ấm, biểu cảm, lên xuống; nói nhanh, hào hứng, hay pha trò.",
+      words:"“tuyệt vời”, “vui”, “mọi người”, “cảm giác”, kể chuyện, khen ngợi liên tục.",
+      decide:"Nhanh nhưng theo cảm xúc; dễ bị thuyết phục nếu thích người bán.",
+      env:"Bàn nhiều màu sắc, ảnh chụp chung, đồ vui; hơi lộn xộn nhưng đầy 'chất' cá nhân.",
+      stress:"Nói lan man, thiếu nhất quán, né việc khó, tìm sự công nhận thái quá." },
+    platinum:{ rule:"Tạo không khí vui, khen chân thành, để họ được toả sáng.", pace:"NHANH & ẤM — nhiều năng lượng, tương tác.",
+      trust:"Kết nối cảm xúc trước, việc sau. Cho họ thấy bạn quý con người họ.",
+      do:"Tạo không khí vui, kể chuyện, nói về TRẢI NGHIỆM & con người, khen ngợi chân thành.",
+      dont:"Đừng sa đà số liệu khô khan, đừng lạnh lùng hay chỉ trích họ nơi đông người." },
+    convert:"CHỐT SALE với I: Bán bằng CÂU CHUYỆN và cảm xúc — “Chị A dùng xong thấy tự tin hẳn, ai cũng khen…”. Khen chân thành, tạo trải nghiệm vui. Cho họ hình dung mình sẽ được ngưỡng mộ. Tạo cảm giác 'cộng đồng' và ưu đãi có thời hạn để chốt nhanh khi cảm xúc đang cao.",
+    biz:{ role:"Xây quan hệ, tuyển dụng, tạo động lực & thương hiệu cá nhân.", motto:"Cho tôi được ghi nhận và kết nối.",
+      lead:"Khen công khai, cho không gian thể hiện & giao lưu, hỗ trợ họ về deadline và chi tiết.",
+      grow:"Cần học: kỷ luật, tập trung, theo dõi chi tiết, giữ lời hứa." },
+    fam:{ desc:"Trong gia đình, I mang lại tiếng cười, sự ấm áp và gắn kết, nhưng dễ thiếu nhất quán trong kỷ luật.",
+      need:"Cần được lắng nghe, được khen và chia sẻ cảm xúc.",
+      tip:"Dành thời gian trò chuyện, khen ngợi chân thành. Cùng lập thói quen nhỏ để tăng tính nhất quán; đừng chỉ trích nơi đông người." },
+    rel:{ style:"Nồng nhiệt, biểu cảm, thích trò chuyện.", connect:"Kết nối bằng sự thân thiện, nụ cười và quan tâm đến câu chuyện của họ.",
+      do:"Hào hứng, khen ngợi, tạo niềm vui, hỏi về họ.", dont:"Đừng lạnh lùng, chỉ trích công khai hay quá khô khan." } },
+
+  S: { name:"S · Người đồng hành (Steadiness)", alias:"Relater", tag:"Kiên nhẫn · Trung thành · Ổn định", color:"#2E8B57", emoji:"🌿",
+    overview:"Bạn là chỗ dựa vững chắc, kiên nhẫn và tận tâm. Bạn coi trọng hài hòa, ổn định và quan hệ lâu dài. Động lực lớn nhất là sự an toàn, được giúp đỡ người khác và môi trường ổn định.",
+    strengths:["Đáng tin cậy, kiên trì, bền bỉ","Lắng nghe và hỗ trợ tận tâm","Giữ hòa khí, gắn kết đội nhóm","Bình tĩnh, nhất quán trong công việc","Trung thành, giữ cam kết lâu dài","Đồng cảm, đọc được cảm xúc người khác"],
+    watch:["Ngại thay đổi, chậm thích nghi","Khó nói 'không', dễ ôm việc","Né tránh xung đột, giấu cảm xúc","Thiếu quyết đoán khi cần nhanh","Dễ bị lợi dụng lòng tốt","Ít nói ra nhu cầu của bản thân"],
+    recognition:{ first:"Điềm đạm, ấm áp, lắng nghe nhiều hơn nói — khiến bạn thấy dễ chịu, an toàn.",
+      enter:"Bắt tay nhẹ, ấm; chào hỏi từ tốn, chân thành; hỏi thăm bạn trước.",
+      body:"Cử chỉ chậm, mềm; gật đầu lắng nghe; mắt hiền, ít 'áp' người khác.",
+      voice:"Giọng nhỏ, đều, ấm; nói chậm rãi, nhẹ nhàng, ít ngắt lời.",
+      words:"“cùng nhau”, “chúng ta”, “giúp”, “từ từ”, “bạn thấy sao?”, cảm ơn nhiều.",
+      decide:"Chậm; cần thời gian, cần cảm thấy an toàn; ngại bị hối thúc.",
+      env:"Không gian ấm cúng, ảnh gia đình, đồ gắn bó lâu năm, gọn nhưng thân thiện.",
+      stress:"Im lặng chịu đựng, rút lui, đồng ý ngoài mặt nhưng trong lòng bất an." },
+    platinum:{ rule:"Đi từ từ, chân thành, tạo cảm giác an toàn — đừng ép.", pace:"CHẬM & ẤM — kiên nhẫn, xây niềm tin.",
+      trust:"Nhất quán và giữ lời qua thời gian. Quan tâm thật lòng, không vụ lợi.",
+      do:"Xây NIỀM TIN từ từ, chân thành; nhấn mạnh sự an toàn, bảo đảm; cho họ thời gian.",
+      dont:"Đừng ép quyết định gấp, đừng gây áp lực hay thay đổi đột ngột." },
+    convert:"CHỐT SALE với S: Đừng vội. Xây quan hệ, hỏi han, lắng nghe nhu cầu. Nhấn AN TOÀN — bảo hành, chính sách đổi trả, người thật đã dùng và hài lòng. Cho họ thời gian suy nghĩ, hỗ trợ tận tình. Chốt nhẹ nhàng: “Em sẽ đồng hành cùng anh/chị suốt quá trình, mình yên tâm nhé.”",
+    biz:{ role:"Chăm sóc khách hàng, giữ chân đội, vận hành & hỗ trợ hậu cần.", motto:"Cho tôi sự ổn định và được giúp đỡ.",
+      lead:"Tạo môi trường ổn định, báo trước thay đổi, ghi nhận riêng tư, giao việc rõ từng bước.",
+      grow:"Cần học: chủ động, dám nói lên ý kiến, đón nhận thay đổi, ưu tiên bản thân." },
+    fam:{ desc:"Trong gia đình, S là người giữ tổ ấm — kiên nhẫn, hy sinh và luôn hiện diện, nhưng dễ nén cảm xúc của mình.",
+      need:"Cần sự an toàn, ổn định và được trân trọng.",
+      tip:"Chủ động hỏi han cảm xúc của họ (vì họ ít nói ra). Báo trước mọi thay đổi lớn. Trân trọng sự hy sinh thầm lặng bằng lời cảm ơn cụ thể." },
+    rel:{ style:"Nhẹ nhàng, chân thành, lắng nghe nhiều.", connect:"Kết nối bằng sự chân thành, kiên nhẫn và quan tâm đều đặn.",
+      do:"Lắng nghe, giữ lời hứa, tạo cảm giác an toàn, đi từ từ.", dont:"Đừng gây áp lực, thay đổi đột ngột hay ép quyết định nhanh." } },
+
+  C: { name:"C · Chuyên gia (Conscientiousness)", alias:"Thinker", tag:"Cẩn trọng · Logic · Chuẩn xác", color:"#2E6CB5", emoji:"🔬",
+    overview:"Bạn là người của chất lượng, logic và độ chính xác. Bạn phân tích kỹ trước khi quyết định, coi trọng nguyên tắc, dữ liệu và sự đúng đắn. Động lực lớn nhất là làm đúng, chất lượng cao và được tin tưởng về chuyên môn.",
+    strengths:["Tỉ mỉ, chính xác, chất lượng cao","Tư duy logic, phân tích sâu","Có kế hoạch, ngăn nắp, hệ thống","Đáng tin về chuyên môn & số liệu","Khách quan, công tâm","Lường trước rủi ro, ít sai sót"],
+    watch:["Cầu toàn, chậm ra quyết định","Quá phê phán, khó hài lòng","Ngại rủi ro, phân tích thái quá","Ít bộc lộ cảm xúc, dễ bị thấy 'lạnh'","Khó linh hoạt khi kế hoạch đổi","Dễ sa đà tiểu tiết, bỏ lỡ thời cơ"],
+    recognition:{ first:"Điềm tĩnh, giữ khoảng cách, đặt câu hỏi sâu và chính xác.",
+      enter:"Bắt tay vừa phải, hơi dè dặt; chào lịch sự, giữ khoảng cách; ít xã giao thừa.",
+      body:"Cử chỉ tiết chế, ít biểu cảm; quan sát nhiều; giao tiếp mắt vừa phải, cân nhắc.",
+      voice:"Giọng đều, bình thản, ít cảm xúc; nói chính xác, chọn từ cẩn thận.",
+      words:"“tại sao”, “bằng chứng”, “số liệu”, “chính xác”, “cho tôi xem chi tiết”.",
+      decide:"Rất chậm; cần đủ thông tin, so sánh, kiểm chứng; ghét bị thúc ép.",
+      env:"Bàn ngăn nắp, tài liệu xếp hệ thống, mọi thứ đúng chỗ, sạch và có trật tự.",
+      stress:"Xét nét quá mức, phân tích tê liệt, rút lui và trở nên lạnh lùng, phê phán." },
+    platinum:{ rule:"Chuẩn bị kỹ, nói có căn cứ, cho họ thời gian & không gian.", pace:"CHẬM & CHÍNH XÁC — logic, dữ liệu.",
+      trust:"Trung thực tuyệt đối, số liệu đúng, cam kết đúng chuẩn. Đừng thổi phồng.",
+      do:"Chuẩn bị DỮ LIỆU, bằng chứng, chi tiết rõ ràng; trả lời chính xác từng câu hỏi.",
+      dont:"Đừng thổi phồng, ép cảm xúc, hối thúc hay nói chung chung thiếu căn cứ." },
+    convert:"CHỐT SALE với C: Cung cấp đầy đủ thông tin — thông số, so sánh, nghiên cứu, review, chính sách rõ ràng. Trả lời chính xác, thừa nhận cả nhược điểm để tạo uy tín. Cho họ thời gian & tài liệu tự nghiên cứu. Chốt bằng logic: “Với các số liệu này, đây là lựa chọn tối ưu về chi phí/chất lượng cho anh/chị.”",
+    biz:{ role:"Xây quy trình, phân tích số liệu, kiểm soát chất lượng & đào tạo bài bản.", motto:"Cho tôi thông tin đầy đủ và tiêu chuẩn rõ ràng.",
+      lead:"Đưa tiêu chuẩn & kỳ vọng rõ ràng, cho thời gian làm kỹ, tôn trọng chuyên môn, phản hồi dựa trên dữ liệu.",
+      grow:"Cần học: quyết định nhanh hơn, chấp nhận 'đủ tốt', linh hoạt, bộc lộ cảm xúc." },
+    fam:{ desc:"Trong gia đình, C là người lo toan chu đáo, có kế hoạch và trách nhiệm, nhưng đôi khi khắt khe và ít thể hiện tình cảm.",
+      need:"Cần sự đúng đắn, không gian riêng và được tôn trọng lý lẽ.",
+      tip:"Trao đổi bằng lý lẽ rõ ràng, tránh chỉ trích cảm tính. Chủ động thể hiện tình cảm bằng hành động cụ thể. Đừng ép họ quyết định vội." },
+    rel:{ style:"Điềm đạm, chính xác, coi trọng logic.", connect:"Kết nối bằng sự chuẩn bị kỹ, trung thực và tôn trọng nguyên tắc của họ.",
+      do:"Nói có căn cứ, giữ đúng hẹn, cho họ thời gian & không gian.", dont:"Đừng phóng đại, hối thúc hay quá suồng sã, cảm tính." } }
+};
+
+const ORDER = ["D","I","S","C"];
+const STORE_KEY = "taman_disc_team_v3";
+
+/* ===================== ĐIỀU HƯỚNG ===================== */
+function go(view){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  if(view==='team') renderTeam();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
+
+/* ===================== NHẬN DIỆN NHANH ===================== */
+function renderRecognize(){
+  document.getElementById('recGrid').innerHTML = ORDER.map(k=>{
+    const t=TYPES[k], r=t.recognition, p=t.platinum;
+    return `<div class="rec-card" style="border-color:${t.color}">
+      <div class="rec-top" style="background:${t.color}">
+        <div class="rt-big">${k} ${t.emoji}</div>
+        <h4>${t.name.split('(')[0].trim()}</h4>
+        <div class="rt-al">${t.tag} · "${t.alias}"</div>
+      </div>
+      <div class="rec-body">
+        <div class="rec-row" style="border-bottom:2px solid ${t.color}22"><span class="rl">⚡ Trong 10'</span><span><b>${r.first}</b></span></div>
+        <div class="rec-row"><span class="rl">🤝 Chào hỏi</span><span>${r.enter}</span></div>
+        <div class="rec-row"><span class="rl">🧍 Cơ thể</span><span>${r.body}</span></div>
+        <div class="rec-row"><span class="rl">🔊 Giọng nói</span><span>${r.voice}</span></div>
+        <div class="rec-row"><span class="rl">💬 Hay nói</span><span>${r.words}</span></div>
+        <div class="rec-row"><span class="rl">⏱️ Quyết định</span><span>${r.decide}</span></div>
+        <div class="rec-row"><span class="rl">🗂️ Không gian</span><span>${r.env}</span></div>
+        <div class="rec-row"><span class="rl">🔥 Khi stress</span><span>${r.stress}</span></div>
+        <div class="plat" style="background:${t.color}14">
+          <b style="color:${t.color}">💎 Ứng xử Platinum:</b> ${p.rule}<br>
+          <b>Nhịp độ:</b> ${p.pace}<br>
+          <b>✅ Nên:</b> ${p.do}<br>
+          <b>🚫 Tránh:</b> ${p.dont}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== DỰNG CÂU HỎI ===================== */
+function buildQuestions(){
+  document.getElementById('questions').innerHTML = GROUPS.map((g,i)=>{
+    const rows = g.map((w,j)=>`<tr><td class="q-word">${w[0]}</td>
+      <td class="cc"><input type="radio" class="pick-most" name="most-${i}" value="${j}" onchange="onPick(${i})"></td>
+      <td class="cc"><input type="radio" class="pick-least" name="least-${i}" value="${j}" onchange="onPick(${i})"></td></tr>`).join('');
+    return `<div class="q-block" id="q-${i}">
+      <div class="q-head"><span class="q-num">Nhóm ${i+1}/24</span><span class="q-hint">1 GIỐNG nhất & 1 ÍT nhất</span></div>
+      <table class="q-table"><tr><th class="wcol">Tính từ</th><th class="cc" style="color:var(--green)">GIỐNG NHẤT</th><th class="cc" style="color:var(--D)">ÍT NHẤT</th></tr>${rows}</table>
+    </div>`;
+  }).join('');
+}
+function buildScenarios(){
+  document.getElementById('scenarios').innerHTML = SCEN.map((s,i)=>{
+    const opts = s[1].map((o,j)=>`<label class="s-opt" id="s-${i}-${j}">
+      <input type="radio" name="scen-${i}" value="${j}" onchange="onScen(${i},${j})">
+      <span>${o[0]}</span></label>`).join('');
+    return `<div class="q-block scenario" id="sc-${i}"><div class="s-q">${i+1}. ${s[0]}</div>${opts}</div>`;
+  }).join('');
+}
+function onPick(i){
+  const most = document.querySelector(`input[name="most-${i}"]:checked`);
+  const least = document.querySelector(`input[name="least-${i}"]:checked`);
+  if(most && least && most.value===least.value) least.checked = false;
+  const m = document.querySelector(`input[name="most-${i}"]:checked`);
+  const l = document.querySelector(`input[name="least-${i}"]:checked`);
+  document.getElementById('q-'+i).classList.toggle('answered', !!(m&&l));
+  updateProgress();
+}
+function onScen(i,j){
+  document.querySelectorAll(`#sc-${i} .s-opt`).forEach(o=>o.classList.remove('sel'));
+  document.getElementById(`s-${i}-${j}`).classList.add('sel');
+  document.getElementById('sc-'+i).classList.add('answered');
+  updateProgress();
+}
+function updateProgress(){
+  let done=0;
+  for(let i=0;i<GROUPS.length;i++) if(document.querySelector(`input[name="most-${i}"]:checked`) && document.querySelector(`input[name="least-${i}"]:checked`)) done++;
+  for(let i=0;i<SCEN.length;i++) if(document.querySelector(`input[name="scen-${i}"]:checked`)) done++;
+  const total = GROUPS.length + SCEN.length;
+  const pct = Math.round(done/total*100);
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progTxt').textContent = `Đã hoàn thành ${done}/${total} mục`;
+  return done;
+}
+
+/* ===================== TÍNH KẾT QUẢ ===================== */
+function computeResult(){
+  const total = GROUPS.length + SCEN.length;
+  const done = updateProgress();
+  if(done < total){
+    let target=null;
+    for(let i=0;i<GROUPS.length;i++) if(!(document.querySelector(`input[name="most-${i}"]:checked`) && document.querySelector(`input[name="least-${i}"]:checked`))){ target=document.getElementById('q-'+i); break; }
+    if(!target) for(let i=0;i<SCEN.length;i++) if(!document.querySelector(`input[name="scen-${i}"]:checked`)){ target=document.getElementById('sc-'+i); break; }
+    if(target){ target.scrollIntoView({behavior:'smooth',block:'center'}); target.style.borderColor='var(--D)'; }
+    alert(`Bạn còn ${total-done} mục chưa hoàn thành. Vui lòng trả lời đủ để kết quả chính xác nhất.`);
+    return;
+  }
+  const score = {D:0,I:0,S:0,C:0};
+  for(let i=0;i<GROUPS.length;i++){
+    const m = +document.querySelector(`input[name="most-${i}"]:checked`).value;
+    const l = +document.querySelector(`input[name="least-${i}"]:checked`).value;
+    score[GROUPS[i][m][1]] += 1; score[GROUPS[i][l][1]] -= 1;
+  }
+  for(let i=0;i<SCEN.length;i++){
+    const v = +document.querySelector(`input[name="scen-${i}"]:checked`).value;
+    score[SCEN[i][1][v][1]] += 1;
+  }
+  // chuẩn hoá: phần 1 net [-24,24] + phần 2 [0,10] → [-24,34]
+  const pct = {};
+  ORDER.forEach(k=> pct[k] = Math.max(0,Math.min(100, Math.round((score[k]+24)/58*100))));
+  const ranked = [...ORDER].sort((a,b)=> pct[b]-pct[a]);
+  const name = (document.getElementById('memberName').value||'').trim() || 'Bạn';
+  const idCode = norm(document.getElementById('memberIdCode').value||'');
+  const uplineCode = norm(document.getElementById('memberUpline').value||'');
+  const data = { name, idCode, uplineCode, pct, ranked, primary:ranked[0], secondary:ranked[1], ts:Date.now() };
+  window.__lastResult = data;
+  renderResult(data);
+  document.getElementById('tabResult').style.display='';
+  go('result');
+}
+
+/* ===================== HIỂN THỊ KẾT QUẢ ===================== */
+function renderResult(d){
+  const t = TYPES[d.primary], t2 = TYPES[d.secondary], c = t.color, r=t.recognition, p=t.platinum;
+  const barsHtml = d.ranked.map(k=>{
+    const tt = TYPES[k];
+    return `<div class="bar-row">
+      <div class="bar-label"><span class="bar-dot" style="background:${tt.color}">${k}</span>${tt.name.split('·')[1].split('(')[0].trim()}</div>
+      <div class="bar-track"><div class="bar-fill" style="background:${tt.color};width:0" data-w="${d.pct[k]}"></div></div>
+      <div class="bar-val" style="color:${tt.color}">${d.pct[k]}</div>
+    </div>`;
+  }).join('');
+  const x = t;
+  const bizPanel = `<p><strong>Vai trò tự nhiên:</strong> ${x.biz.role}</p>
+    <div class="info-line"><span class="ic">🏷️</span><div><strong>Phương châm:</strong> "${x.biz.motto}"</div></div>
+    <div class="info-line"><span class="ic">💎</span><div><strong>Ứng xử Platinum khi làm việc / bán cho nhóm này:</strong> ${p.do} <br><em>Tránh:</em> ${p.dont}</div></div>
+    <div class="info-line"><span class="ic">🎯</span><div><strong>Kịch bản chốt sale chuyển đổi cao:</strong> ${x.convert}</div></div>
+    <div class="info-line"><span class="ic">🧭</span><div><strong>Khi dẫn dắt người nhóm này:</strong> ${x.biz.lead}</div></div>
+    <div class="info-line"><span class="ic">🌱</span><div><strong>Điểm cần phát triển:</strong> ${x.biz.grow}</div></div>`;
+  const famPanel = `<p>${x.fam.desc}</p>
+    <div class="info-line"><span class="ic">❤️</span><div><strong>Nhu cầu sâu bên trong:</strong> ${x.fam.need}</div></div>
+    <div class="info-line"><span class="ic">💡</span><div><strong>Bí quyết yêu thương đúng cách:</strong> ${x.fam.tip}</div></div>`;
+  const relPanel = `<div class="info-line"><span class="ic">💬</span><div><strong>Phong cách giao tiếp:</strong> ${x.rel.style}</div></div>
+    <div class="info-line"><span class="ic">🔗</span><div><strong>Cách tạo kết nối:</strong> ${x.rel.connect}</div></div>
+    <div class="info-line"><span class="ic">✅</span><div><strong>NÊN:</strong> ${x.rel.do}</div></div>
+    <div class="info-line"><span class="ic">🚫</span><div><strong>TRÁNH:</strong> ${x.rel.dont}</div></div>`;
+
+  document.getElementById('resultContent').innerHTML = `
+    <div class="result-hero" style="background:linear-gradient(135deg,${c},${shade(c,-18)})">
+      <div class="rname">Kết quả DISC của ${escapeHtml(d.name)}${d.idCode?' · 🔑 '+escapeHtml(d.idCode):''}${d.uplineCode?' · ⬆ tuyến trên: '+escapeHtml(d.uplineCode):''}</div>
+      <h2>${t.emoji} ${t.name}</h2>
+      <div class="rtag">${t.tag} · "${t.alias}"</div>
+      <div class="badges">
+        <span class="badge">Chủ đạo: ${d.primary} (${d.pct[d.primary]})</span>
+        <span class="badge">Phụ: ${d.secondary} (${d.pct[d.secondary]})</span>
+        <span class="badge">Kiểu kết hợp: ${d.primary}${d.secondary}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📊 Biểu đồ 4 chiều DISC</h3><div class="u-line"></div>
+      <div class="bars">${barsHtml}</div>
+      <p class="matrix-note">Điểm cao = xu hướng hành vi nổi trội. Ai cũng có cả 4 chiều — quan trọng là thứ tự ưu tiên.</p>
+    </div>
+
+    <div class="card">
+      <h3>🧬 Chân dung của bạn</h3><div class="u-line"></div>
+      <p class="lead">${t.overview}</p>
+      <p style="margin-bottom:14px">Phong cách phụ <b style="color:${t2.color}">${d.secondary}</b> bổ sung nét <b>${t2.tag.toLowerCase()}</b> vào cách hành xử của bạn.</p>
+      <div class="split">
+        <div class="mini good"><h4>💪 Điểm mạnh nổi bật</h4><ul>${t.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+        <div class="mini watch"><h4>⚠️ Điểm mù cần lưu ý</h4><ul>${t.watch.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+      <div class="stress">🔥 <b>Dấu hiệu khi bạn căng thẳng:</b> ${r.stress} <br><span style="color:var(--text-soft)">→ Nhận ra sớm để tự điều chỉnh và xin hỗ trợ đúng lúc.</span></div>
+    </div>
+
+    <div class="card">
+      <h3>🔍 Người khác nhận ra bạn qua (3–10 phút đầu)</h3><div class="u-line"></div>
+      <div class="info-line"><span class="ic">🤝</span><div><strong>Chào hỏi & cơ thể:</strong> ${r.enter} ${r.body}</div></div>
+      <div class="info-line"><span class="ic">🔊</span><div><strong>Giọng nói:</strong> ${r.voice}</div></div>
+      <div class="info-line"><span class="ic">💬</span><div><strong>Từ ngữ hay dùng:</strong> ${r.words}</div></div>
+      <div class="info-line"><span class="ic">⏱️</span><div><strong>Cách ra quyết định:</strong> ${r.decide}</div></div>
+    </div>
+
+    <div class="card">
+      <h3>🎯 Áp dụng vào thực tế</h3><div class="u-line"></div>
+      <div class="app-tabs">
+        <div class="app-tab active" onclick="appTab(this,'ap-biz')">💼 Kinh doanh & Chốt sale</div>
+        <div class="app-tab" onclick="appTab(this,'ap-fam')">👨‍👩‍👧 Gia đình</div>
+        <div class="app-tab" onclick="appTab(this,'ap-rel')">🤝 Mối quan hệ</div>
+      </div>
+      <div class="app-panel active" id="ap-biz">${bizPanel}</div>
+      <div class="app-panel" id="ap-fam">${famPanel}</div>
+      <div class="app-panel" id="ap-rel">${relPanel}</div>
+    </div>
+
+    <div class="card">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveToTeam()">💾 Lưu vào đội nhóm</button>
+        <button class="btn btn-ghost" onclick="exportMine()">📤 Xuất để gửi tuyến trên</button>
+        <button class="btn btn-ghost" onclick="window.print()">🖨️ In / Lưu PDF</button>
+        <button class="btn btn-ghost" onclick="retake()">🔄 Làm lại</button>
+      </div>
+      <p class="matrix-note" id="saveMsg"></p>
+    </div>`;
+  requestAnimationFrame(()=> setTimeout(()=>{ document.querySelectorAll('#resultContent .bar-fill').forEach(f=> f.style.width = f.dataset.w+'%'); },80));
+}
+function appTab(el,id){
+  el.parentElement.querySelectorAll('.app-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.app-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function retake(){
+  buildQuestions(); buildScenarios(); updateProgress();
+  document.getElementById('memberName').value='';
+  document.getElementById('memberIdCode').value='';
+  document.getElementById('memberUpline').value='';
+  go('test');
+}
+
+/* ===================== ĐỘI NHÓM (theo cây Mã ID) ===================== */
+function norm(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,''); }
+function loadTeam(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||[]; }catch(e){ return []; } }
+function saveTeamArr(arr){ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+
+function saveToTeam(){
+  const d = window.__lastResult; if(!d) return;
+  const msg = document.getElementById('saveMsg');
+  if(!d.idCode){ if(msg) msg.textContent = '⚠️ Vui lòng nhập Mã ID ở bước làm bài để lưu và khớp vào cây đội nhóm.'; return; }
+  const arr = loadTeam();
+  const ix = arr.findIndex(x=> x.idCode===d.idCode);
+  let word;
+  if(ix>=0){ arr[ix]=d; word='cập nhật'; } else { arr.push(d); word='lưu'; }
+  saveTeamArr(arr);
+  if(msg) msg.textContent = `✅ Đã ${word} "${d.name}" (🔑 ${d.idCode}) vào bản đồ đội nhóm (${arr.length} thành viên).`;
+}
+function delMemberById(enc){
+  const idCode = decodeURIComponent(enc);
+  const arr = loadTeam();
+  const ix = arr.findIndex(m=> m.idCode===idCode);
+  if(ix<0) return;
+  if(!confirm(`Xoá "${arr[ix].name}" (🔑 ${idCode}) khỏi đội nhóm?`)) return;
+  arr.splice(ix,1); saveTeamArr(arr); renderTeam();
+}
+
+/* Xuất / Nhập để khớp cây giữa các thành viên/thiết bị */
+function downloadJson(obj, name){
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+}
+function exportMine(){
+  const d = window.__lastResult; if(!d) return;
+  if(!d.idCode){ alert('Bạn cần nhập Mã ID để xuất file khớp cây.'); return; }
+  downloadJson([d], `disc-${d.idCode}.json`);
+}
+function exportTeam(){
+  const arr = loadTeam();
+  if(!arr.length){ alert('Chưa có dữ liệu để xuất.'); return; }
+  downloadJson(arr, 'disc-doi-nhom.json');
+}
+function importTeam(input){
+  const f = input.files && input.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      let data = JSON.parse(rd.result);
+      if(!Array.isArray(data)) data = [data];
+      const arr = loadTeam(); let added=0, updated=0, skipped=0;
+      data.forEach(m=>{
+        if(!m || !m.primary || !m.pct){ skipped++; return; }
+        m.idCode = norm(m.idCode); m.uplineCode = norm(m.uplineCode);
+        if(!m.idCode){ arr.push(m); added++; return; }
+        const ix = arr.findIndex(x=> x.idCode===m.idCode);
+        if(ix>=0){ if((m.ts||0) >= (arr[ix].ts||0)){ arr[ix]=m; updated++; } else skipped++; }
+        else { arr.push(m); added++; }
+      });
+      saveTeamArr(arr); renderTeam();
+      alert(`Đã nhập: thêm ${added}, cập nhật ${updated}${skipped?`, bỏ qua ${skipped}`:''}. Hệ thống tự khớp vào cây theo Mã ID.`);
+    }catch(e){ alert('File không hợp lệ: '+e.message); }
+    input.value='';
+  };
+  rd.readAsText(f);
+}
+
+function renderNode(m, childrenOf, depth, seen){
+  if(seen.has(m.idCode||m.name)) return ''; seen.add(m.idCode||m.name);
+  const t = TYPES[m.primary];
+  const enc = encodeURIComponent(m.idCode||'');
+  const kids = (m.idCode && childrenOf[m.idCode]) ? childrenOf[m.idCode] : [];
+  let h = `<div class="tnode" style="margin-left:${depth*22}px;border-left-color:${t.color}">
+    <span class="tbadge" style="background:${t.color}">${m.primary}</span>
+    <span class="tname">${escapeHtml(m.name)}</span>
+    ${m.idCode?`<span class="tid">🔑 ${escapeHtml(m.idCode)}</span>`:'<span class="torphan">(chưa có Mã ID)</span>'}
+    <span class="tmeta">${m.primary}${m.secondary} · ${new Date(m.ts).toLocaleDateString('vi-VN')}</span>
+    ${m.idCode?`<button class="del-btn" onclick="delMemberById('${enc}')" title="Xoá">🗑️</button>`:''}
+  </div>`;
+  kids.forEach(k=> h += renderNode(k, childrenOf, depth+1, seen));
+  return h;
+}
+
+function renderTeam(){
+  const arr = loadTeam();
+  const wrap = document.getElementById('teamContent'), compoCard = document.getElementById('compoCard');
+  if(!arr.length){
+    wrap.innerHTML = `<div class="team-empty">👥 Chưa có thành viên nào.<br>Hãy làm bài đo lường, nhập <b>Mã ID</b> và bấm <b>"Lưu vào đội nhóm"</b> — hoặc <b>"Nhập file"</b> kết quả từ thành viên khác.</div>
+      <div class="btn-row" style="justify-content:center"><button class="btn btn-primary" onclick="go('test')">Làm bài ngay →</button></div>`;
+    compoCard.style.display='none'; return;
+  }
+  // Dựng cây theo uplineCode → idCode
+  const byId = {}; arr.forEach(m=>{ if(m.idCode) byId[m.idCode]=m; });
+  const childrenOf = {}; const roots = [];
+  arr.forEach(m=>{
+    const up = m.uplineCode;
+    if(up && byId[up] && up!==m.idCode){ (childrenOf[up]=childrenOf[up]||[]).push(m); }
+    else roots.push(m);
+  });
+  const seen = new Set();
+  let html = '';
+  roots.forEach(r=>{
+    const orphanUp = r.uplineCode && !byId[r.uplineCode];
+    if(orphanUp) html += `<div class="troot-label">⬆ Tuyến trên "<b>${escapeHtml(r.uplineCode)}</b>" chưa có trong dữ liệu — hiển thị như gốc tạm</div>`;
+    html += renderNode(r, childrenOf, 0, seen);
+  });
+  // phòng trường hợp còn sót (vòng lặp) — hiện phẳng
+  arr.forEach(m=>{ if(!seen.has(m.idCode||m.name)) html += renderNode(m, childrenOf, 0, seen); });
+  wrap.innerHTML = html;
+
+  const count = {D:0,I:0,S:0,C:0}; arr.forEach(m=> count[m.primary]++);
+  const total = arr.length;
+  document.getElementById('compoGrid').innerHTML = ORDER.map(k=>{
+    const t=TYPES[k];
+    return `<div class="compo-cell" style="border-color:${t.color};background:${t.color}14">
+      <div class="n" style="color:${t.color}">${count[k]}</div><div class="l" style="color:${t.color}">${k} · ${t.emoji}</div>
+      <div class="pct">${Math.round(count[k]/total*100)}%</div></div>`;
+  }).join('');
+  document.getElementById('teamInsights').innerHTML = teamInsights(count,total);
+  compoCard.style.display='';
+}
+function teamInsights(count,total){
+  const out=[]; const missing = ORDER.filter(k=>count[k]===0);
+  const maxK = ORDER.reduce((a,b)=>count[b]>count[a]?b:a);
+  const names = {D:"thủ lĩnh/quyết đoán (D)",I:"kết nối/truyền cảm hứng (I)",S:"ổn định/đồng hành (S)",C:"chuẩn xác/chuyên môn (C)"};
+  if(total>=2 && count[maxK]/total>=0.5) out.push(`Đội đang nghiêng mạnh về nhóm <b>${names[maxK]}</b>. Thế mạnh rõ, nhưng hãy bổ sung các phong cách còn lại để cân bằng.`);
+  if(missing.length) out.push(`Đội đang <b>thiếu phong cách ${missing.map(k=>names[k]).join(', ')}</b>. Cân nhắc bổ sung hoặc phân công người kiêm nhiệm.`);
+  else if(total>=4) out.push(`👏 Đội có <b>đủ cả 4 phong cách</b> DISC — nền tảng tốt cho đội nhóm cân bằng, bền vững.`);
+  if(count.D>0 && count.C>0) out.push(`Có cả D và C: tốc độ gặp độ chính xác. Hãy để họ tôn trọng nhịp độ của nhau khi ra quyết định.`);
+  if(count.I>0 && count.S>0) out.push(`Có cả I và S: đội giàu năng lượng ấm áp — nhớ giữ kỷ luật deadline vì cả hai đều ngại xung đột.`);
+  if(!out.length) out.push(`Hãy thêm nhiều thành viên hơn để nhận phân tích cân bằng đội nhóm.`);
+  return out.map(o=>`<div class="insight"><span class="ic">💡</span><div>${o}</div></div>`).join('');
+}
+
+/* ===================== TIỆN ÍCH ===================== */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function shade(hex,pct){
+  const n=parseInt(hex.slice(1),16); let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));
+  g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));
+  b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* init */
+renderRecognize();
+buildQuestions();
+buildScenarios();
+updateProgress();
+</script>
+</body>
+</html>
