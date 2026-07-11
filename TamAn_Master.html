@@ -2251,6 +2251,15 @@ async function scanNewIds(){
 }
 function _nidSide(s){return s==='L'?'Trái':s==='R'?'Phải':'';}
 function newIdItemHtml(it){
+  if(it.type==='disc'){ // v6.63 — thông báo hoàn thành đo DISC (đồng bộ lên cây theo Mã ID)
+    var _dc={D:'#E53935',I:'#FB8C00',S:'#43A047',C:'#1E88E5'}[String(it.disc||'')[0]]||'#7B5EB5';
+    var _bd=it.read?'#E8E2D2':_dc,_bg=it.read?'#FCFBF7':'#FFFBE9';
+    var dh='<div style="border:1px solid '+_bd+';border-left:4px solid '+_dc+';background:'+_bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
+    dh+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'🧭 <b>'+escHtml(it.nodeName||'')+'</b> vừa hoàn thành <b>đo DISC</b>: <span style="background:'+_dc+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px">'+escHtml(it.disc||'')+'</span>'+(it.prev?' <span style="font-size:11px;color:#999">(trước: '+escHtml(it.prev)+')</span>':'')+'</div>';
+    dh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>';
+    dh+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 '+escHtml(fmtDT(it.detectedAt))+'</div></div>';
+    return dh;
+  }
   var side=_nidSide(it.side);
   var bd=it.read?'#E8E2D2':'#C8A84B', bg=it.read?'#FCFBF7':'#FFFBE9';
   var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
@@ -2271,9 +2280,9 @@ function renderNewIdInbox(scanning){
     h+='<button class="btn btn-r btn-sm" id="btn-newid-clear">🗑️ Xoá hộp thư</button>';
   }
   h+='</div>';
-  if(unread)h+='<div style="font-size:13px;color:#C62828;font-weight:700;margin-bottom:8px">🔴 '+unread+' ID mới chưa đọc</div>';
+  if(unread)h+='<div style="font-size:13px;color:#C62828;font-weight:700;margin-bottom:8px">🔴 '+unread+' thông báo chưa đọc</div>';
   if(!inbox.length){
-    h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
+    h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai), hoặc khi có người <b>🧭 hoàn thành đo DISC</b> (tự đồng bộ lên cây bạn theo Mã ID). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
   }else{
     inbox.forEach(function(it){h+=newIdItemHtml(it);});
   }
@@ -5603,18 +5612,36 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
 // v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
 function applyDownlineDiscToTree(list){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
-  var changed=false,cnt=0;
+  var changed=false,cnt=0,notes=[];
   (list||[]).forEach(function(u){
     if(!u||!u.matched||!u.myNodeId||!u.rootDisc)return;
     var n=treeNodes.find(function(x){return x.id===u.myNodeId;});
-    if(n&&String(n.disc||'').toUpperCase()!==u.rootDisc){n.disc=u.rootDisc;changed=true;cnt++;}
+    if(n&&String(n.disc||'').toUpperCase()!==u.rootDisc){
+      var _old=String(n.disc||'').toUpperCase();
+      n.disc=u.rootDisc;changed=true;cnt++;
+      notes.push({node:n.name||n.id,disc:u.rootDisc,prev:_old,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
+    }
   });
   if(changed){
     saveTree2();
     try{if(document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}
-    showToast('✓ Đã đồng bộ DISC từ '+cnt+' tuyến dưới lên cây (theo Mã ID)');
+    try{_pushDiscInbox(notes);}catch(e){} // v6.63 — báo vào hộp thư QTV khi có người hoàn thành đo DISC
+    showToast('🧭 '+cnt+' người vừa hoàn thành đo DISC — đã đồng bộ lên cây của bạn');
   }
   return cnt;
+}
+// v6.63 — đẩy thông báo "hoàn thành đo DISC" vào hộp thư QTV (dùng chung badge với ID mới)
+function _pushDiscInbox(notes){
+  if(!notes||!notes.length||typeof newidInbox!=='function')return;
+  var inbox=newidInbox();var now=new Date().toISOString();
+  notes.forEach(function(x){
+    inbox.unshift({type:'disc',uid:x.uid,acctName:x.acctName,acctEmail:x.acctEmail,
+      nodeName:x.node,disc:x.disc,prev:x.prev,detectedAt:now,read:false});
+  });
+  if(inbox.length>500)inbox=inbox.slice(0,500);
+  _newidSave(NEWID_INBOX_KEY,inbox);
+  try{_admSetBadge('newid',newidUnread()||'','');}catch(e){}
+  try{if(document.getElementById('newid-inbox'))renderNewIdInbox(false);}catch(e){}
 }
 function scanF3Users(){
   if(_f3uLoading)return;
