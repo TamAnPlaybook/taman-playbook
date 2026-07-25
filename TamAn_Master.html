@@ -1,4 +1,5 @@
-<!-- VERSION: v6.66-jars-6-lo-tai-chinh -->
+<!-- VERSION: v6.67-jars-summary-timeframe -->
+<!-- v6.67 — 🏺 6 Cái Lọ: BẢNG TỔNG HỢP xem theo KHUNG THỜI GIAN chọn (Tất cả / Ngày / Tuần / Tháng / Năm) + điều hướng kỳ (‹ › Hiện tại). Kỳ 'Tất cả' = số dư tích luỹ (như cũ). Kỳ có mốc: cột "Tiền vào" & "Đã chi" = phát sinh TRONG kỳ, "Số dư cuối kỳ" = tổng còn lại tính tới hết kỳ. Hàm mới: JAR_SUM_PERIODS/_jarPeriod/_jarRef/_jarRange/_jarStep/_jarParseKey/jarPeriodTotals; handler data-jarsum-period + data-jarsum-nav. -->
 <!-- v6.66 — 🏺 6 CÁI LỌ TÀI CHÍNH (T. Harv Eker): tính năng quản lý tài chính cá nhân trong tab Mục tiêu (dưới Bánh xe cuộc đời). Mỗi ngày vào KHUNG GIỜ CỐ ĐỊNH gõ tổng thu nhập → app TỰ CHIA vào 6 lọ (Thiết yếu 55% · Tự do tài chính 10% · Tiết kiệm dài hạn 10% · Giáo dục 10% · Hưởng thụ 10% · Cho đi 5% — sửa được, tổng =100%). Thu nhập >0 → hiện câu KHEN NGỢI ngẫu nhiên; =0 → nhắc "cần cố gắng hơn ngày mai". BẢNG TỔNG HỢP số dư từng lọ (tích luỹ − chi/rút) + thanh tỷ lệ + tiến trình mục tiêu mỗi lọ + CHUỖI NGÀY liên tục (streak) + NHẮC NHỞ khi quá giờ mà chưa ghi. Ghi chi tiêu/rút khỏi lọ để biết số dư thực. Lưu localStorage jars_v1 + Firestore users/{uid}/data/jars (đồng bộ đa thiết bị, KHÔNG cần Rules mới — owner rule sẵn cho phép). Hàm: JAR_CATS/JAR_PRAISE/loadJars/saveJars/loadJarsCloud/jarTotals/jarStreak/_jarPct/_jarRemindDue/renderJars. -->
 <!-- v6.65 — Áp NỐT dropdown BẮT BUỘC "Hãy liên hệ đầu nhánh của tôi" (BRANCH_HEADS) vào modal "Sửa câu lạc bộ (QTV)" (openAdminClubEdit, ô ce-contact input tự do → select) + validation chưa chọn thì báo lỗi trong saveAdminClubEdit. (Bổ sung theo yêu cầu Huy: v6.64 mới đổi form "Thêm/Sửa CLB của tôi", form QTV sửa CLB người khác chưa đổi.) -->
 <!-- v6.64 — VỊ TRÍ CLB, form "Thêm/Sửa CLB của tôi": (I) thay ô "Liên hệ (SĐT/ID)" (nhập tự do) THÀNH dropdown BẮT BUỘC "Hãy liên hệ đầu nhánh của tôi" (6 đầu nhánh cố định BRANCH_HEADS) — chưa chọn thì báo lỗi khi lưu; giá trị lưu vào ownerContact. (II) BỎ ô tự chấm "Đánh giá 1–10 sao" của chủ CLB → thay bằng ĐÁNH GIÁ KHÁCH QUAN do NGƯỜI KHÁC chấm: mỗi user bấm "⭐ Chấm" trên CLB người khác (Danh bạ + popup bản đồ) → cửa sổ chấm 2 sao 1–5 (🛎️ Dịch vụ + ⚖️ Đạo lý/quy tắc hành xử) + 2 ô nhận xét; CLB hiện điểm TRUNG BÌNH + danh sách nhận xét (kèm tên người chấm). Lưu collection MỚI clubReviews/{ownerUid__cid__raterUid} (1 người 1 lần/CLB, sửa được). ⚠ CẦN Huy PUBLISH Rules v6.64 (match /clubReviews) thì gửi/đọc đánh giá mới chạy. Hàm: reviewKeyOf/reviewAgg/reviewSummaryHtml/reviewsListHtml/loadClubReviews/openRateClub/submitClubReview. -->
@@ -6943,6 +6944,33 @@ function _jarRemindDue(o){
   var now=new Date(),cur=now.getHours()*60+now.getMinutes(),due=(+rt[0]||0)*60+(+rt[1]||0);
   return cur>=due;
 }
+// v6.67 — Bảng tổng hợp XEM THEO KHUNG THỜI GIAN (Tất cả / Ngày / Tuần / Tháng / Năm)
+var JAR_SUM_PERIODS=[{type:'all',lbl:'Tất cả'},{type:'day',lbl:'Ngày'},{type:'week',lbl:'Tuần'},{type:'month',lbl:'Tháng'},{type:'year',lbl:'Năm'}];
+var _jarPeriod='all',_jarRef=new Date();
+function _jarParseKey(k){var p=String(k).split('-');if(p.length!==3)return null;var y=+p[0],m=+p[1],d=+p[2];if(!y||!m||!d)return null;var dt=new Date(y,m-1,d);return isNaN(dt.getTime())?null:dt;}
+function _jarRange(){
+  if(_jarPeriod==='all')return {start:null,end:null,label:'Tất cả (từ trước tới nay)'};
+  var d=new Date(_jarRef),y=d.getFullYear(),m=d.getMonth(),s,e,label;
+  function fd(x){return x.getDate()+'/'+(x.getMonth()+1);}
+  if(_jarPeriod==='day'){s=new Date(y,m,d.getDate());e=new Date(y,m,d.getDate());label='Ngày '+d.getDate()+'/'+(m+1)+'/'+y;}
+  else if(_jarPeriod==='week'){var day=(d.getDay()||7);s=new Date(y,m,d.getDate()-(day-1));e=new Date(s);e.setDate(s.getDate()+6);label='Tuần '+fd(s)+' – '+fd(e)+'/'+e.getFullYear();}
+  else if(_jarPeriod==='year'){s=new Date(y,0,1);e=new Date(y,11,31);label='Năm '+y;}
+  else{s=new Date(y,m,1);e=new Date(y,m+1,0);label='Tháng '+(m+1)+'/'+y;}
+  s.setHours(0,0,0,0);e.setHours(23,59,59,999);return {start:s,end:e,label:label};
+}
+function _jarStep(dir){var d=_jarRef;if(_jarPeriod==='day')d.setDate(d.getDate()+dir);else if(_jarPeriod==='week')d.setDate(d.getDate()+7*dir);else if(_jarPeriod==='year')d.setFullYear(d.getFullYear()+dir);else d.setMonth(d.getMonth()+dir);}
+// Tổng hợp theo kỳ: incIn/outSpent = phát sinh TRONG kỳ; balEnd = số dư còn lại tính tới HẾT kỳ (income tới cuối kỳ × pct − chi tới cuối kỳ).
+function jarPeriodTotals(o,start,end){
+  var pct=_jarPct(o),incIn=0,incTo=0;
+  Object.keys(o.entries||{}).forEach(function(k){var dt=_jarParseKey(k);if(!dt)return;var v=_incNum((o.entries[k]||{}).income);var st=new Date(dt);st.setHours(12,0,0,0);
+    if(!end||st<=end){incTo+=v;if(!start||st>=start)incIn+=v;}});
+  var spIn={},spTo={};JAR_CATS.forEach(function(j){spIn[j.id]=0;spTo[j.id]=0;});
+  (o.spendLog||[]).forEach(function(s){if(spTo[s.jar]==null)return;var v=_incNum(s.amt);var ts=s.ts?new Date(s.ts):null;var upTo,inR;
+    if(!ts){upTo=true;inR=(!start&&!end);}else{upTo=(!end||ts<=end);inR=(!start||ts>=start)&&(!end||ts<=end);}
+    if(upTo)spTo[s.jar]+=v;if(inR)spIn[s.jar]+=v;});
+  var inAlloc={},balEnd={};JAR_CATS.forEach(function(j){var p=(+pct[j.id]||0);inAlloc[j.id]=Math.round(incIn*p/100);balEnd[j.id]=Math.round(incTo*p/100)-spTo[j.id];});
+  return {pct:pct,incIn:incIn,incTo:incTo,inAlloc:inAlloc,outSpent:spIn,balEnd:balEnd};
+}
 function renderJars(){
   var el=document.getElementById('jars-content');if(!el)return;
   var o=loadJars(),T=jarTotals(o),pct=T.pct,psum=_jarPctSum(pct);
@@ -6969,17 +6997,23 @@ function renderJars(){
   }
   h+='<div class="jar-streak"><span>🔥 Chuỗi ngày liên tục: <b>'+streak+'</b> ngày</span>'+(logged&&te.ts?'<span>· 🕒 Ghi lúc '+escHtml(_jarFmtTime(te.ts))+'</span>':'')+'</div>';
   h+='</div>';
-  // Bảng tổng hợp 6 lọ
-  h+='<div class="chart-wrap"><div class="chart-title">📊 Bảng tổng hợp — bạn đang có bao nhiêu trong mỗi lọ</div>';
-  h+='<div class="jar-tbl-wrap"><table class="jar-tbl"><tr><th>Lọ</th><th>Tỷ lệ</th><th>Đã tích luỹ</th><th>Đã chi/rút</th><th>Số dư</th></tr>';
-  var totAlloc=0,totSpent=0,totBal=0;
+  // Bảng tổng hợp 6 lọ — xem theo khung thời gian (v6.67)
+  var rg=_jarRange(),PT=jarPeriodTotals(o,rg.start,rg.end),isAll=(_jarPeriod==='all');
+  h+='<div class="chart-wrap"><div class="chart-title">📊 Bảng tổng hợp — theo khung thời gian</div>';
+  h+='<div class="stabs" style="margin-bottom:8px">'+JAR_SUM_PERIODS.map(function(p){return '<button class="stab'+(_jarPeriod===p.type?' on':'')+'" data-jarsum-period="'+p.type+'">'+p.lbl+'</button>';}).join('')+'</div>';
+  if(!isAll)h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><button class="db-btn" data-jarsum-nav="prev">&lsaquo;</button><div style="flex:1;text-align:center;font-weight:700;font-size:15px">'+escHtml(rg.label)+'</div><button class="db-today" data-jarsum-nav="cur">Hiện tại</button><button class="db-btn" data-jarsum-nav="next">&rsaquo;</button></div>';
+  else h+='<div style="text-align:center;font-weight:700;font-size:13.5px;color:#999;margin-bottom:12px">'+escHtml(rg.label)+'</div>';
+  var cIn=isAll?'Đã tích luỹ':'Tiền vào',cOut=isAll?'Đã chi/rút':'Đã chi',cBal=isAll?'Số dư':'Số dư cuối kỳ';
+  h+='<div class="jar-tbl-wrap"><table class="jar-tbl"><tr><th>Lọ</th><th>Tỷ lệ</th><th>'+cIn+'</th><th>'+cOut+'</th><th>'+cBal+'</th></tr>';
+  var totIn=0,totOut=0,totBal=0;
   JAR_CATS.forEach(function(j){
-    var a=T.alloc[j.id],sp=T.spent[j.id],b=T.bal[j.id];totAlloc+=a;totSpent+=sp;totBal+=b;
-    h+='<tr><td><span class="jar-dot" style="background:'+j.c+'"></span>'+j.icon+' '+escHtml(j.lbl)+'</td><td>'+(+pct[j.id]||0)+'%</td><td>'+_fmtVnd(a)+'</td><td>'+(sp?_fmtVnd(sp):'—')+'</td><td class="'+(b>=0?'jar-bal-pos':'jar-bal-neg')+'">'+_fmtVnd(b)+'</td></tr>';
+    var a=PT.inAlloc[j.id],sp=PT.outSpent[j.id],b=PT.balEnd[j.id];totIn+=a;totOut+=sp;totBal+=b;
+    h+='<tr><td><span class="jar-dot" style="background:'+j.c+'"></span>'+j.icon+' '+escHtml(j.lbl)+'</td><td>'+(+pct[j.id]||0)+'%</td><td>'+(a?_fmtVnd(a):'—')+'</td><td>'+(sp?_fmtVnd(sp):'—')+'</td><td class="'+(b>=0?'jar-bal-pos':'jar-bal-neg')+'">'+_fmtVnd(b)+'</td></tr>';
   });
-  h+='<tr class="jar-total"><td>Tổng cộng</td><td>'+psum+'%</td><td>'+_fmtVnd(totAlloc)+'</td><td>'+_fmtVnd(totSpent)+'</td><td>'+_fmtVnd(totBal)+'</td></tr>';
+  h+='<tr class="jar-total"><td>Tổng cộng</td><td>'+psum+'%</td><td>'+_fmtVnd(totIn)+'</td><td>'+_fmtVnd(totOut)+'</td><td>'+_fmtVnd(totBal)+'</td></tr>';
   h+='</table></div>';
-  h+='<div style="font-size:11.5px;color:#888;font-family:Arial;margin-top:8px">Tổng thu nhập đã ghi: <b>'+_fmtVnd(T.income)+'</b>. Số dư = đã tích luỹ − đã chi/rút.</div>';
+  if(isAll)h+='<div style="font-size:11.5px;color:#888;font-family:Arial;margin-top:8px">Tổng thu nhập đã ghi: <b>'+_fmtVnd(PT.incIn)+'</b>. Số dư = đã tích luỹ − đã chi/rút.</div>';
+  else h+='<div style="font-size:11.5px;color:#888;font-family:Arial;margin-top:8px">Thu nhập trong kỳ: <b>'+_fmtVnd(PT.incIn)+'</b>. <b>Tiền vào</b> &amp; <b>Đã chi</b> = phát sinh trong kỳ · <b>Số dư cuối kỳ</b> = tổng còn lại tính tới hết kỳ.</div>';
   // Thanh tỷ lệ trực quan
   if(T.income>0||psum>0){
     h+='<div style="margin-top:12px"><div class="jar-legend">'+JAR_CATS.map(function(j){return '<span><i style="background:'+j.c+'"></i>'+j.icon+' '+escHtml(j.lbl)+' '+(+pct[j.id]||0)+'%</span>';}).join('')+'</div>';
@@ -10192,6 +10226,11 @@ document.addEventListener('click',function(e){
   }
   t=e.target.closest('[data-jar-delspend]');
   if(t){var _dsid=t.getAttribute('data-jar-delspend'),_do=loadJars();_do.spendLog=(_do.spendLog||[]).filter(function(s){return s.id!==_dsid;});saveJars(_do);renderJars();return;}
+  // v6.67 — Bảng tổng hợp: chọn khung thời gian + điều hướng kỳ
+  t=e.target.closest('[data-jarsum-period]');
+  if(t){_jarPeriod=t.getAttribute('data-jarsum-period');if(_jarPeriod!=='all')_jarRef=new Date();renderJars();return;}
+  t=e.target.closest('[data-jarsum-nav]');
+  if(t){var _jnv=t.getAttribute('data-jarsum-nav');if(_jnv==='cur')_jarRef=new Date();else _jarStep(_jnv==='next'?1:-1);renderJars();return;}
 
   // Modal Thêm Leader Key: chọn 1 gợi ý ID
   t=e.target.closest('[data-lkadd-nid]');
