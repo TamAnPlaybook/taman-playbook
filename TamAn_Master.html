@@ -1,4 +1,5 @@
-<!-- VERSION: v6.69-clubdir-branchhead-focus -->
+<!-- VERSION: v6.70-clb-graduation-jar-spend-note -->
+<!-- v6.70 — (1) Form CLB thêm ô "🎓 Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?" (select Rồi/Chưa, chủ CLB tự chọn — field bizGrad) → lưu location/clubs + hiện huy hiệu trong danh bạ (bizGradBadge) & popup; thread qua myAllClubs/fetchAllClubs/_pubClubArr/fetchPublicClubs. Cũng bỏ email khỏi popup. (2) 6 Cái Lọ — phần Ghi chi thêm ô "Chi cho việc gì?" (#jar-spend-note → spendLog[].note) + hiện chi tiết trong danh sách chi gần đây. -->
 <!-- v6.69 — Danh bạ CLB (clubDirectoryHtml): (1) bấm THÔNG TIN CLB (tên/địa chỉ) → cuộn LÊN bản đồ + phóng tới đúng vị trí + mở popup (focusClubOnMap thêm scrollIntoView('global-map-wrap')+invalidateSize). (2) Dòng người: hiện "Đầu nhánh: <tên> (liên hệ đầu nhánh của bạn nhờ liên hệ)" + BỎ hiển thị EMAIL (c.acctEmail). CSS .cd-branch-note. (3) Quy trình gửi khách: BỎ phần đính kèm TỆP (chỉ còn LINK) — gỡ nút/label #gp-file + gp-hint + change handler; chỉ QTV chỉnh (đã sẵn admin-only). -->
 <!-- v6.68 — 📋 QUY TRÌNH GỬI KHÁCH (thống nhất) ở tab Vị trí CLB (đầu trang, trên bản đồ): QTV soạn MÔ TẢ các bước + ĐÍNH KÈM LINK (URL) và/hoặc TỆP (Word/PDF/ảnh…) → CẢ ĐỘI xem/tải để làm giống nhau. Metadata lưu appConfig/registration.guestProcess (read mọi người, write QTV — KHÔNG cần Rules mới); tệp dùng CHUNG collection skillmedia/{fileId} (Rules v6.59 sẵn có, KHÔNG cần Rules mới). Hàm: guestProc/renderGuestProc/guestProcHtml/uploadGuestFiles/viewGuestFile/addGuestLink/delGuestItem/saveGuestDesc; container #guestproc-content; handler map-action gp-edit/gp-save-desc/gp-cancel-desc/gp-add-link/gp-del/gp-view + change #gp-file. Nạp trong loadSkillLinks + renderMapPage. -->
 <!-- v6.67 — 🏺 6 Cái Lọ: BẢNG TỔNG HỢP xem theo KHUNG THỜI GIAN chọn (Tất cả / Ngày / Tuần / Tháng / Năm) + điều hướng kỳ (‹ › Hiện tại). Kỳ 'Tất cả' = số dư tích luỹ (như cũ). Kỳ có mốc: cột "Tiền vào" & "Đã chi" = phát sinh TRONG kỳ, "Số dư cuối kỳ" = tổng còn lại tính tới hết kỳ. Hàm mới: JAR_SUM_PERIODS/_jarPeriod/_jarRef/_jarRange/_jarStep/_jarParseKey/jarPeriodTotals; handler data-jarsum-period + data-jarsum-nav. -->
@@ -1159,6 +1160,10 @@ a.gp-att-nm:hover{text-decoration:underline}
 .gp-file-lbl{cursor:pointer;display:inline-flex;align-items:center}
 .gp-hint{font-size:11px;color:#8AA;font-family:Arial;margin-top:7px;line-height:1.5}
 .cd-branch-note{font-size:11px;color:#9AA6A0;font-weight:400}
+.cd-grad{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 10px;margin-top:3px}
+.cd-grad-yes{background:#E8F5E9;color:#1B7A3D;border:1px solid #B6E0C2}
+.cd-grad-no{background:#FFF3E0;color:#B26A00;border:1px solid #FFE0B2}
+.jsi-note{flex:1;min-width:0;color:#555;font-size:11.5px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -2650,10 +2655,10 @@ function myAllClubs(){
   var out=[];
   var p=loadMyClubLocal();
   if(p&&(p.clubName||p.city||p.address||p.lat)){
-    out.push({id:'__primary',primary:true,clubName:p.clubName||'',address:p.address||'',city:p.city||'',country:p.country||'',ownerName:p.ownerName||'',ownerContact:p.ownerContact||'',lat:_num(p.lat),lng:_num(p.lng),photo:p.photo||'',rating:p.rating||null,uid:(fbUser&&fbUser.uid)||''});
+    out.push({id:'__primary',primary:true,clubName:p.clubName||'',address:p.address||'',city:p.city||'',country:p.country||'',ownerName:p.ownerName||'',ownerContact:p.ownerContact||'',bizGrad:p.bizGrad||'',lat:_num(p.lat),lng:_num(p.lng),photo:p.photo||'',rating:p.rating||null,uid:(fbUser&&fbUser.uid)||''});
   }
   loadMyExtraLocal().forEach(function(c){
-    out.push({id:c.id,primary:false,clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',ownerName:c.ownerName||'',ownerContact:c.ownerContact||'',lat:_num(c.lat),lng:_num(c.lng),photo:c.photo||'',rating:c.rating||null,uid:(fbUser&&fbUser.uid)||''});
+    out.push({id:c.id,primary:false,clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',ownerName:c.ownerName||'',ownerContact:c.ownerContact||'',bizGrad:c.bizGrad||'',lat:_num(c.lat),lng:_num(c.lng),photo:c.photo||'',rating:c.rating||null,uid:(fbUser&&fbUser.uid)||''});
   });
   return out;
 }
@@ -2669,7 +2674,7 @@ async function fetchAllClubs(){
       var lat=parseFloat(L.lat),lng=parseFloat(L.lng);
       if(!isNaN(lat)&&!isNaN(lng))out.push({uid:a.uid,acctName:a.name||'',acctEmail:a.email||'',primary:true,
         clubName:L.clubName||'',address:L.address||'',city:L.city||'',country:L.country||'',
-        ownerName:L.ownerName||a.name||'',ownerContact:L.ownerContact||'',lat:lat,lng:lng,photo:L.photo||'',rating:L.rating||null});
+        ownerName:L.ownerName||a.name||'',ownerContact:L.ownerContact||'',bizGrad:L.bizGrad||'',lat:lat,lng:lng,photo:L.photo||'',rating:L.rating||null});
     }
     var X=extras[i];
     if(X&&X.list&&X.list.length){
@@ -2677,7 +2682,7 @@ async function fetchAllClubs(){
         var lat=parseFloat(c.lat),lng=parseFloat(c.lng);if(isNaN(lat)||isNaN(lng))return;
         out.push({uid:a.uid,acctName:a.name||'',acctEmail:a.email||'',primary:false,id:c.id||'',
           clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',
-          ownerName:c.ownerName||a.name||'',ownerContact:c.ownerContact||'',lat:lat,lng:lng,photo:c.photo||'',rating:c.rating||null});
+          ownerName:c.ownerName||a.name||'',ownerContact:c.ownerContact||'',bizGrad:c.bizGrad||'',lat:lat,lng:lng,photo:c.photo||'',rating:c.rating||null});
       });
     }
   });
@@ -2694,9 +2699,9 @@ function _pubBranch(v){return (BRANCH_HEADS.indexOf(v)>=0)?v:'';} // v6.64 — C
 function _pubClubArr(loc,extra,fallbackName){
   var arr=[];
   if(loc){var la=parseFloat(loc.lat),ln=parseFloat(loc.lng);
-    if(!isNaN(la)&&!isNaN(ln))arr.push({primary:true,id:'',clubName:loc.clubName||'',address:loc.address||'',city:loc.city||'',country:loc.country||'',ownerName:loc.ownerName||fallbackName||'',ownerContact:_pubBranch(loc.ownerContact),lat:la,lng:ln,photo:loc.photo||'',rating:loc.rating||null});}
+    if(!isNaN(la)&&!isNaN(ln))arr.push({primary:true,id:'',clubName:loc.clubName||'',address:loc.address||'',city:loc.city||'',country:loc.country||'',ownerName:loc.ownerName||fallbackName||'',ownerContact:_pubBranch(loc.ownerContact),bizGrad:loc.bizGrad||'',lat:la,lng:ln,photo:loc.photo||'',rating:loc.rating||null});}
   if(extra&&extra.list)extra.list.forEach(function(c){var la=parseFloat(c.lat),ln=parseFloat(c.lng);if(isNaN(la)||isNaN(ln))return;
-    arr.push({primary:false,id:c.id||'',clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',ownerName:c.ownerName||fallbackName||'',ownerContact:_pubBranch(c.ownerContact),lat:la,lng:ln,photo:c.photo||'',rating:c.rating||null});});
+    arr.push({primary:false,id:c.id||'',clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',ownerName:c.ownerName||fallbackName||'',ownerContact:_pubBranch(c.ownerContact),bizGrad:c.bizGrad||'',lat:la,lng:ln,photo:c.photo||'',rating:c.rating||null});});
   return arr;
 }
 async function mirrorMyPublicClubs(){
@@ -2733,7 +2738,7 @@ async function fetchPublicClubs(){
       var la=parseFloat(c.lat),ln=parseFloat(c.lng);if(isNaN(la)||isNaN(ln))return;
       out.push({uid:uid,acctName:v.name||'',acctEmail:'',primary:!!c.primary,id:c.id||'',
         clubName:c.clubName||'',address:c.address||'',city:c.city||'',country:c.country||'',
-        ownerName:c.ownerName||v.name||'',ownerContact:c.ownerContact||'',lat:la,lng:ln,photo:c.photo||'',rating:c.rating||null});
+        ownerName:c.ownerName||v.name||'',ownerContact:c.ownerContact||'',bizGrad:c.bizGrad||'',lat:la,lng:ln,photo:c.photo||'',rating:c.rating||null});
     });
   });
   return out;
@@ -2938,6 +2943,7 @@ function clubDirectoryHtml(clubs,opts){
         if(c.ownerContact)_op.push('Đầu nhánh: <b>'+escHtml(c.ownerContact)+'</b> <span class="cd-branch-note">(liên hệ đầu nhánh của bạn nhờ liên hệ)</span>');
         h+='<div class="cd-sub">👤 '+_op.join(' · ')+'</div>';
       }
+      if(c.bizGrad)h+='<div class="cd-sub">'+bizGradBadge(c.bizGrad)+'</div>'; // v6.70 — huy hiệu tốt nghiệp chia sẻ cơ hội KD
       // 💬 v6.64 — nhận xét/đánh giá khách quan (gập/mở)
       h+='<details class="rv-acc" data-norowclick="1"><summary>💬 Đánh giá khách quan ('+reviewAgg(reviewKeyOf(c)).n+')</summary>'+reviewsListHtml(c)+'</details>';
       h+='</div>';
@@ -3057,6 +3063,7 @@ function renderMyClubsManager(){
      '<div class="map-fld"><label>Quốc gia</label><input class="map-inp" id="clx-country" value="'+g(ed.country)+'"></div></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Chủ CLB</label><input class="map-inp" id="clx-owner" value="'+g(owner)+'"></div>'+
      '<div class="map-fld"><label>Hãy liên hệ đầu nhánh của tôi <span style="color:#E53935">*</span></label><select class="map-inp" id="clx-contact">'+branchHeadOptions(ed.ownerContact)+'</select></div></div>';
+  h+='<div class="map-fld"><label>🎓 Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC? <span style="font-weight:400;color:#999;font-size:11px">(chủ CLB tự chọn)</span></label><select class="map-inp" id="clx-bizgrad">'+bizGradOptions(ed.bizGrad)+'</select></div>';
   h+='<div class="map-row2"><div class="map-fld"><label>Ảnh CLB / chủ CLB</label>'+
      '<input type="file" accept="image/*" id="clx-photo-file" class="map-inp" style="padding:6px">'+
      '<div id="clx-photo-prev" class="clx-photo-prev">'+(_formPhoto?('<img src="'+_formPhoto+'"><button class="btn btn-r btn-sm" data-map-action="clear-photo">Xoá ảnh</button>'):'<span style="color:#BBB;font-size:12px">Chưa có ảnh</span>')+'</div></div>'+
@@ -3425,12 +3432,23 @@ function pickGeoExtra(idx){
   if(_globalMap){_globalMap.setView([glat,glng],16);}setClxMarker(glat,glng,false); // đồng bộ ghim trên bản đồ chọn vị trí
   var sug=document.getElementById('clx-geo-sug');if(sug)sug.innerHTML='';
 }
+// v6.70 — "Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?" (chủ CLB tự chọn: Rồi/Chưa)
+function bizGradOptions(v){
+  v=v||'';
+  var opts=[{v:'',t:'— Chưa chọn —'},{v:'yes',t:'✅ Rồi — đã tốt nghiệp'},{v:'no',t:'⏳ Chưa'}];
+  return opts.map(function(o){return '<option value="'+o.v+'"'+(v===o.v?' selected':'')+'>'+o.t+'</option>';}).join('');
+}
+function bizGradBadge(v){
+  if(v==='yes')return '<span class="cd-grad cd-grad-yes">🎓 Đã tốt nghiệp chia sẻ cơ hội KD TTHC</span>';
+  if(v==='no')return '<span class="cd-grad cd-grad-no">⏳ Chưa tốt nghiệp chia sẻ cơ hội KD</span>';
+  return '';
+}
 function readExtraForm(){
   var g=function(id){return ((document.getElementById(id)||{}).value||'').trim();};
   var lat=parseFloat(g('clx-lat')),lng=parseFloat(g('clx-lng'));
   var rt=parseInt((document.getElementById('clx-rating')||{}).value);
   return {clubName:g('clx-name'),address:g('clx-addr'),city:g('clx-city'),country:g('clx-country'),
-    ownerName:g('clx-owner'),ownerContact:g('clx-contact'),lat:isNaN(lat)?null:lat,lng:isNaN(lng)?null:lng,
+    ownerName:g('clx-owner'),ownerContact:g('clx-contact'),bizGrad:g('clx-bizgrad'),lat:isNaN(lat)?null:lat,lng:isNaN(lng)?null:lng,
     photo:_formPhoto||'',rating:isNaN(rt)?null:rt};
 }
 // v6.22 — lưu form CLB của tôi: phân nhánh CLB chính ('__primary') / mở rộng / thêm mới
@@ -3443,7 +3461,7 @@ function saveMyClubForm(){
     var f=readExtraForm();
     if(f.lat==null||f.lng==null){showToast('Hãy chọn vị trí trên bản đồ trước');return;}
     saveMyClub({clubName:f.clubName,address:f.address,city:f.city,country:f.country,
-      ownerName:f.ownerName,ownerContact:f.ownerContact,lat:f.lat,lng:f.lng,photo:f.photo,rating:f.rating});
+      ownerName:f.ownerName,ownerContact:f.ownerContact,bizGrad:f.bizGrad,lat:f.lat,lng:f.lng,photo:f.photo,rating:f.rating});
     _clubLoadedOnce=false;_extraEditId=null;showToast('✅ Đã lưu CLB chính');
     renderMyClubsManager();refreshAllClubs();
     return;
@@ -3596,7 +3614,7 @@ function clubPopupHtml(c){
     ((c.city||c.country)?('<div>'+escHtml([c.city,c.country].filter(Boolean).join(', '))+'</div>'):'')+
     '<div style="margin-top:4px"><b>Chủ:</b> '+escHtml(c.ownerName||c.acctName||'')+'</div>'+
     (c.ownerContact?('<div><b>Liên hệ đầu nhánh:</b> '+escHtml(c.ownerContact)+'</div>'):'')+
-    (c.acctEmail?('<div style="color:#888;font-size:12px">'+escHtml(c.acctEmail)+'</div>'):'')+
+    (c.bizGrad?('<div style="margin-top:4px">'+bizGradBadge(c.bizGrad)+'</div>'):'')+
     '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">'+
       '<button class="btn btn-g btn-sm" data-map-action="dir-to" data-club-lat="'+c.lat+'" data-club-lng="'+c.lng+'" data-club-name="'+escHtml(c.clubName||c.ownerName||'CLB')+'" style="flex:1">🧭 Chỉ đường</button>'+
       (fbUser&&c.uid&&c.uid!==fbUser.uid?'<button class="btn btn-o btn-sm" data-map-action="rate-club" data-uid="'+escHtml(c.uid)+'" data-primary="'+(c.primary?1:0)+'" data-club-id="'+escHtml(c.id||'')+'" data-club-name="'+escHtml(c.clubName||c.ownerName||'CLB')+'" title="Chấm điểm khách quan">⭐ Chấm</button>':'')+
@@ -7177,11 +7195,13 @@ function renderJars(){
   h+='<div class="chart-wrap"><div class="chart-title">💸 Ghi chi tiêu / rút khỏi lọ</div>';
   h+='<div style="font-size:12px;color:#888;font-family:Arial;margin-bottom:9px">Mỗi khi tiêu tiền từ một lọ, ghi lại để biết số dư THỰC còn lại.</div>';
   h+='<div class="jar-spend-form"><select id="jar-spend-cat">'+JAR_CATS.map(function(j){return '<option value="'+j.id+'">'+j.icon+' '+escHtml(j.lbl)+'</option>';}).join('')+'</select>';
-  h+='<input id="jar-spend-amt" type="number" inputmode="numeric" min="0" placeholder="Số tiền chi (đ)"><button class="jar-save-btn" data-jar-action="add-spend">➖ Ghi chi</button></div>';
+  h+='<input id="jar-spend-amt" type="number" inputmode="numeric" min="0" placeholder="Số tiền chi (đ)">';
+  h+='<input id="jar-spend-note" type="text" style="flex:2;min-width:170px" placeholder="Chi cho việc gì? (vd: mua thực phẩm, tiền điện)">';
+  h+='<button class="jar-save-btn" data-jar-action="add-spend">➖ Ghi chi</button></div>';
   var recent=(o.spendLog||[]).slice(-6).reverse();
   if(recent.length){
     var jmap={};JAR_CATS.forEach(function(j){jmap[j.id]=j;});
-    h+='<div style="margin-top:4px">'+recent.map(function(s){var j=jmap[s.jar]||{icon:'',lbl:s.jar,c:'#999'};return '<div class="jar-spend-item"><span class="jar-dot" style="background:'+j.c+'"></span><span>'+j.icon+' '+escHtml(j.lbl)+'</span><b style="color:#C62828">−'+_fmtVnd(s.amt)+'</b><span style="color:#AAA;font-size:11px">'+escHtml(_jarFmtDate(s.ts))+'</span><button class="jsi-del" data-jar-delspend="'+escHtml(s.id)+'" title="Xoá">✕</button></div>';}).join('')+'</div>';
+    h+='<div style="margin-top:4px">'+recent.map(function(s){var j=jmap[s.jar]||{icon:'',lbl:s.jar,c:'#999'};return '<div class="jar-spend-item"><span class="jar-dot" style="background:'+j.c+'"></span><span>'+j.icon+' '+escHtml(j.lbl)+'</span>'+(s.note?'<span class="jsi-note" title="'+escHtml(s.note)+'">'+escHtml(s.note)+'</span>':'<span style="flex:1"></span>')+'<b style="color:#C62828">−'+_fmtVnd(s.amt)+'</b><span style="color:#AAA;font-size:11px">'+escHtml(_jarFmtDate(s.ts))+'</span><button class="jsi-del" data-jar-delspend="'+escHtml(s.id)+'" title="Xoá">✕</button></div>';}).join('')+'</div>';
   }
   h+='</div>';
   // Tuỳ chỉnh (thu gọn)
@@ -10354,10 +10374,10 @@ document.addEventListener('click',function(e){
       return;
     }
     if(_ja==='add-spend'){
-      var _sc=document.getElementById('jar-spend-cat'),_sa=document.getElementById('jar-spend-amt');
-      var _jar=_sc?_sc.value:'',_sv=_incNum(_sa?_sa.value:0);
+      var _sc=document.getElementById('jar-spend-cat'),_sa=document.getElementById('jar-spend-amt'),_sn=document.getElementById('jar-spend-note');
+      var _jar=_sc?_sc.value:'',_sv=_incNum(_sa?_sa.value:0),_snote=_sn?String(_sn.value).trim():'';
       if(!_jar||_sv<=0){showToast('Chọn lọ và nhập số tiền chi > 0');return;}
-      var _so=loadJars();_so.spendLog.push({id:'s'+Date.now().toString(36),ts:new Date().toISOString(),jar:_jar,amt:_sv});
+      var _so=loadJars();_so.spendLog.push({id:'s'+Date.now().toString(36),ts:new Date().toISOString(),jar:_jar,amt:_sv,note:_snote});
       saveJars(_so);renderJars();showToast('✓ Đã ghi chi tiêu');
       return;
     }
