@@ -1,4 +1,5 @@
-<!-- VERSION: v6.70-clb-graduation-jar-spend-note -->
+<!-- VERSION: v6.71-required-info-gate -->
+<!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
 <!-- v6.70 — (1) Form CLB thêm ô "🎓 Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?" (select Rồi/Chưa, chủ CLB tự chọn — field bizGrad) → lưu location/clubs + hiện huy hiệu trong danh bạ (bizGradBadge) & popup; thread qua myAllClubs/fetchAllClubs/_pubClubArr/fetchPublicClubs. Cũng bỏ email khỏi popup. (2) 6 Cái Lọ — phần Ghi chi thêm ô "Chi cho việc gì?" (#jar-spend-note → spendLog[].note) + hiện chi tiết trong danh sách chi gần đây. -->
 <!-- v6.69 — Danh bạ CLB (clubDirectoryHtml): (1) bấm THÔNG TIN CLB (tên/địa chỉ) → cuộn LÊN bản đồ + phóng tới đúng vị trí + mở popup (focusClubOnMap thêm scrollIntoView('global-map-wrap')+invalidateSize). (2) Dòng người: hiện "Đầu nhánh: <tên> (liên hệ đầu nhánh của bạn nhờ liên hệ)" + BỎ hiển thị EMAIL (c.acctEmail). CSS .cd-branch-note. (3) Quy trình gửi khách: BỎ phần đính kèm TỆP (chỉ còn LINK) — gỡ nút/label #gp-file + gp-hint + change handler; chỉ QTV chỉnh (đã sẵn admin-only). -->
 <!-- v6.68 — 📋 QUY TRÌNH GỬI KHÁCH (thống nhất) ở tab Vị trí CLB (đầu trang, trên bản đồ): QTV soạn MÔ TẢ các bước + ĐÍNH KÈM LINK (URL) và/hoặc TỆP (Word/PDF/ảnh…) → CẢ ĐỘI xem/tải để làm giống nhau. Metadata lưu appConfig/registration.guestProcess (read mọi người, write QTV — KHÔNG cần Rules mới); tệp dùng CHUNG collection skillmedia/{fileId} (Rules v6.59 sẵn có, KHÔNG cần Rules mới). Hàm: guestProc/renderGuestProc/guestProcHtml/uploadGuestFiles/viewGuestFile/addGuestLink/delGuestItem/saveGuestDesc; container #guestproc-content; handler map-action gp-edit/gp-save-desc/gp-cancel-desc/gp-add-link/gp-del/gp-view + change #gp-file. Nạp trong loadSkillLinks + renderMapPage. -->
@@ -1164,6 +1165,19 @@ a.gp-att-nm:hover{text-decoration:underline}
 .cd-grad-yes{background:#E8F5E9;color:#1B7A3D;border:1px solid #B6E0C2}
 .cd-grad-no{background:#FFF3E0;color:#B26A00;border:1px solid #FFE0B2}
 .jsi-note{flex:1;min-width:0;color:#555;font-size:11.5px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ===== v6.71 — Cổng cập nhật thông tin bắt buộc ===== */
+.requp-ov{display:none;position:fixed;inset:0;z-index:3000;background:rgba(20,20,25,.62);align-items:center;justify-content:center;padding:16px}
+.requp-ov.open{display:flex}
+.requp-card{background:#fff;border-radius:16px;max-width:450px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;animation:jarPop .28s ease}
+.requp-hd{background:linear-gradient(135deg,#F0A500,#D97706);color:#fff;font-weight:800;font-family:Arial;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13.5px}
+.requp-prog{background:rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-size:12px}
+.requp-body{padding:16px 18px;max-height:60vh;overflow-y:auto}
+.requp-title{font-size:16px;font-weight:800;font-family:Arial;color:#1A1A1A;margin-bottom:7px;line-height:1.4}
+.requp-desc{font-size:13px;color:#666;font-family:Arial;line-height:1.65;margin-bottom:15px;background:#FFF8E8;border:1px solid #FCE9BE;border-radius:10px;padding:10px 12px}
+.requp-lbl{display:block;font-size:12.5px;font-weight:700;color:#444;font-family:Arial;margin-bottom:5px}
+.requp-foot{padding:4px 18px 18px;display:flex;flex-direction:column;gap:9px;align-items:stretch}
+.requp-foot .btn{width:100%;font-size:15px;padding:11px}
+.requp-later{background:none;border:none;color:#AAA;font-size:12px;font-family:Arial;cursor:pointer;text-decoration:underline;align-self:center}
 </style>
 </head>
 <body>
@@ -1497,6 +1511,18 @@ a.gp-att-nm:hover{text-decoration:underline}
   <!-- QUẢN TRỊ -->
   <div class="page" id="page-admin">
     <div class="content" id="admin-content"></div>
+  </div>
+</div>
+
+<!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC (hiện sau đăng nhập nếu thiếu) -->
+<div class="requp-ov" id="requp-ov">
+  <div class="requp-card">
+    <div class="requp-hd"><span>&#9888; C&#7847;n c&#7853;p nh&#7853;t th&#244;ng tin</span><span class="requp-prog" id="requp-progress"></span></div>
+    <div class="requp-body" id="requp-body"></div>
+    <div class="requp-foot">
+      <button class="btn btn-g" id="requp-next" data-requp="save">&#128190; L&#432;u &amp; ti&#7871;p t&#7909;c</button>
+      <button class="requp-later" data-requp="later">&#272;&#7875; sau</button>
+    </div>
   </div>
 </div>
 
@@ -4074,6 +4100,59 @@ async function doGoogle(){
   btn.style.opacity='1';
 }
 
+// ================================================================
+// v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC (sau nâng cấp)
+//   • Khi user đăng nhập: nếu thiếu thông tin bắt buộc MỚI (bản cũ chưa cần)
+//     → hiện cổng che màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1.
+//   • Khung mở rộng: thêm 1 mục = thêm 1 phần tử vào REQUIRED_UPDATES.
+//   • Tự suy ra từ dữ liệu (need()) → điền xong là hết nhắc; KHÔNG cần cờ riêng.
+// ================================================================
+var _requpQueue=[],_requpIdx=0,_requpSkipped=false;
+function _requpHasClub(l){return !!(l&&(l.clubName||l.lat!=null||l.address));} // có CLB chính đáng kể
+var REQUIRED_UPDATES=[
+  { id:'club-branchhead',
+    title:'🔗 Chọn "đầu nhánh liên hệ" cho câu lạc bộ của bạn',
+    desc:'Bản nâng cấp mới yêu cầu mỗi CLB phải chọn <b>đầu nhánh liên hệ</b> (thay cho số điện thoại) để bảo mật. Hãy chọn đầu nhánh của bạn để tiếp tục.',
+    need:function(){var l=loadMyClubLocal();return _requpHasClub(l)&&BRANCH_HEADS.indexOf(l.ownerContact)<0;},
+    html:function(){var l=loadMyClubLocal()||{};return '<div style="font-size:13px;color:#333;margin-bottom:10px">CLB: <b>'+escHtml(l.clubName||'(chưa đặt tên)')+'</b></div><label class="requp-lbl">Hãy liên hệ đầu nhánh của tôi <span style="color:#E53935">*</span></label><select class="map-inp" id="requp-branchhead">'+branchHeadOptions(l.ownerContact)+'</select>';},
+    save:function(){var v=((document.getElementById('requp-branchhead')||{}).value||'').trim();
+      if(!v||BRANCH_HEADS.indexOf(v)<0){showToast('⚠ Hãy chọn đầu nhánh liên hệ');return false;}
+      var l=loadMyClubLocal()||{};l.ownerContact=v;saveMyClub(l);return true;} },
+  { id:'club-bizgrad',
+    title:'🎓 Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?',
+    desc:'Bản nâng cấp mới cần bạn cho biết CLB đã <b>tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC</b> hay chưa. Hãy chọn Rồi hoặc Chưa.',
+    need:function(){var l=loadMyClubLocal();return _requpHasClub(l)&&!l.bizGrad;},
+    html:function(){var l=loadMyClubLocal()||{};return '<div style="font-size:13px;color:#333;margin-bottom:10px">CLB: <b>'+escHtml(l.clubName||'(chưa đặt tên)')+'</b></div><label class="requp-lbl">Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?</label><select class="map-inp" id="requp-bizgrad">'+bizGradOptions(l.bizGrad)+'</select>';},
+    save:function(){var v=((document.getElementById('requp-bizgrad')||{}).value||'').trim();
+      if(!v){showToast('⚠ Hãy chọn Rồi hoặc Chưa');return false;}
+      var l=loadMyClubLocal()||{};l.bizGrad=v;saveMyClub(l);return true;} }
+];
+function _requpSafeNeed(it){try{return !!it.need();}catch(e){return false;}}
+async function checkRequiredUpdates(){
+  if(!fbUser||viewOnlyMode||_requpSkipped)return;
+  try{var loc=await fsGet('location');if(loc)nmSet('location',JSON.stringify(loc));}catch(e){} // nạp CLB chính mới nhất
+  _requpQueue=REQUIRED_UPDATES.filter(_requpSafeNeed);
+  if(!_requpQueue.length)return;
+  _requpIdx=0;renderRequpItem();
+  var ov=document.getElementById('requp-ov');if(ov)ov.classList.add('open');
+}
+function renderRequpItem(){
+  var it=_requpQueue[_requpIdx];if(!it){closeRequp();return;}
+  var pg=document.getElementById('requp-progress');if(pg)pg.textContent='Mục '+(_requpIdx+1)+'/'+_requpQueue.length;
+  var bd=document.getElementById('requp-body');if(bd)bd.innerHTML='<div class="requp-title">'+it.title+'</div><div class="requp-desc">'+it.desc+'</div>'+it.html();
+  var nb=document.getElementById('requp-next');if(nb)nb.innerHTML=(_requpIdx+1<_requpQueue.length)?'&#128190; Lưu &amp; tiếp tục':'&#128190; Lưu &amp; hoàn tất';
+}
+function requpSaveNext(){
+  var it=_requpQueue[_requpIdx];if(!it){closeRequp();return;}
+  var ok=false;try{ok=it.save();}catch(e){ok=false;}
+  if(!ok)return;
+  _requpIdx++;
+  while(_requpIdx<_requpQueue.length&&!_requpSafeNeed(_requpQueue[_requpIdx]))_requpIdx++; // bỏ mục đã hết cần
+  if(_requpIdx>=_requpQueue.length){closeRequp();showToast('✅ Đã cập nhật xong thông tin — cảm ơn bạn!');return;}
+  renderRequpItem();
+}
+function closeRequp(){var ov=document.getElementById('requp-ov');if(ov)ov.classList.remove('open');}
+function requpLater(){_requpSkipped=true;closeRequp();showToast('Bạn có thể cập nhật sau — hệ thống sẽ nhắc lại lần đăng nhập kế tiếp.');}
 function gateLogin(user){
   // QTV chính có thể khoá đăng nhập 1 email; và (tuỳ chọn) bắt buộc xác minh email
   Promise.all([
@@ -4130,6 +4209,7 @@ function enterAppFirebase(user){
   showAndFitTree();
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
   trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
+  checkRequiredUpdates(); // v6.71 — cổng cập nhật thông tin bắt buộc (nếu thiếu sau nâng cấp)
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -10356,6 +10436,10 @@ function renderGuide(){
 // ================================================================
 document.addEventListener('click',function(e){
   var t;
+
+  // v6.71 — Cổng cập nhật thông tin bắt buộc: Lưu & tiếp tục / Để sau
+  t=e.target.closest('[data-requp]');
+  if(t){var _rq=t.getAttribute('data-requp');if(_rq==='save')requpSaveNext();else if(_rq==='later')requpLater();return;}
 
   // v6.66 — 6 Cái Lọ: các nút hành động (Lưu hôm nay / Ghi chi / Tuỳ chỉnh / Reset tỷ lệ)
   t=e.target.closest('[data-jar-action]');
