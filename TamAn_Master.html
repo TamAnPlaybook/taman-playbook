@@ -1,4 +1,5 @@
-<!-- VERSION: v6.71-required-info-gate -->
+<!-- VERSION: v6.72-whats-new-tour -->
+<!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
 <!-- v6.70 — (1) Form CLB thêm ô "🎓 Đã tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC?" (select Rồi/Chưa, chủ CLB tự chọn — field bizGrad) → lưu location/clubs + hiện huy hiệu trong danh bạ (bizGradBadge) & popup; thread qua myAllClubs/fetchAllClubs/_pubClubArr/fetchPublicClubs. Cũng bỏ email khỏi popup. (2) 6 Cái Lọ — phần Ghi chi thêm ô "Chi cho việc gì?" (#jar-spend-note → spendLog[].note) + hiện chi tiết trong danh sách chi gần đây. -->
 <!-- v6.69 — Danh bạ CLB (clubDirectoryHtml): (1) bấm THÔNG TIN CLB (tên/địa chỉ) → cuộn LÊN bản đồ + phóng tới đúng vị trí + mở popup (focusClubOnMap thêm scrollIntoView('global-map-wrap')+invalidateSize). (2) Dòng người: hiện "Đầu nhánh: <tên> (liên hệ đầu nhánh của bạn nhờ liên hệ)" + BỎ hiển thị EMAIL (c.acctEmail). CSS .cd-branch-note. (3) Quy trình gửi khách: BỎ phần đính kèm TỆP (chỉ còn LINK) — gỡ nút/label #gp-file + gp-hint + change handler; chỉ QTV chỉnh (đã sẵn admin-only). -->
@@ -1178,6 +1179,19 @@ a.gp-att-nm:hover{text-decoration:underline}
 .requp-foot{padding:4px 18px 18px;display:flex;flex-direction:column;gap:9px;align-items:stretch}
 .requp-foot .btn{width:100%;font-size:15px;padding:11px}
 .requp-later{background:none;border:none;color:#AAA;font-size:12px;font-family:Arial;cursor:pointer;text-decoration:underline;align-self:center}
+/* ===== v6.72 — Tour "Có gì mới" ===== */
+.wn-ov{display:none;position:fixed;inset:0;z-index:3000;background:rgba(20,20,25,.62);align-items:center;justify-content:center;padding:16px}
+.wn-ov.open{display:flex}
+.wn-card{background:#fff;border-radius:16px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;animation:jarPop .28s ease}
+.wn-hd{background:linear-gradient(135deg,#7B5EB5,#4A6FE3);color:#fff;font-weight:800;font-family:Arial;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13.5px}
+.wn-prog{background:rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-size:12px}
+.wn-body{padding:20px 18px;text-align:center;max-height:60vh;overflow-y:auto}
+.wn-icon{font-size:46px;line-height:1;margin-bottom:8px}
+.wn-ver{display:inline-block;font-size:11px;font-weight:700;color:#7B5EB5;background:#F0ECFA;border-radius:20px;padding:2px 10px;margin-bottom:8px}
+.wn-title{font-size:18px;font-weight:800;font-family:Arial;color:#1A1A1A;margin-bottom:9px;line-height:1.35}
+.wn-desc{font-size:13.5px;color:#555;font-family:Arial;line-height:1.7;text-align:left}
+.wn-foot{padding:8px 16px 16px;display:flex;align-items:center;gap:8px}
+.wn-skip{background:none;border:none;color:#AAA;font-size:12px;font-family:Arial;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1511,6 +1525,20 @@ a.gp-att-nm:hover{text-decoration:underline}
   <!-- QUẢN TRỊ -->
   <div class="page" id="page-admin">
     <div class="content" id="admin-content"></div>
+  </div>
+</div>
+
+<!-- v6.72 — TOUR "CÓ GÌ MỚI" (hiện sau đăng nhập, trước cổng bắt buộc) -->
+<div class="wn-ov" id="wn-ov">
+  <div class="wn-card">
+    <div class="wn-hd"><span>&#10024; C&#243; g&#236; m&#7899;i</span><span class="wn-prog" id="wn-progress"></span></div>
+    <div class="wn-body" id="wn-body"></div>
+    <div class="wn-foot">
+      <button class="wn-skip" data-wn="skip">B&#7887; qua</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-o btn-sm" id="wn-prev" data-wn="prev">&#8249; Tr&#432;&#7899;c</button>
+      <button class="btn btn-g" id="wn-next" data-wn="next">Ti&#7871;p theo &#8250;</button>
+    </div>
   </div>
 </div>
 
@@ -4101,6 +4129,58 @@ async function doGoogle(){
 }
 
 // ================================================================
+// v6.72 — TOUR "CÓ GÌ MỚI" (giới thiệu tính năng/cập nhật mới sau nâng cấp)
+//   • Khi user đăng nhập: hiện LẦN LƯỢT từng mục MỚI (user chưa xem) để nắm thông tin.
+//   • Đánh dấu đã xem theo id → lưu _prefs.wnSeen (đồng bộ đa thiết bị). Xem xong hết nhắc.
+//   • Thêm mục mới = thêm 1 phần tử vào WHATS_NEW (mới nhất để ĐẦU mảng).
+//   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
+// ================================================================
+var WHATS_NEW=[
+  { id:'v671-required-gate', ver:'6.71', icon:'✅', title:'Nhắc cập nhật thông tin còn thiếu',
+    desc:'Sau màn này, nếu CLB của bạn còn thiếu thông tin bắt buộc (đầu nhánh liên hệ, tốt nghiệp chia sẻ cơ hội KD…), hệ thống sẽ hướng dẫn bạn bổ sung <b>từng mục một</b>. Chỉ mất chưa tới 1 phút!' },
+  { id:'v670-graduation', ver:'6.70', icon:'🎓', title:'Đánh dấu "đã tốt nghiệp chia sẻ cơ hội KD"',
+    desc:'Trong <b>Vị trí CLB → form CLB của tôi</b> có ô mới: chọn CLB đã <b>tốt nghiệp bài chia sẻ cơ hội kinh doanh TTHC</b> hay chưa. Trạng thái hiện thành huy hiệu 🎓 trong danh bạ để cả đội cùng biết.' },
+  { id:'v670-jar-note', ver:'6.70', icon:'💸', title:'Ghi rõ "chi cho việc gì" ở 6 Cái Lọ',
+    desc:'Khi ghi chi tiêu ở <b>6 Cái Lọ Tài Chính</b>, giờ có ô nhập <b>chi tiết mục chi</b> (vd: mua thực phẩm, tiền điện) — giúp bạn nhớ rõ đã tiêu vào việc gì.' },
+  { id:'v669-click-map', ver:'6.69', icon:'🗺️', title:'Bấm thông tin CLB để tới ngay vị trí trên bản đồ',
+    desc:'Trong danh bạ CLB, chỉ cần <b>bấm vào tên hoặc địa chỉ</b> của một CLB — bản đồ sẽ tự cuộn lên và phóng tới đúng vị trí CLB đó.' },
+  { id:'v668-guest-process', ver:'6.68', icon:'📋', title:'Quy trình gửi khách thống nhất',
+    desc:'Ở đầu tab <b>Vị trí CLB</b> có mục <b>"Quy trình gửi khách (thống nhất)"</b>: xem các bước chuẩn + tài liệu/liên kết hướng dẫn để cả đội gửi khách giống nhau, chuyên nghiệp.' },
+  { id:'v666-jars', ver:'6.66', icon:'🏺', title:'6 Cái Lọ Tài Chính (T. Harv Eker)',
+    desc:'Trong tab <b>Mục tiêu</b> có công cụ <b>6 Cái Lọ Tài Chính</b>: mỗi ngày gõ tổng thu nhập, app tự chia vào 6 lọ, có bảng tổng hợp số dư + mục tiêu + nhắc mỗi ngày. Tập thói quen làm chủ tiền bạc!' }
+];
+var _wnQueue=[],_wnIdx=0,_wnNext=null;
+async function checkWhatsNew(next){
+  next=next||function(){checkRequiredUpdates();};
+  if(!fbUser||viewOnlyMode){next();return;}
+  try{var d=await fsGet('prefs');if(d){delete d.updatedAt;for(var k in d)_prefs[k]=d[k];}}catch(e){}
+  var seen=(_prefs&&_prefs.wnSeen)||[];
+  _wnQueue=WHATS_NEW.filter(function(it){return seen.indexOf(it.id)<0;});
+  if(!_wnQueue.length){next();return;}
+  _wnNext=next;_wnIdx=0;renderWnItem();
+  var ov=document.getElementById('wn-ov');if(ov)ov.classList.add('open');
+}
+function renderWnItem(){
+  var it=_wnQueue[_wnIdx];if(!it){wnFinish();return;}
+  var pg=document.getElementById('wn-progress');if(pg)pg.textContent=(_wnIdx+1)+'/'+_wnQueue.length;
+  var bd=document.getElementById('wn-body');
+  if(bd)bd.innerHTML='<div class="wn-icon">'+it.icon+'</div><div class="wn-ver">Phiên bản '+escHtml(it.ver)+'</div><div class="wn-title">'+it.title+'</div><div class="wn-desc">'+it.desc+'</div>';
+  var pv=document.getElementById('wn-prev');if(pv)pv.style.display=(_wnIdx>0)?'':'none';
+  var nx=document.getElementById('wn-next');if(nx)nx.innerHTML=(_wnIdx+1<_wnQueue.length)?'Tiếp theo &#8250;':'&#10003; Đã hiểu';
+}
+function wnNav(dir){
+  if(dir<0){if(_wnIdx>0){_wnIdx--;renderWnItem();}return;}
+  if(_wnIdx+1<_wnQueue.length){_wnIdx++;renderWnItem();return;}
+  wnFinish();
+}
+function wnFinish(){
+  var ov=document.getElementById('wn-ov');if(ov)ov.classList.remove('open');
+  var seen=(_prefs&&_prefs.wnSeen)||[];
+  WHATS_NEW.forEach(function(it){if(seen.indexOf(it.id)<0)seen.push(it.id);}); // đánh dấu đã xem hết
+  _prefs.wnSeen=seen;try{savePrefs();}catch(e){}
+  var n=_wnNext;_wnNext=null;if(n)try{n();}catch(e){} // chain sang cổng bắt buộc
+}
+// ================================================================
 // v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC (sau nâng cấp)
 //   • Khi user đăng nhập: nếu thiếu thông tin bắt buộc MỚI (bản cũ chưa cần)
 //     → hiện cổng che màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1.
@@ -4209,7 +4289,7 @@ function enterAppFirebase(user){
   showAndFitTree();
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
   trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
-  checkRequiredUpdates(); // v6.71 — cổng cập nhật thông tin bắt buộc (nếu thiếu sau nâng cấp)
+  checkWhatsNew(); // v6.72 — tour "Có gì mới" → xong CHAIN sang cổng cập nhật thông tin bắt buộc (v6.71)
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -10436,6 +10516,10 @@ function renderGuide(){
 // ================================================================
 document.addEventListener('click',function(e){
   var t;
+
+  // v6.72 — Tour "Có gì mới": Trước / Tiếp theo / Bỏ qua
+  t=e.target.closest('[data-wn]');
+  if(t){var _wn=t.getAttribute('data-wn');if(_wn==='next')wnNav(1);else if(_wn==='prev')wnNav(-1);else if(_wn==='skip')wnFinish();return;}
 
   // v6.71 — Cổng cập nhật thông tin bắt buộc: Lưu & tiếp tục / Để sau
   t=e.target.closest('[data-requp]');
