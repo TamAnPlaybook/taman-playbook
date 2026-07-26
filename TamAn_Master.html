@@ -1,4 +1,5 @@
-<!-- VERSION: v6.68-guest-referral-process -->
+<!-- VERSION: v6.69-clubdir-branchhead-focus -->
+<!-- v6.69 — Danh bạ CLB (clubDirectoryHtml): (1) bấm THÔNG TIN CLB (tên/địa chỉ) → cuộn LÊN bản đồ + phóng tới đúng vị trí + mở popup (focusClubOnMap thêm scrollIntoView('global-map-wrap')+invalidateSize). (2) Dòng người: hiện "Đầu nhánh: <tên> (liên hệ đầu nhánh của bạn nhờ liên hệ)" + BỎ hiển thị EMAIL (c.acctEmail). CSS .cd-branch-note. (3) Quy trình gửi khách: BỎ phần đính kèm TỆP (chỉ còn LINK) — gỡ nút/label #gp-file + gp-hint + change handler; chỉ QTV chỉnh (đã sẵn admin-only). -->
 <!-- v6.68 — 📋 QUY TRÌNH GỬI KHÁCH (thống nhất) ở tab Vị trí CLB (đầu trang, trên bản đồ): QTV soạn MÔ TẢ các bước + ĐÍNH KÈM LINK (URL) và/hoặc TỆP (Word/PDF/ảnh…) → CẢ ĐỘI xem/tải để làm giống nhau. Metadata lưu appConfig/registration.guestProcess (read mọi người, write QTV — KHÔNG cần Rules mới); tệp dùng CHUNG collection skillmedia/{fileId} (Rules v6.59 sẵn có, KHÔNG cần Rules mới). Hàm: guestProc/renderGuestProc/guestProcHtml/uploadGuestFiles/viewGuestFile/addGuestLink/delGuestItem/saveGuestDesc; container #guestproc-content; handler map-action gp-edit/gp-save-desc/gp-cancel-desc/gp-add-link/gp-del/gp-view + change #gp-file. Nạp trong loadSkillLinks + renderMapPage. -->
 <!-- v6.67 — 🏺 6 Cái Lọ: BẢNG TỔNG HỢP xem theo KHUNG THỜI GIAN chọn (Tất cả / Ngày / Tuần / Tháng / Năm) + điều hướng kỳ (‹ › Hiện tại). Kỳ 'Tất cả' = số dư tích luỹ (như cũ). Kỳ có mốc: cột "Tiền vào" & "Đã chi" = phát sinh TRONG kỳ, "Số dư cuối kỳ" = tổng còn lại tính tới hết kỳ. Hàm mới: JAR_SUM_PERIODS/_jarPeriod/_jarRef/_jarRange/_jarStep/_jarParseKey/jarPeriodTotals; handler data-jarsum-period + data-jarsum-nav. -->
 <!-- v6.66 — 🏺 6 CÁI LỌ TÀI CHÍNH (T. Harv Eker): tính năng quản lý tài chính cá nhân trong tab Mục tiêu (dưới Bánh xe cuộc đời). Mỗi ngày vào KHUNG GIỜ CỐ ĐỊNH gõ tổng thu nhập → app TỰ CHIA vào 6 lọ (Thiết yếu 55% · Tự do tài chính 10% · Tiết kiệm dài hạn 10% · Giáo dục 10% · Hưởng thụ 10% · Cho đi 5% — sửa được, tổng =100%). Thu nhập >0 → hiện câu KHEN NGỢI ngẫu nhiên; =0 → nhắc "cần cố gắng hơn ngày mai". BẢNG TỔNG HỢP số dư từng lọ (tích luỹ − chi/rút) + thanh tỷ lệ + tiến trình mục tiêu mỗi lọ + CHUỖI NGÀY liên tục (streak) + NHẮC NHỞ khi quá giờ mà chưa ghi. Ghi chi tiêu/rút khỏi lọ để biết số dư thực. Lưu localStorage jars_v1 + Firestore users/{uid}/data/jars (đồng bộ đa thiết bị, KHÔNG cần Rules mới — owner rule sẵn cho phép). Hàm: JAR_CATS/JAR_PRAISE/loadJars/saveJars/loadJarsCloud/jarTotals/jarStreak/_jarPct/_jarRemindDue/renderJars. -->
@@ -1157,6 +1158,7 @@ a.gp-att-nm:hover{text-decoration:underline}
 .gp-add-row .map-inp{flex:1;min-width:150px;margin:0}
 .gp-file-lbl{cursor:pointer;display:inline-flex;align-items:center}
 .gp-hint{font-size:11px;color:#8AA;font-family:Arial;margin-top:7px;line-height:1.5}
+.cd-branch-note{font-size:11px;color:#9AA6A0;font-weight:400}
 </style>
 </head>
 <body>
@@ -2929,8 +2931,13 @@ function clubDirectoryHtml(clubs,opts){
       // v6.10 — khoảng cách từ "vị trí của tôi" (định vị) hoặc điểm xuất phát đã lưu
       if(opts.origin&&opts.origin.lat!=null&&hasPt)h+='<div class="cd-sub" style="color:#1565C0;font-weight:700">📏 Cách bạn '+fmtKm(haversineKm(opts.origin.lat,opts.origin.lng,c.lat,c.lng))+'</div>';
       if(!hasPt)h+='<div class="cd-sub" style="color:#E65100">⚠ Chưa có toạ độ — không hiện trên bản đồ</div>';
-      var own=[c.ownerName,c.ownerContact].filter(Boolean).join(' · ');
-      if(opts.showOwner&&(own||c.acctEmail))h+='<div class="cd-sub">👤 '+escHtml(own||'—')+(c.acctEmail?(' · '+escHtml(c.acctEmail)):'')+'</div>';
+      // v6.69 — hiện "Đầu nhánh: <tên>" + ghi chú nhờ liên hệ; KHÔNG hiện email nữa
+      if(opts.showOwner&&(c.ownerName||c.ownerContact)){
+        var _op=[];
+        if(c.ownerName)_op.push(escHtml(c.ownerName));
+        if(c.ownerContact)_op.push('Đầu nhánh: <b>'+escHtml(c.ownerContact)+'</b> <span class="cd-branch-note">(liên hệ đầu nhánh của bạn nhờ liên hệ)</span>');
+        h+='<div class="cd-sub">👤 '+_op.join(' · ')+'</div>';
+      }
       // 💬 v6.64 — nhận xét/đánh giá khách quan (gập/mở)
       h+='<details class="rv-acc" data-norowclick="1"><summary>💬 Đánh giá khách quan ('+reviewAgg(reviewKeyOf(c)).n+')</summary>'+reviewsListHtml(c)+'</details>';
       h+='</div>';
@@ -3481,9 +3488,15 @@ function startEditExtra(id){ // id có thể là '__primary' hoặc id CLB mở 
 function focusClubOnMap(lat,lng){
   lat=parseFloat(lat);lng=parseFloat(lng);if(isNaN(lat)||isNaN(lng))return;
   var map=_globalMap;if(!map)return;
-  map.setView([lat,lng],16);
-  var hit=(_allClubs||[]).filter(function(c){return c._marker&&Math.abs(c.lat-lat)<1e-6&&Math.abs(c.lng-lng)<1e-6;})[0];
-  if(hit&&hit._marker)setTimeout(function(){try{hit._marker.openPopup();}catch(e){}},250);
+  // v6.69 — bấm thông tin CLB: cuộn LÊN bản đồ + phóng tới đúng vị trí + mở popup
+  var w=document.getElementById('global-map-wrap');
+  if(w&&w.scrollIntoView)try{w.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+  setTimeout(function(){
+    try{map.invalidateSize();}catch(e){}
+    map.setView([lat,lng],16,{animate:true});
+    var hit=(_allClubs||[]).filter(function(c){return c._marker&&Math.abs(c.lat-lat)<1e-6&&Math.abs(c.lng-lng)<1e-6;})[0];
+    if(hit&&hit._marker)setTimeout(function(){try{hit._marker.openPopup();}catch(e){}},300);
+  },180);
 }
 
 // ── Bản đồ tổng (QTV) ──
@@ -5291,8 +5304,7 @@ function guestProcHtml(){
   if(admin){
     h+='<div class="gp-add-box">';
     h+='<div class="gp-add-row"><input id="gp-link-label" class="map-inp" placeholder="Tên liên kết (vd: Video hướng dẫn gửi khách)"><input id="gp-link-url" class="map-inp" placeholder="Dán link (https://…)"><button class="btn btn-o btn-sm" data-map-action="gp-add-link">🔗 Thêm link</button></div>';
-    h+='<label class="btn btn-g btn-sm gp-file-lbl"><span>📎 Đính kèm tệp (Word / PDF / ảnh…)</span><input type="file" id="gp-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" style="display:none"></label>';
-    h+='<div class="gp-hint">Ảnh tự nén; mỗi tệp tối đa ~750KB (giới hạn 1 tài liệu Firestore). Link không giới hạn dung lượng.</div>';
+    h+='<div class="gp-hint">Dán link tài liệu (Google Drive/Docs, YouTube, website…) để cả đội mở xem.</div>';
     h+='</div>';
   }
   h+='</div>';
@@ -11323,12 +11335,6 @@ document.addEventListener('change',function(e){
     var _fs=t.files?Array.prototype.slice.call(t.files):[]; // sao ra mảng TRƯỚC khi reset (t.value='' xoá FileList)
     t.value=''; // reset để chọn lại cùng tệp vẫn kích hoạt change
     if(_fs.length)uploadSkillMediaFiles(_skMediaMgrId,_fs);
-    return;
-  }
-  if(t.id==='gp-file'){ // v6.68 — QTV đính kèm tệp cho Quy trình gửi khách
-    var _gf=t.files?Array.prototype.slice.call(t.files):[];
-    t.value='';
-    if(_gf.length)uploadGuestFiles(_gf);
     return;
   }
   if(t.id==='clx-photo-file'){ // v6.22 — chọn ảnh CLB → nén (giới hạn ~70KB cho bản công khai) → xem trước
