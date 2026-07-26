@@ -1,4 +1,5 @@
-<!-- VERSION: v6.67-jars-summary-timeframe -->
+<!-- VERSION: v6.68-guest-referral-process -->
+<!-- v6.68 — 📋 QUY TRÌNH GỬI KHÁCH (thống nhất) ở tab Vị trí CLB (đầu trang, trên bản đồ): QTV soạn MÔ TẢ các bước + ĐÍNH KÈM LINK (URL) và/hoặc TỆP (Word/PDF/ảnh…) → CẢ ĐỘI xem/tải để làm giống nhau. Metadata lưu appConfig/registration.guestProcess (read mọi người, write QTV — KHÔNG cần Rules mới); tệp dùng CHUNG collection skillmedia/{fileId} (Rules v6.59 sẵn có, KHÔNG cần Rules mới). Hàm: guestProc/renderGuestProc/guestProcHtml/uploadGuestFiles/viewGuestFile/addGuestLink/delGuestItem/saveGuestDesc; container #guestproc-content; handler map-action gp-edit/gp-save-desc/gp-cancel-desc/gp-add-link/gp-del/gp-view + change #gp-file. Nạp trong loadSkillLinks + renderMapPage. -->
 <!-- v6.67 — 🏺 6 Cái Lọ: BẢNG TỔNG HỢP xem theo KHUNG THỜI GIAN chọn (Tất cả / Ngày / Tuần / Tháng / Năm) + điều hướng kỳ (‹ › Hiện tại). Kỳ 'Tất cả' = số dư tích luỹ (như cũ). Kỳ có mốc: cột "Tiền vào" & "Đã chi" = phát sinh TRONG kỳ, "Số dư cuối kỳ" = tổng còn lại tính tới hết kỳ. Hàm mới: JAR_SUM_PERIODS/_jarPeriod/_jarRef/_jarRange/_jarStep/_jarParseKey/jarPeriodTotals; handler data-jarsum-period + data-jarsum-nav. -->
 <!-- v6.66 — 🏺 6 CÁI LỌ TÀI CHÍNH (T. Harv Eker): tính năng quản lý tài chính cá nhân trong tab Mục tiêu (dưới Bánh xe cuộc đời). Mỗi ngày vào KHUNG GIỜ CỐ ĐỊNH gõ tổng thu nhập → app TỰ CHIA vào 6 lọ (Thiết yếu 55% · Tự do tài chính 10% · Tiết kiệm dài hạn 10% · Giáo dục 10% · Hưởng thụ 10% · Cho đi 5% — sửa được, tổng =100%). Thu nhập >0 → hiện câu KHEN NGỢI ngẫu nhiên; =0 → nhắc "cần cố gắng hơn ngày mai". BẢNG TỔNG HỢP số dư từng lọ (tích luỹ − chi/rút) + thanh tỷ lệ + tiến trình mục tiêu mỗi lọ + CHUỖI NGÀY liên tục (streak) + NHẮC NHỞ khi quá giờ mà chưa ghi. Ghi chi tiêu/rút khỏi lọ để biết số dư thực. Lưu localStorage jars_v1 + Firestore users/{uid}/data/jars (đồng bộ đa thiết bị, KHÔNG cần Rules mới — owner rule sẵn cho phép). Hàm: JAR_CATS/JAR_PRAISE/loadJars/saveJars/loadJarsCloud/jarTotals/jarStreak/_jarPct/_jarRemindDue/renderJars. -->
 <!-- v6.65 — Áp NỐT dropdown BẮT BUỘC "Hãy liên hệ đầu nhánh của tôi" (BRANCH_HEADS) vào modal "Sửa câu lạc bộ (QTV)" (openAdminClubEdit, ô ce-contact input tự do → select) + validation chưa chọn thì báo lỗi trong saveAdminClubEdit. (Bổ sung theo yêu cầu Huy: v6.64 mới đổi form "Thêm/Sửa CLB của tôi", form QTV sửa CLB người khác chưa đổi.) -->
@@ -1132,6 +1133,30 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
 .jar-spend-form input{flex:1;min-width:120px}
 .jar-spend-item{display:flex;align-items:center;gap:8px;font-size:12.5px;font-family:Arial;padding:6px 0;border-bottom:1px solid #F2F2F2}
 .jar-spend-item .jsi-del{margin-left:auto;color:#C62828;cursor:pointer;font-weight:800;background:none;border:none;font-size:14px}
+/* ===== v6.68 — Quy trình gửi khách (thống nhất) ===== */
+.gp-card{border:1px solid #D8E8DF!important;background:linear-gradient(180deg,#F4FBF7,#FFFFFF)}
+.gp-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.gp-ico{font-size:24px;line-height:1}
+.gp-title{font-size:15px;font-weight:800;color:#12684E;font-family:Arial}
+.gp-sub{font-size:12px;color:#6B8A7D;font-family:Arial;line-height:1.5;margin-top:2px}
+.gp-desc{font-size:13.5px;color:#2A2A2A;font-family:Arial;line-height:1.7;background:#fff;border:1px solid #E6EFEA;border-radius:10px;padding:11px 13px;white-space:normal}
+.gp-desc.gp-empty,.gp-empty{color:#9AA;font-style:italic}
+.gp-desc-inp{width:100%;box-sizing:border-box;min-height:140px;border:1.5px solid #CFE3D8;border-radius:10px;padding:11px 13px;font-size:13.5px;font-family:Arial;line-height:1.6;outline:none;resize:vertical}
+.gp-desc-inp:focus{border-color:#1A7A5E}
+.gp-att-title{font-size:13px;font-weight:800;color:#12684E;font-family:Arial;margin:14px 0 8px}
+.gp-att-list{display:flex;flex-direction:column;gap:6px}
+.gp-att{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #E6EFEA;border-radius:9px;padding:8px 11px;font-family:Arial}
+.gp-att-ico{font-size:16px}
+.gp-att-nm{font-size:13.5px;color:#1565C0;font-weight:700;word-break:break-word;flex:1}
+a.gp-att-nm{text-decoration:none}
+a.gp-att-nm:hover{text-decoration:underline}
+.gp-att-file{cursor:pointer;color:#0B6E52}
+.gp-att .skl-del{margin-left:auto}
+.gp-add-box{margin-top:14px;padding:12px;background:#F7FAF8;border:1px dashed #C7DDD2;border-radius:11px}
+.gp-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-bottom:9px}
+.gp-add-row .map-inp{flex:1;min-width:150px;margin:0}
+.gp-file-lbl{cursor:pointer;display:inline-flex;align-items:center}
+.gp-hint{font-size:11px;color:#8AA;font-family:Arial;margin-top:7px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -1429,6 +1454,8 @@ tr.adash-sec2 td{background:#F4F2EB;color:#666}
   <!-- BẢN ĐỒ CLB -->
   <div class="page" id="page-map">
     <div class="content">
+      <!-- v6.68 — Quy trình gửi khách (thống nhất): QTV soạn + đính kèm link/tệp, cả đội xem -->
+      <div id="guestproc-content"></div>
       <!-- v6.22 — Gộp 3 phần bản đồ thành 1: bản đồ toàn đội (xem + tìm + chỉ đường) ở trên, quản lý CLB của tôi ở dưới -->
       <div id="allclub-content"></div>
       <div id="myclub-content"></div>
@@ -2930,6 +2957,7 @@ function renderMapPage(){
   if(!fbUser){var m=document.getElementById('allclub-content');if(m)m.innerHTML='<div style="color:#999;text-align:center;padding:30px">Cần đăng nhập để dùng bản đồ.</div>';var m2=document.getElementById('myclub-content');if(m2)m2.innerHTML='';return;}
   destroyMaps();
   _extraEditId=null;
+  renderGuestProc();           // v6.68 — Quy trình gửi khách (thống nhất) ở đầu trang
   renderAllClubShell();        // BẢN ĐỒ TOÀN ĐỘI (xem mọi CLB + tìm + chỉ đường) — ở TRÊN
   renderMyClubsManager();      // QUẢN LÝ CLB CỦA TÔI (thêm/sửa/xoá + ảnh + đánh giá) — ở DƯỚI
   initGlobalMap(false);        // duy nhất MỘT bản đồ lớn cho toàn đội
@@ -5012,6 +5040,8 @@ function loadSkillLinks(){
   fsGetGlobal('registration').then(function(d){
     skillLinksMap=(d&&d.skillLinks)||{};
     skillMediaMap=(d&&d.skillMedia)||{};
+    guestProc=(d&&d.guestProcess&&typeof d.guestProcess==='object')?d.guestProcess:{desc:'',items:[]}; // v6.68 — quy trình gửi khách
+    if(document.getElementById('guestproc-content'))renderGuestProc();
     applySkillCfg(d&&d.skillCfg); // QTV có thể tuỳ biến danh sách kỹ năng
     if(modalMid&&modalType==='kn')refreshModalBody(); // đang mở tab kỹ năng → cập nhật ngay
     renderAll&&renderAll();updateStats&&updateStats(); // cập nhật số liệu năng lực theo danh sách mới
@@ -5222,6 +5252,105 @@ function openSkMediaLightbox(dataUrl,name){
   ov.classList.add('open');
 }
 function closeSkMediaLightbox(){var ov=document.getElementById('skmedia-view-ov');if(ov){ov.classList.remove('open');document.getElementById('skmedia-view-img').src='';}}
+// ================================================================
+// v6.68 — QUY TRÌNH GỬI KHÁCH (thống nhất) — tab Vị trí CLB
+//   • QTV soạn MÔ TẢ các bước + đính kèm LINK (URL) / TỆP (Word/PDF/ảnh…) → cả đội xem/tải.
+//   • Metadata: appConfig/registration.guestProcess (read mọi người · write QTV) — KHÔNG cần Rules mới.
+//   • Tệp: dùng CHUNG collection skillmedia/{fileId} (Rules v6.59 sẵn có) — KHÔNG cần Rules mới.
+// ================================================================
+var guestProc={desc:'',items:[]};
+var _gpEdit=false;
+function _gpNorm(){if(!guestProc||typeof guestProc!=='object')guestProc={desc:'',items:[]};if(typeof guestProc.desc!=='string')guestProc.desc='';if(!Array.isArray(guestProc.items))guestProc.items=[];}
+function _gpSave(){_gpNorm();return fsSetGlobal('registration',{guestProcess:guestProc});}
+function _gpTextToHtml(t){return escHtml(t).replace(/\n/g,'<br>');}
+function renderGuestProc(){var el=document.getElementById('guestproc-content');if(el)el.innerHTML=guestProcHtml();}
+function guestProcHtml(){
+  _gpNorm();
+  var admin=isBranchAdmin&&!viewOnlyMode;
+  var h='<div class="map-card gp-card">';
+  h+='<div class="gp-head"><span class="gp-ico">📋</span><div style="flex:1"><div class="gp-title">Quy trình gửi khách (thống nhất)</div><div class="gp-sub">Quy trình chuẩn khi giới thiệu / gửi khách tới CLB — để cả đội làm giống nhau, chuyên nghiệp.</div></div>';
+  if(admin&&!_gpEdit)h+='<button class="btn btn-o btn-sm" data-map-action="gp-edit">✏️ Sửa</button>';
+  h+='</div>';
+  if(_gpEdit&&admin){
+    h+='<textarea id="gp-desc-inp" class="gp-desc-inp" placeholder="Soạn các bước quy trình gửi khách (mỗi bước 1 dòng)…\nVD:\n1. Hỏi nhu cầu &amp; tình trạng sức khoẻ của khách.\n2. Giới thiệu CLB gần nhất + hẹn giờ trải nghiệm.\n3. Gửi thông tin CLB (địa chỉ, đầu nhánh liên hệ).\n4. Nhắc khách trước buổi hẹn, dặn chuẩn bị.\n5. Theo dõi &amp; chăm sóc sau trải nghiệm.">'+escHtml(guestProc.desc||'')+'</textarea>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px"><button class="btn btn-g btn-sm" data-map-action="gp-save-desc">💾 Lưu mô tả</button><button class="btn btn-r btn-sm" data-map-action="gp-cancel-desc">Huỷ</button></div>';
+  }else{
+    if(guestProc.desc)h+='<div class="gp-desc">'+_gpTextToHtml(guestProc.desc)+'</div>';
+    else h+='<div class="gp-desc gp-empty">'+(admin?'Chưa có mô tả quy trình. Bấm ✏️ Sửa để soạn các bước.':'Quy trình đang được cập nhật.')+'</div>';
+  }
+  h+='<div class="gp-att-title">📎 Tài liệu &amp; liên kết đính kèm</div>';
+  if(guestProc.items.length){
+    h+='<div class="gp-att-list">';
+    guestProc.items.forEach(function(it){
+      var del=admin?'<button class="skl-del" data-map-action="gp-del" data-gp-id="'+escHtml(it.id)+'" title="Xoá">🗑️</button>':'';
+      if(it.type==='link')h+='<div class="gp-att"><span class="gp-att-ico">🔗</span><a class="gp-att-nm" href="'+escHtml(it.url||'#')+'" target="_blank" rel="noopener">'+escHtml(it.label||it.url||'Liên kết')+'</a>'+del+'</div>';
+      else h+='<div class="gp-att"><span class="gp-att-ico">'+(it.kind==='image'?'🖼️':'📎')+'</span><span class="gp-att-nm gp-att-file" data-map-action="gp-view" data-gp-id="'+escHtml(it.id)+'" title="Bấm để xem/tải">'+escHtml(it.label||it.name||'Tệp')+'</span>'+del+'</div>';
+    });
+    h+='</div>';
+  }else h+='<div class="gp-empty" style="padding:6px 0;font-size:13px">Chưa có tài liệu/liên kết nào.</div>';
+  if(admin){
+    h+='<div class="gp-add-box">';
+    h+='<div class="gp-add-row"><input id="gp-link-label" class="map-inp" placeholder="Tên liên kết (vd: Video hướng dẫn gửi khách)"><input id="gp-link-url" class="map-inp" placeholder="Dán link (https://…)"><button class="btn btn-o btn-sm" data-map-action="gp-add-link">🔗 Thêm link</button></div>';
+    h+='<label class="btn btn-g btn-sm gp-file-lbl"><span>📎 Đính kèm tệp (Word / PDF / ảnh…)</span><input type="file" id="gp-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" style="display:none"></label>';
+    h+='<div class="gp-hint">Ảnh tự nén; mỗi tệp tối đa ~750KB (giới hạn 1 tài liệu Firestore). Link không giới hạn dung lượng.</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function saveGuestDesc(){
+  if(!isBranchAdmin)return;
+  var el=document.getElementById('gp-desc-inp');if(!el)return;
+  _gpNorm();guestProc.desc=el.value;
+  _gpSave().then(function(){_gpEdit=false;showToast('✓ Đã lưu mô tả quy trình');renderGuestProc();}).catch(function(e){showToast('Lỗi lưu: '+((e&&e.message)||e));});
+}
+function addGuestLink(){
+  if(!isBranchAdmin)return;
+  var lb=document.getElementById('gp-link-label'),lu=document.getElementById('gp-link-url');
+  var label=lb?String(lb.value).trim():'',url=lu?String(lu.value).trim():'';
+  if(!url){showToast('Dán link trước đã');return;}
+  if(!/^https?:\/\//i.test(url))url='https://'+url;
+  _gpNorm();guestProc.items.push({id:_skmGenId(),type:'link',label:label||url,url:url});
+  _gpSave().then(function(){showToast('✓ Đã thêm liên kết');renderGuestProc();}).catch(function(e){showToast('Lỗi thêm link: '+((e&&e.message)||e));});
+}
+function uploadGuestFiles(fileList){
+  if(!isBranchAdmin)return;
+  var files=Array.prototype.slice.call(fileList||[]);if(!files.length)return;
+  (function next(i){
+    if(i>=files.length){renderGuestProc();return;}
+    var f=files[i];
+    function afterData(dataUrl,kind,mime){
+      if(!dataUrl){showToast('Không đọc được tệp: '+f.name);return next(i+1);}
+      if(dataUrl.length>SKMEDIA_MAX){showToast('Tệp quá lớn (giới hạn ~750KB): '+f.name);return next(i+1);}
+      var fileId=_skmGenId();showToast('Đang tải lên: '+f.name+'…');
+      fsSetSkillMedia(fileId,{skillId:'__guestproc',kind:kind,name:f.name,mime:mime,data:dataUrl}).then(function(){
+        _gpNorm();guestProc.items.push({id:fileId,type:'file',kind:kind,label:f.name,name:f.name,mime:mime,size:f.size||0});
+        return _gpSave();
+      }).then(function(){showToast('✓ Đã thêm: '+f.name);renderGuestProc();next(i+1);})
+      .catch(function(e){showToast('Lỗi tải lên (có thể cần publish Rules mới): '+((e&&e.message)||e));next(i+1);});
+    }
+    if(/^image\//.test(f.type||''))_compressToLimit(f,1280,0.72,900000,function(u){afterData(u,'image','image/jpeg');});
+    else _readFileDataUrl(f,function(u){afterData(u,'file',f.type||'application/octet-stream');});
+  })(0);
+}
+function viewGuestFile(fileId){
+  showToast('Đang tải…');
+  fsGetSkillMedia(fileId).then(function(d){
+    if(!d||!d.data){showToast('Không tải được tệp (có thể cần publish Rules mới)');return;}
+    if(d.kind==='image')openSkMediaLightbox(d.data,d.name||'');
+    else{var a=document.createElement('a');a.href=d.data;a.download=d.name||'tai-lieu';document.body.appendChild(a);a.click();a.remove();showToast('✓ Đang tải: '+(d.name||'tệp'));}
+  }).catch(function(e){showToast('Lỗi tải tệp: '+((e&&e.message)||e));});
+}
+function delGuestItem(id){
+  if(!isBranchAdmin)return;
+  _gpNorm();
+  var it=guestProc.items.filter(function(x){return x.id===id;})[0];
+  guestProc.items=guestProc.items.filter(function(x){return x.id!==id;});
+  _gpSave().then(function(){
+    if(it&&it.type==='file')fsDelSkillMedia(id).catch(function(){}); // xoá blob best-effort (thiếu quyền cũng bỏ qua)
+    showToast('✓ Đã xoá');renderGuestProc();
+  }).catch(function(e){showToast('Lỗi xoá: '+((e&&e.message)||e));renderGuestProc();});
+}
 // ===== QTV: THÊM / BỚT / SỬA CÁC Ô KỸ NĂNG (danh sách kỹ năng) =====
 // Lưu chung toàn team ở field "skillCfg" trong doc appConfig/registration (không cần đổi Rules).
 var _skcfgGroup=null; // 'tt' (Thần Tài) | 'ty' (Thần Y)
@@ -10431,6 +10560,12 @@ document.addEventListener('click',function(e){
     else if(ma==='refresh-all')initGlobalMap(true);
     else if(ma==='admin-edit-club')openAdminClubEdit(t.getAttribute('data-uid'),t.getAttribute('data-primary'),t.getAttribute('data-club-id'));
     else if(ma==='admin-del-club')adminDelClub(t.getAttribute('data-uid'),t.getAttribute('data-primary'),t.getAttribute('data-club-id'));
+    else if(ma==='gp-edit'){_gpEdit=true;renderGuestProc();}
+    else if(ma==='gp-save-desc')saveGuestDesc();
+    else if(ma==='gp-cancel-desc'){_gpEdit=false;renderGuestProc();}
+    else if(ma==='gp-add-link')addGuestLink();
+    else if(ma==='gp-view')viewGuestFile(t.getAttribute('data-gp-id'));
+    else if(ma==='gp-del'){if(confirm('Xoá mục này khỏi quy trình gửi khách?'))delGuestItem(t.getAttribute('data-gp-id'));}
     else if(ma==='admin-geo')doAdminGeo();
     else if(ma==='sync-all-pub')syncAllPublicClubs();
     else if(ma==='dir-to')startDirections(t.getAttribute('data-club-lat'),t.getAttribute('data-club-lng'),t.getAttribute('data-club-name'));
@@ -11188,6 +11323,12 @@ document.addEventListener('change',function(e){
     var _fs=t.files?Array.prototype.slice.call(t.files):[]; // sao ra mảng TRƯỚC khi reset (t.value='' xoá FileList)
     t.value=''; // reset để chọn lại cùng tệp vẫn kích hoạt change
     if(_fs.length)uploadSkillMediaFiles(_skMediaMgrId,_fs);
+    return;
+  }
+  if(t.id==='gp-file'){ // v6.68 — QTV đính kèm tệp cho Quy trình gửi khách
+    var _gf=t.files?Array.prototype.slice.call(t.files):[];
+    t.value='';
+    if(_gf.length)uploadGuestFiles(_gf);
     return;
   }
   if(t.id==='clx-photo-file'){ // v6.22 — chọn ảnh CLB → nén (giới hạn ~70KB cho bản công khai) → xem trước
