@@ -5804,8 +5804,59 @@ function dayActs(){var o=loadActs();return o[dk()]||[];}
 function setDayActs(arr){var o=loadActs();o[dk()]=arr;saveActs(o);}
 function addAct(slot,text){
   text=(text||'').trim();if(!text){showToast('Nhập việc cần làm');return;}
-  var arr=dayActs();arr.push({id:'ac'+Date.now().toString(36),slot:slot,text:text,note:'',done:false,prio:false});
+  var arr=dayActs();arr.push({id:'ac'+Date.now().toString(36),slot:slot,text:text,note:'',done:false,prio:false,urg:false,goalId:'',goalName:''});
   setDayActs(arr);renderActionCenter();
+}
+// ================================================================
+// v6.74 — ƯU TIÊN EISENHOWER cho "Hôm nay tôi làm gì?"
+//   • "Quan trọng" = việc có GẮN với một MỤC TIÊU tháng (goals_<kỳ>).
+//   • "Khẩn" (urg)  = thành viên tự đánh dấu sắp tới hạn.
+//   → 4 ô: Làm ngay (q1) · Lên lịch (q2, ô vàng) · Giao/rút gọn (q3) · Bỏ bớt (q4).
+//   Việc chưa gắn mục tiêu VÀ chưa đánh dấu khẩn = "Chưa phân loại" (không ép vào q4).
+// ================================================================
+var AC_VIEW='list'; // 'list' | 'matrix'
+var AC_QUAD={
+  q1:{lbl:'Làm ngay',      ico:'🔥', c:'#C62828', bg:'#FFEBEE', desc:'Quan trọng + Khẩn'},
+  q2:{lbl:'Lên lịch',      ico:'📅', c:'#1A7A5E', bg:'#E8F5F0', desc:'Quan trọng · chưa gấp'},
+  q3:{lbl:'Giao / rút gọn',ico:'🤝', c:'#E65100', bg:'#FFF8E1', desc:'Gấp · ít quan trọng'},
+  q4:{lbl:'Bỏ bớt',        ico:'🗑️', c:'#757575', bg:'#F2F2F2', desc:'Không gấp · không quan trọng'}
+};
+function acGoalName(id){if(!id)return '';var nm='';loadGoals().forEach(function(g){if(g.id===id)nm=g.name;});return nm;}
+function acGoalLabel(a){return a.goalName||(a.goalId?acGoalName(a.goalId):'');}
+function acTriaged(a){return !!a.goalId||!!a.urg;}            // đã phân loại chưa
+function acIsImp(a){return !!a.goalId;}                        // gắn mục tiêu = quan trọng
+function acQuad(a){var imp=acIsImp(a),urg=!!a.urg;return imp?(urg?'q1':'q2'):(urg?'q3':'q4');}
+function acQuadRank(a){if(!acTriaged(a))return 4;var q=acQuad(a);return q==='q1'?0:q==='q2'?1:q==='q3'?2:3;}
+function acVtabCss(on){return 'font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:20px;cursor:pointer;border:1px solid '+(on?'#1A1A1A':'#E0E0E0')+';background:'+(on?'#1A1A1A':'#fff')+';color:'+(on?'#C8A84B':'#999')+'';}
+function acChipCss(on,col){return 'font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;cursor:pointer;border:1px solid '+(on?col:'#DDD')+';background:'+(on?col:'#fff')+';color:'+(on?'#fff':'#999')+'';}
+function acMatrixHtml(acts){
+  var open=acts.filter(function(x){return !x.done;});
+  var tri=open.filter(acTriaged),untri=open.filter(function(a){return !acTriaged(a);});
+  var groups={q1:[],q2:[],q3:[],q4:[]};
+  tri.forEach(function(a){groups[acQuad(a)].push(a);});
+  var h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">';
+  ['q1','q2','q3','q4'].forEach(function(k){
+    var d=AC_QUAD[k],items=groups[k],isQ2=(k==='q2');
+    h+='<div style="border:'+(isQ2?'2px':'1px')+' solid '+d.c+';border-radius:12px;background:'+d.bg+';padding:9px 11px;min-height:94px">';
+    h+='<div style="font-size:12.5px;font-weight:800;color:'+d.c+'">'+d.ico+' '+d.lbl+(isQ2?' <span style="font-size:9px;font-weight:700">★ THU NHẬP BỀN</span>':'')+'</div>';
+    h+='<div style="font-size:10px;color:'+d.c+';opacity:.75;margin-bottom:6px">'+d.desc+'</div>';
+    if(!items.length)h+='<div style="font-size:11px;color:#BBB">—</div>';
+    else items.forEach(function(a){h+='<div style="font-size:12px;color:#333;padding:2px 0;line-height:1.35">• '+escHtml(a.text)+'</div>';});
+    h+='</div>';
+  });
+  h+='</div>';
+  if(untri.length){
+    h+='<div style="margin-top:10px;padding:9px 11px;border:1px dashed #CCC;border-radius:12px;background:#FAFAFA">';
+    h+='<div style="font-size:11.5px;font-weight:700;color:#888;margin-bottom:4px">🔍 Chưa phân loại ('+untri.length+') — sang tab <b>Danh sách</b>, bấm 🎯 gắn mục tiêu / ⏰ đánh dấu gấp</div>';
+    untri.forEach(function(a){h+='<div style="font-size:12px;color:#999;padding:1px 0">• '+escHtml(a.text)+'</div>';});
+    h+='</div>';
+  }
+  if(tri.length){
+    var q2n=groups.q2.length,q1n=groups.q1.length;
+    if(q2n===0)h+='<div style="margin-top:11px;padding:10px 12px;border-radius:12px;background:#FFEBEE;color:#C62828;font-size:12.5px;line-height:1.5">⚠️ Ô <b>"Lên lịch"</b> đang trống — cả ngày chỉ chữa cháy. Đây là dấu hiệu thu nhập sẽ chững lại. Hãy gắn ít nhất 1 việc với mục tiêu tháng mà chưa gấp (chăm tuyến dưới, học kỹ năng...).</div>';
+    else h+='<div style="margin-top:11px;padding:10px 12px;border-radius:12px;background:#E8F5F0;color:#1A7A5E;font-size:12.5px;line-height:1.5">✅ '+q2n+' việc ở ô <b>"Lên lịch"</b> — nơi xây tuyến dưới bền. Bảo vệ nó trước khi việc "Làm ngay" ('+q1n+') nuốt hết thời gian.</div>';
+  }
+  return h;
 }
 function renderActionCenter(){
   var el=document.getElementById('action-center');if(!el)return;
@@ -5813,20 +5864,32 @@ function renderActionCenter(){
   var doneCnt=acts.filter(function(x){return x.done;}).length;
   var h='<div class="ac-head"><div class="ac-title">🎯 Hôm nay tôi làm gì?<span class="ac-date">'+fmtDate(currentDay)+'</span></div>';
   h+='<div class="ac-prog">'+doneCnt+'/'+acts.length+' xong</div></div>';
+  h+='<div style="display:flex;gap:6px;margin:2px 0 12px;flex-wrap:wrap">';
+  h+='<button data-ac-view="list" style="'+acVtabCss(AC_VIEW==='list')+'">📋 Danh sách</button>';
+  h+='<button data-ac-view="matrix" style="'+acVtabCss(AC_VIEW==='matrix')+'">🔲 Ưu tiên (Eisenhower)</button>';
+  h+='</div>';
+  if(AC_VIEW==='matrix'){h+=acMatrixHtml(acts);el.innerHTML=h;return;}
   AC_SLOTS.forEach(function(s){
     var list=acts.filter(function(x){return x.slot===s.id;});
-    list.sort(function(a,b){if(!!a.done!==!!b.done)return a.done?1:-1;if(!!a.prio!==!!b.prio)return a.prio?-1:1;return 0;});
+    list.sort(function(a,b){if(!!a.done!==!!b.done)return a.done?1:-1;var qa=acQuadRank(a),qb=acQuadRank(b);return qa-qb;});
     h+='<div class="ac-slot" style="border-top:3px solid '+s.c+'">';
     h+='<div class="ac-slot-hd" style="color:'+s.c+'">'+s.lbl+'<span class="ac-cnt">'+list.length+'</span></div>';
     if(!list.length)h+='<div class="ac-empty">Chưa có việc</div>';
     list.forEach(function(a){
-      h+='<div class="ac-task'+(a.done?' done':'')+(a.prio?' prio':'')+'">';
+      h+='<div class="ac-task'+(a.done?' done':'')+'">';
       h+='<button class="ac-chk" data-ac-done="'+a.id+'">'+(a.done?'✅':'⬜')+'</button>';
-      h+='<div class="ac-body"><div class="ac-text">'+(a.prio?'⭐ ':'')+escHtml(a.text)+'</div>';
+      h+='<div class="ac-body">';
+      if(acTriaged(a)){var q=AC_QUAD[acQuad(a)];h+='<div style="margin-bottom:2px"><span style="font-size:10.5px;font-weight:700;color:'+q.c+';background:'+q.bg+';padding:1px 8px;border-radius:20px">'+q.ico+' '+q.lbl+'</span></div>';}
+      else h+='<div style="margin-bottom:2px"><span style="font-size:10.5px;font-weight:600;color:#999;background:#F2F2F2;padding:1px 8px;border-radius:20px">◻️ Chưa xếp ưu tiên</span></div>';
+      h+='<div class="ac-text">'+escHtml(a.text)+'</div>';
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">';
+      var gn=acGoalLabel(a);
+      h+='<button data-ac-goal="'+a.id+'" title="Gắn với mục tiêu tháng" style="'+acChipCss(!!gn,'#1A7A5E')+'">🎯 '+(gn?escHtml(gn):'Gắn mục tiêu')+'</button>';
+      h+='<button data-ac-urg="'+a.id+'" title="Đánh dấu sắp tới hạn" style="'+acChipCss(!!a.urg,'#C62828')+'">⏰ '+(a.urg?'Sắp tới hạn':'Chưa gấp')+'</button>';
+      h+='</div>';
       if(a.note)h+='<div class="ac-note">📝 '+escHtml(a.note)+'</div>';
       h+='</div>';
       h+='<div class="ac-tools">';
-      h+='<button class="ac-mini" data-ac-prio="'+a.id+'" title="Ưu tiên">'+(a.prio?'⭐':'☆')+'</button>';
       h+='<button class="ac-mini" data-ac-note="'+a.id+'" title="Ghi chú">📝</button>';
       h+='<button class="ac-mini" data-ac-edit="'+a.id+'" title="Sửa">✏️</button>';
       h+='<button class="ac-mini ac-del" data-ac-del="'+a.id+'" title="Xoá">✕</button>';
@@ -10817,6 +10880,25 @@ document.addEventListener('click',function(e){
   if(t){var _aid4=t.getAttribute('data-ac-edit');var _aa4=dayActs();var _ce=null;_aa4.forEach(function(x){if(x.id===_aid4)_ce=x;});var _nv=prompt('Sửa việc:',_ce?_ce.text:'');if(_nv!==null){_aa4.forEach(function(x){if(x.id===_aid4&&_nv.trim())x.text=_nv.trim();});setDayActs(_aa4);renderActionCenter();}return;}
   t=e.target.closest('[data-ac-note]');
   if(t){var _aid5=t.getAttribute('data-ac-note');var _aa5=dayActs();var _cn=null;_aa5.forEach(function(x){if(x.id===_aid5)_cn=x;});var _nn=prompt('Ghi chú:',_cn?_cn.note:'');if(_nn!==null){_aa5.forEach(function(x){if(x.id===_aid5)x.note=_nn.trim();});setDayActs(_aa5);renderActionCenter();}return;}
+  // v6.74 — Ưu tiên Eisenhower: đổi view / gắn mục tiêu / đánh dấu khẩn
+  t=e.target.closest('[data-ac-view]');
+  if(t){AC_VIEW=t.getAttribute('data-ac-view');renderActionCenter();return;}
+  t=e.target.closest('[data-ac-urg]');
+  if(t){var _uid=t.getAttribute('data-ac-urg');var _ua=dayActs();_ua.forEach(function(x){if(x.id===_uid)x.urg=!x.urg;});setDayActs(_ua);renderActionCenter();return;}
+  t=e.target.closest('[data-ac-goal]');
+  if(t){
+    var _gtid=t.getAttribute('data-ac-goal');var _gls=loadGoals();
+    if(!_gls.length){showToast('Chưa có mục tiêu tháng. Vào tab Mục tiêu → Mục tiêu & chỉ tiêu để thêm.');return;}
+    var _msg='Việc này phục vụ MỤC TIÊU tháng nào? (gõ số rồi OK)\n\n0. (Không gắn — việc không quan trọng)\n';
+    _gls.forEach(function(g,i){_msg+=(i+1)+'. '+g.name+'\n';});
+    var _pk=prompt(_msg,'');if(_pk===null)return;
+    var _n=parseInt(_pk,10);var _ag=dayActs();
+    _ag.forEach(function(x){if(x.id===_gtid){
+      if(_n>=1&&_n<=_gls.length){x.goalId=_gls[_n-1].id;x.goalName=_gls[_n-1].name;}
+      else {x.goalId='';x.goalName='';}
+    }});
+    setDayActs(_ag);renderActionCenter();return;
+  }
   // v5.3 — Đo lường mục tiêu (goal progress)
   t=e.target.closest('[data-act="add-goal"]');
   if(t){
