@@ -1,4 +1,4 @@
-<!-- VERSION: v6.76-nhatky -->
+<!-- VERSION: v6.77-lotrinh -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -450,6 +450,12 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .rm-mini{border:none;border-radius:7px;padding:5px 8px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
 /* Action Center (Phase 3 v6.1) */
 .tp-sec-title{font-size:14px;font-weight:800;color:#1A1A1A;font-family:Arial;margin:20px 0 10px;display:flex;align-items:center;gap:6px}
+/* v6.77 — Tooltip giải nghĩa công cụ (di chuột hoặc chạm) */
+.tip{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#DDE6E0;color:#5A6A60;font-size:11px;font-weight:700;cursor:help;position:relative;vertical-align:middle;flex:none;font-family:Arial;line-height:1}
+.tip:hover,.tip.show{background:#1A7A5E;color:#fff}
+.tip::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);background:#14201A;color:#fff;font-size:12px;font-weight:400;line-height:1.5;padding:9px 12px;border-radius:9px;width:250px;max-width:74vw;text-align:left;opacity:0;visibility:hidden;transition:opacity .14s;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.28);white-space:normal;pointer-events:none}
+.tip::before{content:"";position:absolute;bottom:150%;left:50%;transform:translate(-50%,95%);border:6px solid transparent;border-top-color:#14201A;opacity:0;visibility:hidden;transition:opacity .14s;z-index:9999}
+.tip:hover::after,.tip.show::after,.tip:hover::before,.tip.show::before{opacity:1;visibility:visible}
 .ac-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;flex-wrap:wrap;gap:6px}
 .ac-title{font-size:15px;font-weight:800;color:#1A1A1A;font-family:Arial}
 .ac-date{font-size:12px;font-weight:600;color:#999;margin-left:5px}
@@ -1351,13 +1357,13 @@ a.gp-att-nm:hover{text-decoration:underline}
       <!-- A1. LA BÀN (quý): Bánh xe cuộc đời → Bảng tầm nhìn → 6 Lọ tài chính -->
       <div class="spg" id="tp-laban">
         <div style="background:#F2F7F4;border:1px solid #D9E8E1;border-left:4px solid #1A7A5E;border-radius:10px;padding:9px 12px;margin:2px 0 14px;font-size:12.5px;color:#0E5C46;line-height:1.55">&#129517; <b>Bước 1 · La bàn</b> — chẩn đoán &amp; định hướng. Xem theo <b>quý</b>: tôi đang mất cân bằng ở đâu, muốn tới bức tranh nào? Điểm thấp trên Bánh xe = lĩnh vực ưu tiên đặt mục tiêu.</div>
-        <div class="tp-sec-title">&#128722; Bánh xe cuộc đời</div>
+        <div class="tp-sec-title">&#128722; Bánh xe cuộc đời<span class="tip" data-tip="Tự chấm điểm 8 lĩnh vực sống (sức khỏe, tài chính, quan hệ, sự nghiệp…) để nhìn ra chỗ mất cân bằng cần ưu tiên cải thiện.">&#9432;</span></div>
         <div id="life-wheel-content"></div>
         <div id="life-mirror-content"></div>
         <div id="wheel-compare-content"></div>
-        <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)</div>
+        <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)<span class="tip" data-tip="Bảng hình ảnh về cuộc sống bạn muốn có — nhìn mỗi ngày để giữ cảm hứng và động lực đi tới.">&#9432;</span></div>
         <div id="vision-board-content"></div>
-        <div class="tp-sec-title">&#127978; 6 C&#225;i L&#7885; T&#224;i Ch&#237;nh &mdash; T. Harv Eker</div>
+        <div class="tp-sec-title">&#127978; 6 C&#225;i L&#7885; T&#224;i Ch&#237;nh &mdash; T. Harv Eker<span class="tip" data-tip="Chia mỗi khoản thu nhập vào 6 lọ (nhu cầu, tự do tài chính, hưởng thụ, giáo dục, tiết kiệm dài hạn, cho đi) để làm chủ tiền bạc.">&#9432;</span></div>
         <div id="jars-content"></div>
         <div style="margin-top:18px;text-align:right"><button class="btn btn-d btn-sm" data-goto-chain="tp:goals">Bước tiếp: &#127919; Đặt mục tiêu &rarr;</button></div>
       </div>
@@ -1365,9 +1371,9 @@ a.gp-att-nm:hover{text-decoration:underline}
       <!-- A2. MỤC TIÊU (tháng): Kế hoạch năm → Chỉ tiêu kỳ → 20/80 -->
       <div class="spg" id="tp-goals">
         <div style="background:#F2F7F4;border:1px solid #D9E8E1;border-left:4px solid #1A7A5E;border-radius:10px;padding:9px 12px;margin:2px 0 14px;font-size:12.5px;color:#0E5C46;line-height:1.55">&#127919; <b>Bước 2 · Mục tiêu</b> — biến định hướng thành <b>con số đo được</b> theo tháng. Mỗi mục tiêu tháng là "mỏ neo" để việc hôm nay bám vào (= Quan trọng trong Eisenhower); 20/80 tính ngược ra việc mỗi ngày.</div>
-        <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)</div>
+        <div class="tp-sec-title">&#127919; Kế hoạch năm (mục tiêu 12 tháng &rarr; tự chia nhỏ)<span class="tip" data-tip="Đặt mục tiêu lớn cho cả năm, app tự chia nhỏ ra từng quý/tháng để bạn đỡ choáng và dễ theo dõi.">&#9432;</span></div>
         <div id="annplan-content"></div>
-        <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu (theo kỳ)</div>
+        <div class="tp-sec-title">&#127919; Mục tiêu &amp; chỉ tiêu (theo kỳ)<span class="tip" data-tip="Con số cụ thể cần đạt trong kỳ (tháng/quý). Việc trong ngày gắn với mục tiêu này sẽ được coi là Quan trọng trong Eisenhower.">&#9432;</span></div>
         <div id="period-tabs" class="stabs" style="margin-bottom:10px"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
           <button class="db-btn" id="btn-month-prev">&lsaquo;</button>
@@ -1376,7 +1382,7 @@ a.gp-att-nm:hover{text-decoration:underline}
           <button class="db-btn" id="btn-month-next">&rsaquo;</button>
         </div>
         <div id="goals-content"></div>
-        <div class="tp-sec-title">&#9881;&#65039; Kế hoạch 20/80 — từ mục tiêu ra việc mỗi ngày</div>
+        <div class="tp-sec-title">&#9881;&#65039; Kế hoạch 20/80 — từ mục tiêu ra việc mỗi ngày<span class="tip" data-tip="Nhập số khách muốn có ID trong tháng, app tính ngược theo phễu 20/80 ra số người cần trò chuyện mỗi ngày.">&#9432;</span></div>
         <div id="pareto-content"></div>
         <div style="margin-top:18px;text-align:right"><button class="btn btn-d btn-sm" data-goto-chain="tp:actions&gt;act:today">Bước tiếp: &#9889; Hành động hôm nay &rarr;</button></div>
       </div>
@@ -4152,6 +4158,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v677-lotrinh', ver:'6.77', icon:'🚀', title:'Lộ trình 6 bước dẫn đường + chú thích công cụ + nút Sao lưu',
+    desc:'Mở tab <b>Mục tiêu → Tổng quan</b> để thấy <b>🚀 Lộ trình của tôi</b>: 6 bước xếp thẳng hàng, tự tô sáng <b>bước tiếp theo</b> của bạn, mỗi bước có nút <b>“Làm ngay →”</b>, thanh tiến độ và câu truyền cảm hứng mỗi ngày. Di chuột (hoặc chạm) vào dấu <b>&#9432;</b> để đọc giải nghĩa từng công cụ. Cuối màn có nút <b>🔒 Sao lưu dữ liệu</b> (tải toàn bộ dữ liệu về 1 file để khôi phục khi mất/đổi máy). Muốn xem số liệu cả đội như trước, bấm <b>📊 Toàn đội</b>.' },
   { id:'v676-nhatky', ver:'6.76', icon:'📔', title:'Nhật ký mỗi ngày + sắp xếp lại theo "vòng lặp"',
     desc:'Nhóm <b>Mục tiêu – Hành động – Kết quả</b> giờ đi theo một vòng liền mạch: <b>🧭 La bàn</b> (Bánh xe cuộc đời · Tầm nhìn · 6 Lọ — xem theo quý) → <b>🎯 Mục tiêu</b> (kế hoạch năm · chỉ tiêu kỳ · 20/80) → <b>⚡ Hành động</b> → <b>📊 Kết quả</b>, mỗi màn có nút <b>“Bước tiếp →”</b> dẫn đường. Mới nhất: <b>Hành động → 📔 Nhật ký</b> — mỗi tối ghi <b>Quan sát · Phân tích · Đúc kết · Bài học thành công · Bài học cần rút kinh nghiệm</b>, rồi bấm <b>➕ Ngày mai</b> để đưa việc rút ra thẳng vào việc hôm sau. Bài học tự gom thành <b>📌 Nguyên tắc của tôi</b> ở tab Kết quả.' },
   { id:'v675-lich168', ver:'6.75', icon:'🗓️', title:'Lịch tuần 168 giờ — chủ động xếp lịch',
@@ -6150,6 +6158,101 @@ function _f3Card(step,ico,title,question,color,bodyHtml,gotoSub,detailLabel){
   h+='</div>';
   return h;
 }
+// ================================================================
+// v6.77 — LỘ TRÌNH (Journey): màn "Tổng quan" dẫn dắt từng bước cho người mới.
+//   • 6 bước xếp thẳng hàng, mỗi bước: ý nghĩa đời thường + trạng thái sống + nút "Làm ngay →".
+//   • Tự tô sáng "bước tiếp theo". Có tooltip ⓘ giải nghĩa từng công cụ. Toggle sang "Toàn đội".
+// ================================================================
+var _ovMode='journey'; // 'journey' | 'team'
+var JOURNEY_QUOTES=[
+  'Hành trình vạn dặm bắt đầu từ một bước chân.',
+  'Người gieo hạt mỗi ngày, mùa gặt chỉ là chuyện thời gian.',
+  'Việc quan trọng hiếm khi khẩn cấp — hãy chủ động dành chỗ cho nó.',
+  'Kỷ luật hôm nay là tự do ngày mai.',
+  'Không cần hoàn hảo, chỉ cần đều đặn mỗi ngày.',
+  'Sức khỏe – Bình an – Thịnh vượng: một vòng cùng nhau lớn lên.',
+  'Mỗi cuộc trò chuyện tử tế là một hạt giống cho tương lai.',
+  'Bạn không phải làm tất cả hôm nay — chỉ cần tiến thêm một bước.'
+];
+function _todayQuote(){var d=new Date();return JOURNEY_QUOTES[(d.getFullYear()*372+d.getMonth()*31+d.getDate())%JOURNEY_QUOTES.length];}
+function _greet(){var hh=new Date().getHours();return hh<11?'Chào buổi sáng':(hh<14?'Chào buổi trưa':(hh<18?'Chào buổi chiều':'Chào buổi tối'));}
+function _userName(){try{if(fbUser&&fbUser.displayName){var p=fbUser.displayName.trim().split(/\s+/);return p[p.length-1];}}catch(e){}try{var r=(treeNodes||[]).filter(function(x){return !x.parentId;})[0];if(r&&r.name){var q=r.name.trim().split(/\s+/);return q[q.length-1];}}catch(e){}return 'bạn';}
+function _tip(text){return text?'<span class="tip" data-tip="'+escHtml(text)+'">&#9432;</span>':'';}
+function _destination(){
+  try{if(_vbDefault){var b=(_vbIndex||[]).filter(function(x){return x.id===_vbDefault;})[0];if(b&&b.name)return b.name;}if(_vbIndex&&_vbIndex[0]&&_vbIndex[0].name)return _vbIndex[0].name;}catch(e){}
+  try{var gg=loadGoals();if(gg.length){gg=gg.slice().sort(function(a,b){return (parseFloat(b.target)||0)-(parseFloat(a.target)||0);});if(gg[0]&&gg[0].name)return gg[0].name;}}catch(e){}
+  try{var an=loadAnn();if(an.items&&an.items[0]&&an.items[0].name)return an.items[0].name;}catch(e){}
+  return '';
+}
+function _journeySteps(){
+  var steps=[];
+  var hasWheel=false;try{hasWheel=Object.keys(loadWheel()).length>0;}catch(e){}
+  var lowTxt='';try{var sc=dayWheel(),ks=Object.keys(sc);if(ks.length){var lowK=null,lowV=99;ks.forEach(function(k){var v=parseFloat(sc[k]);if(!isNaN(v)&&v<lowV){lowV=v;lowK=k;}});var cat=(WHEEL_CATS||[]).filter(function(c){return c.id===lowK;})[0];if(cat)lowTxt=' · yếu nhất: '+cat.lbl;}}catch(e){}
+  steps.push({ico:'🧭',name:'La bàn — Biết mình ở đâu',why:'Chấm Bánh xe cuộc đời & hình dung Tầm nhìn: mình đang mạnh/yếu chỗ nào, muốn tới bức tranh nào.',tip:'Bánh xe cuộc đời chấm điểm 8 lĩnh vực sống để thấy chỗ mất cân bằng. Bảng tầm nhìn là bức tranh tương lai tạo cảm hứng. 6 Lọ là cách chia tiền để làm chủ tài chính.',goto:'tp:laban',done:hasWheel,status:hasWheel?('Đã chấm bánh xe'+lowTxt):'Chưa chấm — bắt đầu ở đây'});
+  var goals=[];try{goals=loadGoals();}catch(e){}
+  steps.push({ico:'🎯',name:'Mục tiêu — Chốt con số',why:'Biến mong muốn thành chỉ tiêu đo được cho tháng này (bao nhiêu khách, bao nhiêu CLB…).',tip:'Đặt mục tiêu theo kỳ cho bạn một đích rõ ràng để đo. Mỗi việc trong ngày gắn với một mục tiêu ở đây sẽ được coi là "Quan trọng".',goto:'tp:goals',done:goals.length>0,status:goals.length?('Đã đặt '+goals.length+' mục tiêu'):'Chưa đặt mục tiêu'});
+  var pg=0;try{pg=loadParetoGoal();}catch(e){}
+  steps.push({ico:'⚙️',name:'20/80 — Việc cốt lõi mỗi ngày',why:'Từ mục tiêu tháng, app tính ra mỗi ngày cần trò chuyện/theo sát bao nhiêu người.',tip:'Nguyên lý 20/80: một ít việc cốt lõi tạo ra phần lớn kết quả. Ở CLB, đó là số người bạn trò chuyện mỗi ngày để có khách vào ID.',goto:'tp:goals',done:pg>0,status:pg?(pg+' khách/tháng → '+paretoPerDay(pg)+' người/ngày'):'Chưa nhập số khách'});
+  var l168h=0,l168t=12;try{var st=loadLich168();l168t=(st.clbTarget!=null?st.clbTarget:12);var c=0;Object.keys(st.blocks).forEach(function(k){if(st.blocks[k]==='clb')c++;});l168h=c*0.5;}catch(e){}
+  steps.push({ico:'🗓️',name:'Lịch 168 — Giữ chỗ thời gian',why:'Một tuần có 168 giờ. Chốt trước giờ dành cho sự nghiệp CLB để chủ động, tránh bị cuốn theo việc vặt.',tip:'Lịch 168 là khung thời gian tuần. Bạn tô trước các khung ★ cho sự nghiệp để việc quan trọng luôn có chỗ — thay vì để thời gian trôi mất.',goto:'tp:actions>act:lich168',done:l168h>=l168t,status:(l168h>=l168t?('Đã giữ '+l168h+'h/tuần cho CLB'):('Mới '+l168h+'h / '+l168t+'h cho CLB'))});
+  var acts=[];try{acts=dayActs();}catch(e){}
+  var dn=acts.filter(function(x){return x.done;}).length;
+  steps.push({ico:'✅',name:'Hôm nay — Làm đúng việc',why:'Danh sách việc hôm nay, sắp theo ưu tiên Eisenhower: làm việc quan trọng trước.',tip:'Ma trận Eisenhower xếp việc theo Quan trọng × Khẩn thành 4 ô, giúp bạn biết làm gì trước và bỏ bớt việc gì.',goto:'tp:actions>act:today',done:(acts.length>0&&dn===acts.length),status:acts.length?(dn+'/'+acts.length+' việc xong'):'Chưa có việc nào'});
+  var j=blankJr();try{j=dayJournal();}catch(e){}
+  var wrote=!!(j.obs||j.ana||j.syn||j.win||j.warn||(j.next&&j.next.length));
+  steps.push({ico:'📔',name:'Nhật ký — Rút bài học',why:'Cuối ngày nhìn lại: quan sát → đúc kết → bài học, rồi đưa việc hay sang ngày mai.',tip:'Nhật ký giúp bạn học từ chính mình mỗi ngày: giữ điều đúng, sửa điều sai. Việc rút ra đưa thẳng sang Hôm nay của ngày mai.',goto:'tp:actions>act:journal',done:wrote,status:wrote?'Đã viết hôm nay':'Chưa viết hôm nay'});
+  return steps;
+}
+function _ovToggleHtml(){
+  function b(m,lbl){var on=_ovMode===m;return '<button data-ovmode="'+m+'" style="flex:1;font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:9px;cursor:pointer;border:1px solid '+(on?'#1A7A5E':'#DBE5DF')+';background:'+(on?'#1A7A5E':'#fff')+';color:'+(on?'#fff':'#5A6A60')+'">'+lbl+'</button>';}
+  return '<div style="display:flex;gap:8px;margin-bottom:14px">'+b('journey','🚀 Lộ trình của tôi')+b('team','📊 Toàn đội')+'</div>';
+}
+function _journeyHtml(){
+  var steps=_journeySteps(),doneN=steps.filter(function(s){return s.done;}).length;
+  var nextIdx=-1;for(var i=0;i<steps.length;i++){if(!steps[i].done){nextIdx=i;break;}}
+  var pct=Math.round(doneN/steps.length*100),dest=_destination();
+  var h='<div style="background:linear-gradient(135deg,#1A7A5E,#0E5C46);color:#fff;border-radius:16px;padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 8px 22px rgba(14,92,70,.18)">';
+  h+='<div style="font-size:12px;opacity:.9;font-weight:600;letter-spacing:.03em">'+_greet()+', '+escHtml(_userName())+' 🌿</div>';
+  h+='<div style="font-family:Georgia,serif;font-style:italic;font-size:16.5px;line-height:1.5;margin:8px 0 2px">&ldquo;'+escHtml(_todayQuote())+'&rdquo;</div>';
+  if(dest)h+='<div style="margin-top:11px;background:rgba(255,255,255,.14);border-radius:10px;padding:8px 12px;font-size:13px">🏁 Đích đến của bạn: <b>'+escHtml(dest)+'</b></div>';
+  h+='<div style="margin-top:12px;display:flex;align-items:center;gap:10px"><div style="flex:1;height:10px;background:rgba(255,255,255,.25);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:#F5D77E;border-radius:6px;transition:width .4s"></div></div><div style="font-size:12.5px;font-weight:800;white-space:nowrap">'+doneN+'/'+steps.length+' bước hôm nay</div></div>';
+  h+='</div>';
+  h+='<div style="font-size:12.5px;color:#5A6A60;line-height:1.55;margin:0 2px 14px">Đi lần lượt <b>6 bước</b> dưới đây mỗi ngày. Bấm nút để mở đúng công cụ. Di chuột (hoặc chạm) vào dấu <b>&#9432;</b> để hiểu ý nghĩa từng công cụ.</div>';
+  steps.forEach(function(s,idx){
+    var isNext=(idx===nextIdx);
+    var accent=s.done?'#1A7A5E':(isNext?'#C8A84B':'#CBD5CE');
+    var badgeBg=s.done?'#1A7A5E':(isNext?'#C8A84B':'#fff'),badgeCol=(s.done||isNext)?'#fff':'#9AA89F';
+    h+='<div style="display:grid;grid-template-columns:44px 1fr;gap:12px;padding-bottom:'+(idx<steps.length-1?'14px':'2px')+'">';
+    h+='<div style="position:relative;display:flex;justify-content:center">';
+    if(idx<steps.length-1)h+='<div style="position:absolute;top:34px;bottom:-14px;left:50%;transform:translateX(-50%);width:2px;background:#E2E7E0"></div>';
+    h+='<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;z-index:1;background:'+badgeBg+';color:'+badgeCol+';border:2px solid '+accent+';box-shadow:0 2px 6px rgba(0,0,0,.08)">'+(s.done?'✓':(idx+1))+'</div>';
+    h+='</div>';
+    h+='<div style="border:'+(isNext?'2px':'1px')+' solid '+(isNext?'#C8A84B':'#E7E0CC')+';border-radius:13px;background:'+(isNext?'#FFFDF5':'#fff')+';padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.05)">';
+    if(isNext)h+='<div style="font-size:10.5px;font-weight:800;letter-spacing:.05em;color:#B4881F;margin-bottom:3px">👉 BƯỚC TIẾP THEO CỦA BẠN</div>';
+    h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:16px">'+s.ico+'</span><span style="font-size:15px;font-weight:800;color:#1A2A22">'+escHtml(s.name)+'</span>'+_tip(s.tip)+'</div>';
+    h+='<div style="font-size:12.5px;color:#6A7A70;line-height:1.5;margin:3px 0 9px">'+escHtml(s.why)+'</div>';
+    h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">';
+    h+='<span style="font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;background:'+(s.done?'#E8F5F0':'#F3F5F1')+';color:'+(s.done?'#1A7A5E':'#7C8A80')+'">'+escHtml(s.status)+'</span>';
+    h+='<button data-goto-chain="'+s.goto+'" style="margin-left:auto;font-size:12.5px;font-weight:700;color:#fff;background:'+(isNext?'#C8A84B':'#1A7A5E')+';border:none;border-radius:9px;padding:7px 15px;cursor:pointer">'+(s.done?'Mở lại':(isNext?'Làm ngay':'Mở'))+' →</button>';
+    h+='</div></div></div>';
+  });
+  if(doneN===steps.length)h+='<div style="text-align:center;background:#E8F5F0;border:1px solid #BFE3D6;border-radius:13px;padding:16px;margin-top:6px;color:#1A7A5E;font-size:14px;font-weight:700;line-height:1.5">🎉 Tuyệt vời! Bạn đã đi trọn 6 bước hôm nay. Ngày mai chỉ cần lặp lại — đều đặn là chìa khoá.</div>';
+  else h+='<div style="text-align:center;font-size:12.5px;color:#9AA89F;margin-top:6px;line-height:1.5">Mỗi bước nhỏ hôm nay là một viên gạch cho đích đến. Cứ tiến từng bước một 🌱</div>';
+  // Sao lưu dữ liệu — đưa tính năng có sẵn ra chỗ dễ thấy
+  h+='<div style="margin-top:18px;background:#F3F5F1;border:1px solid #E2E7E0;border-radius:13px;padding:13px 15px">';
+  h+='<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#1A2A22">🔒 Sao lưu dữ liệu của bạn'+_tip('Tải toàn bộ dữ liệu của tài khoản (sơ đồ, thành viên, mục tiêu, điểm danh, KPI, bánh xe, nhật ký, CLB, bảng tầm nhìn…) — gồm cả dữ liệu trên máy lẫn trên cloud — về một file JSON.')+'</div>';
+  h+='<div style="font-size:12px;color:#6A7A70;line-height:1.5;margin:4px 0 10px">Cất file ở nơi an toàn (Drive, tự gửi email cho mình…). Khi lỡ mất hoặc đổi máy, chỉ cần khôi phục lại trong 1 phút. Nên sao lưu định kỳ mỗi tuần.</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<button data-backup-export="1" style="font-size:12.5px;font-weight:700;color:#fff;background:#1A7A5E;border:none;border-radius:9px;padding:8px 14px;cursor:pointer">⬇️ Tải file sao lưu</button>';
+  h+='<button data-backup-import="1" style="font-size:12.5px;font-weight:700;color:#1A7A5E;background:#fff;border:1.5px solid #1A7A5E;border-radius:9px;padding:8px 14px;cursor:pointer">⬆️ Khôi phục từ file</button>';
+  h+='</div></div>';
+  return h;
+}
+function renderOverviewHome(){
+  var el=document.getElementById('flow3-content');if(!el)return;
+  if(_ovMode==='team'){renderFlow3();el.insertAdjacentHTML('afterbegin',_ovToggleHtml());return;}
+  el.innerHTML=_ovToggleHtml()+_journeyHtml();
+}
 function renderFlow3(){
   var el=document.getElementById('flow3-content');if(!el)return;
   var mid=_flow3Mid;
@@ -6370,7 +6473,7 @@ function renderF3Users(){
 // Dispatch render — tab "Mục tiêu - Hành động - Kết quả" (v6.3: A.Goals → B.Actions → C.Results)
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'overview';
-  if(sub==='overview')renderFlow3();
+  if(sub==='overview')renderOverviewHome();
   else if(sub==='laban'){renderLifeWheel();renderLifeMirror();renderWheelCompare();renderVisionBoards();renderJars();} // Bước 1 · La bàn (quý)
   else if(sub==='goals'){renderAnnPlan();renderGoalsMeasure();renderPareto();} // Bước 2 · Mục tiêu (tháng)
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
@@ -10993,6 +11096,12 @@ document.addEventListener('click',function(e){
     });
     return;
   }
+  // v6.77 — Lộ trình: chuyển giữa "Lộ trình của tôi" và "Toàn đội"
+  t=e.target.closest('[data-ovmode]');
+  if(t){_ovMode=t.getAttribute('data-ovmode');renderOverviewHome();return;}
+  // v6.77 — Tooltip ⓘ: chạm để bật/tắt (điện thoại không có hover)
+  t=e.target.closest('.tip');
+  if(t){var _wasShown=t.classList.contains('show');document.querySelectorAll('.tip.show').forEach(function(x){x.classList.remove('show');});if(!_wasShown)t.classList.add('show');return;}
   // v6.40 — Tổng quan / Toàn bộ user: tải / làm mới dữ liệu mọi tài khoản
   t=e.target.closest('[data-f3u-scan]');
   if(t){scanF3Users();return;}
