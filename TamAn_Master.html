@@ -1,4 +1,4 @@
-<!-- VERSION: v6.77-lotrinh -->
+<!-- VERSION: v6.78-jars-journal -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1363,8 +1363,6 @@ a.gp-att-nm:hover{text-decoration:underline}
         <div id="wheel-compare-content"></div>
         <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)<span class="tip" data-tip="Bảng hình ảnh về cuộc sống bạn muốn có — nhìn mỗi ngày để giữ cảm hứng và động lực đi tới.">&#9432;</span></div>
         <div id="vision-board-content"></div>
-        <div class="tp-sec-title">&#127978; 6 C&#225;i L&#7885; T&#224;i Ch&#237;nh &mdash; T. Harv Eker<span class="tip" data-tip="Chia mỗi khoản thu nhập vào 6 lọ (nhu cầu, tự do tài chính, hưởng thụ, giáo dục, tiết kiệm dài hạn, cho đi) để làm chủ tiền bạc.">&#9432;</span></div>
-        <div id="jars-content"></div>
         <div style="margin-top:18px;text-align:right"><button class="btn btn-d btn-sm" data-goto-chain="tp:goals">Bước tiếp: &#127919; Đặt mục tiêu &rarr;</button></div>
       </div>
 
@@ -1401,7 +1399,11 @@ a.gp-att-nm:hover{text-decoration:underline}
           <div id="remind-content"></div>
         </div>
         <div class="spg" id="act-lich168"><div id="lich168"></div></div>
-        <div class="spg" id="act-journal"><div id="journal"></div></div>
+        <div class="spg" id="act-journal">
+          <div id="journal"></div>
+          <div class="tp-sec-title" style="margin-top:24px;padding-top:18px;border-top:1px dashed #E2CB82">&#127978; Tổng kết tiền hôm nay — 6 Cái Lọ<span class="tip" data-tip="Cuối ngày, gõ tổng thu nhập hôm nay — app tự chia vào 6 lọ (nhu cầu, tự do tài chính, hưởng thụ, giáo dục, tiết kiệm dài hạn, cho đi). Ghi tiền cùng lúc ghi bài học để làm chủ đồng tiền mỗi ngày.">&#9432;</span></div>
+          <div id="jars-content"></div>
+        </div>
         <div class="spg" id="act-ngay"><div id="list-ngay"></div></div>
       </div>
 
@@ -4158,6 +4160,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v678-jars-journal', ver:'6.78', icon:'🏺', title:'6 Cái Lọ chuyển vào Nhật ký — tổng kết tiền cuối ngày',
+    desc:'<b>6 Cái Lọ Tài Chính</b> nay nằm ngay trong <b>Hành động → 📔 Nhật ký</b>, phía dưới phần bài học. Cuối ngày, khi bạn ghi lại quan sát &amp; bài học cũng chính là lúc <b>tổng kết tiền hôm đó</b>: gõ tổng thu nhập, app tự chia vào 6 lọ. Một thói quen gọn gàng: nhìn lại việc — rút bài học — chốt sổ tiền, tất cả ở cùng một chỗ.' },
   { id:'v677-lotrinh', ver:'6.77', icon:'🚀', title:'Lộ trình 6 bước dẫn đường + chú thích công cụ + nút Sao lưu',
     desc:'Mở tab <b>Mục tiêu → Tổng quan</b> để thấy <b>🚀 Lộ trình của tôi</b>: 6 bước xếp thẳng hàng, tự tô sáng <b>bước tiếp theo</b> của bạn, mỗi bước có nút <b>“Làm ngay →”</b>, thanh tiến độ và câu truyền cảm hứng mỗi ngày. Di chuột (hoặc chạm) vào dấu <b>&#9432;</b> để đọc giải nghĩa từng công cụ. Cuối màn có nút <b>🔒 Sao lưu dữ liệu</b> (tải toàn bộ dữ liệu về 1 file để khôi phục khi mất/đổi máy). Muốn xem số liệu cả đội như trước, bấm <b>📊 Toàn đội</b>.' },
   { id:'v676-nhatky', ver:'6.76', icon:'📔', title:'Nhật ký mỗi ngày + sắp xếp lại theo "vòng lặp"',
@@ -6188,7 +6192,7 @@ function _journeySteps(){
   var steps=[];
   var hasWheel=false;try{hasWheel=Object.keys(loadWheel()).length>0;}catch(e){}
   var lowTxt='';try{var sc=dayWheel(),ks=Object.keys(sc);if(ks.length){var lowK=null,lowV=99;ks.forEach(function(k){var v=parseFloat(sc[k]);if(!isNaN(v)&&v<lowV){lowV=v;lowK=k;}});var cat=(WHEEL_CATS||[]).filter(function(c){return c.id===lowK;})[0];if(cat)lowTxt=' · yếu nhất: '+cat.lbl;}}catch(e){}
-  steps.push({ico:'🧭',name:'La bàn — Biết mình ở đâu',why:'Chấm Bánh xe cuộc đời & hình dung Tầm nhìn: mình đang mạnh/yếu chỗ nào, muốn tới bức tranh nào.',tip:'Bánh xe cuộc đời chấm điểm 8 lĩnh vực sống để thấy chỗ mất cân bằng. Bảng tầm nhìn là bức tranh tương lai tạo cảm hứng. 6 Lọ là cách chia tiền để làm chủ tài chính.',goto:'tp:laban',done:hasWheel,status:hasWheel?('Đã chấm bánh xe'+lowTxt):'Chưa chấm — bắt đầu ở đây'});
+  steps.push({ico:'🧭',name:'La bàn — Biết mình ở đâu',why:'Chấm Bánh xe cuộc đời & hình dung Tầm nhìn: mình đang mạnh/yếu chỗ nào, muốn tới bức tranh nào.',tip:'Bánh xe cuộc đời chấm điểm 8 lĩnh vực sống để thấy chỗ mất cân bằng. Bảng tầm nhìn là bức tranh tương lai tạo cảm hứng để bạn có động lực đi tới.',goto:'tp:laban',done:hasWheel,status:hasWheel?('Đã chấm bánh xe'+lowTxt):'Chưa chấm — bắt đầu ở đây'});
   var goals=[];try{goals=loadGoals();}catch(e){}
   steps.push({ico:'🎯',name:'Mục tiêu — Chốt con số',why:'Biến mong muốn thành chỉ tiêu đo được cho tháng này (bao nhiêu khách, bao nhiêu CLB…).',tip:'Đặt mục tiêu theo kỳ cho bạn một đích rõ ràng để đo. Mỗi việc trong ngày gắn với một mục tiêu ở đây sẽ được coi là "Quan trọng".',goto:'tp:goals',done:goals.length>0,status:goals.length?('Đã đặt '+goals.length+' mục tiêu'):'Chưa đặt mục tiêu'});
   var pg=0;try{pg=loadParetoGoal();}catch(e){}
@@ -6200,7 +6204,7 @@ function _journeySteps(){
   steps.push({ico:'✅',name:'Hôm nay — Làm đúng việc',why:'Danh sách việc hôm nay, sắp theo ưu tiên Eisenhower: làm việc quan trọng trước.',tip:'Ma trận Eisenhower xếp việc theo Quan trọng × Khẩn thành 4 ô, giúp bạn biết làm gì trước và bỏ bớt việc gì.',goto:'tp:actions>act:today',done:(acts.length>0&&dn===acts.length),status:acts.length?(dn+'/'+acts.length+' việc xong'):'Chưa có việc nào'});
   var j=blankJr();try{j=dayJournal();}catch(e){}
   var wrote=!!(j.obs||j.ana||j.syn||j.win||j.warn||(j.next&&j.next.length));
-  steps.push({ico:'📔',name:'Nhật ký — Rút bài học',why:'Cuối ngày nhìn lại: quan sát → đúc kết → bài học, rồi đưa việc hay sang ngày mai.',tip:'Nhật ký giúp bạn học từ chính mình mỗi ngày: giữ điều đúng, sửa điều sai. Việc rút ra đưa thẳng sang Hôm nay của ngày mai.',goto:'tp:actions>act:journal',done:wrote,status:wrote?'Đã viết hôm nay':'Chưa viết hôm nay'});
+  steps.push({ico:'📔',name:'Nhật ký — Rút bài học & tổng kết tiền',why:'Cuối ngày nhìn lại: quan sát → đúc kết → bài học, đưa việc hay sang ngày mai, và tổng kết tiền hôm nay qua 6 Lọ.',tip:'Nhật ký giúp bạn học từ chính mình mỗi ngày: giữ điều đúng, sửa điều sai. Việc rút ra đưa thẳng sang Hôm nay của ngày mai. Cuối màn là 6 Cái Lọ để tổng kết thu nhập trong ngày.',goto:'tp:actions>act:journal',done:wrote,status:wrote?'Đã viết hôm nay':'Chưa viết hôm nay'});
   return steps;
 }
 function _ovToggleHtml(){
@@ -6474,7 +6478,7 @@ function renderF3Users(){
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'overview';
   if(sub==='overview')renderOverviewHome();
-  else if(sub==='laban'){renderLifeWheel();renderLifeMirror();renderWheelCompare();renderVisionBoards();renderJars();} // Bước 1 · La bàn (quý)
+  else if(sub==='laban'){renderLifeWheel();renderLifeMirror();renderWheelCompare();renderVisionBoards();} // Bước 1 · La bàn (quý)
   else if(sub==='goals'){renderAnnPlan();renderGoalsMeasure();renderPareto();} // Bước 2 · Mục tiêu (tháng)
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
@@ -6482,7 +6486,7 @@ function renderTpSub(sub){
 function renderActSub(s){ // B. Hành động
   if(s==='ngay')renderDailyCombined();
   else if(s==='lich168')renderLich168();
-  else if(s==='journal')renderJournal();
+  else if(s==='journal'){renderJournal();renderJars();}
   else if(s==='kn')renderList('kn','list-kn');
   else {renderActionCenter();renderReminders();} // today
 }
@@ -7634,7 +7638,7 @@ function loadJars(){try{var s=nmGet('jars_v1');var o=s?JSON.parse(s):null;if(!o|
   if(!o.cfg||typeof o.cfg!=='object')o.cfg={};if(!o.cfg.pct||typeof o.cfg.pct!=='object')o.cfg.pct={};if(!o.cfg.goals||typeof o.cfg.goals!=='object')o.cfg.goals={};if(!o.cfg.remind)o.cfg.remind='20:00';
   if(!o.entries||typeof o.entries!=='object')o.entries={};if(!Array.isArray(o.spendLog))o.spendLog=[];return o;}
 function saveJars(o){nmSet('jars_v1',JSON.stringify(o));if(fbDb&&fbUser)fsSet('jars',{jars:o}).catch(function(){});}
-function loadJarsCloud(){if(!fbDb||!fbUser)return;fsGet('jars').then(function(d){if(d&&d.jars){nmSet('jars_v1',JSON.stringify(d.jars));if(document.getElementById('jars-content')&&currentSubTab.tp==='laban'&&!viewOnlyMode)renderJars();}
+function loadJarsCloud(){if(!fbDb||!fbUser)return;fsGet('jars').then(function(d){if(d&&d.jars){nmSet('jars_v1',JSON.stringify(d.jars));if(document.getElementById('jars-content')&&currentSubTab.act==='journal'&&!viewOnlyMode)renderJars();}
   // Nhắc nhở nhẹ 1 lần/phiên nếu quá giờ mà hôm nay chưa ghi (chỉ với người đã dùng tính năng)
   try{var o=loadJars();if(!_jarNudged&&!viewOnlyMode&&(o.entries&&Object.keys(o.entries).length)&&_jarRemindDue(o)){_jarNudged=true;setTimeout(function(){showToast('⏰ Đừng quên ghi thu nhập hôm nay vào 6 lọ tài chính!');},1500);}}catch(e){}
 }).catch(function(){});}
