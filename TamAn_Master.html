@@ -1,4 +1,4 @@
-<!-- VERSION: v6.79-prospect-source -->
+<!-- VERSION: v6.80-start-module -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4160,6 +4160,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v680-start-module', ver:'6.80', icon:'🚀', title:'Màn hình mở đầu do quản trị viên điều phối',
+    desc:'Quản trị viên nay có thể chọn <b>module hiện đầu tiên khi mở app</b> cho cả đội — ví dụ lúc cần tập trung xây <b>Sơ đồ</b>, lúc chạy sự kiện thì mở thẳng <b>Vị trí các CLB</b>. Vì vậy màn hình đầu tiên bạn thấy khi đăng nhập có thể thay đổi theo từng giai đoạn. QTV chỉnh trong <b>⚙️ Quản trị → 🚀 Module mở đầu khi đăng nhập</b>.' },
   { id:'v679-prospect-source', ver:'6.79', icon:'🔗', title:'DS kim cương Tiềm năng: ghi rõ mối quan hệ này từ ai',
     desc:'Trong <b>DS kim cương Tiềm năng</b>, mỗi người nay có mục <b>🔗 Nguồn mối quan hệ</b>: chọn <b>“Của tôi (trực tiếp)”</b> hay <b>“Từ tuyến dưới giới thiệu”</b>. Nếu từ tuyến dưới, nhập <b>Tên</b> + <b>Mã ID tuyến dưới</b> — gõ tên để <b>chọn ngay từ cây của bạn</b>, app tự điền <b>Mã ID chuẩn</b> (mã hệ thống dùng kết nối mọi thông tin: đồng bộ, DISC, điểm danh...). Nhờ đó biết rõ ai mang mối quan hệ về và kết nối chính xác về đúng người.' },
   { id:'v678-jars-journal', ver:'6.78', icon:'🏺', title:'6 Cái Lọ chuyển vào Nhật ký — tổng kết tiền cuối ngày',
@@ -4349,7 +4351,9 @@ function loadBranchFeature(){
     canSeeAdminTab=isBranchAdmin||noAdmins; // chưa có QTV nào → cho thấy tab để nhận quyền lần đầu
     branchExportEnabled=!(reg&&reg.branchEnabled===false);
     branchImportEnabled=!(reg&&reg.branchImportEnabled===false);
+    startModuleCfg=(reg&&reg.startModule&&_isStartModuleValid(reg.startModule))?reg.startModule:'tree'; // v6.80
     applyBranchFeatureUI();
+    applyStartModule(); // v6.80 — mở module QTV đã đặt (nếu khác Sơ đồ)
   }).catch(function(){applyBranchFeatureUI();});
 }
 function doLogout(){
@@ -9848,6 +9852,28 @@ var ANALYTICS_FEATURES=[
   {id:'skill',lbl:'Kỹ năng'}
 ];
 var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect',kynang:'skill'};
+// v6.80 — MODULE MỞ ĐẦU KHI ĐĂNG NHẬP: QTV cấu hình chung (appConfig/registration.startModule), cả đội đọc.
+//   Không gồm 'admin' (thành viên không có tab này). Mặc định 'tree' (Sơ đồ).
+var START_MODULES=[
+  {id:'tree',lbl:'🌳 Sơ đồ'},
+  {id:'tp',lbl:'🎯 Mục tiêu - Hành động - Kết quả'},
+  {id:'kynang',lbl:'⭐ Kỹ năng'},
+  {id:'prospect',lbl:'💎 DS kim cương Tiềm năng'},
+  {id:'map',lbl:'📍 Vị trí các CLB'},
+  {id:'disc',lbl:'🧩 Đo DISC'},
+  {id:'guide',lbl:'📖 Hướng dẫn'}
+];
+var startModuleCfg='tree';
+function _isStartModuleValid(id){return START_MODULES.some(function(m){return m.id===id;});}
+function _startModuleLabel(id){var m=START_MODULES.find(function(x){return x.id===id;});return m?m.lbl:id;}
+function applyStartModule(){
+  // Mở module QTV đã đặt (chung toàn đội) khi vừa đăng nhập. 'tree' vốn đã mở sẵn nên bỏ qua.
+  if(!startModuleCfg||startModuleCfg==='tree'||!_isStartModuleValid(startModuleCfg))return;
+  var cur=document.querySelector('.mtab.on');
+  if(cur&&cur.getAttribute('data-main')!=='tree')return; // user đã tự chuyển tab → không ép
+  var btn=document.querySelector('.mtab[data-main="'+startModuleCfg+'"]');
+  if(btn)btn.click();
+}
 // ───── Lớp theo dõi (tracking) ─────
 var _act=null,_actDirty=false,_actLastTick=0,_actTimers=false;
 function _keyTime(k){var p=String(k).split('-');return new Date(+p[0],(+p[1]||1)-1,+p[2]||1).getTime();}
@@ -10430,6 +10456,15 @@ function renderAdminPage(){
       });
       h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-newmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
       h+='<button class="btn btn-d btn-sm" id="btn-adm-addmail">+ Thêm QTV</button></div></div>';
+      // v6.80 — Module mở đầu khi đăng nhập (QTV đặt chung cho toàn đội)
+      var _sm=(reg&&reg.startModule&&_isStartModuleValid(reg.startModule))?reg.startModule:'tree';
+      h+='<div class="adm-box"><div class="adm-title">🚀 Module mở đầu khi đăng nhập</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Chọn <b>màn hình đầu tiên</b> mà <b>mọi thành viên</b> (và bạn) thấy ngay khi mở app. Đổi tuỳ thời điểm để hướng cả đội tập trung — lúc cần xây <b>Sơ đồ</b>, lúc chạy sự kiện thì <b>Vị trí các CLB</b>… Áp dụng ở <b>lần đăng nhập tiếp theo</b> của mỗi người (ai đang mở app cần tải lại).</div>';
+      h+='<div class="nmod-row"><div class="nmod-lbl">Đang đặt: <b style="color:#6A1B9A">'+escHtml(_startModuleLabel(_sm))+'</b></div></div>';
+      h+='<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><select id="adm-startmod" class="nmod-inp" style="flex:1;min-width:180px">';
+      START_MODULES.forEach(function(m){h+='<option value="'+m.id+'"'+(m.id===_sm?' selected':'')+'>'+escHtml(m.lbl)+'</option>';});
+      h+='</select><button class="btn btn-g btn-sm" id="btn-save-startmod">💾 Lưu</button></div>';
+      h+='</div>';
       h+='<div class="adm-box"><div class="adm-title">\uD83D\uDEAB Thu hồi quyền truy cập</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.8">Để xóa hẳn 1 tài khoản đã đăng ký:<br>';
       h+='1. Vào <b>console.firebase.google.com</b> \u2192 project <b>taman-playbook</b><br>';
@@ -11582,6 +11617,17 @@ document.addEventListener('click',function(e){
     fsSetGlobal('registration',{branchImportEnabled:_iv}).then(function(){
       branchImportEnabled=_iv;applyBranchFeatureUI();
       showToast(_iv?'✓ Đã BẬT Nhập nhánh cho thành viên':'✓ Đã TẮT Nhập nhánh cho thành viên');
+      renderAdminPage();
+    }).catch(function(err){showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // v6.80 — QTV lưu Module mở đầu khi đăng nhập (áp cho toàn đội, đọc lại ở lần đăng nhập kế)
+  if(e.target.id==='btn-save-startmod'){
+    var _smv=((document.getElementById('adm-startmod')||{}).value)||'tree';
+    if(!_isStartModuleValid(_smv))_smv='tree';
+    fsSetGlobal('registration',{startModule:_smv}).then(function(){
+      startModuleCfg=_smv;
+      showToast('✓ Module mở đầu: '+_startModuleLabel(_smv));
       renderAdminPage();
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
