@@ -1092,6 +1092,16 @@ table.adash td.adash-tot{font-weight:800;color:#1A7A5E}
 .ad-c i{display:block;width:9px;height:5px;border-radius:2px;background:#ECEAE2}
 tr.adash-sec td{background:#FFF6DE;color:#8A6D1A;font-weight:800;text-align:left;font-size:12px;padding:4px 8px}
 tr.adash-sec2 td{background:#F4F2EB;color:#666}
+/* v6.81 — chọn ngày: ID có mặt xếp lên đầu (3★→FS) + tên sáng màu */
+table.adash th.adash-dayh{cursor:pointer;user-select:none}
+table.adash th.adash-dayh:hover{background:#FFF3C4;color:#8A6D1A}
+table.adash td.adash-selday,table.adash th.adash-selday{background:#FFE9A6;box-shadow:inset 0 0 0 2px #F6C445}
+table.adash td.adash-nm.adash-on{background:#EAF7EE;color:#14663F}
+table.adash td.adash-nm.adash-on .adash-nmtxt{font-weight:800}
+table.adash td.adash-nm.adash-off{color:#B4AF9F}
+table.adash td.adash-nm.adash-off .adash-ord{color:#CFC9B6}
+tr.adash-sec.adash-secOn td{background:#E3F5EA;color:#1A7A5E}
+.adash-hint{font-size:11.5px;color:#8A6D1A;background:#FFFBEC;border:1px solid #F1E4B8;border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
 .mc-ship{display:inline-flex;align-items:center;justify-content:center;padding:3px 6px;flex-shrink:0} /* v6.63 — icon tàu thay nút ghim ở góc thẻ điểm danh */
@@ -4944,6 +4954,7 @@ function dailyComboCard(m,ord){
 }
 // ===== v6.40 — BẢNG HIỆN DIỆN THÁNG (dashboard: 1 ID hiện diện những ngày nào, Sáng/Trưa/Tối) =====
 var _attDashOpen=false,_attDashM=null; // _attDashM={y,m} (m: 0-11); null = theo tháng của ngày đang xem
+var _attDashSelDay=null; // v6.81 — ngày đang chọn (1-31) để xem ai có mặt; null = không chọn
 function _attDashBase(){
   if(_attDashM)return _attDashM;
   return {y:currentDay.getFullYear(),m:currentDay.getMonth()};
@@ -4969,16 +4980,22 @@ function attDashHtml(list){
     var it={m:mm,rk:rk,days:days,tot:tot};
     if(rk>=1)stars.push(it);else others.push(it);
   });
+  var selD=(_attDashSelDay&&_attDashSelDay>=1&&_attDashSelDay<=nDays)?_attDashSelDay:null;
+  function presentOn(it,d){var v=it.days[d-1];return !!v&&(v[0]==='yes'||v[1]==='yes'||v[2]==='yes');}
   function srtIt(a,b){if(a.tot!==b.tot)return b.tot-a.tot;return noAccent(a.m.name).localeCompare(noAccent(b.m.name),undefined,{numeric:true});}
-  stars.sort(srtIt);others.sort(srtIt);
+  // Có mặt lên đầu, theo cấp bậc giảm dần (3★→2★→1★→FS→…), rồi tổng ngày, rồi tên
+  function srtRank(a,b){if(a.rk!==b.rk)return b.rk-a.rk;if(a.tot!==b.tot)return b.tot-a.tot;return noAccent(a.m.name).localeCompare(noAccent(b.m.name),undefined,{numeric:true});}
   var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
-  function rowHtml(it,ord){
-    var hh='<tr><td class="adash-nm" data-open-mid="'+it.m.id+'" data-open-type="kh"><b class="adash-ord">'+ord+'.</b> '+escHtml(it.m.name);
-    if(it.rk>0)hh+=' <span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span>';
-    hh+='</td>';
+  function rowHtml(it,ord,mark){
+    // mark: 1 = có mặt (sáng màu) · 0 = vắng (mờ) · null = bình thường
+    var nmCls='adash-nm'+(mark===1?' adash-on':mark===0?' adash-off':'');
+    var hh='<tr><td class="'+nmCls+'" data-open-mid="'+it.m.id+'" data-open-type="kh"><b class="adash-ord">'+ord+'.</b> ';
+    if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
+    hh+='<span class="adash-nmtxt">'+escHtml(it.m.name)+'</span></td>';
     for(var d=1;d<=nDays;d++){
       var v=it.days[d-1];
-      hh+='<td'+(d===todayD?' class="adash-today"':'')+'><div class="ad-c">';
+      var cls=[];if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
+      hh+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><div class="ad-c">';
       for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
       hh+='</div></td>';
     }
@@ -4988,19 +5005,36 @@ function attDashHtml(list){
   var cols=nDays+2;
   var h='<div class="adash-box">';
   h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
-  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên; bấm tên để mở chi tiết.</div>';
+  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên; bấm tên để mở chi tiết. <b>Bấm số ngày ở đầu cột</b> để xem ai có mặt hôm đó.</div>';
+  if(selD)h+='<div class="adash-hint">📅 Đang xem ngày <b>'+selD+'/'+(mo+1)+'</b> — ID có mặt (≥1 buổi ✓) xếp lên đầu theo cấp bậc <b>3★ → 2★ → 1★ → FS</b>, tên sáng màu. Bấm lại số ngày <b>'+selD+'</b> để bỏ chọn.</div>';
   h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
-  for(var d2=1;d2<=nDays;d2++)h+='<th'+(d2===todayD?' class="adash-today"':'')+'>'+d2+'</th>';
+  for(var d2=1;d2<=nDays;d2++){
+    var thc='adash-dayh';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
+    h+='<th class="'+thc+'" data-attdash-selday="'+d2+'" title="Bấm để xem ai có mặt ngày '+d2+'">'+d2+'</th>';
+  }
   h+='<th>&sum;</th></tr>';
-  if(stars.length){
-    h+='<tr class="adash-sec"><td colspan="'+cols+'">⭐ Future Star &amp; 1★ trở lên ('+stars.length+')</td></tr>';
-    stars.forEach(function(it,i){h+=rowHtml(it,i+1);});
+  if(selD){
+    // Chế độ chọn ngày: gộp toàn bộ ID, có mặt lên đầu theo cấp bậc
+    var all=stars.concat(others),present=[],absent=[];
+    all.forEach(function(it){(presentOn(it,selD)?present:absent).push(it);});
+    present.sort(srtRank);absent.sort(srtRank);
+    h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">✅ Có mặt ngày '+selD+'/'+(mo+1)+' ('+present.length+')</td></tr>';
+    if(present.length)present.forEach(function(it,i){h+=rowHtml(it,i+1,1);});
+    else h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">Chưa có ID nào có mặt ngày này</td></tr>';
+    h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">— Chưa/không có mặt ('+absent.length+')</td></tr>';
+    absent.forEach(function(it,i){h+=rowHtml(it,i+1,0);});
+  }else{
+    stars.sort(srtIt);others.sort(srtIt);
+    if(stars.length){
+      h+='<tr class="adash-sec"><td colspan="'+cols+'">⭐ Future Star &amp; 1★ trở lên ('+stars.length+')</td></tr>';
+      stars.forEach(function(it,i){h+=rowHtml(it,i+1,null);});
+    }
+    if(others.length){
+      if(stars.length)h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">Các ID còn lại ('+others.length+')</td></tr>';
+      others.forEach(function(it,i){h+=rowHtml(it,i+1,null);});
+    }
+    if(!stars.length&&!others.length)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:10px;text-align:left">Chưa có thành viên nào</td></tr>';
   }
-  if(others.length){
-    if(stars.length)h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">Các ID còn lại ('+others.length+')</td></tr>';
-    others.forEach(function(it,i){h+=rowHtml(it,i+1);});
-  }
-  if(!stars.length&&!others.length)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:10px;text-align:left">Chưa có thành viên nào</td></tr>';
   h+='</table></div></div>';
   return h;
 }
@@ -11459,6 +11493,15 @@ document.addEventListener('click',function(e){
     var _an=parseInt(t.getAttribute('data-attdash-nav'),10)||0;
     var _ab=_attDashBase(),_ad=new Date(_ab.y,_ab.m+_an,1);
     _attDashM={y:_ad.getFullYear(),m:_ad.getMonth()};
+    _attDashSelDay=null; // đổi tháng thì bỏ chọn ngày
+    renderDailyCombined();
+    return;
+  }
+  // v6.81 — chọn ngày: ID có mặt xếp lên đầu (3★→FS) + tên sáng màu; bấm lại để bỏ chọn
+  t=e.target.closest('[data-attdash-selday]');
+  if(t){
+    var _sd=parseInt(t.getAttribute('data-attdash-selday'),10)||0;
+    _attDashSelDay=(_attDashSelDay===_sd)?null:_sd;
     renderDailyCombined();
     return;
   }
