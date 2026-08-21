@@ -4926,9 +4926,9 @@ function dailyComboCard(m,ord){
   var h='<div class="mc mc-combo">';
   h+='<div class="mc-hd" data-open-mid="'+m.id+'" data-open-type="kh">';
   if(ord){var oc=ord==='👑'?'dd-ord-crown':(/^[A-Z]$/.test(ord)?'dd-ord-star':'dd-ord-num');h+='<div class="dd-ord '+oc+'">'+ord+'</div>';}
-  h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name);
-  if(rk>0)h+=' <span class="badge" style="background:'+RANKS[rk-1].color+';color:white;vertical-align:middle">'+RANKS[rk-1].name+'</span>';
-  h+='</div>';
+  h+='<div class="mc-info"><div class="mc-name">';
+  if(rk>0)h+='<span class="badge" style="background:'+RANKS[rk-1].color+';color:white;vertical-align:middle">'+RANKS[rk-1].name+'</span> ';
+  h+=escHtml(m.name)+'</div>';
   var roleLine=escHtml(m.role||'Thành viên');
   if(tn){var si=sponsorInfo(tn);if(tn.joinDate)roleLine+=' · vào '+escHtml(tn.joinDate);if(si.depth>0)roleLine+=' · F'+si.depth;}
   h+='<div class="mc-role">'+roleLine+'</div>';
@@ -5058,10 +5058,25 @@ function renderDailyCombined(){
     if(!vis[m.id]||m.name===center.name)return;
     if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
   });
-  // v6.40 — ID đã điểm danh ✓ (hiện diện) trong ngày được ưu tiên đẩy lên trên (sau ghim ★)
-  function srt(a,b){var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;
-    var q=(memberActive(b)?1:0)-(memberActive(a)?1:0);if(q)return q;
-    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});}
+  // v6.82 — Thứ tự thẻ theo ưu tiên: 1) hiện diện buổi SÁNG ✓ · 2) cấp bậc 3★→2★→1★→FS→chưa cấp
+  //          · 3) con tàu Vàng→Bạc→còn lại · 4) tên A-B-C. (Ghim ★ vẫn ưu tiên tuyệt đối lên đầu.)
+  var _srtMeta={};
+  function _metaOf(m){
+    var mm=_srtMeta[m.id];if(mm)return mm;
+    var tn=treeNodes.find(function(t){return t.name===m.name;});
+    var rk=tn?nodeRank(tn.id):0;
+    var shipW=(tn&&tn.ship==='vang')?2:((tn&&tn.ship==='bac')?1:0);
+    var morn=(dGet(m.id,'sang')==='yes')?1:0;
+    mm={rk:rk,shipW:shipW,morn:morn};_srtMeta[m.id]=mm;return mm;
+  }
+  function srt(a,b){
+    var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;
+    var A=_metaOf(a),B=_metaOf(b);
+    if(A.morn!==B.morn)return B.morn-A.morn;         // 1) có mặt buổi sáng
+    if(A.rk!==B.rk)return B.rk-A.rk;                 // 2) 3★→2★→1★→FS→chưa cấp
+    if(A.shipW!==B.shipW)return B.shipW-A.shipW;     // 3) Tàu Vàng→Bạc→còn lại
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 4) A-B-C
+  }
   leftArr.sort(srt);rightArr.sort(srt);
   function colHtml(arr,headTxt,actColor){
     var act=arr.filter(memberActive).length;
@@ -5070,7 +5085,7 @@ function renderDailyCombined(){
     arr.forEach(function(m,i){hh+=dailyComboCard(m,String(i+1));});
     return hh;
   }
-  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. ID <b>đã điểm danh ✓</b> tự đẩy lên trên.</div>';
+  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. Thứ tự thẻ: <b>1)</b> có mặt buổi <b>Sáng ✓</b> → <b>2)</b> cấp bậc <b>3★→2★→1★→FS</b> → <b>3)</b> Tàu <b>Vàng→Bạc</b> → <b>4)</b> tên A-B-C.</div>';
   var centerMember=members.find(function(m){return m.name===center.name;});
   var h='';
   // v6.40 — bảng hiện diện tháng (dashboard) — nút mở/đóng, nhớ trạng thái trong phiên
