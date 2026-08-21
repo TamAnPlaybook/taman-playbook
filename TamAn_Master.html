@@ -1,4 +1,4 @@
-<!-- VERSION: v6.78-jars-journal -->
+<!-- VERSION: v6.79-prospect-source -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4160,6 +4160,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v679-prospect-source', ver:'6.79', icon:'🔗', title:'DS kim cương Tiềm năng: ghi rõ mối quan hệ này từ ai',
+    desc:'Trong <b>DS kim cương Tiềm năng</b>, mỗi người nay có mục <b>🔗 Nguồn mối quan hệ</b>: chọn <b>“Của tôi (trực tiếp)”</b> hay <b>“Từ tuyến dưới giới thiệu”</b>. Nếu từ tuyến dưới, nhập <b>Tên</b> + <b>Mã ID tuyến dưới</b> — gõ tên để <b>chọn ngay từ cây của bạn</b>, app tự điền <b>Mã ID chuẩn</b> (mã hệ thống dùng kết nối mọi thông tin: đồng bộ, DISC, điểm danh...). Nhờ đó biết rõ ai mang mối quan hệ về và kết nối chính xác về đúng người.' },
   { id:'v678-jars-journal', ver:'6.78', icon:'🏺', title:'6 Cái Lọ chuyển vào Nhật ký — tổng kết tiền cuối ngày',
     desc:'<b>6 Cái Lọ Tài Chính</b> nay nằm ngay trong <b>Hành động → 📔 Nhật ký</b>, phía dưới phần bài học. Cuối ngày, khi bạn ghi lại quan sát &amp; bài học cũng chính là lúc <b>tổng kết tiền hôm đó</b>: gõ tổng thu nhập, app tự chia vào 6 lọ. Một thói quen gọn gàng: nhìn lại việc — rút bài học — chốt sổ tiền, tất cả ở cùng một chỗ.' },
   { id:'v677-lotrinh', ver:'6.77', icon:'🚀', title:'Lộ trình 6 bước dẫn đường + chú thích công cụ + nút Sao lưu',
@@ -13787,7 +13789,7 @@ function renderProspectPage(){
   var _pToks=searchTokens(q); // v6.62 — CHUẨN TÌM: bỏ dấu + nhiều từ khoá + chuỗi con ở bất kỳ đâu, trên mọi thuộc tính
   if(_pToks.length)list=list.filter(function(p){
     var fu=Array.isArray(p.followups)?p.followups.map(function(f){return f&&(f.note||f.text||f.content||'');}).join(' '):'';
-    return tokensMatchAll(noAccent([p.name,p.region,p.phone,p.zalo,p.fb,p.businessStage,p.healthStage,p.memberStatus,fu].join(' ')),_pToks);
+    return tokensMatchAll(noAccent([p.name,p.region,p.phone,p.zalo,p.fb,p.businessStage,p.healthStage,p.memberStatus,p.relDlName,p.relDlId,fu].join(' ')),_pToks); // v6.79 — tìm được theo Tên/Mã ID tuyến dưới
   });
   if(cf)list=list.filter(function(p){return _prospectColorKey(p)===cf;});
 
@@ -13842,6 +13844,7 @@ function renderProspectPage(){
       if(p.memberStatus&&p.memberStatus!=='none')stages.push('<span class="pf-stage mem">&#127894;&#65039; '+escHtml(MSTATUS[p.memberStatus]||p.memberStatus)+'</span>');
       if(stages.length)h+='<div class="pf-stages">'+stages.join('')+'</div>';
       if(p.srcAcct)h+='<div style="font-size:11px;color:#1565C0;margin-top:3px">&#128229; Từ sơ đồ: <b>'+escHtml(p.srcOwner||p.srcAcct)+'</b>'+(p.srcEmail?' &middot; '+escHtml(p.srcEmail):'')+'</div>'; // v6.36 — tiềm năng nhập từ tài khoản thành viên
+      if(p.relFrom==='downline'&&(p.relDlName||p.relDlId))h+='<div style="font-size:11px;color:#6A1B9A;margin-top:3px">&#128279; Từ tuyến dưới: <b>'+escHtml(p.relDlName||'(chưa rõ tên)')+'</b>'+(p.relDlId?' &middot; Mã ID: <b>'+escHtml(p.relDlId)+'</b>':'')+'</div>'; // v6.79 — mối quan hệ do tuyến dưới mang về
       if(lastFu&&lastFu.note)h+='<div class="pf-fu-row"><div class="pf-fu-dot" style="background:'+(_PROSPECT_COLORS[ck]||'#CCC')+'"></div><span style="font-size:11px;color:#999;margin-right:4px">Lần theo dõi '+fu.length+':</span>'+escHtml(lastFu.note)+'</div>';
       h+='</div>';
       h+='<div class="pf-act"><button class="btn btn-o btn-sm" data-prospect-open="'+p.id+'">&#9998; Sửa / Theo dõi</button></div>';
@@ -13869,6 +13872,21 @@ function openProspectModal(id){
   body.innerHTML=_buildProspectModalHtml(p);
   var scoreInp=document.getElementById('pm-score');
   if(scoreInp)scoreInp.addEventListener('input',function(){var n=document.getElementById('pm-score-num');if(n)n.textContent=this.value;});
+  // v6.79 — Nguồn mối quan hệ: bật/tắt ô tuyến dưới + tự điền Mã ID/Tên theo cây của tôi
+  var relSel=document.getElementById('pm-relfrom');
+  if(relSel)relSel.addEventListener('change',function(){var w=document.getElementById('pm-dl-wrap');if(w)w.style.display=(this.value==='downline')?'block':'none';});
+  var _dlN=document.getElementById('pm-dlname'),_dlI=document.getElementById('pm-dlid');
+  var _relNodes=(typeof treeNodes!=='undefined'&&treeNodes)?treeNodes:[];
+  if(_dlN)_dlN.addEventListener('change',function(){
+    var v=noAccent((this.value||'').trim());if(!v)return;
+    var hit=_relNodes.find(function(n){return n&&noAccent((n.name||'').trim())===v;});
+    if(hit&&hit.idCode&&_dlI&&!(_dlI.value||'').trim())_dlI.value=hit.idCode;
+  });
+  if(_dlI)_dlI.addEventListener('change',function(){
+    var v=noAccent((this.value||'').trim());if(!v)return;
+    var hit=_relNodes.find(function(n){return n&&noAccent((n.idCode||'').trim())===v;});
+    if(hit&&hit.name&&_dlN&&!(_dlN.value||'').trim())_dlN.value=hit.name;
+  });
   _renderModalFuList();
   document.getElementById('prosp-ov').classList.add('open');
 }
@@ -13884,6 +13902,15 @@ function _buildProspectModalHtml(p){
   var msel='<option value="none"'+(p.memberStatus==='none'||!p.memberStatus?' selected':'')+'>Chưa đăng ký</option>'+
     '<option value="registered"'+(p.memberStatus==='registered'?' selected':'')+'>Đã đăng ký ID</option>'+
     '<option value="existing"'+(p.memberStatus==='existing'?' selected':'')+'>Thành viên cũ</option>';
+  // v6.79 — gợi ý Tên + Mã ID tuyến dưới lấy từ cây của tôi (treeNodes) để nhập chính xác
+  var _dlNodes=(typeof treeNodes!=='undefined'&&treeNodes)?treeNodes:[];
+  var _seenNm={},_seenCd={},_optNm='',_optCd='';
+  _dlNodes.forEach(function(n){
+    if(!n)return;
+    var nm=(n.name||'').trim(),cd=(n.idCode||'').trim();
+    if(nm&&!_seenNm[nm]){_seenNm[nm]=1;_optNm+='<option value="'+ge(nm)+'">'+(cd?('Mã: '+ge(cd)):'')+'</option>';}
+    if(cd&&!_seenCd[cd]){_seenCd[cd]=1;_optCd+='<option value="'+ge(cd)+'">'+ge(nm)+'</option>';}
+  });
   return (
     '<div class="pm-section">'+
       '<div class="pm-sec-title">Thông tin cơ bản</div>'+
@@ -13896,6 +13923,22 @@ function _buildProspectModalHtml(p){
       '<div class="pm-row">'+
         '<div class="pm-fld"><label>SĐT</label><input id="pm-phone" type="tel" value="'+ge(p.phone)+'"></div>'+
         '<div class="pm-fld"><label>Khu vực / Địa phương</label><input id="pm-region" value="'+ge(p.region)+'"></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pm-section">'+  /* v6.79 — Nguồn mối quan hệ (từ tôi / từ tuyến dưới) */
+      '<div class="pm-sec-title">&#128279; Nguồn mối quan hệ</div>'+
+      '<div class="pm-row"><div class="pm-fld"><label>Mối quan hệ này từ ai?</label><select id="pm-relfrom">'+
+        '<option value="self"'+((!p.relFrom||p.relFrom==='self')?' selected':'')+'>&#128100; Của tôi (trực tiếp)</option>'+
+        '<option value="downline"'+(p.relFrom==='downline'?' selected':'')+'>&#128101; Từ tuyến dưới giới thiệu</option>'+
+      '</select></div></div>'+
+      '<div id="pm-dl-wrap" style="display:'+(p.relFrom==='downline'?'block':'none')+'">'+
+        '<div class="pm-row">'+
+          '<div class="pm-fld"><label>Tên tuyến dưới</label><input id="pm-dlname" list="pm-dl-namelist" value="'+ge(p.relDlName)+'" placeholder="Gõ tên để chọn từ cây của bạn..."></div>'+
+          '<div class="pm-fld"><label>Mã ID tuyến dưới</label><input id="pm-dlid" list="pm-dl-codelist" value="'+ge(p.relDlId)+'" placeholder="vd: lanchi88hptv"></div>'+
+        '</div>'+
+        '<datalist id="pm-dl-namelist">'+_optNm+'</datalist>'+
+        '<datalist id="pm-dl-codelist">'+_optCd+'</datalist>'+
+        '<div style="font-size:11px;color:#999;margin-top:-2px;line-height:1.5">Chọn đúng người trong <b>cây của bạn</b> để tự điền <b>Mã ID chuẩn</b> — mã hệ thống dùng kết nối mọi thông tin (đồng bộ, DISC, điểm danh...).</div>'+
       '</div>'+
     '</div>'+
     '<div class="pm-section">'+
@@ -13964,6 +14007,10 @@ function saveProspectModal(){
   // v6.35 — GIỮ dữ liệu: nếu đang gõ 1 lần theo dõi mà chưa bấm "+ Thêm" → tự thêm vào (tránh mất)
   var _pfn=((document.getElementById('pm-fu-note')||{}).value||'').trim();
   if(_pfn){var _pfd=((document.getElementById('pm-fu-date')||{}).value||'').trim()||_todayISO();_prospectModalFus.push({date:_pfd,note:_pfn});}
+  // v6.79 — Nguồn mối quan hệ: 'self' (của tôi) hoặc 'downline' (từ tuyến dưới, kèm Tên + Mã ID)
+  var _relFrom=((document.getElementById('pm-relfrom')||{}).value)||'self';
+  var _relName=_relFrom==='downline'?((document.getElementById('pm-dlname')||{}).value||'').trim():'';
+  var _relId=_relFrom==='downline'?((document.getElementById('pm-dlid')||{}).value||'').trim():'';
   var obj={
     id:_prospectEditId||('p'+Date.now()),
     name:name,
@@ -13972,6 +14019,9 @@ function saveProspectModal(){
     fb:((document.getElementById('pm-fb')||{}).value||'').trim(),
     phone:((document.getElementById('pm-phone')||{}).value||'').trim(),
     region:((document.getElementById('pm-region')||{}).value||'').trim(),
+    relFrom:_relFrom,
+    relDlName:_relName,
+    relDlId:_relId,
     businessStage:parseInt(((document.getElementById('pm-bstage')||{}).value)||'0')||0,
     healthStage:parseInt(((document.getElementById('pm-hstage')||{}).value)||'0')||0,
     memberStatus:((document.getElementById('pm-mstatus')||{}).value)||'none',
@@ -13980,7 +14030,8 @@ function saveProspectModal(){
   };
   if(_prospectEditId){
     var idx=_prospectsAll.findIndex(function(x){return x.id===_prospectEditId;});
-    if(idx>=0)_prospectsAll[idx]=obj;else _prospectsAll.push(obj);
+    // v6.79 — GIỮ các trường nguồn/liên kết cũ (srcAcct, srcOwner, srcUid, pinned...) khi sửa; chỉ ghi đè trường trong form
+    if(idx>=0)_prospectsAll[idx]=Object.assign({},_prospectsAll[idx],obj);else _prospectsAll.push(obj);
   }else{
     _prospectsAll.push(obj);
   }
