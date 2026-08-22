@@ -745,6 +745,9 @@ table.inc-bd td:first-child{text-align:left;font-weight:700;color:#555}
 /* v6.8 — Mỗi câu động lực 1 thẻ màu riêng (nền + chữ theo MOT_COLORS) */
 .tk-msg{display:inline-block;padding:2px 14px;margin:0 5px;border-radius:13px;font-weight:700;line-height:1.35;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.18)}
 @media(max-width:600px){.tk-msg{padding:1px 11px;margin:0 4px}}
+/* v7 — Dòng "Chúc mừng sinh nhật" chớp tắt, xen kẽ trong băng chuyền câu động lực */
+.tk-msg.tk-bday{background:linear-gradient(90deg,#C0287A,#E0531F);color:#FFF;font-weight:800;box-shadow:0 1px 7px rgba(192,40,122,.55);animation:tkblink 1.05s steps(1,end) infinite}
+@keyframes tkblink{0%,55%{opacity:1}56%,100%{opacity:.25}}
 @keyframes tkscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media(max-width:600px){#ticker-bar{top:52px;height:32px}.tk-track{font-size:12.5px}}
 
@@ -5363,11 +5366,14 @@ function skillCellHtml(mid,s){
   var h='<div class="ski" data-sk-mid="'+mid+'" data-sk-id="'+s.id+'">';
   h+='<div class="skc'+(done?' done':'')+'">✓</div>';
   h+='<div class="sk-main"><div class="sklbl">'+escHtml(s.lbl)+'</div>';
-  // v6.63 — Kỹ năng DISC: nút "📝 Đo DISC" mở bài đo cho đúng thành viên này
+  // v7 — Kỹ năng DISC: chỉ ID Gốc (chính chủ) tự đo; ID tuyến dưới tự cập nhật theo Mã ID (không đo giùm)
   if(typeof isDiscSkill==='function' && isDiscSkill(s) && typeof discFromSkill==='function'){
     var _dnd=(typeof discNodeByMemberId==='function')?discNodeByMemberId(mid):null;
     var _dcur=(_dnd&&_dnd.disc)?String(_dnd.disc).toUpperCase().replace(/[^DISC]/g,'')[0]:'';
-    h+='<div class="sk-links"><button class="sk-link-edit" style="border-color:#F07B30;color:#F07B30" onclick="discFromSkill(\''+mid+'\')">📝 '+(_dcur?'Đo lại DISC (hiện: '+_dcur+')':'Đo DISC')+'</button>';
+    var _dSelf=_dnd&&!_dnd.parentId;
+    h+='<div class="sk-links">';
+    if(_dSelf)h+='<button class="sk-link-edit" style="border-color:#F07B30;color:#F07B30" onclick="discFromSkill(\''+mid+'\')">📝 '+(_dcur?'Đo lại DISC (hiện: '+_dcur+')':'Đo DISC')+'</button>';
+    else if(!_dcur)h+='<span style="font-size:11px;color:#AAA;font-style:italic">DISC tự cập nhật theo Mã ID khi họ tự đo</span>';
     if(_dcur)h+='<button class="sk-link-edit" style="border-color:#1B4F8A;color:#1B4F8A" onclick="discProfileFromSkill(\''+mid+'\')">📊 Xem hồ sơ</button>';
     h+='</div>';
   }
@@ -7135,7 +7141,7 @@ var MOTIVATION=[
   "Đội nhóm mạnh không nhờ một người quá giỏi, mà nhờ nhiều người cùng tiến.",
   "Gieo hành động hôm nay, gặt kết quả ngày mai — cứ bền bỉ là sẽ tới."
 ];
-var bannerCfg=null,_bannerTimer=null,_lastCelebId='',_bannerSig='',_motShuffled=null,_fxActive=false,_fxToken=0;
+var bannerCfg=null,_bannerTimer=null,_lastCelebId='',_bannerSig='',_motShuffled=null,_fxActive=false,_fxToken=0,_lastBdayFx='';
 function _shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=(Math.random()*(i+1))|0,t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function loadBannerCloud(){
   fsGetGlobal('banner').then(function(d){bannerCfg=d||{};renderBanner();}).catch(function(){if(!bannerCfg)bannerCfg={};renderBanner();});
@@ -7173,13 +7179,8 @@ function activeBanner(){ // ưu tiên: priority cao nhất; hoà → chúc mừn
   (cfg.announcements||[]).forEach(function(a){if(a&&a.text&&_bnActive(a))cands.push({kind:'announce',item:a,prio:(a.priority!==undefined?+a.priority:1)});});
   var c=cfg.celebration;
   if(c&&c.text&&_bnActive(c))cands.push({kind:'celebrate',item:c,prio:(c.priority!==undefined?+c.priority:5)});
-  // v6.22 — Tự động chúc mừng sinh nhật toàn hệ thống (ưu tiên cao, hiệu ứng pháo hoa)
-  var bd=birthdayCelebrants();
-  if(bd.length){
-    var names=bd.map(function(n){return n.name;}).join(' · ');
-    cands.push({kind:'celebrate',prio:7,item:{text:'🎂 Hôm nay sinh nhật '+names+' — Chúc mừng sinh nhật! 🎉🎂🎈',
-      id:'bday-'+(new Date().toISOString().slice(0,10)),effects:true,effectType:'fireworks'}});
-  }
+  // v7 — Sinh nhật KHÔNG chiếm trọn băng chuyền nữa: dòng "Chúc mừng sinh nhật" được chèn xen kẽ
+  // (chớp tắt) giữa các câu của các Thầy trong renderBanner(). Xem birthdayCelebrants().
   if(!cands.length)return null;
   cands.sort(function(a,b){
     if(b.prio!==a.prio)return b.prio-a.prio;
@@ -7199,20 +7200,38 @@ function renderBanner(){
   if(act&&act.kind==='celebrate'&&act.item.effects!==false&&act.item.id&&act.item.id!==_lastCelebId){
     _lastCelebId=act.item.id;playCelebration(act.item.effectType||'confetti',act.item.text);
   }
-  var sig=act?(act.kind+'|'+(act.item.id||'')+'|'+(act.item.updatedAt||'')+'|'+act.item.text):'mot';
+  // v7 — trạng thái sinh nhật hôm nay đưa vào "chữ ký" MOT để băng chuyền tự làm mới khi có/hết sinh nhật
+  var _bd=birthdayCelebrants();
+  var _bdSig=_bd.map(function(n){return n.id;}).join(',');
+  var sig=act?(act.kind+'|'+(act.item.id||'')+'|'+(act.item.updatedAt||'')+'|'+act.item.text):('mot|'+_bdSig);
   if(sig===_bannerSig)return; // nội dung không đổi → giữ nguyên animation, không giật
   _bannerSig=sig;
   var track=document.getElementById('tk-track'),ico=document.getElementById('tk-ico');
   bar.classList.remove('tk-announce','tk-celebrate');
   if(act&&act.kind==='celebrate'){bar.classList.add('tk-celebrate');ico.innerHTML='🎉';track.innerHTML=_tkTrack(act.item.text,3);_tkSpeed(track,(act.item.text.length+18)*3);return;}
   if(act&&act.kind==='announce'){bar.classList.add('tk-announce');ico.innerHTML='📢';track.innerHTML=_tkTrack(act.item.text,3);_tkSpeed(track,(act.item.text.length+18)*3);return;}
-  ico.innerHTML='✨';
+  ico.innerHTML=_bd.length?'🎂':'✨';
   var msgs=_motShuffled||MOTIVATION;
-  // Mỗi câu = 1 thẻ màu riêng (nền + chữ theo MOT_COLORS, lặp tuần hoàn)
-  var seg='';msgs.forEach(function(m,i){var c=MOT_COLORS[i%MOT_COLORS.length];seg+='<span class="tk-msg" style="background:'+c.bg+';color:'+c.fg+'">'+escHtml(m)+'</span>';});
+  // v7 — thẻ "Chúc mừng sinh nhật <Tên>" (chớp tắt) để chèn xen kẽ giữa các câu của các Thầy
+  var _bdCards=_bd.map(function(n){return '<span class="tk-msg tk-bday">🎂 Chúc mừng sinh nhật '+escHtml(n.name)+'! 🎉🎈</span>';});
+  // Mỗi câu = 1 thẻ màu riêng (nền + chữ theo MOT_COLORS); cứ 3 câu chèn 1 dòng sinh nhật (luân phiên)
+  var seg='',_bk=0;
+  msgs.forEach(function(m,i){
+    var c=MOT_COLORS[i%MOT_COLORS.length];
+    seg+='<span class="tk-msg" style="background:'+c.bg+';color:'+c.fg+'">'+escHtml(m)+'</span>';
+    if(_bdCards.length&&(i+1)%3===0){seg+=_bdCards[_bk%_bdCards.length];_bk++;}
+  });
+  if(_bdCards.length&&_bk===0)_bdCards.forEach(function(cd){seg+=cd;}); // ít câu → vẫn hiện dòng sinh nhật
   track.innerHTML=seg+seg;
-  // Chậm hơn ~40% so với trước để dễ đọc (thẻ rộng hơn nên cần thêm thời gian cuộn)
-  _tkSpeed(track,Math.round(msgs.join('   ').length*1.4));
+  // Chậm hơn ~40% so với trước để dễ đọc; cộng thêm phần dòng sinh nhật đã chèn
+  var _avgBn=_bd.length?_bd.reduce(function(s,n){return s+String(n.name).length;},0)/_bd.length:0;
+  var _bChars=_bdCards.length?Math.max(_bk,_bdCards.length)*(_avgBn+30):0;
+  _tkSpeed(track,Math.round((msgs.join('   ').length+_bChars)*1.4));
+  // v7 — giữ hiệu ứng chúc mừng nhẹ 1 lần/ngày (không chiếm băng chuyền)
+  if(_bd.length){
+    var _bkey='bday-'+new Date().toISOString().slice(0,10);
+    if(_lastBdayFx!==_bkey){_lastBdayFx=_bkey;try{playCelebration('fireworks','🎂 Chúc mừng sinh nhật '+_bd.map(function(n){return n.name;}).join(' · ')+'! 🎉');}catch(e){}}
+  }
 }
 function startBanner(){
   _motShuffled=_shuffle(MOTIVATION);_bannerSig='';
@@ -8323,7 +8342,20 @@ function rankQualifiedBranches(nid,rankId){
   var n=treeNodes.find(function(x){return x.id===nid;});
   if(!n)return 0;
   var f1s=sponsorKids(n);
-  if(rankId===1)return f1s.filter(function(f){return branchWindowCount(f,2,1);}).length;
+  if(rankId===1){
+    // v7 — Future Star: 2 nhánh F1 KHÁC NHAU cùng phát sinh ≥1 ID trong CÙNG 1 tháng.
+    // (Bao trùm cả trường hợp "bảo trợ 2 F1 trong cùng 1 tháng" — 2 F1 head là 2 nhánh khác nhau.)
+    var mB={};
+    f1s.forEach(function(f,idx){
+      [f].concat(sponsorDescendants(f)).forEach(function(d){
+        var jd=parseJoinDate(d.joinDate);
+        if(jd)(mB[jd.abs]=mB[jd.abs]||{})[idx]=1;
+      });
+    });
+    var best=0;
+    for(var mm in mB){var c=Object.keys(mB[mm]).length;if(c>best)best=c;}
+    return best; // so với rankNeedCount(1)=2 → đạt Future Star
+  }
   if(rankId===2)return f1s.filter(function(f){return branchWindowCount(f,4,2);}).length;
   var def=RANKS[rankId-1];
   var needR=def.needRank||(rankId-1);
@@ -8415,11 +8447,18 @@ function rankAlertInfo(nid){
   if(!f1s.length)return null;
   var cur=curMonthAbs();
   var detail=[],pct=0;
-  if(nextId===1||nextId===2){
-    var need=nextId===1?2:4;
-    var win=nextId===1?1:2;
-    // Cửa sổ realtime: FS = tháng hiện tại; 1★ = [tháng trước, tháng này]
-    var winStart=nextId===1?cur:cur-1;
+  if(nextId===1){
+    // v7 — FS realtime: cần 2 nhánh F1 KHÁC NHAU cùng phát sinh ≥1 ID trong THÁNG NÀY
+    var actB=f1s.filter(function(f){return branchCountInWindow(f,cur,1)>=1;});
+    pct=Math.min(1,actB.length/2);
+    if(actB.length===1)detail.push('đã có nhánh <b>'+escHtml(actB[0].name)+'</b> phát sinh ID tháng này — cần thêm <b>1</b> nhánh F1 khác có ID mới trong tháng');
+    else if(actB.length<1)detail.push('cần <b>2</b> nhánh F1 khác nhau cùng phát sinh ID trong tháng này');
+    if(f1s.length<2)detail.push('(hiện mới có <b>'+f1s.length+'</b> nhánh F1)');
+  }else if(nextId===2){
+    var need=4;
+    var win=2;
+    // Cửa sổ realtime 1★: [tháng trước, tháng này]
+    var winStart=cur-1;
     var counts=f1s.map(function(f){
       return {f:f,c:branchCountInWindow(f,winStart,win)};
     }).sort(function(a,b){return b.c-a.c;});
@@ -9321,10 +9360,11 @@ function buildNodeView(n){
     h+='<div class="nmod-row"><div class="nmod-lbl">\u0110\u1eb7t d\u01b0\u1edbi (v\u1ecb tr\u00ed)</div><div style="font-weight:700">'+escHtml(par.name)+' ('+(n.side==='L'?'Tr\u00e1i':'Ph\u1ea3i')+')'+(ph?' <span style="color:#8E24AA">\u00B7 PH</span>':'')+'</div></div>';
   }
   if(n.phone)h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div><div style="font-weight:700">'+escHtml(n.phone)+'</div></div>';
-  // v6.63 — DISC: luôn hiện dòng có nút "Đo DISC" (mở bài đo cho chính node này)
+  // v7 — DISC: chỉ ID Gốc (chính chủ) tự đo; ID tuyến dưới tự cập nhật theo Mã ID (không đo giùm)
   h+='<div class="nmod-row"><div class="nmod-lbl">DISC</div><div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">';
   if(n.disc)h+=String(n.disc).toUpperCase().split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px;font-size:13px">'+ch+'</span>':'';}).join('');
-  if(typeof viewOnlyMode==='undefined'||!viewOnlyMode)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+n.id+'\')">📝 '+(n.disc?'Đo lại':'Đo DISC')+'</button>';
+  if((typeof viewOnlyMode==='undefined'||!viewOnlyMode)&&!n.parentId)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+n.id+'\')">📝 '+(n.disc?'Đo lại':'Đo DISC')+'</button>';
+  else if(!n.disc&&n.parentId)h+='<span style="font-size:11px;color:#AAA;font-style:italic">Chờ tự đo (đồng bộ theo Mã ID)</span>';
   if(n.disc)h+='<button type="button" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discProfileFromNode(\''+n.id+'\')">📊 Hồ sơ</button>';
   h+='</div></div>';
   if(n.ship)h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu</div><div style="font-weight:700;display:flex;align-items:center;gap:6px;justify-content:flex-end;color:'+(n.ship==='vang'?'#8A6A12':'#546E7A')+'">'+shipSVG(n.ship,18)+shipLabel(n.ship)+'<button type="button" class="tbtn" data-ship-help="1" style="padding:2px 8px;font-size:12px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;font-weight:800">?</button></div></div>';
@@ -9464,10 +9504,10 @@ function buildNodeForm(node,addOpts){
     else h+='<span style="font-size:11px;color:#999;max-width:150px;text-align:right">Lưu ID Gốc trước, rồi mở lại để "Đo DISC"</span>';
     h+='</div></div>';
   }else{
-    h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Gõ tay D/I/S/C — hoặc bấm "Đo DISC" để làm bài</div></div>';
+    // v7 — KHÔNG đo giùm ID tuyến dưới: DISC tự cập nhật khi họ hoàn thành đo trên tài khoản của họ (khớp Mã ID)
+    h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Tự cập nhật khi ID này hoàn thành ĐO trên tài khoản của họ (khớp Mã ID) — không đo giùm</div></div>';
     h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
-    h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4">';
-    if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
+    h+='<input id="nf-disc" class="nmod-inp" readonly style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center;background:#F3F3F3;color:#555;cursor:not-allowed" value="'+escHtml(v.disc||'')+'" placeholder="Chờ tự đo">';
     h+='</div></div>';
   }
   var _shipSel=v.ship||'';
@@ -9984,7 +10024,7 @@ function showStarCriteria(nid){
   }
   h+='<div style="background:#FFF8E1;border-radius:10px;padding:12px;margin:10px 0;font-size:12px;line-height:1.7">';
   h+='<b>Thang cấp bậc:</b><br>';
-  h+='\u2022 <b>Future Star:</b> 2 nhánh F1, mỗi nhánh 2 ID trong 1 tháng<br>';
+  h+='\u2022 <b>Future Star:</b> bảo trợ 2 F1 trong cùng 1 tháng, hoặc phát sinh 2 ID ở 2 nhánh F1 khác nhau trong cùng 1 tháng<br>';
   h+='\u2022 <b>1\u2605:</b> 2 nhánh F1, mỗi nhánh 4 ID trong 2 tháng liên tiếp<br>';
   h+='\u2022 <b>2\u2605:</b> 2 nhánh khác nhau có ID đạt 1\u2605<br>';
   h+='\u2022 <b>3\u2605:</b> 2 nhánh khác nhau có ID đạt 2\u2605<br>';
@@ -14503,7 +14543,7 @@ function discRenderMap(){
   }
   roots.forEach(function(r){walk(r,0);});
   nodes.forEach(function(n){if(!seen[n.id])walk(n,0);});
-  var note='<div style="font-size:13px;color:#5A6B7B;margin:6px 0 12px">Đã đo <b>'+done+'/'+nodes.length+'</b> thành viên. Bấm <b>Đo DISC</b> ở từng người — kết quả ghi thẳng vào node và hiện trên Sơ đồ.</div>';
+  var note='<div style="font-size:13px;color:#5A6B7B;margin:6px 0 12px">Đã đo <b>'+done+'/'+nodes.length+'</b> thành viên. Chỉ <b>ID Gốc (chính bạn)</b> tự bấm <b>Đo DISC</b>. DISC của tuyến dưới sẽ <b>tự cập nhật</b> khi mỗi người hoàn thành đo trên tài khoản của họ (đồng bộ theo Mã ID).</div>';
   return '<div style="background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:20px">'
     +'<div style="font-size:16px;font-weight:800;color:#1B4F8A;margin-bottom:10px">Thành phần DISC đội nhóm</div>'
     +compo+note+rows+'</div>';
@@ -14515,7 +14555,11 @@ function discNodeRow(n,depth){
     ?'<span style="background:'+discColor(L)+';color:#fff;font-weight:900;border-radius:7px;padding:3px 9px;font-size:13px">'+L+' '+D_TYPES[L].emoji+'</span>'
     :'<span style="color:#B0B7C0;font-size:12.5px;font-style:italic">Chưa đo</span>';
   var code=n.idCode?'<span style="font-size:11.5px;color:#1565C0;background:#F0F5FB;padding:2px 7px;border-radius:6px;font-weight:600">🔑 '+escHtml(n.idCode)+'</span>':'';
-  var btns='<button onclick="discStartTest(\''+n.id+'\')" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;cursor:pointer">'+(has?'Đo lại':'📝 Đo DISC')+'</button>';
+  // v7 — chỉ ID Gốc (chính chủ) tự đo; ID tuyến dưới đồng bộ theo Mã ID → không hiện nút đo giùm
+  var _isSelf=!n.parentId;
+  var btns='';
+  if(_isSelf)btns+='<button onclick="discStartTest(\''+n.id+'\')" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;cursor:pointer">'+(has?'Đo lại':'📝 Đo DISC')+'</button>';
+  else if(!has)btns+='<span style="font-size:11px;color:#AAA;font-style:italic">Chờ tự đo (đồng bộ theo Mã ID)</span>';
   if(has)btns+=' <button onclick="discViewProfile(\''+n.id+'\')" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;cursor:pointer">Hồ sơ</button>';
   return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #E3E9F0;border-left:4px solid '+(has?discColor(L):'#E3E9F0')+';border-radius:10px;margin-bottom:7px;margin-left:'+(depth*22)+'px;background:#fff">'
     +'<span style="font-weight:700">'+escHtml(n.name||'(chưa đặt tên)')+'</span>'+code
@@ -14523,7 +14567,15 @@ function discNodeRow(n,depth){
 }
 
 /* ---------- Làm bài ---------- */
-function discStartTest(nodeId){_discTestNode=nodeId;_discView='test';renderDiscPage();window.scrollTo({top:0,behavior:'smooth'});}
+function discStartTest(nodeId){
+  // v7 — Chỉ ID Gốc (chính chủ tài khoản) tự đo DISC; ID tuyến dưới tự đo trên tài khoản của họ → đồng bộ theo Mã ID
+  var _n=(treeNodes||[]).find(function(x){return x.id===nodeId;});
+  if(_n&&_n.parentId){
+    showToast('🧭 Chỉ ID Gốc (chính bạn) tự đo DISC. DISC của "'+(_n.name||'')+'" sẽ tự cập nhật khi họ hoàn thành đo trên tài khoản của họ (khớp Mã ID).');
+    return;
+  }
+  _discTestNode=nodeId;_discView='test';renderDiscPage();window.scrollTo({top:0,behavior:'smooth'});
+}
 function discRenderTest(){
   var n=(treeNodes||[]).find(function(x){return x.id===_discTestNode;});
   if(!n)return '<div>Không tìm thấy thành viên.</div>';
