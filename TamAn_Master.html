@@ -4578,6 +4578,13 @@ function openAccountModal(){
     h+='<div style="font-size:13px;color:#888;line-height:1.5">Bạn đăng nhập bằng <b>Google</b> — mật khẩu do Google quản lý. Đổi mật khẩu trong tài khoản Google của bạn.</div>';
   }
   h+='</div>';
+  // Sao lưu & Khôi phục — dời từ Giao diện sang Tài khoản (gom TOÀN BỘ dữ liệu cá nhân)
+  h+='<div class="acc-sec" style="margin-top:18px"><div class="acc-h">💾 Sao lưu &amp; Khôi phục dữ liệu</div>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px">Lưu <b>TOÀN BỘ dữ liệu cá nhân</b> của bạn ra 1 file để giữ an toàn phòng khi sự cố. Gồm: sơ đồ cây · thành viên · mục tiêu &amp; chỉ tiêu · Lịch 168 · điểm danh &amp; kế hoạch ngày · KPI · kỹ năng · bánh xe cuộc đời · DISC · Năng động · CLB · <b>Nhật ký</b> · 6 Lọ/thu nhập · bảng tầm nhìn · giao diện/nền/nhắc nhở. Khi cần, nạp lại file để khôi phục (ghi đè dữ liệu hiện tại, áp cho cả máy này lẫn cloud). Nên sao lưu <b>định kỳ mỗi tuần</b> và cất file nơi an toàn (Drive, email cho chính mình…).</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<button class="btn btn-g btn-sm" data-backup-export="1">⬇️ Sao lưu ra file</button>';
+  h+='<button class="btn btn-d btn-sm" data-backup-import="1">⬆️ Khôi phục từ file</button>';
+  h+='</div></div>';
   h+='<div id="acc-msg" style="margin-top:14px;font-size:13px;min-height:18px;line-height:1.4"></div>';
   document.getElementById('account-body').innerHTML=h;
   document.getElementById('account-ov').classList.add('open');
@@ -6486,14 +6493,6 @@ function _journeyHtml(){
   });
   if(doneN===steps.length)h+='<div style="text-align:center;background:#E8F5F0;border:1px solid #BFE3D6;border-radius:13px;padding:16px;margin-top:6px;color:#1A7A5E;font-size:14px;font-weight:700;line-height:1.5">🎉 Tuyệt vời! Bạn đã đi trọn 6 bước hôm nay. Ngày mai chỉ cần lặp lại — đều đặn là chìa khoá.</div>';
   else h+='<div style="text-align:center;font-size:12.5px;color:#9AA89F;margin-top:6px;line-height:1.5">Mỗi bước nhỏ hôm nay là một viên gạch cho đích đến. Cứ tiến từng bước một 🌱</div>';
-  // Sao lưu dữ liệu — đưa tính năng có sẵn ra chỗ dễ thấy
-  h+='<div style="margin-top:18px;background:#F3F5F1;border:1px solid #E2E7E0;border-radius:13px;padding:13px 15px">';
-  h+='<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#1A2A22">🔒 Sao lưu dữ liệu của bạn'+_tip('Tải toàn bộ dữ liệu của tài khoản (sơ đồ, thành viên, mục tiêu, điểm danh, KPI, bánh xe, nhật ký, CLB, bảng tầm nhìn…) — gồm cả dữ liệu trên máy lẫn trên cloud — về một file JSON.')+'</div>';
-  h+='<div style="font-size:12px;color:#6A7A70;line-height:1.5;margin:4px 0 10px">Cất file ở nơi an toàn (Drive, tự gửi email cho mình…). Khi lỡ mất hoặc đổi máy, chỉ cần khôi phục lại trong 1 phút. Nên sao lưu định kỳ mỗi tuần.</div>';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  h+='<button data-backup-export="1" style="font-size:12.5px;font-weight:700;color:#fff;background:#1A7A5E;border:none;border-radius:9px;padding:8px 14px;cursor:pointer">⬇️ Tải file sao lưu</button>';
-  h+='<button data-backup-import="1" style="font-size:12.5px;font-weight:700;color:#1A7A5E;background:#fff;border:1.5px solid #1A7A5E;border-radius:9px;padding:8px 14px;cursor:pointer">⬆️ Khôi phục từ file</button>';
-  h+='</div></div>';
   return h;
 }
 function renderOverviewHome(){
@@ -10976,7 +10975,7 @@ function importData(){
 //   Firestore của user (kể cả bảng tầm nhìn). Khôi phục → ghi lại cả localStorage
 //   lẫn Firestore của tài khoản HIỆN TẠI rồi tải lại app.
 // ================================================================
-var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','wheel','wheelgoal','anngoals','income','jars','guests','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity'];
+var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','lich168','journal','disc','wheel','wheelgoal','anngoals','income','jars','guests','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity'];
 function _dlJson(obj,fname){
   var blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
@@ -13410,14 +13409,7 @@ function renderAppearance(){
     h+='<div style="font-size:11.5px;color:#999;margin-top:8px;line-height:1.5">Lưu ý: thông báo ngoài ứng dụng chỉ hiện khi trình duyệt/ứng dụng đang mở hoặc vừa hoạt động (giới hạn của web tĩnh, không có máy chủ). Khi mở lại app sau giờ hẹn, bạn vẫn nhận lời nhắc trong ứng dụng.</div>';
   }
 
-  // ── v6.30 — Sao lưu & Khôi phục toàn bộ dữ liệu ──
-  h+='<div class="msec-title" style="margin-top:18px">💾 Sao lưu &amp; Khôi phục dữ liệu</div>';
-  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:10px">Chủ động lưu <b>TOÀN BỘ nội dung + cá nhân hoá</b> ra 1 file để giữ an toàn phòng khi sự cố. Khi cần, nạp file để khôi phục lại (ghi đè dữ liệu hiện tại, áp cho cả máy này lẫn cloud). Nên sao lưu <b>định kỳ</b> (vd mỗi tuần) và cất file nơi an toàn (Drive, email cho chính mình...).</div>';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  h+='<button class="btn btn-g btn-sm" data-backup-export="1">⬇️ Sao lưu ra file</button>';
-  h+='<button class="btn btn-d btn-sm" data-backup-import="1">⬆️ Khôi phục từ file</button>';
-  h+='</div>';
-  h+='<div style="font-size:11.5px;color:#999;margin-top:8px;line-height:1.5">Gồm: sơ đồ cây · thành viên · mục tiêu &amp; chỉ tiêu · điểm danh &amp; kế hoạch ngày · KPI · kỹ năng · bánh xe cuộc đời · Năng động · CLB · bảng tầm nhìn · giao diện/nền/nhắc nhở. File JSON đọc được, chỉ máy bạn có.</div>';
+  // v7 — Sao lưu & Khôi phục đã dời sang "Tài khoản của tôi" (nút 👤 trên thanh trên cùng).
 
   document.getElementById('appearance-body').innerHTML=h;
 }
@@ -13895,6 +13887,10 @@ function bindStatic(){
   if(_tbns){_tbns.title='Bấm để đổi tên / mật khẩu';_tbns.addEventListener('click',openAccountModal);}
   document.getElementById('account-close').addEventListener('click',closeAccountModal);
   document.getElementById('account-ov').addEventListener('click',function(e){if(e.target===this)closeAccountModal();});
+  document.getElementById('account-body').addEventListener('click',function(e){
+    var t=e.target.closest('[data-backup-export]');if(t){exportBackup();return;}
+    t=e.target.closest('[data-backup-import]');if(t){importBackup();return;}
+  });
 
   document.getElementById('nmod-close').addEventListener('click',closeNodeModal);
   document.getElementById('nmod-cancel').addEventListener('click',closeNodeModal);
