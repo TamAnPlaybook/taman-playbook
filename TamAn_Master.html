@@ -4348,13 +4348,24 @@ function requpLater(){_requpSkipped=true;closeRequp();showToast('Bạn có thể
 // v7 — ONBOARDING lần đầu: Chào mừng → BẮT BUỘC nhập ID Gốc → Tutorial nút màn hình
 //   Chuỗi: startOnboarding → checkWelcome → checkRootGate → checkTutorial → checkWhatsNew → checkRequiredUpdates
 // ================================================================
-var _rootGateActive=false,_rootGateNext=null;
+var _rootGateActive=false,_rootGateEnforce=false,_rootGateNext=null;
+var ROOT_GRACE_LOGINS=3; // DISC + Năng động: hoàn thành trong 3 lần đăng nhập đầu; sau đó BẮT BUỘC
+function _loginCount(){return parseInt(_prefs&&_prefs.loginCount,10)||1;}
+function _rootDeadlinePassed(){return _loginCount()>ROOT_GRACE_LOGINS;} // đã qua 3 lần đầu → bắt buộc
+function _findRootNode(){return treeNodes.find(function(n){return !n.parentId;})||null;}
+function _rootNangDone(){var nd=(typeof loadNangDong==='function')?loadNangDong():null;return !!(nd&&nd.m);}
+function _rootDiscDone(){var r=_findRootNode();return !!(r&&String(r.disc||'').trim());}
+function _rootGateComplete(){return !!_findRootNode()&&_rootDiscDone()&&_rootNangDone();}
 async function startOnboarding(){
   if(!fbUser||viewOnlyMode){return;}
   try{var d=await fsGet('prefs');if(d){delete d.updatedAt;for(var k in d)_prefs[k]=d[k];}}catch(e){}
+  // Nạp cây + Năng động mới nhất để không bắt oan / báo thiếu sai khi dữ liệu chưa tải xong
+  try{var t=await fsGet('tree');if(t&&t.nodes){treeNodes=t.nodes;nmSet('tree_v2',JSON.stringify(treeNodes));}}catch(e){}
+  try{var n=await fsGet('nangdong');if(n&&n.m)nmSet('nangdong',JSON.stringify(n));}catch(e){}
+  _prefs.loginCount=(parseInt(_prefs.loginCount,10)||0)+1;try{savePrefs();}catch(e){}
   checkWelcome(function(){ checkRootGate(function(){ checkTutorial(function(){ checkWhatsNew(); }); }); });
 }
-// 1) Popup chào mừng — hiện 1 lần/tài khoản
+// 1) Popup chào mừng — hiện 1 lần/tài khoản; bấm "Bắt đầu" → mở luôn bảng nhập ID Gốc
 function checkWelcome(next){
   next=next||function(){};
   if(!fbUser||viewOnlyMode||(_prefs&&_prefs.welcomeSeen)){next();return;}
@@ -4365,24 +4376,35 @@ function checkWelcome(next){
   btn.onclick=function(){
     ov.classList.remove('open');
     _prefs.welcomeSeen=1;try{savePrefs();}catch(e){}
-    next();
+    next(); // → checkRootGate: mở bảng nhập ID Gốc ngay
   };
 }
-// 2) CỔNG BẮT BUỘC nhập thông tin ID Gốc (trước khi làm bất cứ việc gì khác)
-async function checkRootGate(next){
+// 2) CỔNG nhập ID Gốc: thông tin lõi BẮT BUỘC ngay; DISC + Năng động hoàn thành trong 3 lần đăng nhập đầu
+function checkRootGate(next){
   next=next||function(){};
   if(!fbUser||viewOnlyMode){next();return;}
-  // Nạp cây mới nhất từ cloud để không bắt tạo gốc oan khi dữ liệu chưa tải xong
-  try{var d=await fsGet('tree');if(d&&d.nodes){treeNodes=d.nodes;nmSet('tree_v2',JSON.stringify(treeNodes));}}catch(e){}
-  if(treeNodes.some(function(n){return !n.parentId;})){next();return;} // đã có ID Gốc → bỏ qua
-  _rootGateActive=true;_rootGateNext=next;
+  var root=_findRootNode();
+  var incomplete = !root || !_rootDiscDone() || !_rootNangDone();
+  if(!incomplete){next();return;} // đã đủ ID Gốc + DISC + Năng động → bỏ qua
+  _rootGateActive=true;
+  _rootGateEnforce = (!root) || _rootDeadlinePassed(); // chưa có gốc: luôn bắt buộc; đã qua 3 lần đầu: bắt buộc
+  _rootGateNext=next;
   _openRootGateForm();
-  showToast('👉 Vui lòng nhập thông tin ID Gốc (chính bạn) để bắt đầu — bắt buộc.');
+  if(!root)showToast('👉 Vui lòng nhập thông tin ID Gốc (chính bạn) để bắt đầu — bắt buộc.');
+  else if(_rootGateEnforce)showToast('⛔ Đã tới hạn: hãy hoàn thành ĐO DISC và NĂNG ĐỘNG cho ID Gốc.');
+  else showToast('👉 Hãy hoàn thành Đo DISC và Năng động cho ID Gốc (bắt buộc trong '+Math.max(1,ROOT_GRACE_LOGINS-_loginCount()+1)+' lần đăng nhập tới).');
 }
 function _openRootGateForm(){
   try{
-    openAddNodeModal2(null,null);
-    var t=document.getElementById('nmod-title');if(t)t.textContent='⭐ Nhập thông tin ID Gốc của bạn (bắt buộc)';
+    var root=_findRootNode();
+    if(root){
+      switchNodeToEdit(root.id);
+      var _ov=document.getElementById('nmod-ov');if(_ov)_ov.classList.add('open'); // switchNodeToEdit không tự mở overlay
+      var te=document.getElementById('nmod-title');if(te)te.textContent='⭐ Hoàn thành thông tin ID Gốc của bạn';
+    }else{
+      openAddNodeModal2(null,null);
+      var ta=document.getElementById('nmod-title');if(ta)ta.textContent='⭐ Nhập thông tin ID Gốc của bạn (bắt buộc)';
+    }
     attachSelFilter(document.getElementById('nf-f1of-filter'),document.getElementById('nf-f1of-sel'));
   }catch(e){}
 }
@@ -9601,6 +9623,12 @@ function _dpBirthYearOpts(sel){ // value = năm đủ; có ô trống vì Sinh n
   for(var y=cur;y>=1940;y--){o+='<option value="'+y+'"'+(String(sel)===String(y)?' selected':'')+'>'+y+'</option>';}
   return o;
 }
+function _dpNangYearOpts(sel){ // Năng động: value = năm đủ (giống ô Năm ở popup Năng động: năm nay → 6 năm trước)
+  var o='<option value="">— Năm —</option>';
+  var cur=new Date().getFullYear();
+  for(var y=cur;y>=cur-6;y--){o+='<option value="'+y+'"'+(String(sel)===String(y)?' selected':'')+'>'+y+'</option>';}
+  return o;
+}
 function buildNodeForm(node,addOpts){
   var v=node||{};
   var ap=addOpts||{};
@@ -9659,17 +9687,27 @@ function buildNodeForm(node,addOpts){
   h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div>';
   h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
   if(_isRoot){
-    h+='<div class="nmod-row"><div class="nmod-lbl">DISC <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">ID Gốc bắt buộc ĐO — bấm "Đo DISC", không gõ tay</div></div>';
+    h+='<div class="nmod-row"><div class="nmod-lbl">DISC <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Bấm "Đo DISC" để làm bài (không gõ tay) — hoàn thành trong 3 lần đăng nhập đầu</div></div>';
     h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
     h+='<input id="nf-disc" class="nmod-inp" readonly style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center;background:#F3F3F3;color:#555;cursor:not-allowed" value="'+escHtml(v.disc||'')+'" placeholder="Chưa đo">';
     if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
-    else h+='<span style="font-size:11px;color:#999;max-width:150px;text-align:right">Lưu ID Gốc trước, rồi mở lại để "Đo DISC"</span>';
+    else h+='<span style="font-size:11px;color:#999;max-width:160px;text-align:right">Lưu ID Gốc trước, rồi mở lại để "Đo DISC"</span>';
     h+='</div></div>';
   }else{
     // v7 — KHÔNG đo giùm ID tuyến dưới: DISC tự cập nhật khi họ hoàn thành đo trên tài khoản của họ (khớp Mã ID)
     h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Tự cập nhật khi ID này hoàn thành ĐO trên tài khoản của họ (khớp Mã ID) — không đo giùm</div></div>';
     h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
     h+='<input id="nf-disc" class="nmod-inp" readonly style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center;background:#F3F3F3;color:#555;cursor:not-allowed" value="'+escHtml(v.disc||'')+'" placeholder="Chờ tự đo">';
+    h+='</div></div>';
+  }
+  // v7 — ID Gốc: Năng động (tháng.năm) nhập ngay trong cửa sổ ID Gốc, picker tháng+năm giống Vào ID (hoàn thành trong 3 lần đăng nhập đầu)
+  if(_isRoot){
+    var _ndc=(typeof loadNangDong==='function')?loadNangDong():null;
+    var _ndM=_ndc&&_ndc.m?parseInt(_ndc.m,10):'',_ndY=_ndc&&_ndc.y?parseInt(_ndc.y,10):'';
+    h+='<div class="nmod-row"><div class="nmod-lbl">📅 Năng động <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Tháng.năm đóng Năng động gần nhất — chọn theo lịch (hoàn thành trong 3 lần đăng nhập đầu)</div></div>';
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">';
+    h+='<select id="nf-nd-m" class="nmod-inp" style="width:110px">'+_dpMonthOpts(_ndM)+'</select>';
+    h+='<select id="nf-nd-y" class="nmod-inp" style="width:96px">'+_dpNangYearOpts(_ndY)+'</select>';
     h+='</div></div>';
   }
   var _shipSel=v.ship||'';
@@ -9788,13 +9826,27 @@ function saveNodeModal(){
     var _ff=document.getElementById('nf-f1of');if(_ff){try{_ff.focus();}catch(e){}_ff.style.borderColor='#E53935';}
     return;
   }
-  // v7 — ID Gốc: DISC bắt buộc ĐO (không gõ tay). Node mới chưa có id không đo được → cho lưu rồi nhắc mở lại đo.
+  // v7 — ID Gốc: DISC hoàn thành trong 3 lần đăng nhập đầu; quá hạn → BẮT BUỘC đo (không gõ tay)
   if(_isRootSave&&!data.disc){
-    if(activeNodeModal.mode==='edit'){
-      showToast('🧭 ID Gốc bắt buộc ĐO DISC (không gõ tay). Hãy bấm "Đo DISC" để làm bài rồi lưu.');
+    if(_rootDeadlinePassed()&&activeNodeModal.mode==='edit'){
+      showToast('🧭 Đã tới hạn: ID Gốc bắt buộc ĐO DISC. Hãy bấm "Đo DISC" để làm bài rồi lưu.');
       return;
     }
-    _saveMsg='✓ Đã lưu ID Gốc — nhớ mở lại ID này và bấm "Đo DISC" (bắt buộc đo)';
+    _saveMsg='✓ Đã lưu — nhớ hoàn thành "Đo DISC" cho ID Gốc trong 3 lần đăng nhập đầu';
+  }
+  // v7 — ID Gốc: Năng động (tháng.năm) hoàn thành trong 3 lần đăng nhập đầu; quá hạn → BẮT BUỘC
+  if(_isRootSave){
+    var _ndm=(document.getElementById('nf-nd-m')||{}).value||'';
+    var _ndy=(document.getElementById('nf-nd-y')||{}).value||'';
+    if(_ndm&&_ndy){ if(typeof saveNangDong==='function')saveNangDong(_ndm,_ndy); }
+    else if(!_rootNangDone()){
+      if(_rootDeadlinePassed()){
+        showToast('📅 Đã tới hạn: ID Gốc bắt buộc chọn Tháng + Năm "Năng động".');
+        var _fn=document.getElementById('nf-nd-m');if(_fn){try{_fn.focus();}catch(e){}_fn.style.borderColor='#E53935';}
+        return;
+      }
+      if(_saveMsg==='✓ Đã lưu')_saveMsg='✓ Đã lưu — nhớ hoàn thành "Năng động" cho ID Gốc trong 3 lần đăng nhập đầu';
+    }
   }
   // v7 — BẮT BUỘC Vào ID tháng.năm (căn cứ so sánh thứ tự vào của tuyến)
   if(!data.joinDate){
@@ -9848,10 +9900,10 @@ function saveNodeModal(){
     }
   }
   // v7 — cổng ID Gốc bắt buộc: vừa tạo ID Gốc trong lúc gate mở → hoàn tất gate, chuyển sang tutorial
-  var _wasRootAdd=(activeNodeModal&&activeNodeModal.mode==='add'&&!activeNodeModal.parentId);
+  var _wasRootSave=_isRootSave; // vừa lưu ID Gốc (add hoặc edit)
   saveTree2();
-  if(_wasRootAdd&&_rootGateActive&&treeNodes.some(function(n){return !n.parentId;})){
-    _rootGateActive=false;var _cb=_rootGateNext;_rootGateNext=null;
+  if(_wasRootSave&&_rootGateActive&&(!_rootGateEnforce||_rootGateComplete())){
+    _rootGateActive=false;_rootGateEnforce=false;var _cb=_rootGateNext;_rootGateNext=null;
     if(_cb)setTimeout(_cb,300);
   }
   closeNodeModal();
@@ -10011,8 +10063,8 @@ function moveNodeSide(nid,newSide){
 function closeNodeModal(){
   document.getElementById('nmod-ov').classList.remove('open');
   activeNodeModal=null;
-  // v7 — cổng ID Gốc bắt buộc: đóng mà chưa có ID Gốc → mở lại, không cho bỏ qua
-  if(_rootGateActive&&!treeNodes.some(function(n){return !n.parentId;})){
+  // v7 — cổng ID Gốc: chỉ chặn đóng khi BẮT BUỘC mà chưa hoàn thành (chưa có gốc, hoặc quá hạn mà thiếu DISC/Năng động)
+  if(_rootGateActive&&_rootGateEnforce&&!_rootGateComplete()){
     setTimeout(function(){try{_openRootGateForm();}catch(e){}},160);
   }
 }
