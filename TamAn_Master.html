@@ -9341,10 +9341,38 @@ function openAddNodeModal2(parentId,side){
   document.getElementById('nmod-del-btn').style.display='none';
   document.getElementById('nmod-ov').classList.add('open');
 }
+// v7 — Bộ chọn ngày (chọn từ danh sách, KHÔNG gõ tay) → luôn đúng cú pháp cho parseJoinDate/parseBirthday
+function _dpMonthOpts(sel){ // sel = số tháng đang chọn (1-12) hoặc ''
+  var o='<option value="">— Tháng —</option>';
+  for(var m=1;m<=12;m++){o+='<option value="'+m+'"'+(String(sel)===String(m)?' selected':'')+'>Tháng '+m+'</option>';}
+  return o;
+}
+function _dpDayOpts(sel){ // sel = ngày đang chọn (1-31) hoặc ''
+  var o='<option value="">— Ngày —</option>';
+  for(var d=1;d<=31;d++){o+='<option value="'+d+'"'+(String(sel)===String(d)?' selected':'')+'>'+d+'</option>';}
+  return o;
+}
+function _dpJoinYearOpts(sel2){ // value = 2 chữ số ("25"); hiển thị đủ ("2025"); sel2 = 2 chữ số đang chọn hoặc ''
+  var o='<option value="">— Năm —</option>';
+  var cur=new Date().getFullYear();
+  for(var y=cur+1;y>=2015;y--){var v2=('0'+(y%100)).slice(-2);o+='<option value="'+v2+'"'+(sel2===v2?' selected':'')+'>'+y+'</option>';}
+  return o;
+}
+function _dpBirthYearOpts(sel){ // value = năm đủ; có ô trống vì Sinh nhật không bắt buộc năm
+  var o='<option value="">— Năm (tùy chọn) —</option>';
+  var cur=new Date().getFullYear();
+  for(var y=cur;y>=1940;y--){o+='<option value="'+y+'"'+(String(sel)===String(y)?' selected':'')+'>'+y+'</option>';}
+  return o;
+}
 function buildNodeForm(node,addOpts){
   var v=node||{};
   var ap=addOpts||{};
   var defF1=v.f1of||ap.parentName||'';
+  // v7 — giá trị chọn sẵn cho picker Vào ID / Sinh nhật (từ dữ liệu cũ)
+  var _jd=parseJoinDate(v.joinDate);
+  var _jm=_jd?_jd.m:'',_jy2=_jd?('0'+(_jd.y%100)).slice(-2):'';
+  var _bd=parseBirthday(v.birthday);
+  var _bdD=_bd?_bd.d:'',_bdM=_bd?_bd.m:'',_bdY=(_bd&&_bd.y)?_bd.y:'';
   var tnOpts='';
   var nameSet={};
   treeNodes.forEach(function(n){nameSet[n.name]=1;});
@@ -9371,10 +9399,17 @@ function buildNodeForm(node,addOpts){
   var h='';
   h+='<div class="nmod-row"><div class="nmod-lbl">H\u1ecd t\u00ean <span style="color:#E53935">*</span></div>';
   h+='<input id="nf-name" class="nmod-inp" style="flex:1;min-width:0" value="'+escHtml(v.name||'')+'" placeholder="Nguy\u1ec5n V\u0103n A"></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">V\u00e0o ID th\u00e1ng.n\u0103m<div style="font-size:11px;color:#AAA">VD: 5.25 = T5/2025</div></div>';
-  h+='<input id="nf-join" class="nmod-inp" style="width:90px" value="'+escHtml(v.joinDate||'')+'" placeholder="5.25"></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt<div style="font-size:11px;color:#AAA">Ng\u00e0y/th\u00e1ng (VD: 5/9) ho\u1eb7c c\u00f3 n\u0103m 5/9/1990</div></div>';
-  h+='<input id="nf-bday" class="nmod-inp" style="width:120px" value="'+escHtml(v.birthday||'')+'" placeholder="5/9"></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">V\u00e0o ID th\u00e1ng.n\u0103m <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Ch\u1ecdn Th\u00e1ng &amp; N\u0103m \u2014 b\u1eaft bu\u1ed9c</div></div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">';
+  h+='<select id="nf-join-m" class="nmod-inp" style="width:110px">'+_dpMonthOpts(_jm)+'</select>';
+  h+='<select id="nf-join-y" class="nmod-inp" style="width:96px">'+_dpJoinYearOpts(_jy2)+'</select>';
+  h+='</div></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt<div style="font-size:11px;color:#AAA">Ch\u1ecdn Ng\u00e0y/Th\u00e1ng, N\u0103m t\u00f9y ch\u1ecdn \u2014 kh\u00f4ng b\u1eaft bu\u1ed9c</div></div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">';
+  h+='<select id="nf-bday-d" class="nmod-inp" style="width:84px">'+_dpDayOpts(_bdD)+'</select>';
+  h+='<select id="nf-bday-m" class="nmod-inp" style="width:110px">'+_dpMonthOpts(_bdM)+'</select>';
+  h+='<select id="nf-bday-y" class="nmod-inp" style="width:132px">'+_dpBirthYearOpts(_bdY)+'</select>';
+  h+='</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 v\u00e0o web <b>PRIFE</b> l\u1ea5y M\u00e3 ID chu\u1ea9n (vd: lanchi88hptv). \u0110\u00e2y l\u00e0 c\u0103n c\u1ee9 \u0111\u1ed3ng b\u1ed9 tuy\u1ebfn d\u01b0\u1edbi \u2192 tuy\u1ebfn tr\u00ean.</div></div>';
   h+='<input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai)<div style="font-size:11px;color:#AAA">Ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 tr\u1ef1c ti\u1ebfp. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
@@ -9461,10 +9496,22 @@ function saveNodeModal(){
   if(_dupNode){showToast('\u26d4 T\u00ean ID "'+name+'" \u0111\u00e3 c\u00f3 trong s\u01a1 \u0111\u1ed3 \u2014 kh\u00f4ng \u0111\u01b0\u1ee3c tr\u00f9ng 100%. H\u00e3y nh\u1eadp t\u00ean kh\u00e1c \u0111\u1ec3 ph\u00e2n bi\u1ec7t (vd th\u00eam s\u1ed1/khu v\u1ef1c).');return;}
   var selF1=(document.getElementById('nf-f1of-sel')||{}).value||'';
   var inpF1=((document.getElementById('nf-f1of')||{}).value||'').trim();
+  // v7 — Vào ID (bắt buộc) & Sinh nhật (tùy chọn) lấy từ picker, không gõ tay → luôn đúng cú pháp
+  var _jm=(document.getElementById('nf-join-m')||{}).value||'';
+  var _jy=(document.getElementById('nf-join-y')||{}).value||'';
+  var _joinDate=(_jm&&_jy)?(_jm+'.'+_jy):'';
+  var _bdD=(document.getElementById('nf-bday-d')||{}).value||'';
+  var _bdM=(document.getElementById('nf-bday-m')||{}).value||'';
+  var _bdY=(document.getElementById('nf-bday-y')||{}).value||'';
+  var _birthday='';
+  if(_bdD||_bdM||_bdY){
+    if(!_bdD||!_bdM){showToast('🎂 Sinh nhật: hãy chọn cả Ngày và Tháng (Năm tùy chọn), hoặc bỏ trống cả ba.');return;}
+    _birthday=_bdD+'/'+_bdM+(_bdY?('/'+_bdY):'');
+  }
   var data={
     name:name,
-    joinDate:((document.getElementById('nf-join')||{}).value||'').trim(),
-    birthday:((document.getElementById('nf-bday')||{}).value||'').trim(),
+    joinDate:_joinDate,
+    birthday:_birthday,
     idCode:((document.getElementById('nf-idcode')||{}).value||'').trim(),
     f1of:inpF1||selF1,
     phone:((document.getElementById('nf-phone')||{}).value||'').trim(),
@@ -9477,6 +9524,12 @@ function saveNodeModal(){
   if(!data.idCode){
     showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
     var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
+    return;
+  }
+  // v7 — BẮT BUỘC Vào ID tháng.năm (căn cứ so sánh thứ tự vào của tuyến)
+  if(!data.joinDate){
+    showToast('⛔ Vui lòng chọn Tháng và Năm "Vào ID" (bắt buộc).');
+    var _fj=document.getElementById('nf-join-m');if(_fj){try{_fj.focus();}catch(e){}_fj.style.borderColor='#E53935';}
     return;
   }
   // KIỂM TRA ngày Vào ID: ID tuyến dưới KHÔNG được vào TRƯỚC ID tuyến trên (đặt trên) hoặc người bảo trợ — kể cả phả hệ hay trực hệ
