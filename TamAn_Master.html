@@ -2428,6 +2428,14 @@ function newIdItemHtml(it){
     dh+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 '+escHtml(fmtDT(it.detectedAt))+'</div></div>';
     return dh;
   }
+  if(it.type==='bday'){ // v7 — thông báo cập nhật Sinh nhật (đồng bộ lên cây theo Mã ID)
+    var _bbd=it.read?'#E8E2D2':'#C0287A',_bbg=it.read?'#FCFBF7':'#FFF0F6';
+    var bh='<div style="border:1px solid '+_bbd+';border-left:4px solid #C0287A;background:'+_bbg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
+    bh+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'🎂 <b>'+escHtml(it.nodeName||'')+'</b> vừa cập nhật <b>Sinh nhật</b>: <span style="background:#C0287A;color:#fff;font-weight:800;border-radius:5px;padding:1px 8px">'+escHtml(it.birthday||'')+'</span>'+(it.prev?' <span style="font-size:11px;color:#999">(trước: '+escHtml(it.prev)+')</span>':'')+'</div>';
+    bh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>';
+    bh+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 '+escHtml(fmtDT(it.detectedAt))+'</div></div>';
+    return bh;
+  }
   var side=_nidSide(it.side);
   var bd=it.read?'#E8E2D2':'#C8A84B', bg=it.read?'#FCFBF7':'#FFFBE9';
   var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
@@ -6424,33 +6432,47 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
   }
   // v6.63 — DISC của ID Gốc tuyến dưới (họ tự đo trên tài khoản của họ) để đồng bộ lên cây tuyến trên theo Mã ID
   var rootDisc=root?String(root.disc||'').toUpperCase().replace(/[^DISC]/g,''):'';
+  // v7 — Sinh nhật ID Gốc tuyến dưới (mỗi người tự nhập của mình) để đồng bộ lên cây tuyến trên theo Mã ID
+  var rootBirthday=root?String(root.birthday||'').trim():'';
   return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
     rootName:rootName,rootCode:rootCode,rootJoin:root?(root.joinDate||''):'',
     nMembers:uMembers.length,nPros:uPros.length,
     att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
-    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,
+    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,rootBirthday:rootBirthday,
     rank:myNode?nodeRank(myNode.id):0};
 }
 // v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
 function applyDownlineDiscToTree(list){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
-  var changed=false,cnt=0,notes=[];
+  var changed=false,cnt=0,bcnt=0,notes=[],bnotes=[];
   (list||[]).forEach(function(u){
-    if(!u||!u.matched||!u.myNodeId||!u.rootDisc)return;
+    if(!u||!u.matched||!u.myNodeId)return;
     var n=treeNodes.find(function(x){return x.id===u.myNodeId;});
-    if(n&&String(n.disc||'').toUpperCase()!==u.rootDisc){
+    if(!n)return;
+    // DISC — ID Gốc tuyến dưới tự đo → ghi lên đúng node theo Mã ID
+    if(u.rootDisc&&String(n.disc||'').toUpperCase()!==u.rootDisc){
       var _old=String(n.disc||'').toUpperCase();
       n.disc=u.rootDisc;changed=true;cnt++;
       notes.push({node:n.name||n.id,disc:u.rootDisc,prev:_old,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
+    }
+    // v7 — Sinh nhật — ID Gốc tuyến dưới tự nhập → ghi lên đúng node theo Mã ID (giống DISC)
+    if(u.rootBirthday&&String(n.birthday||'').trim()!==String(u.rootBirthday).trim()){
+      var _ob=String(n.birthday||'').trim();
+      n.birthday=u.rootBirthday;changed=true;bcnt++;
+      bnotes.push({node:n.name||n.id,birthday:u.rootBirthday,prev:_ob,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
     }
   });
   if(changed){
     saveTree2();
     try{if(document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}
     try{_pushDiscInbox(notes);}catch(e){} // v6.63 — báo vào hộp thư QTV khi có người hoàn thành đo DISC
-    showToast('🧭 '+cnt+' người vừa hoàn thành đo DISC — đã đồng bộ lên cây của bạn');
+    try{_pushBdayInbox(bnotes);}catch(e){} // v7 — báo vào hộp thư QTV khi có người cập nhật Sinh nhật
+    var _m=[];
+    if(cnt)_m.push('🧭 '+cnt+' người vừa hoàn thành đo DISC');
+    if(bcnt)_m.push('🎂 '+bcnt+' người vừa cập nhật Sinh nhật');
+    if(_m.length)showToast(_m.join(' · ')+' — đã đồng bộ lên cây của bạn');
   }
-  return cnt;
+  return cnt+bcnt;
 }
 // v6.63 — đẩy thông báo "hoàn thành đo DISC" vào hộp thư QTV (dùng chung badge với ID mới)
 function _pushDiscInbox(notes){
@@ -6459,6 +6481,19 @@ function _pushDiscInbox(notes){
   notes.forEach(function(x){
     inbox.unshift({type:'disc',uid:x.uid,acctName:x.acctName,acctEmail:x.acctEmail,
       nodeName:x.node,disc:x.disc,prev:x.prev,detectedAt:now,read:false});
+  });
+  if(inbox.length>500)inbox=inbox.slice(0,500);
+  _newidSave(NEWID_INBOX_KEY,inbox);
+  try{_admSetBadge('newid',newidUnread()||'','');}catch(e){}
+  try{if(document.getElementById('newid-inbox'))renderNewIdInbox(false);}catch(e){}
+}
+// v7 — đẩy thông báo "cập nhật Sinh nhật" vào hộp thư QTV (dùng chung badge với ID mới / DISC)
+function _pushBdayInbox(notes){
+  if(!notes||!notes.length||typeof newidInbox!=='function')return;
+  var inbox=newidInbox();var now=new Date().toISOString();
+  notes.forEach(function(x){
+    inbox.unshift({type:'bday',uid:x.uid,acctName:x.acctName,acctEmail:x.acctEmail,
+      nodeName:x.node,birthday:x.birthday,prev:x.prev,detectedAt:now,read:false});
   });
   if(inbox.length>500)inbox=inbox.slice(0,500);
   _newidSave(NEWID_INBOX_KEY,inbox);
@@ -9326,7 +9361,7 @@ function switchNodeToEdit(nid){
   var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
   activeNodeModal={mode:'edit',nodeId:nid};
   document.getElementById('nmod-title').textContent='S\u1eeda: '+n.name;
-  document.getElementById('nmod-body').innerHTML=buildNodeForm(n,null);
+  document.getElementById('nmod-body').innerHTML=buildNodeForm(n,{isRoot:!n.parentId});
   document.getElementById('nmod-save-btn').style.display='block';
   document.getElementById('nmod-save-btn').textContent='\u2713 L\u01b0u';
   document.getElementById('nmod-del-btn').style.display='block';
@@ -9335,7 +9370,7 @@ function openAddNodeModal2(parentId,side){
   activeNodeModal={mode:'add',parentId:parentId,side:side};
   var par=parentId?treeNodes.find(function(x){return x.id===parentId;}):null;
   document.getElementById('nmod-title').textContent=par?('Th\u00eam '+(side==='L'?'Tr\u00e1i':'Ph\u1ea3i')+' c\u1ee7a '+par.name):'Th\u00eam ID g\u1ed1c';
-  document.getElementById('nmod-body').innerHTML=buildNodeForm(null,{parentName:par?par.name:''});
+  document.getElementById('nmod-body').innerHTML=buildNodeForm(null,{parentName:par?par.name:'',isRoot:!parentId});
   document.getElementById('nmod-save-btn').style.display='block';
   document.getElementById('nmod-save-btn').textContent='+ Th\u00eam';
   document.getElementById('nmod-del-btn').style.display='none';
@@ -9368,6 +9403,8 @@ function buildNodeForm(node,addOpts){
   var v=node||{};
   var ap=addOpts||{};
   var defF1=v.f1of||ap.parentName||'';
+  // v7 — ID Gốc = node không có parentId (chính chủ tài khoản) → siết bắt buộc riêng
+  var _isRoot=(ap.isRoot!==undefined)?!!ap.isRoot:!!(node&&!node.parentId);
   // v7 — giá trị chọn sẵn cho picker Vào ID / Sinh nhật (từ dữ liệu cũ)
   var _jd=parseJoinDate(v.joinDate);
   var _jm=_jd?_jd.m:'',_jy2=_jd?('0'+(_jd.y%100)).slice(-2):'';
@@ -9404,7 +9441,7 @@ function buildNodeForm(node,addOpts){
   h+='<select id="nf-join-m" class="nmod-inp" style="width:110px">'+_dpMonthOpts(_jm)+'</select>';
   h+='<select id="nf-join-y" class="nmod-inp" style="width:96px">'+_dpJoinYearOpts(_jy2)+'</select>';
   h+='</div></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt<div style="font-size:11px;color:#AAA">Ch\u1ecdn Ng\u00e0y/Th\u00e1ng, N\u0103m t\u00f9y ch\u1ecdn \u2014 kh\u00f4ng b\u1eaft bu\u1ed9c</div></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">Sinh nh\u1eadt'+(_isRoot?' <span style="color:#E53935">*</span>':'')+'<div style="font-size:11px;color:#AAA">'+(_isRoot?'ID G\u1ed1c b\u1eaft bu\u1ed9c \u2014 nh\u1eadp sinh nh\u1eadt c\u1ee7a ch\u00ednh m\u00ecnh':'Ch\u1ecdn Ng\u00e0y/Th\u00e1ng, N\u0103m t\u00f9y ch\u1ecdn \u2014 kh\u00f4ng b\u1eaft bu\u1ed9c')+'</div></div>';
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">';
   h+='<select id="nf-bday-d" class="nmod-inp" style="width:84px">'+_dpDayOpts(_bdD)+'</select>';
   h+='<select id="nf-bday-m" class="nmod-inp" style="width:110px">'+_dpMonthOpts(_bdM)+'</select>';
@@ -9412,18 +9449,27 @@ function buildNodeForm(node,addOpts){
   h+='</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 v\u00e0o web <b>PRIFE</b> l\u1ea5y M\u00e3 ID chu\u1ea9n (vd: lanchi88hptv). \u0110\u00e2y l\u00e0 c\u0103n c\u1ee9 \u0111\u1ed3ng b\u1ed9 tuy\u1ebfn d\u01b0\u1edbi \u2192 tuy\u1ebfn tr\u00ean.</div></div>';
   h+='<input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai)<div style="font-size:11px;color:#AAA">Ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 tr\u1ef1c ti\u1ebfp. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai) <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 ch\u1ecdn trong danh s\u00e1ch tuy\u1ebfn tr\u00ean, ho\u1eb7c g\u00f5 th\u00eam t\u00ean b\u00ean ngo\u00e0i. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
   h+='<div style="display:flex;flex-direction:column;gap:4px">';
   h+='<input id="nf-f1of-filter" class="sel-filter" style="width:160px;margin-bottom:4px" placeholder="\uD83D\uDD0D G\u00f5 t\u00ecm t\u00ean...">';
   h+='<select id="nf-f1of-sel" class="nmod-inp" style="width:160px"><option value="">\u2014 Ch\u1ecdn \u2014</option>'+tnOpts+'</select>';
   h+='<input id="nf-f1of" class="nmod-inp" style="width:160px" value="'+escHtml(defF1)+'" placeholder="Ho\u1eb7c nh\u1eadp t\u00ean..."></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div>';
   h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Gõ tay D/I/S/C — hoặc bấm "Đo DISC" để làm bài</div></div>';
-  h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
-  h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4">';
-  if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
-  h+='</div></div>';
+  if(_isRoot){
+    h+='<div class="nmod-row"><div class="nmod-lbl">DISC <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">ID Gốc bắt buộc ĐO — bấm "Đo DISC", không gõ tay</div></div>';
+    h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
+    h+='<input id="nf-disc" class="nmod-inp" readonly style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center;background:#F3F3F3;color:#555;cursor:not-allowed" value="'+escHtml(v.disc||'')+'" placeholder="Chưa đo">';
+    if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
+    else h+='<span style="font-size:11px;color:#999;max-width:150px;text-align:right">Lưu ID Gốc trước, rồi mở lại để "Đo DISC"</span>';
+    h+='</div></div>';
+  }else{
+    h+='<div class="nmod-row"><div class="nmod-lbl">DISC<div style="font-size:11px;color:#AAA">Gõ tay D/I/S/C — hoặc bấm "Đo DISC" để làm bài</div></div>';
+    h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
+    h+='<input id="nf-disc" class="nmod-inp" style="width:90px;text-transform:uppercase;letter-spacing:2px;text-align:center" value="'+escHtml(v.disc||'')+'" placeholder="D/I/S/C" maxlength="4">';
+    if(v.id)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+v.id+'\')">📝 '+(v.disc?'Đo lại':'Đo DISC')+'</button>';
+    h+='</div></div>';
+  }
   var _shipSel=v.ship||'';
   h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
   h+='<div style="display:flex;align-items:center;gap:6px">';
@@ -9496,7 +9542,9 @@ function saveNodeModal(){
   if(_dupNode){showToast('\u26d4 T\u00ean ID "'+name+'" \u0111\u00e3 c\u00f3 trong s\u01a1 \u0111\u1ed3 \u2014 kh\u00f4ng \u0111\u01b0\u1ee3c tr\u00f9ng 100%. H\u00e3y nh\u1eadp t\u00ean kh\u00e1c \u0111\u1ec3 ph\u00e2n bi\u1ec7t (vd th\u00eam s\u1ed1/khu v\u1ef1c).');return;}
   var selF1=(document.getElementById('nf-f1of-sel')||{}).value||'';
   var inpF1=((document.getElementById('nf-f1of')||{}).value||'').trim();
-  // v7 — Vào ID (bắt buộc) & Sinh nhật (tùy chọn) lấy từ picker, không gõ tay → luôn đúng cú pháp
+  // v7 — ID Gốc = node không có parentId (chính chủ tài khoản) → siết bắt buộc riêng (Sinh nhật + Đo DISC)
+  var _isRootSave=(activeNodeModal.mode==='add')?(!activeNodeModal.parentId):(function(){var _n=treeNodes.find(function(x){return x.id===activeNodeModal.nodeId;});return _n?!_n.parentId:false;})();
+  // v7 — Vào ID (bắt buộc) & Sinh nhật (tùy chọn, trừ ID Gốc) lấy từ picker, không gõ tay → luôn đúng cú pháp
   var _jm=(document.getElementById('nf-join-m')||{}).value||'';
   var _jy=(document.getElementById('nf-join-y')||{}).value||'';
   var _joinDate=(_jm&&_jy)?(_jm+'.'+_jy):'';
@@ -9507,6 +9555,12 @@ function saveNodeModal(){
   if(_bdD||_bdM||_bdY){
     if(!_bdD||!_bdM){showToast('🎂 Sinh nhật: hãy chọn cả Ngày và Tháng (Năm tùy chọn), hoặc bỏ trống cả ba.');return;}
     _birthday=_bdD+'/'+_bdM+(_bdY?('/'+_bdY):'');
+  }
+  // v7 — ID Gốc bắt buộc nhập Sinh nhật (mỗi người tự nhập của mình để báo lên tuyến trên theo Mã ID)
+  if(_isRootSave&&!_birthday){
+    showToast('🎂 ID Gốc bắt buộc nhập Sinh nhật (chọn Ngày và Tháng, Năm tùy chọn).');
+    var _fb=document.getElementById('nf-bday-d');if(_fb){try{_fb.focus();}catch(e){}}
+    return;
   }
   var data={
     name:name,
@@ -9525,6 +9579,20 @@ function saveNodeModal(){
     showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
     var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
     return;
+  }
+  // v7 — BẮT BUỘC Bảo trợ (F1 của ai): chọn trong danh sách tuyến trên, hoặc gõ thêm tên bên ngoài
+  if(!data.f1of){
+    showToast('⛔ Vui lòng nhập "Bảo trợ (F1 của ai)" — chọn trong danh sách tuyến trên, hoặc gõ thêm tên bên ngoài.');
+    var _ff=document.getElementById('nf-f1of');if(_ff){try{_ff.focus();}catch(e){}_ff.style.borderColor='#E53935';}
+    return;
+  }
+  // v7 — ID Gốc: DISC bắt buộc ĐO (không gõ tay). Node mới chưa có id không đo được → cho lưu rồi nhắc mở lại đo.
+  if(_isRootSave&&!data.disc){
+    if(activeNodeModal.mode==='edit'){
+      showToast('🧭 ID Gốc bắt buộc ĐO DISC (không gõ tay). Hãy bấm "Đo DISC" để làm bài rồi lưu.');
+      return;
+    }
+    _saveMsg='✓ Đã lưu ID Gốc — nhớ mở lại ID này và bấm "Đo DISC" (bắt buộc đo)';
   }
   // v7 — BẮT BUỘC Vào ID tháng.năm (căn cứ so sánh thứ tự vào của tuyến)
   if(!data.joinDate){
