@@ -1212,6 +1212,26 @@ a.gp-att-nm:hover{text-decoration:underline}
 .wn-desc{font-size:13.5px;color:#555;font-family:Arial;line-height:1.7;text-align:left}
 .wn-foot{padding:8px 16px 16px;display:flex;align-items:center;gap:8px}
 .wn-skip{background:none;border:none;color:#AAA;font-size:12px;font-family:Arial;cursor:pointer;text-decoration:underline}
+/* v7 — Popup chào mừng + Tutorial nút màn hình */
+#welcome-ov{display:none;position:fixed;inset:0;z-index:3300;background:rgba(20,20,25,.66);align-items:center;justify-content:center;padding:16px}
+#welcome-ov.open{display:flex}
+.welcome-card{background:linear-gradient(160deg,#FFFDF7,#FFF3D6 58%,#FDE9F1);border-radius:20px;max-width:480px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.45);overflow:hidden;animation:jarPop .3s ease;border:2px solid #E9C64B}
+.welcome-top{background:linear-gradient(135deg,#7B1F8F,#C0287A,#E0531F);background-size:200% 100%;animation:tkglow 6s linear infinite;color:#fff;text-align:center;padding:22px 18px 18px;font-family:Arial}
+.welcome-emoji{font-size:52px;line-height:1}
+.welcome-h{font-size:20px;font-weight:900;margin-top:8px;line-height:1.3}
+.welcome-body{padding:18px 20px 4px;text-align:center;font-family:Arial;color:#4A3A12;font-size:14.5px;line-height:1.75}
+.welcome-steps{font-weight:800;color:#C0287A}
+.welcome-foot{padding:12px 20px 22px;text-align:center}
+.welcome-btn{background:linear-gradient(135deg,#1A7A5E,#159C74);color:#fff;border:none;border-radius:12px;padding:13px 44px;font-size:16px;font-weight:800;font-family:Arial;cursor:pointer;box-shadow:0 6px 18px rgba(21,156,116,.4)}
+.welcome-btn:hover{filter:brightness(1.06)}
+#tut-ov{display:none;position:fixed;inset:0;z-index:3400}
+#tut-ov.open{display:block}
+.tut-ring{position:absolute;border:3px solid #FBC02D;border-radius:12px;box-shadow:0 0 0 4000px rgba(15,15,20,.55),0 0 18px rgba(251,192,45,.85);transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease;pointer-events:none}
+.tut-pop{position:absolute;background:#fff;border-radius:14px;width:290px;max-width:calc(100vw - 24px);box-shadow:0 16px 44px rgba(0,0,0,.45);font-family:Arial;overflow:hidden;z-index:2}
+.tut-pop-hd{background:linear-gradient(135deg,#7B5EB5,#4A6FE3);color:#fff;font-weight:800;padding:9px 13px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tut-pop-bd{padding:12px 14px;font-size:13px;color:#444;line-height:1.6}
+.tut-pop-ft{padding:0 14px 12px;display:flex;gap:8px;align-items:center}
+.tut-skip{background:none;border:none;color:#AAA;font-size:12px;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1483,12 +1503,11 @@ a.gp-att-nm:hover{text-decoration:underline}
       <button class="tbtn" id="btn-exit-view" style="background:#7A5A0C;color:#fff;border-color:#7A5A0C">&#10005; Thoát xem</button>
     </div>
     <div class="tb-row">
+      <button class="tbtn gold" id="btn-fullscreen" title="Toàn trang" aria-label="Toàn trang" style="font-size:17px;line-height:1">&#x26F6;</button>
       <button class="stab on" data-treemode="binary">&#127795; Nhị phân</button>
-      <button class="tbtn gold" id="btn-add-root">+ ID Gốc</button>
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
       <button class="tbtn" id="btn-tzoom-in">+</button>
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
-      <button class="tbtn gold" id="btn-fullscreen">&#x26F6; Toàn trang</button>
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
       <button class="tbtn gold" id="btn-export-branch">&#127795; Xuất nhánh</button>
       <button class="tbtn" id="btn-import-branch" style="background:#EDE7F6;border-color:#B39DDB;color:#5E35B1">&#127795; Nhập nhánh</button>
@@ -1587,6 +1606,39 @@ a.gp-att-nm:hover{text-decoration:underline}
     <div class="requp-foot">
       <button class="btn btn-g" id="requp-next" data-requp="save">&#128190; L&#432;u &amp; ti&#7871;p t&#7909;c</button>
       <button class="requp-later" data-requp="later">&#272;&#7875; sau</button>
+    </div>
+  </div>
+</div>
+
+<!-- v7 — POPUP CHÀO MỪNG (hiện lần đầu đăng nhập) -->
+<div id="welcome-ov">
+  <div class="welcome-card">
+    <div class="welcome-top">
+      <div class="welcome-emoji">🎉🌟🤝</div>
+      <div class="welcome-h">Chào mừng bạn đến với<br>App Quản trị Gia đình Tâm An<br>Tuấn Tâm Huy Chi</div>
+    </div>
+    <div class="welcome-body">
+      Chúc bạn tận dụng mọi công cụ đã được xây dựng — đúc kết — áp dụng vào việc
+      <span class="welcome-steps">Học · Hành · Hiệu chỉnh · Hướng dẫn</span>
+      cho người tiếp theo, hiệu quả và thành công cùng Team. 💚
+    </div>
+    <div class="welcome-foot">
+      <button class="welcome-btn" id="welcome-start">Bắt đầu →</button>
+    </div>
+  </div>
+</div>
+
+<!-- v7 — TUTORIAL: chỉ dẫn các nút trên màn hình -->
+<div id="tut-ov">
+  <div class="tut-ring" id="tut-ring"></div>
+  <div class="tut-pop" id="tut-pop">
+    <div class="tut-pop-hd"><span id="tut-pop-title">Hướng dẫn</span><span id="tut-pop-prog"></span></div>
+    <div class="tut-pop-bd" id="tut-pop-desc"></div>
+    <div class="tut-pop-ft">
+      <button class="tut-skip" id="tut-skip">Bỏ qua</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-o btn-sm" id="tut-prev">‹ Trước</button>
+      <button class="btn btn-g btn-sm" id="tut-next">Tiếp ›</button>
     </div>
   </div>
 </div>
@@ -4292,6 +4344,105 @@ function requpSaveNext(){
 }
 function closeRequp(){var ov=document.getElementById('requp-ov');if(ov)ov.classList.remove('open');}
 function requpLater(){_requpSkipped=true;closeRequp();showToast('Bạn có thể cập nhật sau — hệ thống sẽ nhắc lại lần đăng nhập kế tiếp.');}
+// ================================================================
+// v7 — ONBOARDING lần đầu: Chào mừng → BẮT BUỘC nhập ID Gốc → Tutorial nút màn hình
+//   Chuỗi: startOnboarding → checkWelcome → checkRootGate → checkTutorial → checkWhatsNew → checkRequiredUpdates
+// ================================================================
+var _rootGateActive=false,_rootGateNext=null;
+async function startOnboarding(){
+  if(!fbUser||viewOnlyMode){return;}
+  try{var d=await fsGet('prefs');if(d){delete d.updatedAt;for(var k in d)_prefs[k]=d[k];}}catch(e){}
+  checkWelcome(function(){ checkRootGate(function(){ checkTutorial(function(){ checkWhatsNew(); }); }); });
+}
+// 1) Popup chào mừng — hiện 1 lần/tài khoản
+function checkWelcome(next){
+  next=next||function(){};
+  if(!fbUser||viewOnlyMode||(_prefs&&_prefs.welcomeSeen)){next();return;}
+  var ov=document.getElementById('welcome-ov');
+  var btn=document.getElementById('welcome-start');
+  if(!ov||!btn){next();return;}
+  ov.classList.add('open');
+  btn.onclick=function(){
+    ov.classList.remove('open');
+    _prefs.welcomeSeen=1;try{savePrefs();}catch(e){}
+    next();
+  };
+}
+// 2) CỔNG BẮT BUỘC nhập thông tin ID Gốc (trước khi làm bất cứ việc gì khác)
+async function checkRootGate(next){
+  next=next||function(){};
+  if(!fbUser||viewOnlyMode){next();return;}
+  // Nạp cây mới nhất từ cloud để không bắt tạo gốc oan khi dữ liệu chưa tải xong
+  try{var d=await fsGet('tree');if(d&&d.nodes){treeNodes=d.nodes;nmSet('tree_v2',JSON.stringify(treeNodes));}}catch(e){}
+  if(treeNodes.some(function(n){return !n.parentId;})){next();return;} // đã có ID Gốc → bỏ qua
+  _rootGateActive=true;_rootGateNext=next;
+  _openRootGateForm();
+  showToast('👉 Vui lòng nhập thông tin ID Gốc (chính bạn) để bắt đầu — bắt buộc.');
+}
+function _openRootGateForm(){
+  try{
+    openAddNodeModal2(null,null);
+    var t=document.getElementById('nmod-title');if(t)t.textContent='⭐ Nhập thông tin ID Gốc của bạn (bắt buộc)';
+    attachSelFilter(document.getElementById('nf-f1of-filter'),document.getElementById('nf-f1of-sel'));
+  }catch(e){}
+}
+// 3) TUTORIAL chỉ dẫn các nút trên màn hình (spotlight) — hiện 1 lần/tài khoản, có thể xem lại
+var TUT_STEPS=[
+  {sel:'#btn-fullscreen',title:'⛶ Toàn trang',desc:'Xem sơ đồ ở chế độ toàn màn hình để nhìn tổng thể cả cây.'},
+  {sel:'[data-treemode="binary"]',title:'🌳 Nhị phân',desc:'Xem cây theo VỊ TRÍ đặt Trái/Phải (hệ nhị phân).'},
+  {sel:'[data-treemode="star"]',title:'⭐ Mặt trời',desc:'Xem theo tuyến BẢO TRỢ (F1) — ai bảo trợ ai.'},
+  {sel:'#tree-search',title:'🔍 Tìm kiếm',desc:'Gõ tên, mã ID, SĐT, DISC, cấp bậc hay bảo trợ để tìm nhanh 1 ID.'},
+  {sel:'#btn-thangtien',title:'⚡ Thăng tiến',desc:'Lọc nổi bật các ID đang tiến gần lên cấp bậc mới để tập trung hỗ trợ.'},
+  {sel:'#btn-nangdong',title:'📅 Năng động',desc:'Nhắc đóng Năng động hàng tháng để giữ trọn quyền lợi & doanh số.'},
+  {sel:'#btn-legend',title:'❓ Chú thích',desc:'Giải nghĩa màu sắc, ký hiệu và cấp bậc hiển thị trên cây.'},
+  {sel:'.mtab[data-main]',title:'📚 Thanh menu',desc:'Chuyển giữa các khu: Sơ đồ · Mục tiêu-Hành động-Kết quả · Kỹ năng · Đo DISC · Hướng dẫn… Bấm để khám phá từng công cụ.'}
+];
+var _tutSteps=[],_tutIdx=0,_tutNext=null,_tutResizeH=null;
+function checkTutorial(next){
+  next=next||function(){};
+  if(!fbUser||viewOnlyMode||(_prefs&&_prefs.tutSeen)){next();return;}
+  startTutorial(next);
+}
+function startTutorial(next){
+  _tutNext=next||null;
+  // chỉ giữ bước có phần tử tồn tại & đang hiển thị
+  _tutSteps=TUT_STEPS.filter(function(s){var el=document.querySelector(s.sel);return el&&el.offsetParent!==null;});
+  if(!_tutSteps.length){_tutFinish();return;}
+  _tutIdx=0;
+  var ov=document.getElementById('tut-ov');if(ov)ov.classList.add('open');
+  _tutRender();
+  if(!_tutResizeH){_tutResizeH=function(){if(document.getElementById('tut-ov').classList.contains('open'))_tutRender();};window.addEventListener('resize',_tutResizeH);}
+}
+function _tutRender(){
+  var s=_tutSteps[_tutIdx];if(!s){_tutFinish();return;}
+  var el=document.querySelector(s.sel);if(!el){_tutNav(1);return;}
+  try{el.scrollIntoView({block:'center',inline:'center'});}catch(e){}
+  var r=el.getBoundingClientRect(),pad=6;
+  var ring=document.getElementById('tut-ring');
+  ring.style.top=(r.top-pad)+'px';ring.style.left=(r.left-pad)+'px';
+  ring.style.width=(r.width+pad*2)+'px';ring.style.height=(r.height+pad*2)+'px';
+  var pop=document.getElementById('tut-pop');
+  document.getElementById('tut-pop-title').textContent=s.title;
+  document.getElementById('tut-pop-desc').innerHTML=s.desc;
+  document.getElementById('tut-pop-prog').textContent=(_tutIdx+1)+'/'+_tutSteps.length;
+  document.getElementById('tut-prev').style.display=_tutIdx>0?'':'none';
+  document.getElementById('tut-next').innerHTML=(_tutIdx+1<_tutSteps.length)?'Tiếp ›':'✓ Xong';
+  // đặt popup: ưu tiên phía dưới, không đủ chỗ thì phía trên; kẹp trong màn hình
+  var vw=window.innerWidth,vh=window.innerHeight,pw=Math.min(290,vw-24),ph=pop.offsetHeight||150;
+  var top=r.bottom+12; if(top+ph>vh-8)top=Math.max(8,r.top-ph-12);
+  var left=r.left+r.width/2-pw/2; left=Math.max(8,Math.min(left,vw-pw-8));
+  pop.style.top=top+'px';pop.style.left=left+'px';pop.style.width=pw+'px';
+}
+function _tutNav(dir){
+  if(dir<0){if(_tutIdx>0){_tutIdx--;_tutRender();}return;}
+  if(_tutIdx+1<_tutSteps.length){_tutIdx++;_tutRender();return;}
+  _tutFinish();
+}
+function _tutFinish(){
+  var ov=document.getElementById('tut-ov');if(ov)ov.classList.remove('open');
+  if(fbUser&&!viewOnlyMode){_prefs.tutSeen=1;try{savePrefs();}catch(e){}}
+  var n=_tutNext;_tutNext=null;if(n)try{n();}catch(e){}
+}
 function gateLogin(user){
   // QTV chính có thể khoá đăng nhập 1 email; và (tuỳ chọn) bắt buộc xác minh email
   Promise.all([
@@ -4348,7 +4499,7 @@ function enterAppFirebase(user){
   showAndFitTree();
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
   trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
-  checkWhatsNew(); // v6.72 — tour "Có gì mới" → xong CHAIN sang cổng cập nhật thông tin bắt buộc (v6.71)
+  startOnboarding(); // v7 — Chào mừng → BẮT BUỘC ID Gốc → Tutorial → "Có gì mới" → cổng cập nhật thông tin
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -9367,6 +9518,17 @@ function buildNodeView(n){
   else if(!n.disc&&n.parentId)h+='<span style="font-size:11px;color:#AAA;font-style:italic">Chờ tự đo (đồng bộ theo Mã ID)</span>';
   if(n.disc)h+='<button type="button" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discProfileFromNode(\''+n.id+'\')">📊 Hồ sơ</button>';
   h+='</div></div>';
+  // v7 — Năng động: ID Gốc (chính chủ) tự cập nhật tháng.năm đóng Năng động gần nhất (picker tháng+năm giống Vào ID)
+  h+='<div class="nmod-row"><div class="nmod-lbl">📅 Năng động</div><div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">';
+  if(!n.parentId){
+    var _nd=(typeof loadNangDong==='function')?loadNangDong():null;
+    if(_nd&&_nd.m)h+='<span style="font-weight:700;color:#2E7D32">Tháng '+escHtml(String(_nd.m))+'/'+escHtml(String(_nd.y))+'</span>';
+    else h+='<span style="font-size:11.5px;color:#C62828;font-style:italic">Chưa nhập (bắt buộc)</span>';
+    if(typeof viewOnlyMode==='undefined'||!viewOnlyMode)h+='<button type="button" style="border:1.5px solid #2E7D32;background:#fff;color:#2E7D32;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="nangDongFromNode()">📅 '+(_nd&&_nd.m?'Cập nhật':'Nhập')+'</button>';
+  }else{
+    h+='<span style="font-size:11px;color:#AAA;font-style:italic">Mỗi ID tự cập nhật trên tài khoản của họ</span>';
+  }
+  h+='</div></div>';
   if(n.ship)h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu</div><div style="font-weight:700;display:flex;align-items:center;gap:6px;justify-content:flex-end;color:'+(n.ship==='vang'?'#8A6A12':'#546E7A')+'">'+shipSVG(n.ship,18)+shipLabel(n.ship)+'<button type="button" class="tbtn" data-ship-help="1" style="padding:2px 8px;font-size:12px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;font-weight:800">?</button></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">F1 b\u1ea3o tr\u1ee3 tr\u1ef1c h\u1ec7</div><div style="font-weight:700">'+spKids.length+' ng\u01b0\u1eddi</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Nh\u00e1nh \u0111\u1eb7t d\u01b0\u1edbi</div><div style="font-weight:700">'+plKids.length+' tr\u1ef1c ti\u1ebfp</div></div>';
@@ -9685,7 +9847,13 @@ function saveNodeModal(){
       }
     }
   }
+  // v7 — cổng ID Gốc bắt buộc: vừa tạo ID Gốc trong lúc gate mở → hoàn tất gate, chuyển sang tutorial
+  var _wasRootAdd=(activeNodeModal&&activeNodeModal.mode==='add'&&!activeNodeModal.parentId);
   saveTree2();
+  if(_wasRootAdd&&_rootGateActive&&treeNodes.some(function(n){return !n.parentId;})){
+    _rootGateActive=false;var _cb=_rootGateNext;_rootGateNext=null;
+    if(_cb)setTimeout(_cb,300);
+  }
   closeNodeModal();
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
   showToast(_saveMsg);
@@ -9843,6 +10011,10 @@ function moveNodeSide(nid,newSide){
 function closeNodeModal(){
   document.getElementById('nmod-ov').classList.remove('open');
   activeNodeModal=null;
+  // v7 — cổng ID Gốc bắt buộc: đóng mà chưa có ID Gốc → mở lại, không cho bỏ qua
+  if(_rootGateActive&&!treeNodes.some(function(n){return !n.parentId;})){
+    setTimeout(function(){try{_openRootGateForm();}catch(e){}},160);
+  }
 }
 </script>
 <script>
@@ -13702,8 +13874,9 @@ function bindStatic(){
     if(currentTreeMode==='binary'){treeScale=Math.max(treeScale/1.2,MINZ);applyTreeTransform();}
     else{starScale=Math.max(starScale/1.2,MINZ);applyStarTransform();}
   });
-  document.getElementById('btn-add-root').addEventListener('click',function(){
-    // v6.46 — chặn kép: đã có ID gốc thì không thêm gốc nữa (nút vốn đã disabled)
+  // v7 — nút "+ ID Gốc" đã gỡ khỏi thanh công cụ (ID Gốc nhập ở cổng bắt buộc lần đầu). Giữ guard cho an toàn.
+  var _bar=document.getElementById('btn-add-root');
+  if(_bar)_bar.addEventListener('click',function(){
     if(treeNodes.some(function(n){return !n.parentId;})){showToast('Đã có ID gốc — xoá ID gốc thì nút này mở lại');return;}
     openAddNodeModal2(null,null);
     attachSelFilter(document.getElementById('nf-f1of-filter'),document.getElementById('nf-f1of-sel'));
@@ -13713,6 +13886,10 @@ function bindStatic(){
   document.getElementById('btn-import-branch').addEventListener('click',importSubtree);
   var _bfs=document.getElementById('btn-fullscreen');if(_bfs)_bfs.addEventListener('click',openFullscreen);
   document.getElementById('btn-fs-close').addEventListener('click',closeFullscreen);
+  // v7 — điều hướng Tutorial nút màn hình
+  var _tn=document.getElementById('tut-next');if(_tn)_tn.addEventListener('click',function(){_tutNav(1);});
+  var _tp=document.getElementById('tut-prev');if(_tp)_tp.addEventListener('click',function(){_tutNav(-1);});
+  var _ts=document.getElementById('tut-skip');if(_ts)_ts.addEventListener('click',function(){_tutFinish();});
   document.getElementById('btn-legend').addEventListener('click',openLegend);
   document.getElementById('legend-close').addEventListener('click',closeLegend);
   document.getElementById('legend-ov').addEventListener('click',function(e){if(e.target===this)closeLegend();});
@@ -14491,6 +14668,8 @@ function discProfileFromSkill(mid){
 function _discCloseNodeModal(){try{var ov=document.getElementById('nmod-ov');if(ov)ov.classList.remove('open');}catch(e){}}
 function discFromNode(nid){_discCloseNodeModal();var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();discStartTest(nid);}
 function discProfileFromNode(nid){_discCloseNodeModal();var tab=document.querySelector('.mtab[data-main="disc"]');if(tab)tab.click();discViewProfile(nid);}
+// v7 — Từ chi tiết ID Gốc: mở popup nhập Năng động (tháng+năm giống Vào ID)
+function nangDongFromNode(){try{var ov=document.getElementById('nmod-ov');if(ov)ov.classList.remove('open');}catch(e){}if(typeof openNangDong==='function')openNangDong();}
 function loadDisc(){try{var s=nmGet('disc_v1');var o=s?JSON.parse(s):{};return (o&&typeof o==='object')?o:{};}catch(e){return {};}}
 function saveDisc(o){nmSet('disc_v1',JSON.stringify(o));if(typeof fbDb!=='undefined'&&fbDb&&fbUser)fsSet('disc',{disc:o}).catch(function(){});}
 function loadDiscCloud(){if(typeof fbDb==='undefined'||!fbDb||!fbUser)return;fsGet('disc').then(function(d){if(d&&d.disc){nmSet('disc_v1',JSON.stringify(d.disc));var pg=document.getElementById('page-disc');if(pg&&pg.classList.contains('on'))renderDiscPage();}}).catch(function(){});}
