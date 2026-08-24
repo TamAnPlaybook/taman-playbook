@@ -4233,6 +4233,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v684-tieuchi-thidua', ver:'6.84', icon:'📜', title:'Tiêu chí thi đua hiện ngay trong ô Thăng tiến',
+    desc:'Mở tab <b>⚡ Thăng tiến</b> sẽ thấy khối <b>📜 Tiêu chí thi đua — Quy định thăng tiến</b> ghi đầy đủ chuẩn 10 cấp để ai cũng nắm rõ mình cần gì. Trong đó <b>Future Star</b> theo phương án chuẩn: <b>bảo trợ 2 F1 trong cùng 1 tháng</b>, HOẶC <b>phát sinh 2 ID ở 2 nhánh F1 khác nhau trong cùng 1 tháng</b>. Tiếp đó là <b>1★</b> (2 nhánh, mỗi nhánh ≥4 ID trong 2 tháng liên tiếp) → <b>2★, 3★</b> → <b>Sapphire → Crown Ambassador</b>. App vẫn tự chấm cấp và nhắc khi bạn đạt ≥50% tiêu chí kế tiếp.' },
   { id:'v680-start-module', ver:'6.80', icon:'🚀', title:'Màn hình mở đầu do quản trị viên điều phối',
     desc:'Quản trị viên nay có thể chọn <b>module hiện đầu tiên khi mở app</b> cho cả đội — ví dụ lúc cần tập trung xây <b>Sơ đồ</b>, lúc chạy sự kiện thì mở thẳng <b>Vị trí các CLB</b>. Vì vậy màn hình đầu tiên bạn thấy khi đăng nhập có thể thay đổi theo từng giai đoạn. QTV chỉnh trong <b>⚙️ Quản trị → 🚀 Module mở đầu khi đăng nhập</b>.' },
   { id:'v679-prospect-source', ver:'6.79', icon:'🔗', title:'DS kim cương Tiềm năng: ghi rõ mối quan hệ này từ ai',
@@ -8685,6 +8687,26 @@ function rankAlertInfo(nid){
   var deadlineHtml='<div style="margin-top:5px;font-size:12px;font-weight:700;color:'+dl.color+'">\u23f3 '+dlLabel+': '+dl.dstr+' \u2014 c\u00f2n '+dl.days+' ng\u00e0y'+(timeWindowed&&dl.days<=10?' (kh\u1ea9n!)':'')+'</div>';
   return {pct:pct,html:html,nid:nid,color:nextDef.color,deadlineHtml:deadlineHtml};
 }
+function rankRulesHtml(){
+  // BẢNG TIÊU CHÍ THI ĐUA — quy định thăng tiến, hiển thị trong tab Thăng tiến để ai cũng nắm chuẩn
+  var h='<details open style="margin-bottom:12px">';
+  h+='<summary style="cursor:pointer;font-size:14px;font-weight:800;color:#7A5C00;padding:10px 12px;background:linear-gradient(180deg,#FFF8E1,#FFF3E0);border:1px solid #FFE082;border-radius:12px">📜 Tiêu chí thi đua — Quy định thăng tiến <span style="font-weight:600;font-size:12px;color:#B08900">(bấm để thu gọn)</span></summary>';
+  h+='<div style="border:1px solid #F0E4C0;border-top:none;border-radius:0 0 12px 12px;padding:12px 14px;font-size:12.5px;line-height:1.8;color:#3a3a3a;background:#fffdf5">';
+  h+='<div style="font-weight:800;color:#E65100;margin-bottom:3px">Nhóm 1 · Tự gây dựng đội (đếm ID phát sinh theo tháng)</div>';
+  h+='<div style="margin-bottom:9px">';
+  h+='• <b style="color:#FBC02D">Future Star:</b> bảo trợ <b>2 F1 trong cùng 1 tháng</b>, HOẶC phát sinh <b>2 ID ở 2 nhánh F1 khác nhau</b> trong cùng 1 tháng.<br>';
+  h+='• <b style="color:#FFA000">Leader 1★:</b> 2 nhánh F1, mỗi nhánh phát sinh <b>≥ 4 ID trong 2 tháng liên tiếp</b>.';
+  h+='</div>';
+  h+='<div style="font-weight:800;color:#E65100;margin-bottom:3px">Nhóm 2 · Nhân bản thủ lĩnh (đếm số nhánh có ID đạt cấp dưới)</div>';
+  h+='<div>';
+  h+='• <b style="color:#F57C00">Leader 2★:</b> 2 nhánh khác nhau có ID đạt 1★.<br>';
+  h+='• <b style="color:#E64A19">Leader 3★:</b> 2 nhánh khác nhau có ID đạt 2★.<br>';
+  h+='• <b style="color:#1565C0">Sapphire</b> / <b style="color:#C62828">Ruby</b> / <b style="color:#78909C">Pearl</b> / <b style="color:#2E7D32">Emerald</b> / <b style="color:#00ACC1">Diamond</b> / <b style="color:#6A1B9A">Crown Ambassador</b>: lần lượt <b>2 / 3 / 4 / 5 / 6 / 8 nhánh</b> khác nhau có ID đạt 3★.';
+  h+='</div>';
+  h+='<div style="margin-top:10px;padding-top:8px;border-top:1px dashed #E8D9A8;font-size:11.5px;color:#8a7a4a">💡 "Nhánh" = 1 F1 trực hệ + toàn bộ đội bảo trợ bên dưới F1 đó · cửa sổ tính theo tháng dương lịch · app tự chấm cấp và cảnh báo khi đạt ≥ 50% tiêu chí kế tiếp.</div>';
+  h+='</div></details>';
+  return h;
+}
 function renderRankAlert(){
   // Tiến độ thăng tiến — render vào TAB RIÊNG "Thăng tiến" (đã tách khỏi sơ đồ cho gọn)
   var el=document.getElementById('thangtien-content');
@@ -8697,7 +8719,8 @@ function renderRankAlert(){
   items.sort(function(a,b){return b.pct-a.pct;}); // gần đạt nhất lên đầu
   if(badge)badge.textContent=items.length?String(items.length):'';
   if(!el)return;
-  var h='<div style="font-size:14px;font-weight:800;margin:2px 0 8px">🎯 Tiềm năng thăng tiến</div>';
+  var h=rankRulesHtml();
+  h+='<div style="font-size:14px;font-weight:800;margin:2px 0 8px">🎯 Tiềm năng thăng tiến</div>';
   if(!items.length){
     h+='<div style="text-align:center;color:#BBB;font-size:13px;padding:18px 12px;border:1px dashed #E4E4E4;border-radius:12px;margin-bottom:8px">Chưa có ID nào đạt &ge;50% tiêu chí cấp kế tiếp.</div>';
   }else{
