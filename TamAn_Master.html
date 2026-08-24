@@ -4239,6 +4239,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v686-sk-sapxep-tron', ver:'6.86', icon:'🥧', title:'Kết quả SK: xếp A–Z, thêm tình trạng ngoài DS, biểu đồ tròn',
+    desc:'Trong <b>🩺 Kết quả SK</b>: danh sách tình trạng nay <b>xếp theo bảng chữ cái A→Z</b> theo tên bệnh (bỏ số thứ tự cho dễ tra). Có nút <b>➕ Thêm tình trạng khác</b> để ghi những tình trạng <b>ngoài danh sách 38</b> có sẵn. Biểu đồ đổi sang <b>hình tròn (donut)</b> kèm chú thích số ca &amp; % từng tình trạng trên toàn team.' },
   { id:'v685-ketqua-sk', ver:'6.85', icon:'🩺', title:'Kết quả Sức Khỏe — kho bằng chứng chăm sóc toàn team',
     desc:'Nút <b>🩺 Kết quả SK</b> trên thanh menu (thay vị trí Đo DISC — <b>Đo DISC vẫn nằm trong thông tin từng ID</b>). Trong đó: <b>danh sách xổ xuống 38 tình trạng sức khỏe</b>, mỗi tình trạng có <b>số ca đã chăm sóc thành công</b> ngay trước tên. Chọn 1 tình trạng → bấm <b>➕ Thêm kết quả</b> để ghi: <b>Tên CLB, đầu nhánh</b> (tự lấy từ Vị trí CLB), tình hình <b>trước – trong – sau</b>, kèm <b>link tư liệu</b> (ảnh/video/phiếu xét nghiệm). Có <b>biểu đồ %</b> các loại tình trạng được cải thiện trên toàn team. Kết quả <b>chia sẻ chung cho cả team</b>; người nhập sửa/xoá của mình, QTV kiểm duyệt được tất cả.' },
   { id:'v684-tieuchi-thidua', ver:'6.84', icon:'📜', title:'Tiêu chí thi đua hiện ngay trong ô Thăng tiến',
@@ -14777,17 +14779,24 @@ function loadDiscCloud(){if(typeof fbDb==='undefined'||!fbDb||!fbUser)return;fsG
 //   • Mỗi kết quả nhập lên = 1 ca chăm sóc thành công (chốt với Huy). Đếm ca + biểu đồ % theo tình trạng.
 //   • Sửa/xoá: người nhập (của mình) + QTV (mọi kết quả).
 // ================================================================
-var HEALTH_CONDS=[
- '1. Huyết áp cao','2. Huyết áp thấp','3. Tim','4. Giãn tĩnh mạch','5. Đột quỵ',
- '6. Di chứng tai biến','7. Tiểu đường','8. Gout','9. Thải độc gan','10. Gan nhiễm mỡ',
- '11. Viêm gan B','12. Suy gan','13. Thoái hóa cột sống','14. Thoát vị đĩa đệm cột sống','15. Gai cột sống',
- '16. Thoái hóa khớp','17. Viêm khớp dạng thấp','18. Thấp khớp cấp','19. Đau lưng','20. Đau khớp gối',
- '21. Loãng xương','22. Thần kinh tọa – Bại liệt – Chuột rút – Tê – Lạnh – Run tay chân','23. Bệnh Alzheimer','24. Bệnh Parkinson','25. Mất ngủ',
- '26. Thận yếu – Suy thận – Sỏi thận – Sinh lý','27. Phổi: Ho – Viêm phổi – Lao phổi – Ung thư','28. Viêm xoang','29. Viêm họng','30. Cảm lạnh – Sốt – Ho – Sổ mũi',
- '31. Ù tai – Nặng tai – Điếc','32. Dạ dày','33. Bệnh trĩ','34. Bệnh phụ khoa','35. Bệnh về mắt',
- '36. Ung thư – các loại','37. Ngăn chặn các bệnh ung thư','38. Kích hoạt tế bào gốc'
+// Danh sách tình trạng gốc (38) — LƯU THEO TÊN (không số) để xếp a–b–c và thêm tình trạng ngoài DS.
+var HEALTH_BUILTIN=[
+ 'Huyết áp cao','Huyết áp thấp','Tim','Giãn tĩnh mạch','Đột quỵ',
+ 'Di chứng tai biến','Tiểu đường','Gout','Thải độc gan','Gan nhiễm mỡ',
+ 'Viêm gan B','Suy gan','Thoái hóa cột sống','Thoát vị đĩa đệm cột sống','Gai cột sống',
+ 'Thoái hóa khớp','Viêm khớp dạng thấp','Thấp khớp cấp','Đau lưng','Đau khớp gối',
+ 'Loãng xương','Thần kinh tọa – Bại liệt – Chuột rút – Tê – Lạnh – Run tay chân','Bệnh Alzheimer','Bệnh Parkinson','Mất ngủ',
+ 'Thận yếu – Suy thận – Sỏi thận – Sinh lý','Phổi: Ho – Viêm phổi – Lao phổi – Ung thư','Viêm xoang','Viêm họng','Cảm lạnh – Sốt – Ho – Sổ mũi',
+ 'Ù tai – Nặng tai – Điếc','Dạ dày','Bệnh trĩ','Bệnh phụ khoa','Bệnh về mắt',
+ 'Ung thư – các loại','Ngăn chặn các bệnh ung thư','Kích hoạt tế bào gốc'
 ];
-var _skSelCond=0,_skTeam=null,_skFormOpen=false,_skEditId='',_skMatDraft=[],_skMatInit=false;
+var _skSelName='',_skTeam=null,_skFormOpen=false,_skEditId='',_skMatDraft=[],_skMatInit=false;
+// Tên tình trạng của 1 kết quả: ưu tiên condName; tương thích dữ liệu cũ (cond = số thứ tự 1..38)
+function condNameOf(e){if(e&&e.condName)return e.condName;var c=e?+e.cond:0;if(c>=1&&c<=HEALTH_BUILTIN.length)return HEALTH_BUILTIN[c-1];return '';}
+function _skViCmp(a,b){return String(a).localeCompare(String(b),'vi',{sensitivity:'base'});}
+function _skCounts(all){var c={};all.forEach(function(h){var n=condNameOf(h);if(n)c[n]=(c[n]||0)+1;});return c;}
+function _skCondList(counts){var set={};HEALTH_BUILTIN.forEach(function(n){set[n]=1;});Object.keys(counts||{}).forEach(function(n){set[n]=1;});return Object.keys(set).sort(_skViCmp);} // gốc + tự thêm, xếp a–b–c
+function _skPalette(i){var p=['#1565C0','#2E7D32','#C62828','#E65100','#6A1B9A','#00838F','#AD1457','#558B2F','#4527A0','#EF6C00','#00695C','#5D4037','#283593','#9E9D24','#D84315'];return p[i%p.length];}
 function _skDate(iso){if(!iso)return '';try{var d=new Date(iso);if(isNaN(d))return '';return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();}catch(e){return '';}}
 function _skBarColor(i){var p=['#1565C0','#2E7D32','#C62828','#E65100','#6A1B9A','#00838F','#AD1457','#558B2F','#4527A0','#EF6C00'];return p[(i-1)%p.length];}
 function loadHealthLocal(){try{var v=JSON.parse(nmGet('health_v1')||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
@@ -14831,8 +14840,8 @@ function skTeamAll(){
 function renderSkPage(){
   var el=document.getElementById('sk-content');if(!el)return;
   var all=skTeamAll();
-  var counts={},total=all.length;
-  all.forEach(function(h){var c=+h.cond;if(c>=1&&c<=HEALTH_CONDS.length)counts[c]=(counts[c]||0)+1;});
+  var counts=_skCounts(all),total=all.length;
+  var condList=_skCondList(counts); // gốc + tự thêm, đã xếp a–b–c
   var h='';
   h+='<div style="max-width:920px;margin:0 auto;padding:6px 2px 40px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
@@ -14840,44 +14849,57 @@ function renderSkPage(){
   h+='<button onclick="skRefresh()" style="border:1px solid #C9C9C9;background:#fff;color:#555;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer">🔄 Làm mới</button>';
   h+='</div>';
   h+='<div style="font-size:13px;color:#666;margin:2px 0 12px">Tổng hợp các ca chăm sóc – cải thiện từ tất cả CLB/thành viên. Đã ghi nhận: <b>'+total+'</b> ca.</div>';
-  h+=_skChartHtml(counts,total);
+  h+=_skPieHtml(counts,total);
   h+='<div style="background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:14px;margin-top:12px">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
   h+='<label style="font-size:13px;font-weight:700;color:#333">Chọn tình trạng sức khỏe (số trong ngoặc = số ca đã chăm sóc thành công)</label>';
+  if(!(typeof viewOnlyMode!=='undefined'&&viewOnlyMode))h+='<button onclick="skAddCustomCond()" style="border:1px dashed #F57C00;background:#FFF8F0;color:#E65100;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer">➕ Thêm tình trạng khác</button>';
+  h+='</div>';
   h+='<select id="sk-cond-select" onchange="skSelectCond(this.value)" style="width:100%;margin-top:6px;padding:10px;border:1.5px solid #C9C9C9;border-radius:10px;font-size:14px;font-weight:600;background:#fff">';
-  h+='<option value="0">— Chọn tình trạng để xem / thêm kết quả —</option>';
-  HEALTH_CONDS.forEach(function(name,i){var idx=i+1,cnt=counts[idx]||0;h+='<option value="'+idx+'"'+(_skSelCond===idx?' selected':'')+'>('+cnt+') '+escHtml(name)+'</option>';});
+  h+='<option value="">— Chọn tình trạng để xem / thêm kết quả (A → Z) —</option>';
+  condList.forEach(function(name){var cnt=counts[name]||0;h+='<option value="'+escHtml(name)+'"'+(_skSelName===name?' selected':'')+'>('+cnt+') '+escHtml(name)+'</option>';});
   h+='</select>';
-  if(_skSelCond>=1)h+=_skCondSectionHtml(_skSelCond,all);
+  if(_skSelName)h+=_skCondSectionHtml(_skSelName,all);
   h+='</div></div>';
   el.innerHTML=h;
   if(fbDb&&fbUser&&_skTeam===null){
     fetchTeamHealth().then(function(list){_skTeam=list;var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skFormOpen)renderSkPage();}).catch(function(){_skTeam=_skTeam||[];});
   }
 }
-function _skChartHtml(counts,total){
-  var rows=Object.keys(counts).map(function(k){return {idx:+k,n:counts[k]};}).sort(function(a,b){return b.n-a.n;});
+function _skPieHtml(counts,total){
+  var rows=Object.keys(counts).map(function(k){return {name:k,n:counts[k]};}).sort(function(a,b){return b.n-a.n;});
   var h='<div style="background:linear-gradient(180deg,#FFFDF6,#fff);border:1px solid #EBDFB6;border-radius:14px;padding:14px">';
   h+='<div style="font-size:14px;font-weight:800;color:#7A5C00;margin-bottom:2px">📊 Tỷ lệ ca cải thiện theo tình trạng (toàn team)</div>';
   if(!rows.length)return h+'<div style="color:#AAA;font-size:13px;padding:14px 4px;text-align:center">Chưa có kết quả nào. Hãy chọn 1 tình trạng bên dưới và bấm “➕ Thêm kết quả”.</div></div>';
   h+='<div style="font-size:12px;color:#8a7a4a;margin-bottom:10px">'+rows.length+' loại tình trạng · '+total+' ca</div>';
-  rows.forEach(function(r){
-    var pct=total?Math.round(r.n/total*100):0,color=_skBarColor(r.idx);
-    h+='<div style="margin-bottom:9px">';
-    h+='<div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600;color:#333;margin-bottom:3px"><span>'+escHtml(HEALTH_CONDS[r.idx-1])+'</span><span style="color:'+color+';font-weight:800;white-space:nowrap">'+r.n+' ca · '+pct+'%</span></div>';
-    h+='<div style="background:#EFEFEF;border-radius:8px;height:14px;overflow:hidden"><div style="width:'+Math.max(pct,2)+'%;height:100%;background:'+color+';border-radius:8px"></div></div>';
-    h+='</div>';
+  // Biểu đồ TRÒN (donut) bằng SVG — mỗi phần là 1 cung theo tỷ lệ
+  var r=54,C=2*Math.PI*r,cx=68,cy=68,sw=26,off=0,segs='';
+  rows.forEach(function(row,i){
+    var frac=total?row.n/total:0,len=frac*C,color=_skPalette(i);
+    // stroke-dasharray = [độ dài cung, phần còn lại]; xoay -90° để bắt đầu từ đỉnh
+    segs+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"><title>'+escHtml(row.name)+': '+row.n+' ca ('+Math.round(frac*100)+'%)</title></circle>';
+    off+=len;
   });
+  var svg='<svg width="136" height="136" viewBox="0 0 136 136" style="flex:0 0 auto">'+segs+'<text x="68" y="64" text-anchor="middle" font-size="22" font-weight="800" fill="#333">'+total+'</text><text x="68" y="84" text-anchor="middle" font-size="11" fill="#888">ca</text></svg>';
+  // Chú thích
+  var leg='<div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px">';
+  rows.forEach(function(row,i){
+    var pct=total?Math.round(row.n/total*100):0;
+    leg+='<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#333"><span style="flex:0 0 auto;width:12px;height:12px;border-radius:3px;background:'+_skPalette(i)+'"></span><span style="flex:1">'+escHtml(row.name)+'</span><b style="color:'+_skPalette(i)+';white-space:nowrap">'+row.n+' · '+pct+'%</b></div>';
+  });
+  leg+='</div>';
+  h+='<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center">'+svg+leg+'</div>';
   return h+'</div>';
 }
-function _skCondSectionHtml(cond,all){
-  var list=all.filter(function(h){return +h.cond===cond;});
+function _skCondSectionHtml(name,all){
+  var list=all.filter(function(h){return condNameOf(h)===name;});
   var vo=(typeof viewOnlyMode!=='undefined'&&viewOnlyMode);
   var h='<div style="margin-top:14px;border-top:1px dashed #E0E0E0;padding-top:12px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
-  h+='<div style="font-size:15px;font-weight:800;color:#1A237E">'+escHtml(HEALTH_CONDS[cond-1])+' <span style="color:#2E7D32">('+list.length+' ca)</span></div>';
-  if(!vo)h+='<button onclick="skAddOpen('+cond+')" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">➕ Thêm kết quả</button>';
+  h+='<div style="font-size:15px;font-weight:800;color:#1A237E">'+escHtml(name)+' <span style="color:#2E7D32">('+list.length+' ca)</span></div>';
+  if(!vo)h+='<button onclick="skAddOpen()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">➕ Thêm kết quả</button>';
   h+='</div>';
-  if(_skFormOpen&&_skSelCond===cond)h+=_skFormHtml(cond);
+  if(_skFormOpen&&_skSelName===name)h+=_skFormHtml(name);
   if(!list.length){h+='<div style="color:#AAA;font-size:13px;padding:12px 2px">Chưa có kết quả cho tình trạng này.</div>';}
   else{list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});list.forEach(function(e){h+=_skEntryCardHtml(e);});}
   return h+'</div>';
@@ -14906,7 +14928,7 @@ function _skEntryCardHtml(e){
   }
   return h+'</div>';
 }
-function _skFormHtml(cond){
+function _skFormHtml(name){
   var ed=null;
   if(_skEditId)ed=loadHealthLocal().filter(function(x){return x.id===_skEditId;})[0]||null;
   var loc=(typeof loadMyClubLocal==='function'?loadMyClubLocal():null)||{};
@@ -14914,7 +14936,7 @@ function _skFormHtml(cond){
   var person=ed?(ed.personName||''):'', before=ed?(ed.before||''):'', during=ed?(ed.during||''):'', after=ed?(ed.after||''):'';
   if(!_skMatInit){_skMatDraft=(ed&&ed.materials)?ed.materials.slice():[];_skMatInit=true;}
   var h='<div style="background:#F1F8E9;border:1px solid #C5E1A5;border-radius:12px;padding:14px;margin-top:12px">';
-  h+='<div style="font-weight:800;color:#33691E;margin-bottom:8px">'+(_skEditId?'✏️ Sửa kết quả':'➕ Thêm kết quả')+' — '+escHtml(HEALTH_CONDS[cond-1])+'</div>';
+  h+='<div style="font-weight:800;color:#33691E;margin-bottom:8px">'+(_skEditId?'✏️ Sửa kết quả':'➕ Thêm kết quả')+' — '+escHtml(name)+'</div>';
   var fld=function(lbl,id,val,ph){return '<div style="margin-bottom:9px"><label style="font-size:12.5px;font-weight:700;color:#444">'+lbl+'</label><input id="'+id+'" value="'+escHtml(val)+'" placeholder="'+escHtml(ph||'')+'" style="width:100%;margin-top:3px;padding:8px;border:1px solid #C9C9C9;border-radius:8px;font-size:13px"></div>';};
   var ta=function(lbl,id,val,ph){return '<div style="margin-bottom:9px"><label style="font-size:12.5px;font-weight:700;color:#444">'+lbl+'</label><textarea id="'+id+'" rows="2" placeholder="'+escHtml(ph||'')+'" style="width:100%;margin-top:3px;padding:8px;border:1px solid #C9C9C9;border-radius:8px;font-size:13px;resize:vertical">'+escHtml(val)+'</textarea></div>';};
   h+=fld('Tên CLB <span style="color:#E53935">*</span>','sk-f-club',clubName,'Tự lấy từ Vị trí CLB — sửa được');
@@ -14925,7 +14947,7 @@ function _skFormHtml(cond){
   h+=ta('Kết quả SAU chăm sóc','sk-f-after',after,'Cải thiện như thế nào');
   h+='<div style="margin-bottom:6px"><label style="font-size:12.5px;font-weight:700;color:#444">📎 Tư liệu (link ảnh / video / phiếu xét nghiệm trước–sau)</label><div id="sk-mat-list">'+_skMatRowsHtml()+'</div>';
   h+='<button onclick="skAddMatRow()" style="margin-top:5px;border:1px dashed #7CB342;background:#fff;color:#558B2F;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm link tư liệu</button></div>';
-  h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="skSaveEntry('+cond+')" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="skFormCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
+  h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="skSaveEntry()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="skFormCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
   return h+'</div>';
 }
 function _skMatRowsHtml(){
@@ -14945,13 +14967,21 @@ function _skSyncMat(){
 }
 function skAddMatRow(){_skSyncMat();_skMatDraft.push({type:'image',url:''});var b=document.getElementById('sk-mat-list');if(b)b.innerHTML=_skMatRowsHtml();}
 function skDelMatRow(i){_skSyncMat();_skMatDraft.splice(i,1);var b=document.getElementById('sk-mat-list');if(b)b.innerHTML=_skMatRowsHtml();}
-function skSelectCond(v){_skSelCond=parseInt(v,10)||0;_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
-function skAddOpen(cond){_skSelCond=cond;_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();}
-function skEditOpen(id){var e=loadHealthLocal().filter(function(x){return x.id===id;})[0];if(!e){showToast('Chỉ sửa được kết quả của chính bạn');return;}_skEditId=id;_skSelCond=+e.cond;_skFormOpen=true;_skMatInit=false;renderSkPage();}
+function skSelectCond(v){_skSelName=v||'';_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
+function skAddOpen(){if(!_skSelName){showToast('Hãy chọn tình trạng trước');return;}_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();}
+function skAddCustomCond(){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  var name=prompt('Nhập tên tình trạng sức khỏe mới (ngoài danh sách):');
+  if(name===null)return;name=name.trim();if(!name){showToast('Chưa nhập tên tình trạng');return;}
+  _skSelName=name;_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();
+}
+function skEditOpen(id){var e=loadHealthLocal().filter(function(x){return x.id===id;})[0];if(!e){showToast('Chỉ sửa được kết quả của chính bạn');return;}_skEditId=id;_skSelName=condNameOf(e);_skFormOpen=true;_skMatInit=false;renderSkPage();}
 function skFormCancel(){_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
 function skRefresh(){_skTeam=null;renderSkPage();}
-function skSaveEntry(cond){
+function skSaveEntry(){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  var condName=_skSelName;
+  if(!condName){showToast('⚠ Chưa chọn tình trạng');return;}
   _skSyncMat();
   var g=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var club=g('sk-f-club').trim(), branch=g('sk-f-branch'), person=g('sk-f-person').trim();
@@ -14962,9 +14992,9 @@ function skSaveEntry(cond){
   var list=loadHealthLocal();
   if(_skEditId){
     var idx=-1;list.forEach(function(x,i){if(x.id===_skEditId)idx=i;});
-    if(idx>=0)list[idx]=Object.assign({},list[idx],{cond:cond,clubName:club,branchHead:branch,personName:person,before:before,during:during,after:after,materials:mats,updatedAt:new Date().toISOString()});
+    if(idx>=0){var old=Object.assign({},list[idx],{condName:condName,clubName:club,branchHead:branch,personName:person,before:before,during:during,after:after,materials:mats,updatedAt:new Date().toISOString()});delete old.cond;list[idx]=old;}
   }else{
-    list.push({id:((fbUser&&fbUser.uid)||'me')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),cond:cond,clubName:club,branchHead:branch,personName:person,before:before,during:during,after:after,materials:mats,authorName:(fbUser&&(fbUser.displayName||fbUser.email))||'',createdAt:new Date().toISOString()});
+    list.push({id:((fbUser&&fbUser.uid)||'me')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),condName:condName,clubName:club,branchHead:branch,personName:person,before:before,during:during,after:after,materials:mats,authorName:(fbUser&&(fbUser.displayName||fbUser.email))||'',createdAt:new Date().toISOString()});
   }
   saveMyHealth(list);
   _skFormOpen=false;_skEditId='';_skMatInit=false;
