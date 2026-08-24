@@ -4239,6 +4239,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v687-sk-highlight-click', ver:'6.87', icon:'👆', title:'Kết quả SK: danh sách tô màu nổi bật + bấm biểu đồ để xem',
+    desc:'Danh sách tình trạng nay hiện dạng <b>thẻ tô màu</b> — tình trạng <b>đã có ca sẽ nổi bật</b> (viền màu + số ca), tình trạng chưa có làm mờ, nên dễ nhận ra ngay. Trên <b>biểu đồ tròn</b>: <b>bấm vào một phần (hoặc dòng chú thích)</b> sẽ tự nhảy tới danh sách kết quả của tình trạng đó.' },
   { id:'v686-sk-sapxep-tron', ver:'6.86', icon:'🥧', title:'Kết quả SK: xếp A–Z, thêm tình trạng ngoài DS, biểu đồ tròn',
     desc:'Trong <b>🩺 Kết quả SK</b>: danh sách tình trạng nay <b>xếp theo bảng chữ cái A→Z</b> theo tên bệnh (bỏ số thứ tự cho dễ tra). Có nút <b>➕ Thêm tình trạng khác</b> để ghi những tình trạng <b>ngoài danh sách 38</b> có sẵn. Biểu đồ đổi sang <b>hình tròn (donut)</b> kèm chú thích số ca &amp; % từng tình trạng trên toàn team.' },
   { id:'v685-ketqua-sk', ver:'6.85', icon:'🩺', title:'Kết quả Sức Khỏe — kho bằng chứng chăm sóc toàn team',
@@ -14797,6 +14799,10 @@ function _skViCmp(a,b){return String(a).localeCompare(String(b),'vi',{sensitivit
 function _skCounts(all){var c={};all.forEach(function(h){var n=condNameOf(h);if(n)c[n]=(c[n]||0)+1;});return c;}
 function _skCondList(counts){var set={};HEALTH_BUILTIN.forEach(function(n){set[n]=1;});Object.keys(counts||{}).forEach(function(n){set[n]=1;});return Object.keys(set).sort(_skViCmp);} // gốc + tự thêm, xếp a–b–c
 function _skPalette(i){var p=['#1565C0','#2E7D32','#C62828','#E65100','#6A1B9A','#00838F','#AD1457','#558B2F','#4527A0','#EF6C00','#00695C','#5D4037','#283593','#9E9D24','#D84315'];return p[i%p.length];}
+var _skPieRows=[],_skColorOf={},_skCondListCache=[]; // cache cho click biểu đồ + chip highlight
+function _skScrollToSection(){var s=document.getElementById('sk-cond-section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});}
+function skPickCond(i){var r=_skPieRows[i];if(!r)return;skSelectCond(r.name);_skScrollToSection();} // bấm phần biểu đồ tròn → tới tình trạng đó
+function skPickChipIdx(i){var n=_skCondListCache[i];if(n==null)return;skSelectCond(n);_skScrollToSection();} // bấm chip trong danh sách
 function _skDate(iso){if(!iso)return '';try{var d=new Date(iso);if(isNaN(d))return '';return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();}catch(e){return '';}}
 function _skBarColor(i){var p=['#1565C0','#2E7D32','#C62828','#E65100','#6A1B9A','#00838F','#AD1457','#558B2F','#4527A0','#EF6C00'];return p[(i-1)%p.length];}
 function loadHealthLocal(){try{var v=JSON.parse(nmGet('health_v1')||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
@@ -14851,14 +14857,12 @@ function renderSkPage(){
   h+='<div style="font-size:13px;color:#666;margin:2px 0 12px">Tổng hợp các ca chăm sóc – cải thiện từ tất cả CLB/thành viên. Đã ghi nhận: <b>'+total+'</b> ca.</div>';
   h+=_skPieHtml(counts,total);
   h+='<div style="background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:14px;margin-top:12px">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
-  h+='<label style="font-size:13px;font-weight:700;color:#333">Chọn tình trạng sức khỏe (số trong ngoặc = số ca đã chăm sóc thành công)</label>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
+  h+='<label style="font-size:13px;font-weight:700;color:#333">Danh sách tình trạng — bấm để xem/thêm · <span style="color:#2E7D32">tô màu = đã có ca</span></label>';
   if(!(typeof viewOnlyMode!=='undefined'&&viewOnlyMode))h+='<button onclick="skAddCustomCond()" style="border:1px dashed #F57C00;background:#FFF8F0;color:#E65100;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer">➕ Thêm tình trạng khác</button>';
   h+='</div>';
-  h+='<select id="sk-cond-select" onchange="skSelectCond(this.value)" style="width:100%;margin-top:6px;padding:10px;border:1.5px solid #C9C9C9;border-radius:10px;font-size:14px;font-weight:600;background:#fff">';
-  h+='<option value="">— Chọn tình trạng để xem / thêm kết quả (A → Z) —</option>';
-  condList.forEach(function(name){var cnt=counts[name]||0;h+='<option value="'+escHtml(name)+'"'+(_skSelName===name?' selected':'')+'>('+cnt+') '+escHtml(name)+'</option>';});
-  h+='</select>';
+  h+=_skChipsHtml(condList,counts);
+  _skCondListCache=condList;
   if(_skSelName)h+=_skCondSectionHtml(_skSelName,all);
   h+='</div></div>';
   el.innerHTML=h;
@@ -14866,26 +14870,40 @@ function renderSkPage(){
     fetchTeamHealth().then(function(list){_skTeam=list;var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skFormOpen)renderSkPage();}).catch(function(){_skTeam=_skTeam||[];});
   }
 }
+function _skChipsHtml(condList,counts){
+  // Danh sách tình trạng dạng "chip" — tô màu nổi bật cái đã có ca, làm mờ cái chưa có
+  var h='<div style="display:flex;flex-wrap:wrap;gap:7px">';
+  condList.forEach(function(name,i){
+    var cnt=counts[name]||0, sel=(_skSelName===name), col=_skColorOf[name]||'#2E7D32', st, badge='';
+    if(sel){st='background:'+col+';color:#fff;border:1.5px solid '+col+';font-weight:700;box-shadow:0 2px 7px rgba(0,0,0,.18)';badge='<span style="display:inline-block;min-width:16px;text-align:center;background:#fff;color:'+col+';border-radius:10px;padding:0 5px;font-size:11px;font-weight:800;margin-left:5px">'+cnt+'</span>';}
+    else if(cnt>0){st='background:#fff;color:'+col+';border:1.5px solid '+col+';font-weight:700';badge='<span style="display:inline-block;min-width:16px;text-align:center;background:'+col+';color:#fff;border-radius:10px;padding:0 5px;font-size:11px;font-weight:800;margin-left:5px">'+cnt+'</span>';}
+    else{st='background:#F5F5F5;color:#9A9A9A;border:1px solid #E4E4E4';}
+    h+='<button onclick="skPickChipIdx('+i+')" style="cursor:pointer;border-radius:20px;padding:6px 12px;font-size:12.5px;line-height:1.3;'+st+'">'+escHtml(name)+badge+'</button>';
+  });
+  return h+'</div>';
+}
 function _skPieHtml(counts,total){
   var rows=Object.keys(counts).map(function(k){return {name:k,n:counts[k]};}).sort(function(a,b){return b.n-a.n;});
+  _skPieRows=rows;_skColorOf={};
   var h='<div style="background:linear-gradient(180deg,#FFFDF6,#fff);border:1px solid #EBDFB6;border-radius:14px;padding:14px">';
-  h+='<div style="font-size:14px;font-weight:800;color:#7A5C00;margin-bottom:2px">📊 Tỷ lệ ca cải thiện theo tình trạng (toàn team)</div>';
+  h+='<div style="font-size:14px;font-weight:800;color:#7A5C00;margin-bottom:2px">📊 Tỷ lệ ca cải thiện theo tình trạng <span style="font-weight:600;color:#B08900;font-size:12px">(bấm 1 phần để xem chi tiết)</span></div>';
   if(!rows.length)return h+'<div style="color:#AAA;font-size:13px;padding:14px 4px;text-align:center">Chưa có kết quả nào. Hãy chọn 1 tình trạng bên dưới và bấm “➕ Thêm kết quả”.</div></div>';
   h+='<div style="font-size:12px;color:#8a7a4a;margin-bottom:10px">'+rows.length+' loại tình trạng · '+total+' ca</div>';
   // Biểu đồ TRÒN (donut) bằng SVG — mỗi phần là 1 cung theo tỷ lệ
   var r=54,C=2*Math.PI*r,cx=68,cy=68,sw=26,off=0,segs='';
   rows.forEach(function(row,i){
-    var frac=total?row.n/total:0,len=frac*C,color=_skPalette(i);
+    var frac=total?row.n/total:0,len=frac*C,color=_skPalette(i);_skColorOf[row.name]=color;
+    var dim=(_skSelName&&_skSelName!==row.name)?'0.28':'1';
     // stroke-dasharray = [độ dài cung, phần còn lại]; xoay -90° để bắt đầu từ đỉnh
-    segs+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"><title>'+escHtml(row.name)+': '+row.n+' ca ('+Math.round(frac*100)+'%)</title></circle>';
+    segs+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" opacity="'+dim+'" style="cursor:pointer" onclick="skPickCond('+i+')"><title>'+escHtml(row.name)+': '+row.n+' ca ('+Math.round(frac*100)+'%) — bấm để xem</title></circle>';
     off+=len;
   });
   var svg='<svg width="136" height="136" viewBox="0 0 136 136" style="flex:0 0 auto">'+segs+'<text x="68" y="64" text-anchor="middle" font-size="22" font-weight="800" fill="#333">'+total+'</text><text x="68" y="84" text-anchor="middle" font-size="11" fill="#888">ca</text></svg>';
   // Chú thích
   var leg='<div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:5px">';
   rows.forEach(function(row,i){
-    var pct=total?Math.round(row.n/total*100):0;
-    leg+='<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#333"><span style="flex:0 0 auto;width:12px;height:12px;border-radius:3px;background:'+_skPalette(i)+'"></span><span style="flex:1">'+escHtml(row.name)+'</span><b style="color:'+_skPalette(i)+';white-space:nowrap">'+row.n+' · '+pct+'%</b></div>';
+    var pct=total?Math.round(row.n/total*100):0,sel=(_skSelName===row.name);
+    leg+='<div onclick="skPickCond('+i+')" style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#333;cursor:pointer;padding:2px 6px;border-radius:7px;'+(sel?'background:'+_skPalette(i)+'22;font-weight:800':'')+'"><span style="flex:0 0 auto;width:12px;height:12px;border-radius:3px;background:'+_skPalette(i)+'"></span><span style="flex:1">'+escHtml(row.name)+'</span><b style="color:'+_skPalette(i)+';white-space:nowrap">'+row.n+' · '+pct+'%</b></div>';
   });
   leg+='</div>';
   h+='<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center">'+svg+leg+'</div>';
@@ -14894,7 +14912,7 @@ function _skPieHtml(counts,total){
 function _skCondSectionHtml(name,all){
   var list=all.filter(function(h){return condNameOf(h)===name;});
   var vo=(typeof viewOnlyMode!=='undefined'&&viewOnlyMode);
-  var h='<div style="margin-top:14px;border-top:1px dashed #E0E0E0;padding-top:12px">';
+  var h='<div id="sk-cond-section" style="margin-top:14px;border-top:1px dashed #E0E0E0;padding-top:12px;scroll-margin-top:70px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
   h+='<div style="font-size:15px;font-weight:800;color:#1A237E">'+escHtml(name)+' <span style="color:#2E7D32">('+list.length+' ca)</span></div>';
   if(!vo)h+='<button onclick="skAddOpen()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">➕ Thêm kết quả</button>';
