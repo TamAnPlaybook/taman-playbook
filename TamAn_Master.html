@@ -14971,7 +14971,7 @@ function _skFormHtml(name){
     +'<div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📷 Tải thẳng ảnh / video / giấy tờ từ máy — không cần dán link</div>'
     +'<input id="sk-file-input" type="file" multiple accept="image/*,video/*,application/pdf" onchange="skUploadSelected()" style="font-size:12px;max-width:100%">'
     +'<div id="sk-up-status" style="font-size:12px;color:#666;margin-top:6px;line-height:1.5"></div>'
-    +'<div style="font-size:11px;color:#999;margin-top:4px">Ảnh tự nén nhẹ (vẫn giữ nét, đọc được chữ trên phiếu). Mỗi tệp ≤ 25MB. Tệp của ai lưu riêng phần người đó. Video nặng nên dán link (YouTube/Drive) ở dưới để đỡ tốn dung lượng.</div></div>';
+    +'<div style="font-size:11px;color:#999;margin-top:4px">Ảnh tự nén nhẹ (giữ nét, đọc được chữ trên phiếu). Ảnh/giấy tờ ≤25MB, video ≤50MB (~30–60 giây). Tệp của ai lưu riêng phần người đó. Video dài hơn thì dán link (YouTube/Drive) ở dưới.</div></div>';
   h+='<button onclick="skAddMatRow()" style="margin-top:8px;border:1px dashed #7CB342;background:#fff;color:#558B2F;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm link tư liệu (thủ công)</button></div>';
   h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="skSaveEntry()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="skFormCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
   return h+'</div>';
@@ -15028,17 +15028,19 @@ async function skUploadSelected(){
     var storage=sM.getStorage(fbApp);
     for(var i=0;i<files.length;i++){
       var f=files[i];
-      var isImg=/^image\//i.test(f.type);
+      var isVid=f.type.indexOf('video/')===0, isImg=/^image\//i.test(f.type);
       if(st)st.innerHTML='<span style="color:#1565C0">⏳ Đang xử lý '+(i+1)+'/'+files.length+': '+escHtml(f.name)+' …</span>';
       var blob=isImg?await _skCompressImage(f):f; // nén ảnh trước khi tải (giảm dung lượng + băng thông)
-      if(blob.size>25*1024*1024){if(st)st.innerHTML+='<div style="color:#C62828">⚠ '+escHtml(f.name)+' &gt; 25MB — bỏ qua, hãy dán link thay thế.</div>';continue;}
-      var type=f.type.indexOf('image/')===0?'image':(f.type.indexOf('video/')===0?'video':(f.type==='application/pdf'?'test':'other'));
+      var capMB=isVid?50:25; // video ≤50MB (~30–60 giây); ảnh/giấy tờ ≤25MB
+      if(blob.size>capMB*1024*1024){if(st)st.innerHTML+='<div style="color:#C62828">⚠ '+escHtml(f.name)+' &gt; '+capMB+'MB — bỏ qua'+(isVid?', video dài hãy dán link YouTube/Drive':', hãy dán link thay thế')+'.</div>';continue;}
+      var type=isImg?'image':(isVid?'video':(f.type==='application/pdf'?'test':'other'));
       var compressed=(blob!==f);
       var ctype=compressed?'image/jpeg':(f.type||'application/octet-stream');
       var safe=f.name.replace(/[^\w.\-]+/g,'_');if(compressed&&!/\.jpe?g$/i.test(safe))safe=safe.replace(/\.[^.]+$/,'')+'.jpg';
       var path='health/'+fbUser.uid+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'_'+safe;
       var r=sM.ref(storage,path);
-      await sM.uploadBytes(r,blob,{contentType:ctype,cacheControl:'public,max-age=31536000'}); // cache 1 năm → xem lại không tốn băng thông
+      var task=sM.uploadBytesResumable(r,blob,{contentType:ctype,cacheControl:'public,max-age=31536000'}); // resumable: có % + nối lại khi rớt mạng; cache 1 năm
+      await new Promise(function(res,rej){task.on('state_changed',function(s){var pct=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Đang tải '+(i+1)+'/'+files.length+': '+escHtml(f.name)+' … '+pct+'%</span>';},rej,res);});
       var url=await sM.getDownloadURL(r);
       _skMatDraft.push({type:type,url:url});done++;
     }
