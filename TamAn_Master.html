@@ -1,4 +1,4 @@
-<!-- VERSION: v6.88-sk-upload -->
+<!-- VERSION: v6.89-sk-admin -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -2436,6 +2436,19 @@ function _newidLoad(key,def){try{var s=localStorage.getItem(key);return s?JSON.p
 function _newidSave(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 function newidInbox(){var a=_newidLoad(NEWID_INBOX_KEY,[]);return (a&&a.length)?a:[];}
 function newidUnread(){return newidInbox().filter(function(x){return !x.read;}).length;}
+function _nearestStarLeader(startNode,nodeMap){
+  // v6.89 — đi ngược lên tuyến trên (parentId), tìm Leader 1★/2★/3★ (rank 2..4) GẦN NHẤT.
+  // Yêu cầu: treeNodes đang trỏ về đúng cây của tài khoản này (caller tự mượn/trả).
+  try{
+    var cur=(startNode&&startNode.parentId)?nodeMap[startNode.parentId]:null,guard=0;
+    while(cur&&guard++<300){
+      var rk=nodeRank(cur.id);
+      if(rk>=2&&rk<=4)return {name:cur.name||cur.id,short:RANKS[rk-1].short};
+      cur=cur.parentId?nodeMap[cur.parentId]:null;
+    }
+  }catch(e){}
+  return null;
+}
 async function scanNewIds(){
   // Quét sơ đồ MỌI tài khoản → phát hiện ID mới so với baseline. Trả {added,firstRun,accounts}.
   var accts=await fetchAccounts().catch(function(){return [];});
@@ -2459,17 +2472,23 @@ async function scanNewIds(){
     var knownSet={};known.forEach(function(id){knownSet[id]=1;});
     var fresh=nodes.filter(function(n){return n&&n.id&&!knownSet[n.id];});
     if(fresh.length){
+      // v6.89 — tính Leader 1★/2★/3★ gần nhất: tạm mượn treeNodes = cây tài khoản này rồi trả lại
+      var _prevTree=treeNodes;
+      try{treeNodes=nodes;if(typeof clearRankMemo==='function')clearRankMemo();}catch(e){}
       fresh.forEach(function(n){
         var placed=n.parentId?nodeMap[n.parentId]:null;
+        var ld=null;try{ld=_nearestStarLeader(n,nodeMap);}catch(e){}
         inbox.unshift({
           uid:a.uid, acctName:a.name||a.email||'(không tên)', acctEmail:a.email||'',
           nodeId:n.id, nodeName:n.name||n.id,
           sponsor:n.f1of||'', side:n.side||'',
           placedUnder:placed?(placed.name||placed.id):'', joinDate:n.joinDate||'',
+          leaderName:ld?ld.name:'', leaderShort:ld?ld.short:'',
           detectedAt:now, read:false
         });
         added++;
       });
+      try{treeNodes=_prevTree;if(typeof clearRankMemo==='function')clearRankMemo();}catch(e){}
       seen[a.uid]=nodes.map(function(n){return n.id;});
     }
   });
@@ -2502,7 +2521,7 @@ function newIdItemHtml(it){
   var bd=it.read?'#E8E2D2':'#C8A84B', bg=it.read?'#FCFBF7':'#FFFBE9';
   var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
   h+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'<b>✨ '+escHtml(it.nodeName||it.nodeId)+'</b>'+(it.joinDate?' <span style="font-size:11px;color:#999">· vào '+escHtml(it.joinDate)+'</span>':'')+'</div>';
-  h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Sơ đồ: <b>'+escHtml(it.acctName)+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>👤 Bảo trợ: <b>'+escHtml(it.sponsor||'—')+'</b><br>📍 Đặt dưới: <b>'+escHtml(it.placedUnder||'(gốc)')+'</b>'+(side?' · bên '+side:'')+'</div>';
+  h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Sơ đồ: <b>'+escHtml(it.acctName)+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>👤 Bảo trợ: <b>'+escHtml(it.sponsor||'—')+'</b>'+(it.leaderName?'<br>👑 Thuộc Leader: <b>'+escHtml(it.leaderName)+'</b>'+(it.leaderShort?' <span style="background:#E64A19;color:#fff;border-radius:5px;padding:0 6px;font-size:11px;font-weight:800">'+escHtml(it.leaderShort)+'</span>':''):'')+'<br>📍 Đặt dưới: <b>'+escHtml(it.placedUnder||'(gốc)')+'</b>'+(side?' · bên '+side:'')+'</div>';
   h+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 Phát hiện: '+escHtml(fmtDT(it.detectedAt))+'</div>';
   h+='</div>';
   return h;
@@ -2522,7 +2541,21 @@ function renderNewIdInbox(scanning){
   if(!inbox.length){
     h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai), hoặc khi có người <b>🧭 hoàn thành đo DISC</b> (tự đồng bộ lên cây bạn theo Mã ID). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
   }else{
-    inbox.forEach(function(it){h+=newIdItemHtml(it);});
+    // v6.89 — PHÂN VÙNG theo Leader 1★/2★/3★ gần nhất ở tuyến trên
+    var groups={},order=[];
+    function _gk(it){
+      if(it.type)return {k:'__other',label:'🔔 Khác (DISC · Sinh nhật)',ord:3};
+      if(it.leaderName)return {k:'L:'+(it.leaderShort||'')+':'+it.leaderName,label:'👑 Team '+it.leaderName+(it.leaderShort?' ('+it.leaderShort+')':''),ord:1,short:it.leaderShort||''};
+      return {k:'__none',label:'⭐ Chưa thuộc Leader sao nào',ord:2};
+    }
+    inbox.forEach(function(it){var g=_gk(it);if(!groups[g.k]){groups[g.k]=[];order.push(g);}groups[g.k].push(it);});
+    var _sw={'3★':0,'2★':1,'1★':2};
+    order.sort(function(a,b){if(a.ord!==b.ord)return a.ord-b.ord;var sa=_sw[a.short]!=null?_sw[a.short]:9,sb=_sw[b.short]!=null?_sw[b.short]:9;if(sa!==sb)return sa-sb;return String(a.label).localeCompare(String(b.label),'vi');});
+    order.forEach(function(g){
+      var un=groups[g.k].filter(function(x){return !x.read;}).length;
+      h+='<div style="margin:16px 0 6px;font-size:13px;font-weight:800;color:#5A3E00;border-bottom:1px solid #EADFBD;padding-bottom:4px">'+escHtml(g.label)+' <span style="color:#999;font-weight:600">· '+groups[g.k].length+' ID'+(un?' · <span style="color:#C62828">'+un+' mới</span>':'')+'</span></div>';
+      groups[g.k].forEach(function(it){h+=newIdItemHtml(it);});
+    });
   }
   el.innerHTML=h;
 }
@@ -4240,6 +4273,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v689-sk-admin', ver:'6.89', icon:'🩺', title:'Kết quả SK gọn tên · Quản trị gom ID mới theo Leader',
+    desc:'Danh sách <b>🩺 Kết quả SK</b> chỉnh lại tên cho gọn &amp; thống nhất (giữ chi tiết từng tình trạng, viết tắt UT). Dành cho <b>quản trị viên</b>: mục <b>Mã mời</b> nay gộp chung với <b>Quản trị viên</b> (mã đã dùng tự ẩn hẳn), và <b>Hộp thư ID mới toàn đội</b> nay <b>phân vùng theo Team của Leader 1★/2★/3★</b> gần nhất ở tuyến trên — nhìn phát biết ID mới thuộc nhánh Leader nào.' },
   { id:'v688-sk-upload', ver:'6.88', icon:'📷', title:'Kết quả SK: tải thẳng ảnh/video từ máy — không cần dán link',
     desc:'Trong <b>🩺 Kết quả SK → ➕ Thêm kết quả</b>, phần Tư liệu nay có ô <b>📷 Tải thẳng ảnh / video / giấy tờ từ máy</b>: bấm chọn tệp là tự tải lên kho của đội — <b>không cần tạo thư mục hay copy link</b>. Tệp của ai <b>lưu riêng phần người đó, không ai sửa/xoá được của người khác</b>. Vẫn giữ ô dán link để dùng cho <b>video nặng</b> (YouTube/Drive) cho đỡ tốn dung lượng.' },
   { id:'v687-sk-highlight-click', ver:'6.87', icon:'👆', title:'Kết quả SK: danh sách tô màu nổi bật + bấm biểu đồ để xem',
@@ -10905,12 +10940,21 @@ function renderAdminPage(){
       }else if(!legacyCodes.length){
         h+='<div style="font-size:13px;color:#999;padding:6px 0">Chưa có mã chưa dùng. Bấm "Tạo 5 mã mới".</div>';
       }
-      if(usedInvN)h+='<div style="font-size:12px;color:#999;margin-top:6px">Đã dùng: '+usedInvN+' mã.</div>';
+      // v6.89 — mã đã dùng được ẩn HẲN khỏi khu vực này (không hiện danh sách lẫn dòng đếm)
       if(legacyCodes.length){
         h+='<div style="margin-top:12px;border-top:1px dashed #E0E0E0;padding-top:10px"><div style="font-size:12px;color:#C62828;font-weight:700;margin-bottom:6px">⚠️ '+legacyCodes.length+' mã CŨ đang nằm ở chỗ bị lộ (registration.codes). Bấm nút dưới để chuyển sang chỗ an toàn rồi khoá lỗ rò:</div>';
         h+='<button class="btn btn-sm" style="background:#C8A84B;color:#1A1A1A" id="btn-migrate-codes">🔐 Chuyển mã cũ sang chỗ an toàn + khoá lỗ rò</button></div>';
       }
-      h+='<div style="font-size:12px;color:#E65100;line-height:1.6;margin-top:8px">⚠️ Để mã tự khoá sau khi dùng, cần cập nhật <b>Firestore Rules</b> bản mới (mục Rules bên dưới, dành cho QTV chính). Chưa cập nhật thì mã vẫn dùng được nhưng <u>chưa tự khoá 1 lần</u>.</div></div>';
+      h+='<div style="font-size:12px;color:#E65100;line-height:1.6;margin-top:8px">⚠️ Để mã tự khoá sau khi dùng, cần cập nhật <b>Firestore Rules</b> bản mới (mục Rules bên dưới, dành cho QTV chính). Chưa cập nhật thì mã vẫn dùng được nhưng <u>chưa tự khoá 1 lần</u>.</div>';
+      // v6.89 — GHÉP "Quản trị viên" vào chung khu Mã mời (cùng 1 khối)
+      h+='<div style="border-top:1px dashed #E0E0E0;margin:16px 0 0;padding-top:14px"><div style="font-weight:800;font-size:15px;color:#1A1A1A;margin-bottom:8px">👥 Quản trị viên</div>';
+      admins.emails.forEach(function(em){
+        h+='<div class="nmod-row"><div class="nmod-lbl">'+escHtml(em)+(em===myEmail?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+'</div>';
+        if(admins.emails.length>1)h+='<button class="btn btn-r btn-sm" data-rmadmin="'+escHtml(em)+'">Gỡ</button>';
+        h+='</div>';
+      });
+      h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-newmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
+      h+='<button class="btn btn-d btn-sm" id="btn-adm-addmail">+ Thêm QTV</button></div></div></div>';
       // v6.5 — Bảng thông báo + Chúc mừng đội nhóm (mọi QTV dùng được)
       h+=announceBoxHtml(banner);
       h+=celebrateBoxHtml(banner);
@@ -10944,14 +10988,7 @@ function renderAdminPage(){
         h+='<div style="font-size:13px;color:#999">Trạng thái: <b style="color:'+(importOn?'#1A7A5E':'#E53935')+'">'+(importOn?'Đang BẬT':'Đang TẮT')+'</b> · Chỉ <b>quản trị viên chính</b> ('+escHtml(admins.emails[0]||'')+') được điều chỉnh.</div>';
       }
       h+='</div>';
-      h+='<div class="adm-box"><div class="adm-title">\uD83D\uDC65 Quản trị viên</div>';
-      admins.emails.forEach(function(em){
-        h+='<div class="nmod-row"><div class="nmod-lbl">'+escHtml(em)+(em===myEmail?' <span style="color:#1A7A5E;font-size:11px">(bạn)</span>':'')+'</div>';
-        if(admins.emails.length>1)h+='<button class="btn btn-r btn-sm" data-rmadmin="'+escHtml(em)+'">Gỡ</button>';
-        h+='</div>';
-      });
-      h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="adm-newmail" class="nmod-inp" style="flex:1" placeholder="email@gmail.com">';
-      h+='<button class="btn btn-d btn-sm" id="btn-adm-addmail">+ Thêm QTV</button></div></div>';
+      // v6.89 - Khoi Quan tri vien da GHEP len chung khu Ma moi o tren
       // v6.80 — Module mở đầu khi đăng nhập (QTV đặt chung cho toàn đội)
       var _sm=(reg&&reg.startModule&&_isStartModuleValid(reg.startModule))?reg.startModule:'tree';
       h+='<div class="adm-box"><div class="adm-title">🚀 Module mở đầu khi đăng nhập</div>';
