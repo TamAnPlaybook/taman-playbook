@@ -1,4 +1,5 @@
-<!-- VERSION: v6.91-hocvien -->
+<!-- VERSION: v6.92-hocvien-cms -->
+<!-- v6.92 — HỌC VIỆN: nơi SOẠN NỘI DUNG cho QTV (như Kết quả SK). Nút "✏️ Soạn nội dung (QTV)" trong tab 🎓 Học viện (chỉ isBranchAdmin thấy) → chọn môn → chọn bài → chỉnh Tiêu đề/Nội dung, DÁN LINK video (YouTube/Drive) HOẶC TẢI VIDEO từ máy (≤100MB, resumable %), TẢI ẢNH sơ đồ (nén client-side, nhiều ảnh, xoá được) — tái dùng nguyên pipeline Firebase Storage của Kết quả SK (_skCompressImage + uploadBytesResumable + getDownloadURL, path health/{uid}/academy_*). Nội dung override lưu appConfig/registration.academyContent (QTV ghi, cả đội đọc — KHÔNG cần đổi Rules); học viên xem bài tự MERGE override lên nội dung gốc ACADEMY (video nhúng + gallery ảnh + chữ). Nạp lười acadLoadContent() khi mở tab. -->
 <!-- v6.91 — HỌC VIỆN TÂM AN (tab 🎓 Học viện): lộ trình tự học phát triển bản thân. CẤU TRÚC: Test đầu vào → GIAI ĐOẠN NỀN TẢNG "Vì sao" (4 môn: Bánh xe cuộc đời · Kim tứ đồ · Vì sao xây hệ thống MLM · Vì sao Tâm An) → 5 CẤP LÃNH ĐẠO (Maxwell). KHÓA TUẦN TỰ toàn lộ trình (foundations+levels gộp thành 1 chuỗi 'stages'). "QUA MÔN" 1 module = học hết bài + kiểm tra ≥pass% + GIẢI THÍCH 'vì sao' bằng lời (đo hiểu sâu, tối thiểu N ký tự) + HÀNH ĐỘNG ÁP DỤNG THẬT. Nội dung để trong hằng ACADEMY (foundations[]/levels[]/entry — sửa dễ như WHATS_NEW; MVP, trình soạn admin làm sau). Tiến độ lưu _prefs.academy.stages{sid} → đồng bộ đa thiết bị qua fsSet('prefs'), KHÔNG đổi Rules. Thêm tab+trang #page-academy, hook renderAcademy() trong bộ chuyển tab, listener click riêng data-acad (cô lập). -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
@@ -4280,6 +4281,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v692-hocvien-cms', ver:'6.92', icon:'🎬', title:'Học viện: QTV tự nạp video & ảnh sơ đồ vào bài học',
+    desc:'Trong tab <b>🎓 Học viện</b>, Quản trị viên nay có nút <b>✏️ Soạn nội dung (QTV)</b>: chọn từng môn → từng bài để <b>dán link video</b> (YouTube/Drive) hoặc <b>tải video từ máy</b>, <b>tải ảnh sơ đồ</b> (tự nén, chọn nhiều ảnh, xoá được), và chỉnh lại tiêu đề/nội dung bài. Cách tải giống hệt <b>🩺 Kết quả SK</b> (tải thẳng lên kho, có %). Nội dung lưu <b>dùng chung cho cả đội</b> — học viên mở bài sẽ thấy video nhúng + sơ đồ + nội dung bạn soạn. Nhờ đó bạn <b>cá nhân hóa dần</b> giáo trình cho Tâm An mà không cần đụng tới kỹ thuật.' },
   { id:'v691-hocvien', ver:'6.91', icon:'🎓', title:'Học viện Tâm An — tự học Nền tảng "Vì sao" + 5 cấp Lãnh đạo (khóa tuần tự)',
     desc:'Có tab mới <b>🎓 Học viện</b>: lộ trình <b>tự học phát triển bản thân</b>. Bắt đầu bằng <b>Test đầu vào</b>, rồi học <b>Giai đoạn Nền tảng "Vì sao"</b> — <b>Bánh xe cuộc đời · Kim tứ đồ · Vì sao xây hệ thống MLM · Vì sao Tâm An</b> — trước khi mở <b>5 Cấp độ Lãnh đạo</b> (Chức vị → Cho phép → Sản xuất → Phát triển người → Đỉnh cao). Mỗi môn muốn <b>QUA MÔN</b> phải: học hết bài + <b>kiểm tra ≥80%</b> + <b>giải thích "vì sao" bằng lời của bạn</b> (đo mức hiểu sâu) + <b>1 hành động áp dụng thật</b> — xong môn trước mới mở môn sau, học chắc không nhảy cóc. Tiến độ <b>tự đồng bộ mọi thiết bị</b>. Nội dung sẽ được cá nhân hóa dần cho Tâm An.' },
   { id:'v689-sk-admin', ver:'6.89', icon:'🩺', title:'Kết quả SK gọn tên · Quản trị gom ID mới theo Leader',
@@ -15456,6 +15459,13 @@ function dShade(hex,pct){var n=parseInt(hex.slice(1),16);var r=(n>>16)&255,g=(n>
 .acad-subblock{border-top:1px dashed #E3E9F0;margin-top:16px;padding-top:14px}
 .acad-subblock:first-child{border-top:none;margin-top:0;padding-top:0}
 .acad-lbl{font-size:13.5px;font-weight:800;color:#1B4F8A;margin-bottom:6px}
+.acad-imgs{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 14px}
+.acad-imgs a{display:block;max-width:340px;flex:1 1 240px}
+.acad-imgs img{width:100%;border:1px solid #E3E9F0;border-radius:10px;display:block}
+.acad-ed-imgs{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.acad-ed-thumb{position:relative;width:112px}
+.acad-ed-thumb img{width:112px;height:82px;object-fit:cover;border-radius:8px;border:1px solid #E3E9F0}
+.acad-ed-thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;line-height:20px;text-align:center;border-radius:50%;border:none;background:#E53935;color:#fff;font-weight:800;font-size:12px;cursor:pointer}
 </style>
 
 <script>
@@ -15806,6 +15816,46 @@ var ACADEMY={
 
 /* ===== 🎓 ENGINE — không cần sửa khi chỉ đổi nội dung ===================== */
 var _acadView={mode:'home'};
+var _acadContent=null;         // override nội dung dùng chung toàn đội (appConfig/registration.academyContent)
+var _acadContentLoading=false;
+var _acadEdDraft=null;         // bản nháp đang soạn (QTV): {sid,lessonId,images:[]}
+
+// Nạp nội dung dùng chung (QTV đã soạn) — 1 lần, rồi vẽ lại. Không có mạng → dùng nội dung gốc.
+function acadLoadContent(force){
+  if(_acadContentLoading)return;
+  if(_acadContent&&!force)return;
+  if(typeof fbDb==='undefined'||!fbDb||typeof fsGetGlobal!=='function'){if(_acadContent===null)_acadContent={};return;}
+  _acadContentLoading=true;
+  fsGetGlobal('registration').then(function(d){_acadContent=(d&&d.academyContent)||{};})
+    .catch(function(){if(_acadContent===null)_acadContent={};})
+    .then(function(){_acadContentLoading=false;try{var pg=document.getElementById('page-academy');if(pg&&pg.classList.contains('on'))_acadPaint();}catch(e){}});
+}
+function acadOverride(sid,lessonId){var c=_acadContent||{};return (c[sid]&&c[sid][lessonId])||null;}
+function acadLessonMerged(st,lessonId){
+  var base=null,d=st.def;for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lessonId)base=d.lessons[i];
+  if(!base)return null;
+  var ov=acadOverride(st.sid,lessonId)||{};
+  return {id:base.id,
+    title:(ov.title&&ov.title.trim())?ov.title:base.title,
+    body:(ov.body&&ov.body.trim())?ov.body:base.body,
+    video:ov.video||base.video||'',
+    images:Array.isArray(ov.images)?ov.images:[]};
+}
+function _acadMediaHtml(video,images){
+  var h='';
+  if(video){
+    var emb=_acadYtEmbed(video);
+    if(emb)h+='<div class="acad-video"><iframe src="'+emb+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
+    else if(/\.(mp4|webm|ogg|mov)(\?|$)/i.test(video)||/firebasestorage/i.test(video))h+='<div class="acad-video"><video src="'+_esc(video)+'" controls playsinline style="position:absolute;inset:0;width:100%;height:100%;background:#000"></video></div>';
+    else h+='<div style="margin:0 0 12px"><a class="btn btn-d" href="'+_esc(video)+'" target="_blank" rel="noopener">▶ Mở video bài giảng</a></div>';
+  }
+  if(images&&images.length){
+    h+='<div class="acad-imgs">';
+    images.forEach(function(u){h+='<a href="'+_esc(u)+'" target="_blank" rel="noopener"><img src="'+_esc(u)+'" alt="sơ đồ minh hoạ" loading="lazy"></a>';});
+    h+='</div>';
+  }
+  return h;
+}
 
 function acadStages(){
   var out=[];
@@ -15862,7 +15912,7 @@ function _acadYtEmbed(url){
 function _esc(s){return (typeof escHtml==='function')?escHtml(s):String(s==null?'':s);}
 function _acadToast(m){if(typeof showToast==='function')showToast(m);}
 
-function renderAcademy(){_acadView={mode:'home'};_acadPaint();}
+function renderAcademy(){_acadView={mode:'home'};_acadPaint();acadLoadContent();}
 function acadGo(v){_acadView=v;_acadPaint();try{window.scrollTo(0,0);}catch(e){}}
 function _acadPaint(){
   var el=document.getElementById('academy-content'); if(!el)return;
@@ -15871,6 +15921,8 @@ function _acadPaint(){
   else if(m==='stage')el.innerHTML=_acadStageHtml(_acadView.sid);
   else if(m==='lesson')el.innerHTML=_acadLessonHtml(_acadView.sid,_acadView.lesson);
   else if(m==='test')el.innerHTML=_acadTestHtml(_acadView.sid);
+  else if(m==='admin')el.innerHTML=_acadAdminHtml();
+  else if(m==='adminlesson')el.innerHTML=_acadAdminLessonHtml(_acadView.sid,_acadView.lesson);
   else el.innerHTML=_acadHomeHtml();
 }
 
@@ -15909,6 +15961,9 @@ function _acadHomeHtml(){
       +'<p>Lộ trình tự học phát triển bản thân: <b>Nền tảng "Vì sao"</b> trước, rồi <b>5 Cấp độ Lãnh đạo</b> (Maxwell). Học chắc từng bậc — <b>đậu môn trước mới mở môn sau</b>.</p>'
       +'<div class="acad-pbar"><i style="width:'+pct+'%"></i></div>'
       +'<div class="acad-pnum">Tiến độ toàn lộ trình: <b>'+pct+'%</b></div></div>';
+  if(typeof isBranchAdmin!=='undefined'&&isBranchAdmin){
+    h+='<div style="text-align:right;margin:-4px 0 12px"><button class="btn btn-d" data-acad="go-admin">✏️ Soạn nội dung (QTV)</button></div>';
+  }
   if(pct>=100){
     h+='<div class="acad-cert">🏆<div class="big">Chúc mừng! Bạn đã hoàn thành Học viện Tâm An</div>'
       +'<div style="font-size:13.5px">Từ nền tảng "vì sao" đến đỉnh cao lãnh đạo. Giờ là lúc sống nó mỗi ngày cùng đội.</div></div>';
@@ -16015,13 +16070,13 @@ function _acadLessonHtml(sid,lsId){
   var d=st.def, idx=-1; for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lsId)idx=i;
   if(idx<0)return _acadStageHtml(sid);
   var ls=d.lessons[idx], s=acadSt(sid), done=s.lessonsDone.indexOf(ls.id)>=0;
+  var mg=acadLessonMerged(st,ls.id)||{title:ls.title,body:ls.body,video:ls.video,images:[]};
   var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
   var h='<button class="acad-back" data-acad="go-stage" data-sid="'+sid+'">← '+label+'</button>';
-  h+='<div class="acad-block"><h3 style="color:'+d.color+'">'+d.icon+' '+_esc(ls.title)+'</h3>'
+  h+='<div class="acad-block"><h3 style="color:'+d.color+'">'+d.icon+' '+_esc(mg.title)+'</h3>'
     +'<div class="hint">Bài '+(idx+1)+'/'+d.lessons.length+'</div>';
-  var emb=_acadYtEmbed(ls.video);
-  if(emb)h+='<div class="acad-video"><iframe src="'+emb+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
-  h+='<div class="acad-body">'+(ls.body||'')+'</div>';
+  h+=_acadMediaHtml(mg.video,mg.images);
+  h+='<div class="acad-body">'+(mg.body||'')+'</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
   h+='<button class="btn '+(done?'btn-d':'btn-g')+'" data-acad="lesson-done" data-sid="'+sid+'" data-ls="'+_esc(ls.id)+'">'+(done?'✓ Đã học xong':'✓ Đánh dấu đã học xong')+'</button>';
   if(idx+1<d.lessons.length)h+='<button class="btn btn-d" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(d.lessons[idx+1].id)+'">Bài tiếp theo →</button>';
@@ -16058,6 +16113,125 @@ function _acadTestHtml(sid){
   return h;
 }
 
+/* ===== SOẠN NỘI DUNG (QTV) — nạp link video + ảnh sơ đồ, lưu chung toàn đội ===== */
+function _acadIsAdmin(){return (typeof isBranchAdmin!=='undefined'&&isBranchAdmin);}
+function _acadAdminHtml(){
+  var h='<button class="acad-back" data-acad="go-home">← Về Học viện</button>';
+  h+='<div class="acad-hero" style="background:linear-gradient(135deg,#5E35B1,#7E57C2)"><h2>✏️ Soạn nội dung (QTV)</h2>'
+    +'<p>Thêm <b>link/ tải video</b> &amp; <b>ảnh sơ đồ</b>, chỉnh bài học cho từng môn. Nội dung lưu <b>dùng chung cho cả đội</b> (giống Kết quả SK).</p></div>';
+  if(!_acadIsAdmin()){h+='<div class="acad-block"><p class="hint" style="margin:0">Chỉ Quản trị viên mới sửa được nội dung Học viện.</p></div>';return h;}
+  if(_acadContent===null){acadLoadContent();h+='<div class="acad-block"><p class="hint" style="margin:0">Đang tải nội dung hiện có…</p></div>';}
+  acadStages().forEach(function(st){
+    var d=st.def,label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+    h+='<div class="acad-block" style="padding:13px 15px"><div class="acad-lbl" style="color:'+d.color+';margin-bottom:9px">'+d.icon+' '+label+'</div>';
+    d.lessons.forEach(function(ls){
+      var ov=acadOverride(st.sid,ls.id)||{},tags=[];
+      if(ov.video)tags.push('🎬 video');
+      if(ov.images&&ov.images.length)tags.push('🖼️ '+ov.images.length+' ảnh');
+      if(ov.body&&ov.body.trim())tags.push('✏️ đã sửa chữ');
+      h+='<div class="acad-lesson" data-acad="go-adminlesson" data-sid="'+st.sid+'" data-ls="'+_esc(ls.id)+'"><div class="lt">'+_esc(ls.title)+'</div><div class="lx">'+(tags.length?_esc(tags.join(' · ')):'Thêm nội dung')+' →</div></div>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
+function _acadEdImgList(images){
+  if(!images||!images.length)return '<div style="font-size:12px;color:#999">Chưa có ảnh nào.</div>';
+  return images.map(function(u,i){return '<div class="acad-ed-thumb"><img src="'+_esc(u)+'"><button onclick="acadDelImage('+i+')" title="Xoá ảnh">✕</button></div>';}).join('');
+}
+function acadDelImage(i){if(!_acadEdDraft)return;_acadEdDraft.images.splice(i,1);var b=document.getElementById('acad-img-list');if(b)b.innerHTML=_acadEdImgList(_acadEdDraft.images);}
+function _acadAdminLessonHtml(sid,lessonId){
+  var st=acadStage(sid); if(!st)return '';
+  var d=st.def,base=null;for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lessonId)base=d.lessons[i];
+  if(!base)return '';
+  var ov=acadOverride(sid,lessonId)||{};
+  var title=(ov.title!=null&&ov.title!=='')?ov.title:base.title;
+  var body=(ov.body!=null&&ov.body!=='')?ov.body:((base.body||'').trim());
+  var video=ov.video||base.video||'';
+  if(!_acadEdDraft||_acadEdDraft.sid!==sid||_acadEdDraft.lessonId!==lessonId)_acadEdDraft={sid:sid,lessonId:lessonId,images:(Array.isArray(ov.images)?ov.images.slice():[])};
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-admin">← Danh sách bài (QTV)</button>';
+  h+='<div class="acad-block"><h3 style="color:'+d.color+'">✏️ '+_esc(base.title)+'</h3>'
+    +'<p class="hint">'+label+' · Nội dung dùng chung cho cả đội. Để trống Tiêu đề/Nội dung = giữ bản mặc định.</p>';
+  h+='<div class="acad-lbl">Tiêu đề bài</div><input id="acad-ed-title" class="acad-note" style="min-height:0;height:44px" value="'+_esc(title)+'">';
+  h+='<div class="acad-lbl" style="margin-top:12px">Nội dung bài <span style="font-weight:600;color:#8794A3">(dùng được thẻ &lt;p&gt; &lt;b&gt; &lt;ul&gt;&lt;li&gt;)</span></div>'
+    +'<textarea id="acad-ed-body" class="acad-note" style="min-height:170px">'+_esc(body)+'</textarea>';
+  h+='<div class="acad-lbl" style="margin-top:16px">🎬 Video bài giảng</div>'
+    +'<input id="acad-ed-video" class="acad-note" style="min-height:0;height:44px" placeholder="Dán link YouTube / Drive… (hoặc để trống)" value="'+_esc(video)+'">'
+    +'<div style="margin-top:8px;padding:10px;border:1px dashed #7CB342;border-radius:9px;background:#fff"><div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📤 Hoặc tải video từ máy (≤100MB, ~1–2 phút)</div>'
+    +'<input id="acad-vid-input" type="file" accept="video/*" onchange="acadUploadVideo(\''+sid+'\',\''+lessonId+'\')" style="font-size:12px;max-width:100%">'
+    +'<div id="acad-vid-status" style="font-size:12px;color:#666;margin-top:6px"></div></div>';
+  h+='<div class="acad-lbl" style="margin-top:16px">🖼️ Hình ảnh / sơ đồ</div>'
+    +'<div id="acad-img-list" class="acad-ed-imgs">'+_acadEdImgList(_acadEdDraft.images)+'</div>'
+    +'<div style="margin-top:8px;padding:10px;border:1px dashed #7CB342;border-radius:9px;background:#fff"><div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📷 Tải ảnh sơ đồ từ máy — tự nén, chọn nhiều ảnh</div>'
+    +'<input id="acad-img-input" type="file" accept="image/*" multiple onchange="acadUploadImages(\''+sid+'\',\''+lessonId+'\')" style="font-size:12px;max-width:100%">'
+    +'<div id="acad-img-status" style="font-size:12px;color:#666;margin-top:6px"></div>'
+    +'<div style="font-size:11px;color:#999;margin-top:4px">Ảnh tự nén (≤1600px, giữ nét). Tệp lưu trên kho Firebase, hiện cho cả đội khi bấm Lưu.</div></div>';
+  h+='<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-g" onclick="acadAdminSave(\''+sid+'\',\''+lessonId+'\')">💾 Lưu cho cả đội</button>'
+    +'<button class="btn btn-d" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(lessonId)+'">👁️ Xem như học viên</button>'
+    +'<button class="btn btn-d" data-acad="go-admin">Xong</button></div>';
+  h+='</div>';
+  return h;
+}
+async function acadUploadImages(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không tải được');return;}
+  if(typeof fbDb==='undefined'||!fbDb||typeof fbUser==='undefined'||!fbUser){_acadToast('Cần đăng nhập để tải ảnh');return;}
+  var inp=document.getElementById('acad-img-input');if(!inp||!inp.files||!inp.files.length)return;
+  var files=Array.prototype.slice.call(inp.files),st=document.getElementById('acad-img-status');
+  if(!_acadEdDraft||_acadEdDraft.lessonId!==lessonId)_acadEdDraft={sid:sid,lessonId:lessonId,images:[]};
+  try{
+    var sMod=await import(FB_STORAGE),storage=sMod.getStorage(fbApp),done=0;
+    for(var i=0;i<files.length;i++){
+      var f=files[i];
+      if(st)st.innerHTML='<span style="color:#1565C0">⏳ Xử lý ảnh '+(i+1)+'/'+files.length+'…</span>';
+      var blob=(typeof _skCompressImage==='function')?await _skCompressImage(f):f;
+      if(blob.size>25*1024*1024){if(st)st.innerHTML+='<div style="color:#C62828">⚠ Ảnh &gt;25MB — bỏ qua</div>';continue;}
+      var safe=f.name.replace(/[^\w.\-]+/g,'_');if(blob!==f&&!/\.jpe?g$/i.test(safe))safe=safe.replace(/\.[^.]+$/,'')+'.jpg';
+      var path='health/'+fbUser.uid+'/academy_'+sid+'_'+lessonId+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+'_'+safe;
+      var r=sMod.ref(storage,path);
+      var task=sMod.uploadBytesResumable(r,blob,{contentType:(blob!==f)?'image/jpeg':(f.type||'application/octet-stream'),cacheControl:'public,max-age=31536000'});
+      await new Promise(function(res,rej){task.on('state_changed',function(s){var p=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Tải ảnh '+(i+1)+'/'+files.length+'… '+p+'%</span>';},rej,res);});
+      var url=await sMod.getDownloadURL(r);_acadEdDraft.images.push(url);done++;
+    }
+    if(st&&done)st.innerHTML='<span style="color:#2E7D32">✅ Đã tải '+done+' ảnh. Nhớ bấm 💾 Lưu để hiện cho cả đội.</span>';
+    inp.value='';var b=document.getElementById('acad-img-list');if(b)b.innerHTML=_acadEdImgList(_acadEdDraft.images);
+  }catch(e){console.warn('acad img upload:',e);if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được ảnh (kho lưu chưa bật hoặc mạng lỗi). Có thể dán link ảnh trong ô Nội dung.</span>';}
+}
+async function acadUploadVideo(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không tải được');return;}
+  if(typeof fbDb==='undefined'||!fbDb||typeof fbUser==='undefined'||!fbUser){_acadToast('Cần đăng nhập để tải video');return;}
+  var inp=document.getElementById('acad-vid-input');if(!inp||!inp.files||!inp.files.length)return;
+  var f=inp.files[0],st=document.getElementById('acad-vid-status');
+  if(f.size>100*1024*1024){if(st)st.innerHTML='<span style="color:#C62828">⚠ Video &gt;100MB — hãy dán link YouTube/Drive thay thế.</span>';return;}
+  try{
+    var sMod=await import(FB_STORAGE),storage=sMod.getStorage(fbApp);
+    var safe=f.name.replace(/[^\w.\-]+/g,'_');
+    var path='health/'+fbUser.uid+'/academyvid_'+sid+'_'+lessonId+'_'+Date.now().toString(36)+'_'+safe;
+    var r=sMod.ref(storage,path);
+    var task=sMod.uploadBytesResumable(r,f,{contentType:f.type||'video/mp4',cacheControl:'public,max-age=31536000'});
+    await new Promise(function(res,rej){task.on('state_changed',function(s){var p=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Tải video… '+p+'%</span>';},rej,res);});
+    var url=await sMod.getDownloadURL(r);var vin=document.getElementById('acad-ed-video');if(vin)vin.value=url;
+    if(st)st.innerHTML='<span style="color:#2E7D32">✅ Đã tải video. Nhớ bấm 💾 Lưu.</span>';inp.value='';
+  }catch(e){console.warn('acad vid upload:',e);if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được video. Hãy dán link YouTube/Drive.</span>';}
+}
+function acadAdminSave(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không lưu được');return;}
+  if(!_acadIsAdmin()){_acadToast('Chỉ QTV mới sửa nội dung');return;}
+  if(_acadContent===null){_acadToast('Đang tải nội dung, thử lại sau giây lát.');acadLoadContent();return;}
+  var title=((document.getElementById('acad-ed-title')||{}).value||'').trim();
+  var body=((document.getElementById('acad-ed-body')||{}).value||'').trim();
+  var video=((document.getElementById('acad-ed-video')||{}).value||'').trim();
+  var images=(_acadEdDraft&&_acadEdDraft.lessonId===lessonId&&Array.isArray(_acadEdDraft.images))?_acadEdDraft.images.slice():[];
+  if(!_acadContent[sid])_acadContent[sid]={};
+  _acadContent[sid][lessonId]={title:title,body:body,video:video,images:images};
+  if(typeof fsSetGlobal==='function'){
+    fsSetGlobal('registration',{academyContent:_acadContent})
+      .then(function(){_acadToast('✅ Đã lưu nội dung cho cả đội');})
+      .catch(function(){_acadToast('⚠ Lưu thất bại (cần quyền QTV hoặc mạng lỗi).');});
+  }else{_acadToast('Không lưu được (thiếu kết nối).');}
+  acadGo({mode:'adminlesson',sid:sid,lesson:lessonId});
+}
+
 /* ===== Listener click riêng cho Học viện (cô lập, không đụng handler cũ) ===== */
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-acad]'); if(!t)return;
@@ -16065,6 +16239,12 @@ document.addEventListener('click',function(e){
 
   if(a==='go-home'){acadGo({mode:'home'});return;}
   if(a==='go-entry'){acadGo({mode:'entry'});return;}
+  if(a==='go-admin'){acadLoadContent();acadGo({mode:'admin'});return;}
+  if(a==='go-adminlesson'){
+    var lid=t.getAttribute('data-ls'),ovv=acadOverride(sid,lid)||{};
+    _acadEdDraft={sid:sid,lessonId:lid,images:(Array.isArray(ovv.images)?ovv.images.slice():[])};
+    acadGo({mode:'adminlesson',sid:sid,lesson:lid});return;
+  }
   if(a==='go-stage'){acadGo({mode:'stage',sid:sid});return;}
   if(a==='go-lesson'){acadGo({mode:'lesson',sid:sid,lesson:t.getAttribute('data-ls')});return;}
   if(a==='go-test'){acadGo({mode:'test',sid:sid});return;}
