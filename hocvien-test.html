@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Học viện Tâm An — Bản chạy thử</title>
+<style>
+:root{--accent:#C8A84B}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;background:#F4F7FB;color:#1F2A37;line-height:1.6;margin:0}
+a{color:inherit}
+.btn{display:inline-block;border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-g{background:#1B4F8A;color:#fff}.btn-d{background:#EEF1F5;color:#3F4C5A}.btn-o{background:#F07B30;color:#fff}.btn-r{background:#E53935;color:#fff}.btn-sm{padding:6px 10px;font-size:12px}
+.hint{font-size:12.5px;color:#8794A3}
+.page{display:none}.page.on{display:block}
+#hvtest-bar{position:sticky;top:0;z-index:50;background:#12203A;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+#hvtest-bar .ttl{font-weight:800;font-size:14px}
+#hvtest-bar .tag{background:#C8A84B;color:#2a2205;border-radius:20px;padding:1px 9px;font-size:11px;font-weight:800}
+#hvtest-bar label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+#hvtest-bar .sp{flex:1}
+#hvtest-bar button{background:#25406e;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+#hvtest-note{max-width:920px;margin:12px auto 0;padding:0 16px;font-size:12.5px;color:#5A6B7B}
+#hvtest-wrap{padding:16px}
+#hvtest-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1F2A37;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;transition:opacity .25s;z-index:200;max-width:90%;text-align:center;pointer-events:none}
+</style>
+<style>
+#page-academy .content{max-width:920px;margin:0 auto}
+.acad-hero{background:linear-gradient(135deg,#1B4F8A,#2E6CB5);color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(27,79,138,.18)}
+.acad-hero h2{font-size:20px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.acad-hero p{font-size:13.5px;opacity:.92;margin:0;line-height:1.55}
+.acad-pbar{height:12px;background:rgba(255,255,255,.25);border-radius:8px;overflow:hidden;margin-top:14px}
+.acad-pbar>i{display:block;height:100%;background:#C8A84B;border-radius:8px;transition:width .5s ease}
+.acad-pnum{font-size:12.5px;margin-top:6px;opacity:.95}
+.acad-sec-title{font-size:13px;font-weight:800;color:#5A6B7B;text-transform:uppercase;letter-spacing:.4px;margin:18px 2px 10px}
+.acad-card{background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:16px 18px;margin-bottom:12px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:box-shadow .2s,transform .2s}
+.acad-card.open:hover{box-shadow:0 8px 22px rgba(0,0,0,.09);transform:translateY(-1px)}
+.acad-card.locked{opacity:.62;filter:grayscale(.25)}
+.acad-card.done{border-color:#BFE3D6;background:linear-gradient(180deg,#F3FBF7,#fff)}
+.acad-row{display:flex;align-items:flex-start;gap:14px}
+.acad-badgeico{width:46px;height:46px;flex:0 0 46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff}
+.acad-ti{font-size:16px;font-weight:800;color:#1F2A37;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.acad-sub{font-size:12.5px;color:#8794A3;font-style:italic;margin-top:1px}
+.acad-goal{font-size:13.5px;color:#3F4C5A;margin-top:7px;line-height:1.5}
+.acad-state{font-size:11.5px;font-weight:800;border-radius:20px;padding:2px 10px;white-space:nowrap}
+.acad-state.st-lock{background:#EEF1F5;color:#8794A3}
+.acad-state.st-open{background:#E7F0FB;color:#1B4F8A}
+.acad-state.st-done{background:#DEF3E9;color:#1A7A5E}
+.acad-mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.acad-chip{font-size:11.5px;font-weight:700;border-radius:20px;padding:3px 10px;background:#F4F7FB;color:#5A6B7B;border:1px solid #E3E9F0}
+.acad-chip.ok{background:#DEF3E9;color:#1A7A5E;border-color:#BFE3D6}
+.acad-lockmsg{font-size:12.5px;color:#A0392E;background:#FDECEA;border:1px solid #F6C9C3;border-radius:9px;padding:7px 11px;margin-top:11px;display:flex;align-items:center;gap:6px}
+.acad-cta{margin-top:13px}
+.acad-back{background:none;border:none;color:#1B4F8A;font-weight:700;font-size:13.5px;cursor:pointer;padding:6px 0;margin-bottom:10px}
+.acad-lesson{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid #E3E9F0;border-radius:11px;margin-bottom:9px;cursor:pointer;background:#fff;transition:background .15s,border-color .15s}
+.acad-lesson:hover{background:#F8FAFD;border-color:#CFE0F2}
+.acad-lesson .ln{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:#EEF1F5;color:#8794A3;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.acad-lesson.done .ln{background:#1A7A5E;color:#fff}
+.acad-lesson .lt{flex:1;font-size:14px;font-weight:700;color:#1F2A37}
+.acad-lesson .lx{font-size:12px;color:#8794A3;font-weight:700}
+.acad-block{background:#fff;border:1px solid #E3E9F0;border-radius:14px;padding:18px;margin-bottom:14px}
+.acad-block.dim{opacity:.55}
+.acad-block h3{font-size:15px;font-weight:800;color:#1B4F8A;margin:0 0 4px;display:flex;align-items:center;gap:7px}
+.acad-block .hint{font-size:12.5px;color:#8794A3;margin:0 0 12px}
+.acad-body{font-size:14.5px;line-height:1.72;color:#26313D}
+.acad-body p{margin:0 0 12px}
+.acad-body b{color:#1B4F8A}
+.acad-body ul{margin:0 0 12px 2px;padding-left:20px}
+.acad-body li{margin-bottom:6px}
+.acad-video{position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin:0 0 14px;background:#000}
+.acad-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.acad-scale{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.acad-scale label{flex:1;min-width:54px;text-align:center;border:1px solid #E3E9F0;border-radius:9px;padding:8px 4px;font-size:12px;cursor:pointer;background:#fff;transition:all .12s}
+.acad-scale input{display:none}
+.acad-scale input:checked+span{color:#fff}
+.acad-scale label:has(input:checked){background:#1B4F8A;border-color:#1B4F8A;color:#fff}
+.acad-stmt{padding:13px 0;border-bottom:1px dashed #E3E9F0}
+.acad-stmt:last-child{border-bottom:none}
+.acad-stmt .q{font-size:14px;font-weight:600;color:#1F2A37}
+.acad-q{padding:14px 0;border-bottom:1px dashed #E3E9F0}
+.acad-q:last-child{border-bottom:none}
+.acad-q .q{font-size:14.5px;font-weight:700;color:#1F2A37;margin-bottom:9px}
+.acad-opt{display:block;border:1px solid #E3E9F0;border-radius:10px;padding:10px 13px;margin-bottom:8px;cursor:pointer;font-size:14px;transition:all .12s}
+.acad-opt:hover{background:#F8FAFD;border-color:#CFE0F2}
+.acad-opt input{margin-right:9px}
+.acad-opt.correct{background:#DEF3E9;border-color:#8CD3B2}
+.acad-opt.wrong{background:#FDECEA;border-color:#F0B4AC}
+.acad-why{font-size:12.5px;color:#5A6B7B;margin-top:6px;padding:8px 11px;background:#F4F7FB;border-radius:8px}
+.acad-note{width:100%;min-height:78px;border:1px solid #CFD8E3;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical}
+.acad-chkline{display:flex;align-items:flex-start;gap:10px;margin:10px 0;font-size:14px;cursor:pointer}
+.acad-chkline input{margin-top:3px;width:18px;height:18px;flex:0 0 18px}
+.acad-result{border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:14px;font-weight:700}
+.acad-result.pass{background:#DEF3E9;color:#12664B;border:1px solid #8CD3B2}
+.acad-result.fail{background:#FDECEA;color:#A0392E;border:1px solid #F0B4AC}
+.acad-cert{background:linear-gradient(135deg,#C8A84B,#E4CB7E);color:#3a2f10;border-radius:16px;padding:22px;text-align:center;margin-bottom:16px;box-shadow:0 8px 24px rgba(200,168,75,.25)}
+.acad-cert .big{font-size:19px;font-weight:900;margin:6px 0}
+.acad-grouphd{font-size:15px;font-weight:800;color:#1F2A37;margin:24px 2px 2px;display:flex;align-items:center;gap:8px}
+.acad-groupsub{font-size:12.5px;color:#8794A3;margin:0 2px 12px;line-height:1.5}
+.acad-subblock{border-top:1px dashed #E3E9F0;margin-top:16px;padding-top:14px}
+.acad-subblock:first-child{border-top:none;margin-top:0;padding-top:0}
+.acad-lbl{font-size:13.5px;font-weight:800;color:#1B4F8A;margin-bottom:6px}
+.acad-imgs{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 14px}
+.acad-imgs a{display:block;max-width:340px;flex:1 1 240px}
+.acad-imgs img{width:100%;border:1px solid #E3E9F0;border-radius:10px;display:block}
+.acad-ed-imgs{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.acad-ed-thumb{position:relative;width:112px}
+.acad-ed-thumb img{width:112px;height:82px;object-fit:cover;border-radius:8px;border:1px solid #E3E9F0}
+.acad-ed-thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;line-height:20px;text-align:center;border-radius:50%;border:none;background:#E53935;color:#fff;font-weight:800;font-size:12px;cursor:pointer}
+.acad-edrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px dashed #EEF1F5}
+.acad-edtag{font-size:12px;color:#8794A3;min-width:20px;text-align:center}
+.acad-mini-btn{flex:0 0 auto;width:34px;height:34px;border:1px solid #E3E9F0;background:#fff;border-radius:8px;font-size:14px;cursor:pointer;color:#5A6B7B}
+.acad-mini-btn:hover{background:#F4F7FB}
+.acad-mini-btn.danger{border-color:#F0B4AC;color:#C62828}
+.acad-qedit{border:1px solid #E3E9F0;border-radius:12px;padding:12px 13px;margin-bottom:12px;background:#FBFCFE}
+.acad-qedit-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;color:#1B4F8A}
+.acad-optedit{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.acad-optedit input[type=radio]{width:18px;height:18px;flex:0 0 18px}
+</style>
+</head>
+<body>
+<div id="hvtest-bar">
+  <span class="ttl">🎓 Học viện Tâm An</span><span class="tag">BẢN CHẠY THỬ</span>
+  <label><input type="checkbox" id="hvtest-admin"> Chế độ QTV (soạn nội dung)</label>
+  <span class="sp"></span>
+  <button id="hvtest-reset">↺ Xoá dữ liệu thử</button>
+</div>
+<div id="hvtest-note">Bản chạy thử độc lập — <b>không cần đăng nhập</b>. Dữ liệu (tiến độ học + nội dung QTV soạn) lưu <b>trong trình duyệt này</b>. Bật <b>Chế độ QTV</b> để hiện nút soạn nội dung. Ảnh tải lên được nén &amp; lưu tạm trong máy; video nên <b>dán link YouTube</b> để xem được. Nút mở công cụ (Bánh xe/Sơ đồ/Nhật ký) chỉ hoạt động trong app thật.</div>
+<div id="hvtest-wrap">
+  <div class="page on" id="page-academy"><div class="content" id="academy-content"></div></div>
+</div>
+<div id="hvtest-toast"></div>
+<script>
+
+/* ===== HẬU TRƯỜNG CHẠY THỬ (thay Firebase bằng lưu máy) ===== */
+var isBranchAdmin=false, viewOnlyMode=false;
+var fbApp={}, fbDb={}, fbUser={uid:'test-qtv'}, FB_STORAGE='';
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(m){var t=document.getElementById('hvtest-toast');if(!t)return;t.textContent=m;t.style.opacity='1';clearTimeout(showToast._t);showToast._t=setTimeout(function(){t.style.opacity='0';},2600);}
+var _prefs={};try{_prefs=JSON.parse(localStorage.getItem('hvtest_prefs')||'{}')||{};}catch(e){_prefs={};}
+function savePrefs(){try{localStorage.setItem('hvtest_prefs',JSON.stringify(_prefs));}catch(e){}}
+function fsGetGlobal(n){var o={};try{o=JSON.parse(localStorage.getItem('hvtest_g_'+n)||'{}')||{};}catch(e){}return Promise.resolve(o);}
+function fsSetGlobal(n,data){var cur={};try{cur=JSON.parse(localStorage.getItem('hvtest_g_'+n)||'{}')||{};}catch(e){}for(var k in data)cur[k]=data[k];try{localStorage.setItem('hvtest_g_'+n,JSON.stringify(cur));}catch(e){showToast('⚠ Hết dung lượng lưu thử (ảnh nặng) — xoá bớt ảnh hoặc dán link.');}return Promise.resolve();}
+function _skCompressImage(file){return Promise.resolve(file);} /* engine không dùng trong bản thử (đã override upload) */
+
+</script>
+<script>
+
+
+/* ===== 🎓 HỌC VIỆN — NỘI DUNG (sửa ở đây) ==============================
+   LỘ TRÌNH: Test đầu vào → GIAI ĐOẠN NỀN TẢNG (4 môn "vì sao") → 5 CẤP LÃNH ĐẠO.
+   Khóa tuần tự: xong môn trước mới mở môn sau. "QUA MÔN" 1 module =
+     học hết bài + kiểm tra ≥ pass% + giải thích "vì sao" (đo hiểu sâu) + hành động thật.
+   Cách sửa nhanh:
+   • Bài học: sửa lessons[] (mỗi bài {id,title,body,video?}); body là HTML (<p><b><ul><li>).
+   • Câu hỏi trắc nghiệm: sửa test.questions[] ({q,opts:[...],correct:index,why}).
+   • Câu "giải thích vì sao": sửa test.reflect ({prompt,min}) — min = số ký tự tối thiểu.
+   • Hành động thật: sửa action ({title,hint,prompt,link?}); link mở thẳng công cụ trong app.
+   • Điểm đậu: test.pass (mặc định 80). Thêm/bớt môn: thêm phần tử vào foundations[] hoặc levels[].
+   Đổi nội dung KHÔNG mất tiến độ (khớp theo id). ====================================== */
+var ACADEMY={
+  entry:{
+    title:'Test đầu vào — Ảnh chụp năng lực lãnh đạo',
+    intro:'10 câu tự đánh giá. Chọn mức đúng với bạn hiện tại (1 = gần như không · 5 = gần như luôn luôn). Không có đúng/sai — đây là điểm khởi hành. Làm xong sẽ <b>mở Giai đoạn Nền tảng</b>.',
+    statements:[
+      {level:1,q:'Tôi hiểu rõ vai trò & trách nhiệm của mình trong đội Tâm An.'},
+      {level:1,q:'Tôi nắm được vì sao người khác nên đi theo mình — ngoài chức danh/cấp bậc.'},
+      {level:2,q:'Thành viên trong đội tin tưởng và sẵn sàng chia sẻ khó khăn thật với tôi.'},
+      {level:2,q:'Tôi dành thời gian lắng nghe, quan tâm từng người — không chỉ nói chuyện công việc.'},
+      {level:3,q:'Bản thân tôi đang trực tiếp tạo ra kết quả (mời khách, phát sinh ID, doanh số) đều đặn.'},
+      {level:3,q:'Đội của tôi nhìn vào kết quả thật của tôi để noi theo.'},
+      {level:4,q:'Tôi đang đào tạo ra những leader mới có thể tự dẫn dắt nhánh của họ.'},
+      {level:4,q:'Tôi giao việc & trao quyền, thay vì tự ôm hết mọi việc.'},
+      {level:5,q:'Tôi đã tạo ra những leader mà chính họ cũng đang đào tạo leader khác.'},
+      {level:5,q:'Đội nhóm vẫn vận hành & phát triển tốt kể cả khi vắng tôi.'}
+    ]
+  },
+
+  /* ---- GIAI ĐOẠN NỀN TẢNG: 4 môn "VÌ SAO" (học trước 5 cấp lãnh đạo) ---- */
+  foundations:[
+    { id:'wheel', name:'Bánh xe cuộc đời', icon:'🎡', color:'#2BA8A8',
+      subtitle:'Biết mình đang ở đâu trước khi đi đâu',
+      goal:'Hiểu VÌ SAO phát triển bản thân phải bắt đầu bằng việc nhìn rõ sự (mất) cân bằng trong 8 lĩnh vực sống của chính mình.',
+      lessons:[
+        {id:'l1', title:'Bánh xe cuộc đời là gì & vì sao bắt đầu từ đây', body:`
+          <p><b>Bánh xe cuộc đời</b> chia cuộc sống thành các lĩnh vực (sức khỏe, tài chính, sự nghiệp, gia đình, quan hệ, phát triển bản thân, tinh thần, giải trí…). Bạn tự chấm điểm mỗi lĩnh vực để thấy bức tranh tổng thể mình đang cân bằng hay lệch.</p>
+          <p><b>Vì sao đây là bước đầu tiên?</b> Nguyên tắc nền tảng của phát triển bản thân: <b>"Bạn không thể cải thiện điều bạn không đo, và không thể tới đích nếu không biết mình đang đứng ở đâu."</b> Nhiều người lao vào kiếm tiền, xây đội mà bỏ quên sức khỏe hay gia đình — đến khi mất cân bằng nặng mới nhận ra. Bánh xe giúp bạn thấy điều đó <b>sớm</b>.</p>`},
+        {id:'l2', title:'Đọc bánh xe & chọn lĩnh vực đòn bẩy', body:`
+          <p>Sau khi chấm, đừng cố sửa mọi thứ cùng lúc. Hãy:</p>
+          <ul>
+            <li><b>Nhìn lĩnh vực thấp nhất</b> đang kéo cả bánh xe lệch — nó ảnh hưởng tới những lĩnh vực khác thế nào?</li>
+            <li><b>Chọn 1–2 lĩnh vực đòn bẩy</b> để cải thiện trước; cải thiện đúng chỗ này thường kéo theo nhiều chỗ khác.</li>
+            <li><b>Đặt 1 hành động nhỏ</b> cho lĩnh vực đó — bắt đầu ngay, không chờ hoàn hảo.</li>
+          </ul>
+          <p>Bánh xe không phải để chấm điểm rồi bỏ đó — nó là <b>la bàn</b> để bạn biết mình cần đi đâu tiếp theo.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Bánh xe cuộc đời dùng để làm gì?',
+           opts:['Chấm điểm người khác','Nhìn ra sự (mất) cân bằng giữa các lĩnh vực sống của chính mình','Tính thu nhập','Xếp hạng leader'],
+           correct:1, why:'Bánh xe là công cụ tự nhận thức — cho thấy chính bạn đang cân bằng hay lệch ở đâu.'},
+          {q:'Vì sao nên bắt đầu phát triển bản thân từ Bánh xe cuộc đời?',
+           opts:['Vì nó vui','Vì "biết mình đang ở đâu" là điều kiện để biết cần đi đâu','Vì bắt buộc','Vì để khoe với đội'],
+           correct:1, why:'Không đo được hiện trạng thì không thể đặt mục tiêu và cải thiện có chủ đích.'},
+          {q:'Sau khi chấm bánh xe, bước khôn ngoan là?',
+           opts:['Cố sửa tất cả cùng lúc','Bỏ qua lĩnh vực yếu','Chọn 1–2 lĩnh vực đòn bẩy để cải thiện trước','Chỉ tập trung lĩnh vực đã mạnh'],
+           correct:2, why:'Tập trung vào 1–2 lĩnh vực đòn bẩy tạo thay đổi thật, thay vì dàn mỏng nỗ lực.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO chấm Bánh xe cuộc đời lại là bước khởi đầu của phát triển bản thân? Nó giúp bạn nhìn thấy điều gì về chính mình?'} },
+      action:{ title:'Hành động thật — Bánh xe cuộc đời',
+        hint:'Làm thật ngay trong app.',
+        prompt:'Vào 🧭 La bàn → Bánh xe cuộc đời và chấm điểm 8 lĩnh vực sống của bạn hôm nay. Ghi ra 1 lĩnh vực bạn chọn cải thiện trước & vì sao.',
+        link:{label:'🧭 Mở Bánh xe cuộc đời', main:'tp', sub:'tp:laban'} } },
+
+    { id:'quadrant', name:'Kim tứ đồ', icon:'💠', color:'#3F51B5',
+      subtitle:'4 cách tạo thu nhập — vì sao B & I mới cho tự do',
+      goal:'Hiểu VÌ SAO muốn tự do tài chính thì phải dịch chuyển từ nhóm Làm công / Tự doanh sang nhóm Chủ hệ thống / Nhà đầu tư.',
+      lessons:[
+        {id:'l1', title:'4 nhóm của Kim tứ đồ', body:`
+          <p>Kim tứ đồ (Cashflow Quadrant — Robert Kiyosaki) chia người tạo thu nhập thành 4 nhóm:</p>
+          <ul>
+            <li><b>E – Làm công (Employee):</b> đổi thời gian lấy lương. An toàn cảm giác, nhưng thu nhập trần và phụ thuộc chủ.</li>
+            <li><b>S – Tự doanh (Self-employed):</b> tự làm chủ công việc, nhưng <i>nghỉ là hết thu nhập</i> — bạn chính là công việc.</li>
+            <li><b>B – Chủ hệ thống (Business owner):</b> xây hệ thống & đội nhóm làm việc cho mình; thu nhập không phụ thuộc sức một người.</li>
+            <li><b>I – Nhà đầu tư (Investor):</b> tiền làm việc thay cho mình.</li>
+          </ul>
+          <p><b>Vì sao quan trọng?</b> Đa số mắc kẹt ở E và S — làm càng nhiều càng mệt mà không giàu thêm bền vững.</p>`},
+        {id:'l2', title:'Vì sao B & I mới mang lại tự do', body:`
+          <p>Tự do tài chính = thu nhập <b>không còn phụ thuộc vào việc bạn đổi thời gian lấy tiền</b>. Chỉ nhóm B và I đạt được điều đó, nhờ <b>đòn bẩy</b>: B dùng đòn bẩy hệ thống & con người, I dùng đòn bẩy tiền.</p>
+          <p>Đây chính là lý do MLM / mô hình Tâm An hấp dẫn: nó là <b>con đường bước vào nhóm B</b> (xây hệ thống nhân bản) với <b>vốn nhỏ</b> và rủi ro thấp hơn nhiều so với mở một doanh nghiệp truyền thống. Bạn không cần nhà xưởng, không cần thuê hàng chục nhân viên — bạn xây một mạng lưới.</p>
+          <p>Hiểu Kim tứ đồ giúp bạn trả lời được câu hỏi lớn: <b>"Tôi đang ở nhóm nào, và tôi cần dịch chuyển về đâu?"</b></p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Kim tứ đồ (Cashflow Quadrant) gồm 4 nhóm nào?',
+           opts:['E-Làm công, S-Tự doanh, B-Chủ hệ thống, I-Nhà đầu tư','A-B-C-D','4 cấp bậc MLM','4 mùa trong năm'],
+           correct:0, why:'4 nhóm: E (làm công), S (tự doanh), B (chủ hệ thống), I (nhà đầu tư).'},
+          {q:'Vì sao nhóm B và I mới mang lại tự do tài chính?',
+           opts:['Vì họ làm nhiều giờ hơn','Vì thu nhập không còn phụ thuộc vào việc đổi thời gian lấy tiền','Vì họ may mắn','Vì họ không làm gì cả'],
+           correct:1, why:'B và I dùng đòn bẩy (hệ thống/tiền) nên thu nhập không bị trói vào thời gian cá nhân.'},
+          {q:'Người ở nhóm E/S thường gặp giới hạn gì?',
+           opts:['Thu nhập gắn chặt với thời gian & sức của chính họ','Quá nhiều thời gian rảnh','Không thể kiếm tiền','Hoàn toàn không có rủi ro'],
+           correct:0, why:'E/S đổi thời gian lấy tiền — ngừng làm là ngừng thu nhập, nên khó tự do.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: bạn đang chủ yếu ở nhóm nào (E/S/B/I)? VÌ SAO muốn tự do tài chính thì phải dịch chuyển sang nhóm B và I?'} },
+      action:{ title:'Hành động thật — Kim tứ đồ',
+        hint:'Xác định vị trí & 1 bước dịch chuyển.',
+        prompt:'Viết ra: bạn đang chủ yếu ở nhóm nào, và 1 việc cụ thể bạn sẽ làm trong tháng này để dịch dần sang nhóm B (xây hệ thống Tâm An).'} },
+
+    { id:'system', name:'Vì sao xây hệ thống MLM', icon:'🌐', color:'#EF6C00',
+      subtitle:'Đòn bẩy con người — nhân bản thay vì làm một mình',
+      goal:'Hiểu VÌ SAO xây một hệ thống (mạng lưới) tạo ra kết quả lớn, bền và tự do hơn hẳn việc tự làm giỏi một mình.',
+      lessons:[
+        {id:'l1', title:'Đòn bẩy & nhân bản', body:`
+          <p>Câu hỏi kinh điển: bạn muốn <b>1% nỗ lực của 100 người</b>, hay <b>100% nỗ lực của riêng bạn</b>? Một người dù giỏi đến đâu cũng chỉ có 24 giờ và một đôi tay. Một <b>hệ thống</b> gồm nhiều người cùng làm và <b>nhân bản</b> tạo ra kết quả mà cá nhân không thể với tới.</p>
+          <p>Đó là <b>đòn bẩy con người & thời gian</b>. Khi bạn đào tạo người khác làm được việc bạn làm, rồi họ lại đào tạo người tiếp theo, thu nhập của bạn không còn dừng lại khi bạn nghỉ — hệ thống vẫn chạy. Đây là gốc rễ của <b>thu nhập thụ động</b>.</p>`},
+        {id:'l2', title:'MLM chân chính vs biến tướng', body:`
+          <p>Không phải mô hình nào cũng như nhau. Hãy phân biệt rõ:</p>
+          <ul>
+            <li><b>MLM chân chính:</b> có <b>sản phẩm/dịch vụ thật, giá trị thật</b> cho người dùng; thu nhập đến từ tiêu dùng & phân phối thật; xây người bền vững.</li>
+            <li><b>Mô hình biến tướng:</b> chỉ xoay quanh tuyển người, hứa giàu nhanh, không có sản phẩm giá trị.</li>
+          </ul>
+          <p>Vì sao điều này quan trọng? Vì một hệ thống chỉ <b>bền</b> khi nó tạo ra giá trị thật. Chọn đúng mô hình có sản phẩm & dịch vụ thật (như Tâm An) là chọn một hệ thống có thể đứng vững lâu dài — không phải trò chơi tổng-bằng-không.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Sức mạnh cốt lõi của mô hình hệ thống (MLM) là gì?',
+           opts:['Bán thật nhiều một mình','Đòn bẩy: nhiều người cùng làm & nhân bản → thu nhập không phụ thuộc mình bạn','Không cần sản phẩm','Tuyển càng nhiều càng tốt bất kể chất lượng'],
+           correct:1, why:'Giá trị của hệ thống nằm ở đòn bẩy con người và khả năng nhân bản.'},
+          {q:'Điều gì phân biệt MLM chân chính với mô hình biến tướng?',
+           opts:['Có sản phẩm/dịch vụ thật, giá trị thật cho người dùng','Chỉ cần tuyển người là đủ','Hứa giàu nhanh','Không có sản phẩm'],
+           correct:0, why:'Giá trị thật cho người dùng là ranh giới giữa MLM chân chính và trò biến tướng.'},
+          {q:'Vì sao "100 người làm 1%" mạnh hơn "1 người làm 100%"?',
+           opts:['Vì đòn bẩy con người tạo kết quả lớn & bền hơn sức một người','Vì lười hơn','Vì không cần cố gắng','Không đúng — một người luôn tốt hơn'],
+           correct:0, why:'Đòn bẩy giúp vượt qua giới hạn thời gian & sức lực của một cá nhân.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO xây hệ thống (đòn bẩy con người) lại tạo được tự do tài chính mà làm một mình không thể? Và vì sao phải chọn mô hình có sản phẩm thật?'} },
+      action:{ title:'Hành động thật — Hệ thống của bạn',
+        hint:'Đặt mục tiêu hệ thống.',
+        prompt:'Viết ra mục tiêu hệ thống của bạn: số nhánh & số ID bạn muốn xây trong 12 tháng, và bước ĐẦU TIÊN bạn sẽ làm ngay tuần này.',
+        link:{label:'🌳 Mở Sơ đồ', main:'tree'} } },
+
+    { id:'taman', name:'Vì sao Tâm An', icon:'🌿', color:'#1B7A5E',
+      subtitle:'Đúng mô hình, đúng nỗi đau, đúng thời điểm',
+      goal:'Hiểu sâu VÌ SAO bạn chọn Tâm An — mô hình này giải quyết điều gì mà các con đường khác không làm được.',
+      lessons:[
+        {id:'l1', title:'Mô hình Tâm An & nhiều nguồn thu', body:`
+          <p>Tâm An không phải MLM sản phẩm thuần. Nó kết hợp <b>nhiều tầng thu nhập</b>:</p>
+          <ul>
+            <li><b>Dịch vụ chăm sóc sức khỏe (CLB):</b> tạo <b>thu nhập hàng ngày</b> — dòng tiền đều, không chờ tuyển được người mới.</li>
+            <li><b>Sản phẩm & thiết bị:</b> giá trị thật, kết quả sức khỏe thật.</li>
+            <li><b>Xây mạng lưới:</b> đòn bẩy hệ thống cho thu nhập dài hạn & thụ động.</li>
+          </ul>
+          <p><b>Vì sao vững hơn?</b> Vì khi một nguồn chậm, các nguồn khác vẫn nuôi bạn. Người mới không phải "sống chết" chỉ nhờ tuyển người — họ có dịch vụ tạo tiền ngay.</p>`},
+        {id:'l2', title:'Vì sao Tâm An giải đúng nỗi đau', body:`
+          <p>Tệp khách vàng của bạn — người từng làm MLM sản phẩm (vd Herbalife) — thường thất bại vì 3 nỗi đau: <b>hàng phá giá, khó mời khách trải nghiệm, không có thu nhập hàng ngày.</b></p>
+          <p>Tâm An giải đúng cả ba:</p>
+          <ul>
+            <li><b>Dịch vụ massage sức khỏe</b> → thu nhập hàng ngày, không lệ thuộc bán hàng.</li>
+            <li><b>Trải nghiệm tại CLB</b> → khách cảm nhận kết quả thật, dễ mời hơn bán một hộp sản phẩm.</li>
+            <li><b>Kết quả sức khỏe thật</b> → bằng chứng tạo niềm tin & giữ khách bền.</li>
+          </ul>
+          <p>Hiểu rõ "vì sao Tâm An" giúp bạn chia sẻ bằng <b>niềm tin thật</b>, không phải học thuộc kịch bản. Đó là nền của mọi buổi 2:1 hiệu quả.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Điểm khác biệt của mô hình Tâm An so với MLM sản phẩm thuần là?',
+           opts:['Không có gì khác','Kết hợp nhiều nguồn thu — dịch vụ sức khỏe tạo thu nhập hàng ngày + sản phẩm + xây mạng lưới','Chỉ bán thiết bị','Chỉ tuyển người'],
+           correct:1, why:'Tâm An đa nguồn thu, trong đó dịch vụ tạo dòng tiền hàng ngày — vững hơn mô hình đơn nguồn.'},
+          {q:'Tâm An giải đúng nỗi đau nào của người từng làm MLM sản phẩm (vd Herbalife)?',
+           opts:['Hàng phá giá, khó mời trải nghiệm, không có thu nhập hàng ngày','Không có nỗi đau nào','Thiếu sản phẩm','Quá dễ kiếm tiền'],
+           correct:0, why:'Đây đúng 3 nỗi đau của tệp vàng — và là 3 thứ Tâm An giải quyết.'},
+          {q:'Vì sao "kết quả sức khỏe thật" quan trọng với Tâm An?',
+           opts:['Không quan trọng','Vì nó là bằng chứng giá trị thật, tạo niềm tin & giữ khách bền vững','Chỉ để quảng cáo','Chỉ để cạnh tranh giá'],
+           correct:1, why:'Kết quả thật là bằng chứng — nền của niềm tin và sự bền vững của mô hình.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO bạn chọn Tâm An? Nó giải quyết được điều gì cho bạn và cho khách mà các mô hình khác không làm được?'} },
+      action:{ title:'Hành động thật — Câu chuyện "Vì sao Tâm An"',
+        hint:'Chuẩn bị vũ khí chia sẻ của bạn.',
+        prompt:'Viết "câu chuyện Vì sao Tâm An" của riêng bạn (3–5 câu) — để dùng khi chia sẻ với khách trong buổi 2:1. Câu chuyện thật của bạn thuyết phục hơn mọi kịch bản.'} }
+  ],
+
+  /* ---- 5 CẤP ĐỘ LÃNH ĐẠO (John Maxwell) — mở sau khi xong Nền tảng ---- */
+  levels:[
+    { id:1, key:'position', name:'Chức vị', icon:'🧭', color:'#6B7A8D',
+      subtitle:'Người ta theo vì họ PHẢI theo',
+      goal:'Hiểu vai trò lãnh đạo và vì sao người khác đi theo bạn — ngoài chức danh & cấp bậc.',
+      lessons:[
+        {id:'l1', title:'Chức vị chỉ là điểm xuất phát', body:`
+          <p><b>Cấp 1 — Chức vị</b> là bậc thấp nhất trong 5 cấp độ lãnh đạo của John Maxwell. Ở đây, người ta đi theo bạn <b>vì họ phải theo</b> — vì bạn được bổ nhiệm, có cấp bậc, có vị trí — chứ chưa phải vì họ muốn.</p>
+          <p>Sai lầm lớn nhất của người mới lên leader hay mới mở CLB Tâm An là nghĩ: <i>"Mình có cấp bậc rồi thì đương nhiên có người theo."</i> Chức danh cho bạn <b>quyền</b>, nhưng chưa cho bạn <b>tầm ảnh hưởng</b>.</p>
+          <p>Tin tốt: ai cũng bắt đầu từ đây. Cấp 1 là <b>nền móng</b>. Vấn đề chỉ xảy ra khi bạn <b>mắc kẹt</b> ở đây và tưởng chức danh là đủ.</p>`},
+        {id:'l2', title:'Làm chắc vai trò nền tảng', body:`
+          <p>Để không mắc kẹt ở Cấp 1, hãy biến "được bổ nhiệm" thành "được tín nhiệm" bằng những việc căn bản:</p>
+          <ul>
+            <li><b>Biết rõ vai trò của mình:</b> chăm sóc khách, dẫn dắt buổi 2:1, xây sơ đồ, phát triển ID.</li>
+            <li><b>Làm gương trước:</b> đúng giờ, giữ lời hứa, có mặt đều.</li>
+            <li><b>Hiểu hệ thống:</b> nắm sản phẩm Prife, mô hình CLB, quy tắc thăng tiến.</li>
+          </ul>
+          <p>Làm tốt phần nền này một cách nhất quán, bạn tự nhiên bước sang Cấp 2 — nơi người ta theo bạn <b>vì họ muốn</b>.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Ở Cấp 1 (Chức vị), người ta đi theo bạn chủ yếu vì điều gì?',
+           opts:['Vì họ tin và quý bạn','Vì kết quả bạn tạo ra','Vì họ buộc phải theo do chức danh/vị trí','Vì bạn đã đào tạo họ'],
+           correct:2, why:'Cấp 1 chỉ dựa trên quyền của vị trí — người ta theo vì "phải", chưa phải vì "muốn".'},
+          {q:'Sai lầm phổ biến của người mới lên leader ở Cấp 1 là gì?',
+           opts:['Quá quan tâm tới thành viên','Nghĩ rằng có chức danh là đương nhiên có tầm ảnh hưởng','Làm gương quá nhiều','Trao quyền quá sớm'],
+           correct:1, why:'Chức danh cho bạn quyền, không tự động cho bạn tầm ảnh hưởng.'},
+          {q:'Việc quan trọng nhất để đứng vững ở Cấp 1 là?',
+           opts:['Ép thành viên nghe lời','Hiểu rõ vai trò, làm đúng & làm gương, giữ lời hứa','Khoe cấp bậc thường xuyên','So sánh mình với leader khác'],
+           correct:1, why:'Làm gương và giữ chữ tín là cách biến chức vị thành tín nhiệm.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO chức danh/cấp bậc chưa đủ để người khác thật sự đi theo bạn?'} },
+      action:{ title:'Hành động thật — Cấp 1',
+        hint:'Làm gương một việc cụ thể trong tuần.',
+        prompt:'Viết ra 3 trách nhiệm cốt lõi trong vai trò hiện tại của bạn, và 1 việc bạn sẽ LÀM GƯƠNG ngay tuần này (vd: đi buổi sáng đúng giờ suốt tuần).',
+        link:{label:'📔 Mở Nhật ký', main:'tp', sub:'tp:actions', sub2:'act:journal'} } },
+
+    { id:2, key:'permission', name:'Cho phép', icon:'🤝', color:'#2E8B57',
+      subtitle:'Người ta theo vì họ MUỐN theo',
+      goal:'Xây mối quan hệ và niềm tin với người trong đội — nền tảng của mọi tầm ảnh hưởng.',
+      lessons:[
+        {id:'l1', title:'Người ta theo người họ thích & tin', body:`
+          <p><b>Cấp 2 — Cho phép</b> được xây trên <b>mối quan hệ</b>. Người ta cho phép bạn dẫn dắt vì họ quý bạn, tin bạn — chứ không vì bị bắt buộc.</p>
+          <p>Nguyên tắc: <b>"Người ta không quan tâm bạn biết bao nhiêu, cho tới khi họ biết bạn quan tâm tới họ bao nhiêu."</b> Ở Tâm An: nhớ tên, nhớ hoàn cảnh, hỏi thăm sức khỏe của khách và thành viên — quan tâm con người trước, công việc sau.</p>`},
+        {id:'l2', title:'Kết nối trước khi dẫn dắt', body:`
+          <p>Buổi 2:1 không chỉ để chốt — nó là cơ hội <b>xây quan hệ</b>. Người ra quyết định lớn cần cảm thấy <b>an toàn và được thấu hiểu</b>, không bị bán hàng.</p>
+          <ul>
+            <li><b>Lắng nghe nhiều hơn nói:</b> khai thác nỗi đau/khao khát thật.</li>
+            <li><b>Chân thành, không thao túng:</b> tư duy trao quyền — không ép khách.</li>
+            <li><b>Theo sát sau buổi gặp:</b> quan hệ xây bằng nhiều lần chạm.</li>
+          </ul>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Cấp 2 (Cho phép) được xây trên nền tảng nào?',
+           opts:['Quyền lực & chức danh','Kết quả doanh số','Mối quan hệ & niềm tin','Quy trình & kỷ luật'],
+           correct:2, why:'Cấp 2 là cấp của quan hệ — người ta "cho phép" bạn dẫn dắt vì tin và quý bạn.'},
+          {q:'Câu nào ĐÚNG với tinh thần Cấp 2?',
+           opts:['Người ta theo vì họ muốn theo','Người ta theo vì bị bắt buộc','Quan hệ không quan trọng bằng chỉ tiêu','Chỉ cần chốt được đơn là đủ'],
+           correct:0, why:'Sang Cấp 2, động lực đi theo chuyển từ "phải" (Cấp 1) sang "muốn".'},
+          {q:'Trong buổi 2:1 của Tâm An, tinh thần Cấp 2 nghĩa là?',
+           opts:['Chốt bằng mọi giá','Lắng nghe & kết nối thật trước khi dẫn dắt','Nói càng nhiều càng tốt','Bỏ qua nỗi đau của khách'],
+           correct:1, why:'Kết nối con người trước, dẫn dắt sau — cách quan hệ tạo ảnh hưởng bền.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO mối quan hệ & niềm tin lại là nền của tầm ảnh hưởng, quan trọng hơn chức danh?'} },
+      action:{ title:'Hành động thật — Cấp 2',
+        hint:'Xây một mối quan hệ thật trong tuần.',
+        prompt:'Có 1 cuộc trò chuyện QUAN TÂM THẬT (không bán gì) với 1 thành viên hoặc khách trong tuần. Ghi lại: họ đang bận tâm/khao khát điều gì?',
+        link:{label:'📔 Mở Nhật ký', main:'tp', sub:'tp:actions', sub2:'act:journal'} } },
+
+    { id:3, key:'production', name:'Sản xuất', icon:'🚀', color:'#F07B30',
+      subtitle:'Người ta theo vì những gì bạn đã LÀM ĐƯỢC',
+      goal:'Tự tạo ra kết quả thật và làm gương — biến bản thân thành bằng chứng sống cho đội.',
+      lessons:[
+        {id:'l1', title:'Lãnh đạo bằng kết quả, không bằng lời', body:`
+          <p><b>Cấp 3 — Sản xuất</b> là nơi uy tín thật sự hình thành. Người ta đi theo bạn vì <b>những gì bạn đã làm được</b>: tự mời khách, tự phát sinh ID, tự tạo doanh số. Bạn không chỉ nói về thành công — bạn <b>là</b> thành công.</p>
+          <p>Ở Cấp 2 người ta quý bạn; ở Cấp 3 người ta <b>nể</b> bạn vì kết quả. Leader có số thật thì mỗi lời nói đều có trọng lượng.</p>`},
+        {id:'l2', title:'Đội nhìn vào con số của bạn', body:`
+          <p>Cấp 3 tạo ra <b>momentum</b>. Khi đội thấy bạn trực tiếp ra kết quả, họ tin mô hình chạy được và làm theo. Bạn trở thành <b>bằng chứng sống</b>.</p>
+          <ul>
+            <li><b>Tự làm, đừng chỉ chỉ đạo:</b> đích thân mời khách, đích thân chốt.</li>
+            <li><b>Gắn với chỉ tiêu tháng trong app:</b> đặt con số rõ và tự đạt trước.</li>
+          </ul>
+          <p>Cẩn thận: nhiều leader giỏi <b>mắc kẹt</b> ở Cấp 3 vì ôm hết. Cấp 4 dạy bạn buông ra để nhân bản.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Uy tín ở Cấp 3 (Sản xuất) đến từ đâu?',
+           opts:['Chức danh','Lời hứa','Kết quả thật do chính bạn tạo ra','Quan hệ rộng'],
+           correct:2, why:'Cấp 3 là cấp của kết quả — người ta nể bạn vì thành tích thật.'},
+          {q:'Vì sao leader Cấp 3 quan trọng với đội?',
+           opts:['Vì họ nói hay','Vì họ trở thành bằng chứng sống & tạo momentum','Vì họ có nhiều cấp bậc','Vì họ ôm hết việc'],
+           correct:1, why:'Kết quả thật của leader tạo động lượng và niềm tin cho cả đội.'},
+          {q:'Biểu hiện rõ nhất của Cấp 3 trong Tâm An?',
+           opts:['Tự mời khách, tự phát sinh ID đều đặn','Chỉ ngồi chờ tuyến dưới làm','Chỉ họp nói lý thuyết','Tránh làm trực tiếp'],
+           correct:0, why:'Leader Cấp 3 đích thân tạo ra kết quả.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO leader phải tự tạo ra kết quả thật trước khi có thể dẫn dắt người khác?'} },
+      action:{ title:'Hành động thật — Cấp 3',
+        hint:'Tự tạo 1 kết quả thật trong tuần.',
+        prompt:'Trong tuần này, đích thân tạo 1 KẾT QUẢ THẬT: mời 1 khách trải nghiệm / phát sinh 1 ID / chốt 1 đơn. Ghi lại bạn đã làm gì và kết quả ra sao.',
+        link:{label:'🎯 Mở Chỉ tiêu', main:'tp', sub:'tp:goals'} } },
+
+    { id:4, key:'people', name:'Phát triển người', icon:'🌱', color:'#7B5EB5',
+      subtitle:'Người ta theo vì những gì bạn làm CHO HỌ',
+      goal:'Đào tạo ra những leader mới — chuyển từ "người làm giỏi" sang "người xây người".',
+      lessons:[
+        {id:'l1', title:'Từ người làm giỏi sang người xây người', body:`
+          <p><b>Cấp 4 — Phát triển người</b> là bước ngoặt lớn nhất. Ở Cấp 3 bạn tạo kết quả bằng <b>chính mình</b>; ở Cấp 4 bạn tạo kết quả bằng cách <b>phát triển người khác</b>. Đây là nơi mạng lưới thật sự nhân bản.</p>
+          <p>Người ta theo bạn vì <b>những gì bạn đã làm cho họ</b> — giúp họ trưởng thành, có thu nhập, tự dẫn được nhánh của mình.</p>`},
+        {id:'l2', title:'Trao quyền, đừng ôm việc — nguyên tắc 20/80', body:`
+          <p>Muốn nhân bản, bạn phải học cách <b>buông</b>:</p>
+          <ul>
+            <li><b>Dạy người khác làm được việc bạn làm:</b> cầm tay chỉ việc, cho họ tự làm.</li>
+            <li><b>Giao nhánh & trao quyền:</b> để họ tự chủ.</li>
+            <li><b>Nguyên tắc 20/80:</b> dồn phần lớn thời gian cho <b>số ít người tiềm năng</b>.</li>
+          </ul>
+          <p>Đầu tư vào con người chậm hơn tự làm, nhưng là con đường duy nhất để đội lớn mà bạn không kiệt sức.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Điểm chuyển từ Cấp 3 sang Cấp 4 là gì?',
+           opts:['Làm giỏi hơn nữa một mình','Chuyển từ "người làm giỏi" sang "người xây người"','Tăng chức danh','Bán được nhiều hơn'],
+           correct:1, why:'Cấp 4 là nhân bản: tạo kết quả qua việc phát triển người khác.'},
+          {q:'Nguyên tắc 20/80 ở Cấp 4 dùng để làm gì?',
+           opts:['Bỏ mặc người yếu','Dồn thời gian cho số ít người tiềm năng để nhân bản leader','Tự làm hết mọi việc','Chia đều thời gian cho tất cả'],
+           correct:1, why:'Đầu tư sâu vào số ít người tiềm năng tạo ra nhiều leader hơn là dàn đều.'},
+          {q:'Trao quyền đúng nghĩa là?',
+           opts:['Ôm hết việc cho chắc','Giao việc + kèm cặp để người khác tự chủ','Giao rồi bỏ mặc','Chỉ giao việc vặt'],
+           correct:1, why:'Trao quyền = giao trách nhiệm kèm hỗ trợ để người khác trưởng thành.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO "xây người" lại quan trọng hơn "tự làm giỏi" khi bạn muốn nhân bản hệ thống?'} },
+      action:{ title:'Hành động thật — Cấp 4',
+        hint:'Bắt đầu phát triển 1 người thành leader.',
+        prompt:'Chọn 1 người trong đội để kèm cặp thành leader. Viết ra 1 việc cụ thể bạn sẽ DẠY hoặc GIAO cho họ trong tuần này (kèm cách bạn hỗ trợ).',
+        link:{label:'🌳 Mở Sơ đồ', main:'tree'} } },
+
+    { id:5, key:'pinnacle', name:'Đỉnh cao', icon:'👑', color:'#C8A84B',
+      subtitle:'Người ta theo vì con người bạn & giá trị bạn đại diện',
+      goal:'Tạo ra những leader cấp 4 và để lại di sản — đội tự vận hành, văn hóa bền vững.',
+      lessons:[
+        {id:'l1', title:'Tạo ra những người tạo ra leader', body:`
+          <p><b>Cấp 5 — Đỉnh cao</b> là bậc cao nhất và hiếm nhất. Bạn đạt tới đây khi <b>những leader do bạn đào tạo cũng đang đào tạo leader khác</b>. Nhiều thế hệ leader tự sinh ra từ hệ thống bạn xây.</p>
+          <p>Ở cấp này, người ta theo bạn vì <b>con người bạn và những gì bạn đại diện</b>. Tầm ảnh hưởng vượt ra ngoài đội trực tiếp.</p>`},
+        {id:'l2', title:'Di sản & văn hóa đội nhóm', body:`
+          <p>Thước đo của leader Cấp 5 không phải "tôi làm được bao nhiêu", mà là <b>"đội vẫn phát triển tốt kể cả khi tôi vắng mặt"</b> — đó là di sản.</p>
+          <ul>
+            <li><b>Xây văn hóa, không chỉ xây số:</b> giá trị Tâm An được sống bởi mọi thành viên.</li>
+            <li><b>Chuẩn bị người kế thừa.</b></li>
+            <li><b>Nghĩ dài hạn:</b> quyết định hôm nay tạo ra đội nhóm 3–5 năm sau.</li>
+          </ul>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Cấp 5 (Đỉnh cao) đạt được khi nào?',
+           opts:['Bạn có thật nhiều khách','Leader do bạn đào tạo cũng đang đào tạo leader khác','Bạn lên cấp bậc cao nhất','Bạn làm việc nhiều nhất đội'],
+           correct:1, why:'Đỉnh cao là khi bạn tạo ra những người tạo ra leader — nhân bản nhiều thế hệ.'},
+          {q:'Dấu hiệu của di sản lãnh đạo là gì?',
+           opts:['Đội sụp đổ khi bạn vắng','Đội vẫn phát triển tốt kể cả khi vắng bạn','Mọi việc phải qua tay bạn','Không ai thay được bạn'],
+           correct:1, why:'Di sản = hệ thống tự vận hành, không phụ thuộc sự có mặt của bạn.'},
+          {q:'Trọng tâm của leader Cấp 5 là?',
+           opts:['Thành tích cá nhân','Xây con người, văn hóa & thế hệ leader kế thừa','Giữ quyền lực cho riêng mình','Tự làm tất cả'],
+           correct:1, why:'Leader đỉnh cao tập trung vào con người và di sản.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO di sản — đội tự chạy tốt khi vắng bạn — lại là đỉnh cao của lãnh đạo, chứ không phải thành tích cá nhân?'} },
+      action:{ title:'Hành động thật — Cấp 5',
+        hint:'Phác thảo di sản của bạn.',
+        prompt:'Viết ra tầm nhìn DI SẢN của bạn cho đội Tâm An trong 3 năm tới, và tên (những) leader bạn đang giúp để chính họ trở thành người đào tạo leader.'} }
+  ]
+};
+
+/* ===== 🎓 ENGINE + TRÌNH SOẠN (QTV) — không cần sửa khi chỉ đổi nội dung ===== */
+var _acadView={mode:'home'};
+var _acadContent=null;         // override dùng chung toàn đội (appConfig/registration.academyContent)
+var _acadContentLoading=false;
+var _acadEdDraft=null;         // trỏ tới mảng images của bài đang soạn
+
+// ---- Nạp nội dung dùng chung (QTV đã soạn) — 1 lần, rồi vẽ lại ----
+function acadLoadContent(force){
+  if(_acadContentLoading)return;
+  if(_acadContent&&!force)return;
+  if(typeof fbDb==='undefined'||!fbDb||typeof fsGetGlobal!=='function'){if(_acadContent===null)_acadContent={};return;}
+  _acadContentLoading=true;
+  fsGetGlobal('registration').then(function(d){_acadContent=(d&&d.academyContent)||{};})
+    .catch(function(){if(_acadContent===null)_acadContent={};})
+    .then(function(){_acadContentLoading=false;try{var pg=document.getElementById('page-academy');if(pg&&pg.classList.contains('on'))_acadPaint();}catch(e){}});
+}
+
+// ---- Định nghĩa HIỆU LỰC của 1 môn = nội dung gốc ACADEMY hợp nhất override ----
+//   override đầy đủ: {lessons:[{id,title,body,video,images}], test:{pass,reflect,questions}, action:{prompt,hint}}
+//   override cũ (chỉ media theo bài): { [lessonId]:{title,body,video,images} }  → vẫn tương thích.
+function acadEffDef(st){
+  var base=st.def, ov=(_acadContent||{})[st.sid]||{};
+  var d={id:base.id,name:base.name,icon:base.icon,color:base.color,subtitle:base.subtitle,goal:base.goal};
+  if(Array.isArray(ov.lessons)){
+    d.lessons=ov.lessons.map(function(l){return {id:l.id,title:l.title,body:l.body,video:l.video||'',images:Array.isArray(l.images)?l.images:[]};});
+  }else{
+    d.lessons=base.lessons.map(function(l){
+      var lo=ov[l.id]||{};
+      return {id:l.id,
+        title:(lo.title&&lo.title.trim())?lo.title:l.title,
+        body:(lo.body&&lo.body.trim())?lo.body:l.body,
+        video:lo.video||l.video||'',
+        images:Array.isArray(lo.images)?lo.images:[]};
+    });
+  }
+  var bt=base.test||{pass:80,questions:[]}, ot=ov.test||{};
+  d.test={
+    pass:(typeof ot.pass==='number')?ot.pass:(bt.pass||80),
+    questions:Array.isArray(ot.questions)?ot.questions:(bt.questions||[]),
+    reflect:ot.hasOwnProperty('reflect')?ot.reflect:(bt.reflect||null)
+  };
+  var ba=base.action||{}, oa=ov.action||{};
+  d.action={title:ba.title,link:ba.link,
+    hint:(oa.hint!=null&&oa.hint!=='')?oa.hint:ba.hint,
+    prompt:(oa.prompt!=null&&oa.prompt!=='')?oa.prompt:ba.prompt};
+  return d;
+}
+function acadEffLesson(st,lessonId){var d=acadEffDef(st);for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lessonId)return d.lessons[i];return null;}
+function _acadNewId(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+// Vật chất hoá override đầy đủ cho 1 môn (để QTV chỉnh cấu trúc); từ đó override định nghĩa trọn môn.
+function acadEnsureOverride(sid){
+  if(!_acadContent)_acadContent={};
+  if(_acadContent[sid]&&Array.isArray(_acadContent[sid].lessons))return _acadContent[sid];
+  var st=acadStage(sid), d=acadEffDef(st);
+  _acadContent[sid]={
+    lessons:d.lessons.map(function(l){return {id:l.id,title:l.title,body:l.body,video:l.video||'',images:(l.images||[]).slice()};}),
+    test:{pass:d.test.pass,
+      reflect:d.test.reflect?{prompt:d.test.reflect.prompt,min:d.test.reflect.min||40}:null,
+      questions:(d.test.questions||[]).map(function(q){return {q:q.q,opts:q.opts.slice(),correct:q.correct,why:q.why};})},
+    action:{prompt:d.action.prompt,hint:d.action.hint}
+  };
+  return _acadContent[sid];
+}
+
+function _acadMediaHtml(video,images){
+  var h='';
+  if(video){
+    var emb=_acadYtEmbed(video);
+    if(emb)h+='<div class="acad-video"><iframe src="'+emb+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
+    else if(/\.(mp4|webm|ogg|mov)(\?|$)/i.test(video)||/firebasestorage/i.test(video))h+='<div class="acad-video"><video src="'+_esc(video)+'" controls playsinline style="position:absolute;inset:0;width:100%;height:100%;background:#000"></video></div>';
+    else h+='<div style="margin:0 0 12px"><a class="btn btn-d" href="'+_esc(video)+'" target="_blank" rel="noopener">▶ Mở video bài giảng</a></div>';
+  }
+  if(images&&images.length){
+    h+='<div class="acad-imgs">';
+    images.forEach(function(u){h+='<a href="'+_esc(u)+'" target="_blank" rel="noopener"><img src="'+_esc(u)+'" alt="sơ đồ minh hoạ" loading="lazy"></a>';});
+    h+='</div>';
+  }
+  return h;
+}
+
+function acadStages(){
+  var out=[];
+  (ACADEMY.foundations||[]).forEach(function(m){out.push({sid:'f_'+m.id,group:'Nền tảng',def:m});});
+  (ACADEMY.levels||[]).forEach(function(m){out.push({sid:'l_'+m.id,group:'Lãnh đạo',def:m});});
+  out.forEach(function(s,i){s.idx=i;});
+  return out;
+}
+function acadStage(sid){var a=acadStages();for(var i=0;i<a.length;i++)if(a[i].sid===sid)return a[i];return null;}
+function acadProg(){
+  if(typeof _prefs==='undefined')return {entry:{done:false},stages:{}};
+  if(!_prefs.academy||typeof _prefs.academy!=='object')_prefs.academy={v:2,entry:{done:false,scores:{},snapshotLevel:0,at:''},stages:{}};
+  if(!_prefs.academy.entry)_prefs.academy.entry={done:false,scores:{},snapshotLevel:0,at:''};
+  if(!_prefs.academy.stages)_prefs.academy.stages={};
+  return _prefs.academy;
+}
+function acadSt(sid){
+  var p=acadProg();
+  if(!p.stages[sid])p.stages[sid]={lessonsDone:[],testScore:0,testPassed:false,reflectText:'',actionDone:false,actionNote:'',passedAt:''};
+  if(!Array.isArray(p.stages[sid].lessonsDone))p.stages[sid].lessonsDone=[];
+  return p.stages[sid];
+}
+function acadSave(){try{if(typeof savePrefs==='function')savePrefs();}catch(e){}}
+function acadLessonsAllDone(st){var s=acadSt(st.sid),d=acadEffDef(st);return d.lessons.every(function(ls){return s.lessonsDone.indexOf(ls.id)>=0;});}
+function acadTestNeeded(st){return (acadEffDef(st).test.questions||[]).length>0;}
+function acadHasReflect(st){return !!acadEffDef(st).test.reflect;}
+function acadReflectOK(st){var r=acadEffDef(st).test.reflect;if(!r)return true;return ((acadSt(st.sid).reflectText||'').trim().length>=(r.min||40));}
+function acadStageComplete(st){var s=acadSt(st.sid);return acadLessonsAllDone(st)&&(!acadTestNeeded(st)||s.testPassed)&&acadReflectOK(st)&&s.actionDone;}
+function acadStageState(st){
+  if(acadStageComplete(st))return 'done';
+  var p=acadProg();
+  if(st.idx===0)return p.entry.done?'open':'locked';
+  var all=acadStages(),prev=all[st.idx-1];
+  return acadStageComplete(prev)?'open':'locked';
+}
+function acadLevelDef(n){for(var i=0;i<ACADEMY.levels.length;i++)if(ACADEMY.levels[i].id===n)return ACADEMY.levels[i];return null;}
+function acadOverallPct(){
+  var total=1,done=0;
+  if(acadProg().entry.done)done++;
+  acadStages().forEach(function(st){
+    var s=acadSt(st.sid),d=acadEffDef(st),needTest=(d.test.questions||[]).length>0,hasRef=!!d.test.reflect;
+    var per=d.lessons.length+(needTest?1:0)+(hasRef?1:0)+1;
+    total+=per;
+    done+=Math.min(s.lessonsDone.length,d.lessons.length);
+    if(needTest&&s.testPassed)done++;
+    if(hasRef&&acadReflectOK(st))done++;
+    if(s.actionDone)done++;
+  });
+  return total>0?Math.round(done/total*100):0;
+}
+function _acadYtEmbed(url){
+  if(!url)return '';
+  var m=String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_\-]{6,})/);
+  return m?('https://www.youtube.com/embed/'+m[1]):'';
+}
+function _esc(s){return (typeof escHtml==='function')?escHtml(s):String(s==null?'':s);}
+function _acadToast(m){if(typeof showToast==='function')showToast(m);}
+
+function renderAcademy(){_acadView={mode:'home'};_acadPaint();acadLoadContent();}
+function acadGo(v){_acadView=v;_acadPaint();try{window.scrollTo(0,0);}catch(e){}}
+function _acadPaint(){
+  var el=document.getElementById('academy-content'); if(!el)return;
+  var m=_acadView.mode;
+  if(m==='entry')el.innerHTML=_acadEntryHtml();
+  else if(m==='stage')el.innerHTML=_acadStageHtml(_acadView.sid);
+  else if(m==='lesson')el.innerHTML=_acadLessonHtml(_acadView.sid,_acadView.lesson);
+  else if(m==='test')el.innerHTML=_acadTestHtml(_acadView.sid);
+  else if(m==='admin')el.innerHTML=_acadAdminHtml();
+  else if(m==='adminstage')el.innerHTML=_acadAdminStageHtml(_acadView.sid);
+  else if(m==='adminlesson')el.innerHTML=_acadAdminLessonHtml(_acadView.sid,_acadView.lesson);
+  else el.innerHTML=_acadHomeHtml();
+}
+
+function _acadStageCard(st){
+  var state=acadStageState(st), s=acadSt(st.sid), d=acadEffDef(st);
+  var stCls=state==='done'?'st-done':(state==='open'?'st-open':'st-lock');
+  var stTxt=state==='done'?'✓ Hoàn thành':(state==='open'?'Đang mở':'🔒 Đang khóa');
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<div class="acad-card '+state+'"><div class="acad-row">'
+    +'<div class="acad-badgeico" style="background:'+d.color+'">'+d.icon+'</div>'
+    +'<div style="flex:1">'
+    +'<div class="acad-ti">'+label+' <span class="acad-state '+stCls+'">'+stTxt+'</span></div>'
+    +'<div class="acad-sub">'+_esc(d.subtitle)+'</div>'
+    +'<div class="acad-goal">🎯 '+_esc(d.goal)+'</div>';
+  if(state==='locked'){
+    var reason;
+    if(st.idx===0)reason='Hoàn thành Test đầu vào để mở môn này.';
+    else{var prev=acadStages()[st.idx-1],pd=acadEffDef(prev);reason='Hoàn thành "'+(prev.group==='Lãnh đạo'?('Cấp '+pd.id+' · '+pd.name):pd.name)+'" (đủ bài + kiểm tra + giải thích + hành động) để mở khóa.';}
+    h+='<div class="acad-lockmsg">🔒 '+_esc(reason)+'</div>';
+  }else{
+    h+='<div class="acad-mini">'
+      +'<span class="acad-chip '+(acadLessonsAllDone(st)?'ok':'')+'">📖 Bài '+Math.min(s.lessonsDone.length,d.lessons.length)+'/'+d.lessons.length+'</span>'
+      +(acadTestNeeded(st)?('<span class="acad-chip '+(s.testPassed?'ok':'')+'">📝 KT '+(s.testPassed?('đậu '+s.testScore+'%'):'chưa')+'</span>'):'')
+      +(acadHasReflect(st)?('<span class="acad-chip '+(acadReflectOK(st)?'ok':'')+'">✍️ Vì sao '+(acadReflectOK(st)?'xong':'chưa')+'</span>'):'')
+      +'<span class="acad-chip '+(s.actionDone?'ok':'')+'">✅ Hành động '+(s.actionDone?'xong':'chưa')+'</span>'
+      +'</div>'
+      +'<div class="acad-cta"><button class="btn '+(state==='done'?'btn-d':'btn-g')+'" data-acad="go-stage" data-sid="'+st.sid+'">'+(state==='done'?'Xem lại':'Vào học →')+'</button></div>';
+  }
+  h+='</div></div></div>';
+  return h;
+}
+
+function _acadHomeHtml(){
+  var p=acadProg(), pct=acadOverallPct(), all=acadStages();
+  var h='<div class="acad-hero"><h2>🎓 Học viện Tâm An</h2>'
+      +'<p>Lộ trình tự học phát triển bản thân: <b>Nền tảng "Vì sao"</b> trước, rồi <b>5 Cấp độ Lãnh đạo</b> (Maxwell). Học chắc từng bậc — <b>đậu môn trước mới mở môn sau</b>.</p>'
+      +'<div class="acad-pbar"><i style="width:'+pct+'%"></i></div>'
+      +'<div class="acad-pnum">Tiến độ toàn lộ trình: <b>'+pct+'%</b></div></div>';
+  if(_acadIsAdmin()){
+    h+='<div style="text-align:right;margin:-4px 0 12px"><button class="btn btn-d" data-acad="go-admin">✏️ Soạn nội dung (QTV)</button></div>';
+  }
+  if(pct>=100){
+    h+='<div class="acad-cert">🏆<div class="big">Chúc mừng! Bạn đã hoàn thành Học viện Tâm An</div>'
+      +'<div style="font-size:13.5px">Từ nền tảng "vì sao" đến đỉnh cao lãnh đạo. Giờ là lúc sống nó mỗi ngày cùng đội.</div></div>';
+  }
+  h+='<div class="acad-sec-title">Bắt đầu tại đây</div>';
+  if(p.entry.done){
+    var snap=p.entry.snapshotLevel?(acadLevelDef(p.entry.snapshotLevel)||{}):{};
+    h+='<div class="acad-card done"><div class="acad-row">'
+      +'<div class="acad-badgeico" style="background:#1A7A5E">✓</div>'
+      +'<div style="flex:1"><div class="acad-ti">Test đầu vào <span class="acad-state st-done">Đã hoàn thành</span></div>'
+      +'<div class="acad-goal">Ảnh chụp năng lực: bạn thiên về <b>Cấp '+(p.entry.snapshotLevel||1)+' — '+_esc(snap.name||'')+'</b>. Lộ trình vẫn bắt đầu từ Nền tảng cho mọi người. <button class="acad-back" style="margin:0" data-acad="go-entry">Xem/làm lại →</button></div></div></div>';
+  }else{
+    h+='<div class="acad-card open"><div class="acad-row">'
+      +'<div class="acad-badgeico" style="background:#1B4F8A">📝</div>'
+      +'<div style="flex:1"><div class="acad-ti">Test đầu vào</div>'
+      +'<div class="acad-goal">10 câu tự đánh giá (2 phút) để chụp ảnh năng lực hiện tại. <b>Hoàn thành để mở Giai đoạn Nền tảng.</b></div>'
+      +'<div class="acad-cta"><button class="btn btn-g" data-acad="go-entry">Bắt đầu Test đầu vào →</button></div></div></div></div>';
+  }
+  h+='<div class="acad-grouphd">🌱 Giai đoạn Nền tảng — "Vì sao"</div>'
+    +'<div class="acad-groupsub">Lý thuyết nền đúng thì thực hành trúng. Học chắc các câu hỏi gốc trước khi bước vào lãnh đạo.</div>';
+  all.filter(function(s){return s.group==='Nền tảng';}).forEach(function(st){h+=_acadStageCard(st);});
+  h+='<div class="acad-grouphd">🎓 5 Cấp độ Lãnh đạo (John Maxwell)</div>'
+    +'<div class="acad-groupsub">Mở sau khi hoàn thành toàn bộ Giai đoạn Nền tảng.</div>';
+  all.filter(function(s){return s.group==='Lãnh đạo';}).forEach(function(st){h+=_acadStageCard(st);});
+  h+='<div style="font-size:12px;color:#A6B1BD;text-align:center;margin:18px 0 6px">Tiến độ tự lưu &amp; đồng bộ trên mọi thiết bị của bạn.</div>';
+  return h;
+}
+
+function _acadEntryHtml(){
+  var p=acadProg(), E=ACADEMY.entry;
+  var h='<button class="acad-back" data-acad="go-home">← Về Học viện</button>';
+  h+='<div class="acad-block"><h3>📝 '+_esc(E.title)+'</h3><p class="hint">'+E.intro+'</p>';
+  E.statements.forEach(function(st,i){
+    var cur=(p.entry.scores&&p.entry.scores[i])||0;
+    h+='<div class="acad-stmt"><div class="q">'+(i+1)+'. '+_esc(st.q)+'</div><div class="acad-scale">';
+    for(var v=1;v<=5;v++)h+='<label><input type="radio" name="ent_'+i+'" value="'+v+'"'+(cur===v?' checked':'')+'><span>'+v+'</span></label>';
+    h+='</div></div>';
+  });
+  h+='<div style="font-size:11.5px;color:#A6B1BD;margin:8px 0 14px">1 = gần như không · 3 = thỉnh thoảng · 5 = gần như luôn luôn</div>';
+  h+='<button class="btn btn-g" data-acad="submit-entry">Hoàn thành & mở Nền tảng →</button></div>';
+  return h;
+}
+
+function _acadStageHtml(sid){
+  var st=acadStage(sid); if(!st)return '';
+  var d=acadEffDef(st), s=acadSt(sid), lessonsDone=acadLessonsAllDone(st), needTest=acadTestNeeded(st);
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-home">← Về Học viện</button>';
+  h+='<div class="acad-hero" style="background:linear-gradient(135deg,'+d.color+','+d.color+'cc)">'
+    +'<h2>'+d.icon+' '+label+'</h2>'
+    +'<p><i>'+_esc(d.subtitle)+'</i><br>🎯 '+_esc(d.goal)+'</p></div>';
+  h+='<div class="acad-block"><h3>📖 Bài học</h3><p class="hint">'+(needTest?'Học hết các bài rồi mới mở bài kiểm tra.':'Học hết các bài rồi làm phần Qua môn.')+'</p>';
+  if(!d.lessons.length)h+='<p class="hint">Chưa có bài học.</p>';
+  d.lessons.forEach(function(ls,i){
+    var done=s.lessonsDone.indexOf(ls.id)>=0;
+    h+='<div class="acad-lesson '+(done?'done':'')+'" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(ls.id)+'">'
+      +'<div class="ln">'+(done?'✓':(i+1))+'</div><div class="lt">'+_esc(ls.title)+'</div>'
+      +'<div class="lx">'+(done?'Đã học':'Đọc →')+'</div></div>';
+  });
+  h+='</div>';
+  if(needTest){
+    h+='<div class="acad-block'+(lessonsDone?'':' dim')+'"><h3>📝 Bài kiểm tra <span style="font-size:12px;color:#8794A3;font-weight:600">(đậu ≥ '+d.test.pass+'%)</span></h3>';
+    if(!lessonsDone)h+='<p class="hint">🔒 Hoàn thành hết bài học ở trên để mở bài kiểm tra.</p>';
+    else{
+      h+='<p class="hint">'+(s.testPassed?('✅ Bạn đã đậu với '+s.testScore+'%. Có thể làm lại để ôn.'):'Trả lời '+d.test.questions.length+' câu. Cần đúng ≥ '+d.test.pass+'% để đậu.')+'</p>';
+      h+='<button class="btn '+(s.testPassed?'btn-d':'btn-g')+'" data-acad="go-test" data-sid="'+sid+'">'+(s.testPassed?'Làm lại bài kiểm tra':'Làm bài kiểm tra →')+'</button>';
+    }
+    h+='</div>';
+  }
+  var qmOpen=lessonsDone&&(!needTest||s.testPassed);
+  h+='<div class="acad-block'+(qmOpen?'':' dim')+'"><h3>✍️ Qua môn — Hiểu sâu &amp; Hành động thật</h3>';
+  if(!qmOpen)h+='<p class="hint">🔒 '+(needTest?'Đậu bài kiểm tra':'Học hết bài')+' để mở phần này. Phải làm đủ mới QUA MÔN.</p>';
+  else{
+    if(acadHasReflect(st)){
+      h+='<div class="acad-subblock"><div class="acad-lbl">1 · Giải thích "vì sao" (bằng lời của bạn)</div>';
+      h+='<div class="acad-body" style="font-size:13.5px;margin-bottom:8px">'+_esc(d.test.reflect.prompt)+'</div>';
+      h+='<textarea class="acad-note" id="acad-reflect-'+sid+'" placeholder="Viết bằng chính lời của bạn (tối thiểu '+(d.test.reflect.min||40)+' ký tự)...">'+_esc(s.reflectText||'')+'</textarea>';
+      h+='<div style="font-size:11.5px;color:#A6B1BD;margin-top:4px">Viết ra "vì sao" bằng lời mình là cách kiểm tra bạn thật sự hiểu sâu.</div></div>';
+    }
+    h+='<div class="acad-subblock"><div class="acad-lbl">'+(acadHasReflect(st)?'2 · ':'')+'Hành động áp dụng thật</div>';
+    h+='<p class="hint" style="margin-bottom:8px">'+_esc(d.action.hint||'')+'</p>';
+    h+='<div class="acad-body" style="font-size:14px;margin-bottom:10px"><b>Đề bài:</b> '+_esc(d.action.prompt||'')+'</div>';
+    h+='<textarea class="acad-note" id="acad-act-'+sid+'" placeholder="Viết cụ thể việc bạn đã / sẽ làm...">'+_esc(s.actionNote||'')+'</textarea>';
+    h+='<label class="acad-chkline"><input type="checkbox" id="acad-chk-'+sid+'"'+(s.actionDone?' checked':'')+'><span>Tôi xác nhận đã <b>áp dụng thật</b> vào công việc Tâm An (không chỉ học lý thuyết).</span></label>';
+    if(d.action.link)h+='<button class="btn btn-d" data-acad="goto" data-main="'+_esc(d.action.link.main||'')+'" data-sub="'+_esc(d.action.link.sub||'')+'" data-sub2="'+_esc(d.action.link.sub2||'')+'">'+_esc(d.action.link.label||'Mở công cụ')+'</button> ';
+    h+='</div>';
+    h+='<div style="margin-top:14px"><button class="btn btn-g" data-acad="save-module" data-sid="'+sid+'">💾 Lưu & Qua môn</button></div>';
+  }
+  h+='</div>';
+  if(acadStageComplete(st)){
+    var all=acadStages(),nx=all[st.idx+1];
+    h+='<div class="acad-result pass">🎉 Bạn đã QUA MÔN "'+_esc(d.name)+'"!'+(nx?(' Môn kế tiếp — '+(nx.group==='Lãnh đạo'?('Cấp '+acadEffDef(nx).id+' · '+_esc(acadEffDef(nx).name)):_esc(acadEffDef(nx).name))+' đã mở khóa.'):' Bạn đã đi trọn toàn bộ lộ trình!')+'</div>';
+    if(nx)h+='<button class="btn btn-g" data-acad="go-stage" data-sid="'+nx.sid+'">Sang môn kế tiếp →</button> ';
+    h+='<button class="btn btn-d" data-acad="go-home">Về Học viện</button>';
+  }
+  return h;
+}
+
+function _acadLessonHtml(sid,lsId){
+  var st=acadStage(sid); if(!st)return '';
+  var d=acadEffDef(st), idx=-1; for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lsId)idx=i;
+  if(idx<0)return _acadStageHtml(sid);
+  var ls=d.lessons[idx], s=acadSt(sid), done=s.lessonsDone.indexOf(ls.id)>=0;
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-stage" data-sid="'+sid+'">← '+label+'</button>';
+  h+='<div class="acad-block"><h3 style="color:'+d.color+'">'+d.icon+' '+_esc(ls.title)+'</h3>'
+    +'<div class="hint">Bài '+(idx+1)+'/'+d.lessons.length+'</div>';
+  h+=_acadMediaHtml(ls.video,ls.images);
+  h+='<div class="acad-body">'+(ls.body||'')+'</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
+  h+='<button class="btn '+(done?'btn-d':'btn-g')+'" data-acad="lesson-done" data-sid="'+sid+'" data-ls="'+_esc(ls.id)+'">'+(done?'✓ Đã học xong':'✓ Đánh dấu đã học xong')+'</button>';
+  if(idx+1<d.lessons.length)h+='<button class="btn btn-d" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(d.lessons[idx+1].id)+'">Bài tiếp theo →</button>';
+  else h+='<button class="btn btn-d" data-acad="go-stage" data-sid="'+sid+'">Xong — về môn học</button>';
+  h+='</div></div>';
+  return h;
+}
+
+function _acadTestHtml(sid){
+  var st=acadStage(sid); if(!st)return '';
+  var d=acadEffDef(st), g=_acadView.graded, qs=d.test.questions||[];
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-stage" data-sid="'+sid+'">← '+label+'</button>';
+  h+='<div class="acad-block"><h3>📝 Kiểm tra — '+_esc(d.name)+'</h3>'
+    +'<p class="hint">Chọn đáp án đúng nhất. Cần ≥ '+d.test.pass+'% để đậu và mở phần "Qua môn".</p>';
+  if(g){
+    h+='<div class="acad-result '+(g.pass?'pass':'fail')+'">'+(g.pass?'✅ ĐẬU':'❌ CHƯA ĐẠT')+' — '+g.score+'% ('+g.right+'/'+qs.length+' câu đúng).'
+      +(g.pass?' Phần "Qua môn" đã mở ở trang môn học.':' Cần ≥ '+d.test.pass+'%. Xem lại giải thích rồi làm lại.')+'</div>';
+  }
+  qs.forEach(function(Q,i){
+    h+='<div class="acad-q"><div class="q">'+(i+1)+'. '+_esc(Q.q)+'</div>';
+    Q.opts.forEach(function(op,j){
+      var cls='acad-opt';
+      if(g){if(j===Q.correct)cls+=' correct';else if(g.answers[i]===j)cls+=' wrong';}
+      var checked=(g&&g.answers[i]===j)?' checked':'';var dis=g?' disabled':'';
+      h+='<label class="'+cls+'"><input type="radio" name="acadq_'+i+'" value="'+j+'"'+checked+dis+'>'+_esc(op)+'</label>';
+    });
+    if(g)h+='<div class="acad-why">💡 '+_esc(Q.why)+'</div>';
+    h+='</div>';
+  });
+  if(g)h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn btn-g" data-acad="go-test" data-sid="'+sid+'">🔄 Làm lại</button><button class="btn btn-d" data-acad="go-stage" data-sid="'+sid+'">← Về môn học</button></div>';
+  else h+='<button class="btn btn-g" data-acad="submit-test" data-sid="'+sid+'" style="margin-top:6px">Nộp bài →</button>';
+  h+='</div>';
+  return h;
+}
+
+/* ===== SOẠN NỘI DUNG (QTV) ===== */
+function _acadIsAdmin(){return (typeof isBranchAdmin!=='undefined'&&isBranchAdmin);}
+function acadPersist(silent){
+  if(typeof fsSetGlobal!=='function'){if(!silent)_acadToast('Không lưu được (thiếu kết nối).');return;}
+  fsSetGlobal('registration',{academyContent:_acadContent})
+    .then(function(){if(!silent)_acadToast('✅ Đã lưu cho cả đội');})
+    .catch(function(){if(!silent)_acadToast('⚠ Lưu thất bại (cần quyền QTV / mạng).');});
+}
+function _acadAdminHtml(){
+  var h='<button class="acad-back" data-acad="go-home">← Về Học viện</button>';
+  h+='<div class="acad-hero" style="background:linear-gradient(135deg,#5E35B1,#7E57C2)"><h2>✏️ Soạn nội dung (QTV)</h2>'
+    +'<p>Chọn 1 môn để <b>thêm/xoá bài học</b>, <b>nạp video & ảnh sơ đồ</b>, <b>sửa câu hỏi trắc nghiệm & câu "vì sao"</b>. Nội dung lưu <b>dùng chung cho cả đội</b>.</p></div>';
+  if(!_acadIsAdmin()){h+='<div class="acad-block"><p class="hint" style="margin:0">Chỉ Quản trị viên mới sửa được nội dung Học viện.</p></div>';return h;}
+  if(_acadContent===null){acadLoadContent();h+='<div class="acad-block"><p class="hint" style="margin:0">Đang tải nội dung hiện có…</p></div>';}
+  var groups=[['Nền tảng','🌱 Giai đoạn Nền tảng'],['Lãnh đạo','🎓 5 Cấp độ Lãnh đạo']];
+  groups.forEach(function(G){
+    h+='<div class="acad-grouphd">'+G[1]+'</div>';
+    acadStages().filter(function(s){return s.group===G[0];}).forEach(function(st){
+      var d=acadEffDef(st),label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+      var custom=!!(_acadContent&&_acadContent[st.sid]&&Array.isArray(_acadContent[st.sid].lessons));
+      h+='<div class="acad-card open" style="margin-bottom:10px"><div class="acad-row">'
+        +'<div class="acad-badgeico" style="background:'+d.color+'">'+d.icon+'</div>'
+        +'<div style="flex:1"><div class="acad-ti">'+label+(custom?' <span class="acad-state st-done">đã tuỳ chỉnh</span>':'')+'</div>'
+        +'<div class="acad-mini"><span class="acad-chip">📖 '+d.lessons.length+' bài</span><span class="acad-chip">📝 '+(d.test.questions||[]).length+' câu hỏi</span>'+(d.test.reflect?'<span class="acad-chip">✍️ có câu "vì sao"</span>':'<span class="acad-chip">không có "vì sao"</span>')+'</div>'
+        +'<div class="acad-cta"><button class="btn btn-g" data-acad="go-adminstage" data-sid="'+st.sid+'">✏️ Sửa môn này →</button></div>'
+        +'</div></div></div>';
+    });
+  });
+  return h;
+}
+
+// ---- Trình soạn 1 MÔN: bài học (thêm/xoá/đổi thứ tự) + kiểm tra + "vì sao" + hành động ----
+function _acadAdminStageHtml(sid){
+  var st=acadStage(sid); if(!st)return '';
+  var ov=acadEnsureOverride(sid);
+  var base=st.def, label=(st.group==='Lãnh đạo')?('Cấp '+base.id+' · '+_esc(base.name)):_esc(base.name);
+  var h='<button class="acad-back" data-acad="go-admin">← Danh sách môn (QTV)</button>';
+  h+='<div class="acad-hero" style="background:linear-gradient(135deg,'+base.color+','+base.color+'cc)"><h2>'+base.icon+' Soạn: '+label+'</h2>'
+    +'<p>Thêm/xoá bài, nạp video & ảnh, sửa câu hỏi & câu "vì sao". Bấm <b>💾 Lưu môn</b> để phát cho cả đội.</p></div>';
+
+  // ===== BÀI HỌC =====
+  h+='<div class="acad-block"><h3>📖 Bài học ('+ov.lessons.length+')</h3><p class="hint">Bấm ✏️ để nạp video/ảnh & sửa chữ từng bài. Kéo thứ tự bằng ▲▼.</p>';
+  ov.lessons.forEach(function(l,i){
+    var vid=l.video?'🎬':'', img=(l.images&&l.images.length)?('🖼️'+l.images.length):'';
+    h+='<div class="acad-edrow">'
+      +'<div style="flex:1"><input id="acad-ls-'+i+'-title" class="acad-note" style="min-height:0;height:40px" value="'+_esc(l.title||'')+'"></div>'
+      +'<div class="acad-edtag">'+vid+' '+img+'</div>'
+      +'<button class="acad-mini-btn" data-acad="acad-ls-edit" data-sid="'+sid+'" data-ls="'+_esc(l.id)+'" title="Sửa nội dung/nạp media">✏️</button>'
+      +'<button class="acad-mini-btn" data-acad="acad-ls-up" data-sid="'+sid+'" data-i="'+i+'" title="Lên">▲</button>'
+      +'<button class="acad-mini-btn" data-acad="acad-ls-down" data-sid="'+sid+'" data-i="'+i+'" title="Xuống">▼</button>'
+      +'<button class="acad-mini-btn danger" data-acad="acad-ls-del" data-sid="'+sid+'" data-i="'+i+'" title="Xoá bài">🗑</button>'
+      +'</div>';
+  });
+  h+='<button class="btn btn-d" data-acad="acad-ls-add" data-sid="'+sid+'" style="margin-top:8px">➕ Thêm bài học</button></div>';
+
+  // ===== KIỂM TRA =====
+  h+='<div class="acad-block"><h3>📝 Bài kiểm tra</h3>';
+  h+='<div class="acad-lbl">Điểm đậu (%)</div><input id="acad-st-pass" type="number" min="1" max="100" class="acad-note" style="min-height:0;height:40px;max-width:120px" value="'+(ov.test.pass||80)+'">';
+  h+='<div class="acad-lbl" style="margin-top:12px">Câu hỏi trắc nghiệm ('+ov.test.questions.length+')</div>';
+  if(!ov.test.questions.length)h+='<p class="hint">Chưa có câu hỏi. Nếu để trống, môn này bỏ qua bước kiểm tra.</p>';
+  ov.test.questions.forEach(function(Q,qi){
+    h+='<div class="acad-qedit"><div class="acad-qedit-hd"><b>Câu '+(qi+1)+'</b><button class="acad-mini-btn danger" data-acad="acad-q-del" data-sid="'+sid+'" data-i="'+qi+'" title="Xoá câu">🗑</button></div>';
+    h+='<textarea id="acad-q-'+qi+'-text" class="acad-note" style="min-height:52px" placeholder="Nội dung câu hỏi">'+_esc(Q.q||'')+'</textarea>';
+    h+='<div style="font-size:11.5px;color:#8794A3;margin:8px 0 4px">Chọn nút tròn ở đáp án ĐÚNG:</div>';
+    (Q.opts||['','','','']).forEach(function(op,oi){
+      h+='<div class="acad-optedit"><input type="radio" name="acad-q-'+qi+'-correct" value="'+oi+'"'+(Q.correct===oi?' checked':'')+'>'
+        +'<input id="acad-q-'+qi+'-opt-'+oi+'" class="acad-note" style="min-height:0;height:38px;flex:1" placeholder="Đáp án '+(oi+1)+'" value="'+_esc(op)+'"></div>';
+    });
+    h+='<div class="acad-lbl" style="margin-top:8px;font-weight:600;color:#8794A3">Giải thích (hiện sau khi chấm)</div>';
+    h+='<input id="acad-q-'+qi+'-why" class="acad-note" style="min-height:0;height:40px" placeholder="Vì sao đáp án đó đúng" value="'+_esc(Q.why||'')+'">';
+    h+='</div>';
+  });
+  h+='<button class="btn btn-d" data-acad="acad-q-add" data-sid="'+sid+'" style="margin-top:8px">➕ Thêm câu hỏi</button></div>';
+
+  // ===== CÂU "VÌ SAO" =====
+  var r=ov.test.reflect;
+  h+='<div class="acad-block"><h3>✍️ Câu "Giải thích vì sao"</h3>'
+    +'<label class="acad-chkline"><input type="checkbox" id="acad-st-refon"'+(r?' checked':'')+'><span>Bắt buộc học viên <b>giải thích "vì sao" bằng lời</b> mới qua môn (đo hiểu sâu).</span></label>'
+    +'<div class="acad-lbl" style="margin-top:8px">Câu hỏi "vì sao"</div>'
+    +'<textarea id="acad-st-refprompt" class="acad-note" style="min-height:70px" placeholder="VD: Bằng lời của bạn, vì sao…">'+_esc(r?r.prompt:'')+'</textarea>'
+    +'<div class="acad-lbl" style="margin-top:8px">Số ký tự tối thiểu</div>'
+    +'<input id="acad-st-refmin" type="number" min="10" class="acad-note" style="min-height:0;height:40px;max-width:120px" value="'+((r&&r.min)||40)+'"></div>';
+
+  // ===== HÀNH ĐỘNG =====
+  h+='<div class="acad-block"><h3>✅ Hành động áp dụng</h3>'
+    +'<div class="acad-lbl">Đề bài hành động</div>'
+    +'<textarea id="acad-st-actprompt" class="acad-note" style="min-height:60px">'+_esc(ov.action.prompt||'')+'</textarea>'
+    +'<div class="acad-lbl" style="margin-top:8px">Gợi ý ngắn</div>'
+    +'<input id="acad-st-acthint" class="acad-note" style="min-height:0;height:40px" value="'+_esc(ov.action.hint||'')+'"></div>';
+
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px"><button class="btn btn-g" data-acad="acad-stage-save" data-sid="'+sid+'">💾 Lưu môn cho cả đội</button>'
+    +'<button class="btn btn-d" data-acad="go-stage" data-sid="'+sid+'">👁️ Xem như học viên</button>'
+    +'<button class="btn btn-d" data-acad="go-admin">Xong</button></div>';
+  return h;
+}
+
+// đọc DOM trình soạn môn → override (giữ mọi chỉnh sửa trước khi thêm/xoá/lưu)
+function _acadSyncStage(sid){
+  if(!_acadContent||!_acadContent[sid]||!Array.isArray(_acadContent[sid].lessons))return;
+  var ov=_acadContent[sid];
+  ov.lessons.forEach(function(l,i){var el=document.getElementById('acad-ls-'+i+'-title');if(el)l.title=el.value;});
+  var pe=document.getElementById('acad-st-pass');if(pe){var pv=parseInt(pe.value,10);if(!isNaN(pv))ov.test.pass=Math.max(1,Math.min(100,pv));}
+  var ron=document.getElementById('acad-st-refon');
+  if(ron){
+    if(ron.checked){var rp=document.getElementById('acad-st-refprompt'),rm=document.getElementById('acad-st-refmin');ov.test.reflect={prompt:rp?rp.value:'',min:rm?(parseInt(rm.value,10)||40):40};}
+    else ov.test.reflect=null;
+  }
+  ov.test.questions.forEach(function(q,i){
+    var qt=document.getElementById('acad-q-'+i+'-text');if(qt)q.q=qt.value;
+    for(var j=0;j<q.opts.length;j++){var oe=document.getElementById('acad-q-'+i+'-opt-'+j);if(oe)q.opts[j]=oe.value;}
+    var cc=document.querySelector('input[name="acad-q-'+i+'-correct"]:checked');if(cc)q.correct=parseInt(cc.value,10)||0;
+    var wy=document.getElementById('acad-q-'+i+'-why');if(wy)q.why=wy.value;
+  });
+  var ap=document.getElementById('acad-st-actprompt'),ah=document.getElementById('acad-st-acthint');
+  if(ap)ov.action.prompt=ap.value; if(ah)ov.action.hint=ah.value;
+}
+
+// ---- Trình soạn NỘI DUNG 1 BÀI (title/body/video/images) ----
+function _acadEdImgList(images){
+  if(!images||!images.length)return '<div style="font-size:12px;color:#999">Chưa có ảnh nào.</div>';
+  return images.map(function(u,i){return '<div class="acad-ed-thumb"><img src="'+_esc(u)+'"><button onclick="acadDelImage('+i+')" title="Xoá ảnh">✕</button></div>';}).join('');
+}
+function acadDelImage(i){if(!_acadEdDraft)return;_acadEdDraft.images.splice(i,1);var b=document.getElementById('acad-img-list');if(b)b.innerHTML=_acadEdImgList(_acadEdDraft.images);}
+function _acadAdminLessonHtml(sid,lessonId){
+  var st=acadStage(sid); if(!st)return '';
+  var ov=acadEnsureOverride(sid),idx=-1; ov.lessons.forEach(function(l,i){if(l.id===lessonId)idx=i;});
+  if(idx<0)return _acadAdminStageHtml(sid);
+  var ls=ov.lessons[idx];
+  _acadEdDraft={sid:sid,lessonId:lessonId,images:ls.images};
+  var base=st.def, label=(st.group==='Lãnh đạo')?('Cấp '+base.id+' · '+_esc(base.name)):_esc(base.name);
+  var h='<button class="acad-back" data-acad="go-adminstage" data-sid="'+sid+'">← '+label+' (soạn môn)</button>';
+  h+='<div class="acad-block"><h3 style="color:'+base.color+'">✏️ Bài '+(idx+1)+'</h3><p class="hint">Nội dung dùng chung cho cả đội.</p>';
+  h+='<div class="acad-lbl">Tiêu đề bài</div><input id="acad-ed-title" class="acad-note" style="min-height:0;height:44px" value="'+_esc(ls.title||'')+'">';
+  h+='<div class="acad-lbl" style="margin-top:12px">Nội dung bài <span style="font-weight:600;color:#8794A3">(thẻ &lt;p&gt; &lt;b&gt; &lt;ul&gt;&lt;li&gt;)</span></div>'
+    +'<textarea id="acad-ed-body" class="acad-note" style="min-height:170px">'+_esc(ls.body||'')+'</textarea>';
+  h+='<div class="acad-lbl" style="margin-top:16px">🎬 Video bài giảng</div>'
+    +'<input id="acad-ed-video" class="acad-note" style="min-height:0;height:44px" placeholder="Dán link YouTube / Drive… (hoặc để trống)" value="'+_esc(ls.video||'')+'">'
+    +'<div style="margin-top:8px;padding:10px;border:1px dashed #7CB342;border-radius:9px;background:#fff"><div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📤 Hoặc tải video từ máy (≤100MB, ~1–2 phút)</div>'
+    +'<input id="acad-vid-input" type="file" accept="video/*" onchange="acadUploadVideo(\''+sid+'\',\''+lessonId+'\')" style="font-size:12px;max-width:100%">'
+    +'<div id="acad-vid-status" style="font-size:12px;color:#666;margin-top:6px"></div></div>';
+  h+='<div class="acad-lbl" style="margin-top:16px">🖼️ Hình ảnh / sơ đồ</div>'
+    +'<div id="acad-img-list" class="acad-ed-imgs">'+_acadEdImgList(ls.images)+'</div>'
+    +'<div style="margin-top:8px;padding:10px;border:1px dashed #7CB342;border-radius:9px;background:#fff"><div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📷 Tải ảnh sơ đồ từ máy — tự nén, chọn nhiều ảnh</div>'
+    +'<input id="acad-img-input" type="file" accept="image/*" multiple onchange="acadUploadImages(\''+sid+'\',\''+lessonId+'\')" style="font-size:12px;max-width:100%">'
+    +'<div id="acad-img-status" style="font-size:12px;color:#666;margin-top:6px"></div></div>';
+  h+='<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-g" onclick="acadAdminSave(\''+sid+'\',\''+lessonId+'\')">💾 Lưu bài</button>'
+    +'<button class="btn btn-d" data-acad="go-adminstage" data-sid="'+sid+'">Xong</button></div>';
+  h+='</div>';
+  return h;
+}
+function _acadSyncLesson(sid,lessonId){
+  if(!_acadContent||!_acadContent[sid]||!Array.isArray(_acadContent[sid].lessons))return;
+  var lessons=_acadContent[sid].lessons,idx=-1;lessons.forEach(function(l,i){if(l.id===lessonId)idx=i;});
+  if(idx<0)return;
+  var t=document.getElementById('acad-ed-title'),b=document.getElementById('acad-ed-body'),v=document.getElementById('acad-ed-video');
+  if(t)lessons[idx].title=t.value; if(b)lessons[idx].body=b.value; if(v)lessons[idx].video=v.value;
+}
+function acadAdminSave(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không lưu được');return;}
+  if(!_acadIsAdmin()){_acadToast('Chỉ QTV mới sửa nội dung');return;}
+  _acadSyncLesson(sid,lessonId);acadPersist(false);acadGo({mode:'adminlesson',sid:sid,lesson:lessonId});
+}
+function acadStageSave(sid){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không lưu được');return;}
+  if(!_acadIsAdmin()){_acadToast('Chỉ QTV mới sửa nội dung');return;}
+  _acadSyncStage(sid);acadPersist(false);acadGo({mode:'adminstage',sid:sid});
+}
+// đọc DOM hiện tại vào bộ nhớ trước khi rời màn soạn (không mất chỉnh sửa)
+function _acadFlushEditor(){
+  try{
+    if(_acadView.mode==='adminstage'&&_acadView.sid){_acadSyncStage(_acadView.sid);acadPersist(true);}
+    else if(_acadView.mode==='adminlesson'&&_acadView.sid&&_acadView.lesson){_acadSyncLesson(_acadView.sid,_acadView.lesson);acadPersist(true);}
+  }catch(e){}
+}
+
+async function acadUploadImages(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không tải được');return;}
+  if(typeof fbDb==='undefined'||!fbDb||typeof fbUser==='undefined'||!fbUser){_acadToast('Cần đăng nhập để tải ảnh');return;}
+  var inp=document.getElementById('acad-img-input');if(!inp||!inp.files||!inp.files.length)return;
+  var files=Array.prototype.slice.call(inp.files),st=document.getElementById('acad-img-status');
+  if(!_acadEdDraft||_acadEdDraft.lessonId!==lessonId){var ov=acadEnsureOverride(sid),ix=-1;ov.lessons.forEach(function(l,i){if(l.id===lessonId)ix=i;});_acadEdDraft={sid:sid,lessonId:lessonId,images:(ix>=0?ov.lessons[ix].images:[])};}
+  try{
+    var sMod=await import(FB_STORAGE),storage=sMod.getStorage(fbApp),done=0;
+    for(var i=0;i<files.length;i++){
+      var f=files[i];
+      if(st)st.innerHTML='<span style="color:#1565C0">⏳ Xử lý ảnh '+(i+1)+'/'+files.length+'…</span>';
+      var blob=(typeof _skCompressImage==='function')?await _skCompressImage(f):f;
+      if(blob.size>25*1024*1024){if(st)st.innerHTML+='<div style="color:#C62828">⚠ Ảnh &gt;25MB — bỏ qua</div>';continue;}
+      var safe=f.name.replace(/[^\w.\-]+/g,'_');if(blob!==f&&!/\.jpe?g$/i.test(safe))safe=safe.replace(/\.[^.]+$/,'')+'.jpg';
+      var path='health/'+fbUser.uid+'/academy_'+sid+'_'+lessonId+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+'_'+safe;
+      var r=sMod.ref(storage,path);
+      var task=sMod.uploadBytesResumable(r,blob,{contentType:(blob!==f)?'image/jpeg':(f.type||'application/octet-stream'),cacheControl:'public,max-age=31536000'});
+      await new Promise(function(res,rej){task.on('state_changed',function(s){var p=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Tải ảnh '+(i+1)+'/'+files.length+'… '+p+'%</span>';},rej,res);});
+      var url=await sMod.getDownloadURL(r);_acadEdDraft.images.push(url);done++;
+    }
+    if(st&&done)st.innerHTML='<span style="color:#2E7D32">✅ Đã tải '+done+' ảnh. Nhớ bấm 💾 Lưu bài.</span>';
+    inp.value='';var b=document.getElementById('acad-img-list');if(b)b.innerHTML=_acadEdImgList(_acadEdDraft.images);
+  }catch(e){console.warn('acad img upload:',e);if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được ảnh (kho lưu chưa bật hoặc mạng lỗi). Có thể dán link ảnh trong ô Nội dung.</span>';}
+}
+async function acadUploadVideo(sid,lessonId){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){_acadToast('Đang ở chế độ XEM — không tải được');return;}
+  if(typeof fbDb==='undefined'||!fbDb||typeof fbUser==='undefined'||!fbUser){_acadToast('Cần đăng nhập để tải video');return;}
+  var inp=document.getElementById('acad-vid-input');if(!inp||!inp.files||!inp.files.length)return;
+  var f=inp.files[0],st=document.getElementById('acad-vid-status');
+  if(f.size>100*1024*1024){if(st)st.innerHTML='<span style="color:#C62828">⚠ Video &gt;100MB — hãy dán link YouTube/Drive thay thế.</span>';return;}
+  try{
+    var sMod=await import(FB_STORAGE),storage=sMod.getStorage(fbApp);
+    var safe=f.name.replace(/[^\w.\-]+/g,'_');
+    var path='health/'+fbUser.uid+'/academyvid_'+sid+'_'+lessonId+'_'+Date.now().toString(36)+'_'+safe;
+    var r=sMod.ref(storage,path);
+    var task=sMod.uploadBytesResumable(r,f,{contentType:f.type||'video/mp4',cacheControl:'public,max-age=31536000'});
+    await new Promise(function(res,rej){task.on('state_changed',function(s){var p=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Tải video… '+p+'%</span>';},rej,res);});
+    var url=await sMod.getDownloadURL(r);var vin=document.getElementById('acad-ed-video');if(vin)vin.value=url;
+    if(st)st.innerHTML='<span style="color:#2E7D32">✅ Đã tải video. Nhớ bấm 💾 Lưu bài.</span>';inp.value='';
+  }catch(e){console.warn('acad vid upload:',e);if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được video. Hãy dán link YouTube/Drive.</span>';}
+}
+
+/* ===== Listener click riêng cho Học viện (cô lập, không đụng handler cũ) ===== */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-acad]'); if(!t)return;
+  var a=t.getAttribute('data-acad'), sid=t.getAttribute('data-sid');
+  if(/^go-/.test(a))_acadFlushEditor();
+
+  if(a==='go-home'){acadGo({mode:'home'});return;}
+  if(a==='go-entry'){acadGo({mode:'entry'});return;}
+  if(a==='go-admin'){acadLoadContent();acadGo({mode:'admin'});return;}
+  if(a==='go-adminstage'){acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='go-stage'){acadGo({mode:'stage',sid:sid});return;}
+  if(a==='go-lesson'){acadGo({mode:'lesson',sid:sid,lesson:t.getAttribute('data-ls')});return;}
+  if(a==='go-test'){acadGo({mode:'test',sid:sid});return;}
+
+  // ---- Soạn môn: bài học ----
+  if(a==='acad-ls-add'){_acadSyncStage(sid);var ov=acadEnsureOverride(sid);ov.lessons.push({id:_acadNewId(),title:'Bài học mới',body:'',video:'',images:[]});acadPersist(true);acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='acad-ls-del'){var i1=parseInt(t.getAttribute('data-i'),10);if(!confirm('Xoá bài học này khỏi môn?'))return;_acadSyncStage(sid);var o1=acadEnsureOverride(sid);o1.lessons.splice(i1,1);acadPersist(true);acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='acad-ls-up'||a==='acad-ls-down'){var i2=parseInt(t.getAttribute('data-i'),10),dir=(a==='acad-ls-up')?-1:1,j=i2+dir;_acadSyncStage(sid);var o2=acadEnsureOverride(sid);if(j>=0&&j<o2.lessons.length){var tmp=o2.lessons[i2];o2.lessons[i2]=o2.lessons[j];o2.lessons[j]=tmp;acadPersist(true);}acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='acad-ls-edit'){_acadFlushEditor();acadGo({mode:'adminlesson',sid:sid,lesson:t.getAttribute('data-ls')});return;}
+  // ---- Soạn môn: câu hỏi ----
+  if(a==='acad-q-add'){_acadSyncStage(sid);var o3=acadEnsureOverride(sid);o3.test.questions.push({q:'Câu hỏi mới?',opts:['','','',''],correct:0,why:''});acadPersist(true);acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='acad-q-del'){var qi=parseInt(t.getAttribute('data-i'),10);if(!confirm('Xoá câu hỏi này?'))return;_acadSyncStage(sid);var o4=acadEnsureOverride(sid);o4.test.questions.splice(qi,1);acadPersist(true);acadGo({mode:'adminstage',sid:sid});return;}
+  if(a==='acad-stage-save'){acadStageSave(sid);return;}
+
+  if(a==='submit-entry'){
+    var P=acadProg(),scores={},miss=false;
+    for(var i=0;i<ACADEMY.entry.statements.length;i++){var sel=document.querySelector('input[name="ent_'+i+'"]:checked');if(!sel){miss=true;break;}scores[i]=parseInt(sel.value,10);}
+    if(miss){_acadToast('Hãy trả lời hết các câu để hoàn thành.');return;}
+    var sum={},cnt={};
+    ACADEMY.entry.statements.forEach(function(s,i){var L=s.level;sum[L]=(sum[L]||0)+scores[i];cnt[L]=(cnt[L]||0)+1;});
+    var best=1,bestAvg=-1;
+    for(var L=1;L<=5;L++){var avg=(sum[L]||0)/(cnt[L]||1);if(avg>bestAvg){bestAvg=avg;best=L;}}
+    P.entry={done:true,scores:scores,snapshotLevel:best,at:new Date().toISOString()};
+    acadSave();_acadToast('✓ Hoàn thành Test đầu vào — Giai đoạn Nền tảng đã mở!');acadGo({mode:'home'});return;
+  }
+  if(a==='lesson-done'){
+    var st=acadStage(sid); if(!st)return;
+    var s=acadSt(sid),id=t.getAttribute('data-ls');
+    if(s.lessonsDone.indexOf(id)<0){s.lessonsDone.push(id);acadSave();_acadToast('✓ Đã ghi nhận học xong bài này');}
+    var d=acadEffDef(st),idx=-1;for(var k=0;k<d.lessons.length;k++)if(d.lessons[k].id===id)idx=k;
+    if(idx+1<d.lessons.length)acadGo({mode:'lesson',sid:sid,lesson:d.lessons[idx+1].id});
+    else acadGo({mode:'stage',sid:sid});
+    return;
+  }
+  if(a==='submit-test'){
+    var st2=acadStage(sid); if(!st2)return;
+    var d2=acadEffDef(st2),qs=d2.test.questions||[],answers=[],miss2=false,right=0;
+    if(!qs.length){_acadToast('Môn này chưa có câu hỏi.');return;}
+    for(var qq=0;qq<qs.length;qq++){var sq=document.querySelector('input[name="acadq_'+qq+'"]:checked');if(!sq){miss2=true;break;}var val=parseInt(sq.value,10);answers[qq]=val;if(val===qs[qq].correct)right++;}
+    if(miss2){_acadToast('Hãy trả lời hết các câu trước khi nộp.');return;}
+    var score=Math.round(right/qs.length*100),pass=score>=d2.test.pass;
+    var s2=acadSt(sid);s2.testScore=score;if(pass)s2.testPassed=true;acadSave();
+    if(pass)_acadToast('✅ Đậu bài kiểm tra ('+score+'%)!');else _acadToast('Chưa đạt ('+score+'%). Xem giải thích rồi làm lại.');
+    acadGo({mode:'test',sid:sid,graded:{answers:answers,score:score,pass:pass,right:right}});
+    return;
+  }
+  if(a==='save-module'){
+    var st3=acadStage(sid); if(!st3)return;
+    var s3=acadSt(sid);
+    var noteEl=document.getElementById('acad-act-'+sid),chkEl=document.getElementById('acad-chk-'+sid),refEl=document.getElementById('acad-reflect-'+sid);
+    if(refEl)s3.reflectText=refEl.value||'';
+    if(noteEl)s3.actionNote=noteEl.value||'';
+    var chk=chkEl?chkEl.checked:false;
+    if(acadHasReflect(st3)&&(s3.reflectText||'').trim().length<((acadEffDef(st3).test.reflect.min)||40)){
+      s3.actionDone=!!chk&&(s3.actionNote.trim().length>=10);acadSave();
+      _acadToast('Phần "Giải thích vì sao" còn quá ngắn (tối thiểu '+((acadEffDef(st3).test.reflect.min)||40)+' ký tự). Đã lưu tạm.');
+      acadGo({mode:'stage',sid:sid});return;
+    }
+    if(!chk){s3.actionDone=false;acadSave();_acadToast('Đã lưu. Hãy tick xác nhận "đã áp dụng thật" để qua môn.');acadGo({mode:'stage',sid:sid});return;}
+    if((s3.actionNote||'').trim().length<10){s3.actionDone=false;acadSave();_acadToast('Phần Hành động: hãy viết cụ thể hơn (tối thiểu 10 ký tự).');acadGo({mode:'stage',sid:sid});return;}
+    s3.actionDone=true;
+    if(acadStageComplete(st3)&&!s3.passedAt)s3.passedAt=new Date().toISOString();
+    acadSave();_acadToast(acadStageComplete(st3)?'🎉 Qua môn! Môn kế tiếp đã mở.':'💾 Đã lưu.');acadGo({mode:'stage',sid:sid});return;
+  }
+  if(a==='goto'){
+    var mn=t.getAttribute('data-main'),sb=t.getAttribute('data-sub'),sb2=t.getAttribute('data-sub2');
+    if(mn){var mt=document.querySelector('.mtab[data-main="'+mn+'"]');if(mt)mt.click();}
+    if(sb){var s1=document.querySelector('.stab[data-sub="'+sb+'"]');if(s1)s1.click();}
+    if(sb2){var s2b=document.querySelector('.stab[data-sub="'+sb2+'"]');if(s2b)s2b.click();}
+    _acadToast('Đã mở công cụ — làm xong quay lại Học viện để lưu "Qua môn".');
+    return;
+  }
+});
+
+
+</script>
+<script>
+
+/* ===== OVERRIDE UPLOAD cho bản thử: nén ảnh → dataURL, video → objectURL ===== */
+function _hvImgToDataURL(file){return new Promise(function(res){
+  if(!/^image\//.test(file.type)){res('');return;}
+  var url=URL.createObjectURL(file),img=new Image();
+  img.onload=function(){var MAX=1280,sc=Math.min(1,MAX/Math.max(img.naturalWidth,img.naturalHeight));
+    var w=Math.round(img.naturalWidth*sc),h=Math.round(img.naturalHeight*sc);
+    var c=document.createElement('canvas');c.width=w;c.height=h;
+    try{c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.72));}
+    catch(e){URL.revokeObjectURL(url);res('');}};
+  img.onerror=function(){URL.revokeObjectURL(url);res('');};img.src=url;});}
+window.acadUploadImages=async function(sid,lessonId){
+  var inp=document.getElementById('acad-img-input');if(!inp||!inp.files||!inp.files.length)return;
+  var files=Array.prototype.slice.call(inp.files),st=document.getElementById('acad-img-status');
+  if(!_acadEdDraft||_acadEdDraft.lessonId!==lessonId){var ov=acadEnsureOverride(sid),ix=-1;ov.lessons.forEach(function(l,i){if(l.id===lessonId)ix=i;});_acadEdDraft={sid:sid,lessonId:lessonId,images:(ix>=0?ov.lessons[ix].images:[])};}
+  var done=0;
+  for(var i=0;i<files.length;i++){if(st)st.innerHTML='⏳ Đang nén ảnh '+(i+1)+'/'+files.length+'…';var d=await _hvImgToDataURL(files[i]);if(d){_acadEdDraft.images.push(d);done++;}}
+  if(st&&done)st.innerHTML='✅ Đã thêm '+done+' ảnh (bản thử — lưu trong máy). Nhớ 💾 Lưu bài.';
+  inp.value='';var b=document.getElementById('acad-img-list');if(b)b.innerHTML=_acadEdImgList(_acadEdDraft.images);
+};
+window.acadUploadVideo=function(sid,lessonId){
+  var inp=document.getElementById('acad-vid-input');if(!inp||!inp.files||!inp.files.length)return;
+  var f=inp.files[0],st=document.getElementById('acad-vid-status');
+  var url=URL.createObjectURL(f);var vin=document.getElementById('acad-ed-video');if(vin)vin.value=url;
+  if(st)st.innerHTML='✅ Đã chọn video (bản thử — chỉ xem trong phiên này). App thật sẽ tải lên kho.';
+};
+/* điều khiển thanh trên cùng */
+document.getElementById('hvtest-admin').addEventListener('change',function(e){isBranchAdmin=!!e.target.checked;renderAcademy();});
+document.getElementById('hvtest-reset').addEventListener('click',function(){if(confirm('Xoá toàn bộ dữ liệu chạy thử trên máy này (tiến độ + nội dung đã soạn)?')){try{localStorage.removeItem('hvtest_prefs');localStorage.removeItem('hvtest_g_registration');}catch(e){}location.reload();}});
+renderAcademy();
+
+</script>
+</body>
+</html>
