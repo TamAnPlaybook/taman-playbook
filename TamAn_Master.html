@@ -1,5 +1,5 @@
 <!-- VERSION: v6.91-hocvien -->
-<!-- v6.91 — HỌC VIỆN LÃNH ĐẠO (tab 🎓 Học viện): lộ trình tự học 5 Cấp độ Lãnh đạo (Maxwell) + Test đầu vào. KHÓA TUẦN TỰ: xong Test đầu vào → mở Cấp 1; "đậu 1 cấp" = học hết bài + kiểm tra ≥80% + ghi 1 HÀNH ĐỘNG ÁP DỤNG THẬT → mới mở cấp kế tiếp. Nội dung để trong hằng số ACADEMY (sửa dễ như WHATS_NEW; MVP — trình soạn thảo admin làm sau). Tiến độ lưu _prefs.academy → đồng bộ đa thiết bị qua fsSet('prefs'), KHÔNG cần đổi Rules. Thêm tab+trang #page-academy, hook renderAcademy() trong bộ chuyển tab, listener click riêng data-acad (cô lập, không đụng handler cũ). -->
+<!-- v6.91 — HỌC VIỆN TÂM AN (tab 🎓 Học viện): lộ trình tự học phát triển bản thân. CẤU TRÚC: Test đầu vào → GIAI ĐOẠN NỀN TẢNG "Vì sao" (4 môn: Bánh xe cuộc đời · Kim tứ đồ · Vì sao xây hệ thống MLM · Vì sao Tâm An) → 5 CẤP LÃNH ĐẠO (Maxwell). KHÓA TUẦN TỰ toàn lộ trình (foundations+levels gộp thành 1 chuỗi 'stages'). "QUA MÔN" 1 module = học hết bài + kiểm tra ≥pass% + GIẢI THÍCH 'vì sao' bằng lời (đo hiểu sâu, tối thiểu N ký tự) + HÀNH ĐỘNG ÁP DỤNG THẬT. Nội dung để trong hằng ACADEMY (foundations[]/levels[]/entry — sửa dễ như WHATS_NEW; MVP, trình soạn admin làm sau). Tiến độ lưu _prefs.academy.stages{sid} → đồng bộ đa thiết bị qua fsSet('prefs'), KHÔNG đổi Rules. Thêm tab+trang #page-academy, hook renderAcademy() trong bộ chuyển tab, listener click riêng data-acad (cô lập). -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4280,8 +4280,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
-  { id:'v691-hocvien', ver:'6.91', icon:'🎓', title:'Học viện Lãnh đạo — lộ trình tự học 5 cấp (mở khóa tuần tự)',
-    desc:'Có tab mới <b>🎓 Học viện</b>: lộ trình <b>tự học phát triển bản thân</b> theo <b>5 Cấp độ Lãnh đạo</b> (Chức vị → Cho phép → Sản xuất → Phát triển người → Đỉnh cao). Bắt đầu bằng <b>Test đầu vào</b> để chụp ảnh năng lực hiện tại, rồi mở <b>Cấp 1</b>. Mỗi cấp có <b>bài học + bài kiểm tra</b>; <b>đậu ≥80%</b> VÀ <b>ghi 1 hành động áp dụng thật</b> mới <b>mở khóa cấp kế tiếp</b> — học chắc từng bậc, không nhảy cóc. Tiến độ <b>tự đồng bộ mọi thiết bị</b>. Nội dung bài học sẽ được cập nhật &amp; cá nhân hóa dần cho Tâm An.' },
+  { id:'v691-hocvien', ver:'6.91', icon:'🎓', title:'Học viện Tâm An — tự học Nền tảng "Vì sao" + 5 cấp Lãnh đạo (khóa tuần tự)',
+    desc:'Có tab mới <b>🎓 Học viện</b>: lộ trình <b>tự học phát triển bản thân</b>. Bắt đầu bằng <b>Test đầu vào</b>, rồi học <b>Giai đoạn Nền tảng "Vì sao"</b> — <b>Bánh xe cuộc đời · Kim tứ đồ · Vì sao xây hệ thống MLM · Vì sao Tâm An</b> — trước khi mở <b>5 Cấp độ Lãnh đạo</b> (Chức vị → Cho phép → Sản xuất → Phát triển người → Đỉnh cao). Mỗi môn muốn <b>QUA MÔN</b> phải: học hết bài + <b>kiểm tra ≥80%</b> + <b>giải thích "vì sao" bằng lời của bạn</b> (đo mức hiểu sâu) + <b>1 hành động áp dụng thật</b> — xong môn trước mới mở môn sau, học chắc không nhảy cóc. Tiến độ <b>tự đồng bộ mọi thiết bị</b>. Nội dung sẽ được cá nhân hóa dần cho Tâm An.' },
   { id:'v689-sk-admin', ver:'6.89', icon:'🩺', title:'Kết quả SK gọn tên · Quản trị gom ID mới theo Leader',
     desc:'Danh sách <b>🩺 Kết quả SK</b> chỉnh lại tên cho gọn &amp; thống nhất (giữ chi tiết từng tình trạng, viết tắt UT). Dành cho <b>quản trị viên</b>: mục <b>Mã mời</b> nay gộp chung với <b>Quản trị viên</b> (mã đã dùng tự ẩn hẳn), và <b>Hộp thư ID mới toàn đội</b> nay <b>phân vùng theo Team của Leader 1★/2★/3★</b> gần nhất ở tuyến trên — nhìn phát biết ID mới thuộc nhánh Leader nào.' },
   { id:'v688-sk-upload', ver:'6.88', icon:'📷', title:'Kết quả SK: tải thẳng ảnh/video từ máy — không cần dán link',
@@ -15451,24 +15451,30 @@ function dShade(hex,pct){var n=parseInt(hex.slice(1),16);var r=(n>>16)&255,g=(n>
 .acad-result.fail{background:#FDECEA;color:#A0392E;border:1px solid #F0B4AC}
 .acad-cert{background:linear-gradient(135deg,#C8A84B,#E4CB7E);color:#3a2f10;border-radius:16px;padding:22px;text-align:center;margin-bottom:16px;box-shadow:0 8px 24px rgba(200,168,75,.25)}
 .acad-cert .big{font-size:19px;font-weight:900;margin:6px 0}
+.acad-grouphd{font-size:15px;font-weight:800;color:#1F2A37;margin:24px 2px 2px;display:flex;align-items:center;gap:8px}
+.acad-groupsub{font-size:12.5px;color:#8794A3;margin:0 2px 12px;line-height:1.5}
+.acad-subblock{border-top:1px dashed #E3E9F0;margin-top:16px;padding-top:14px}
+.acad-subblock:first-child{border-top:none;margin-top:0;padding-top:0}
+.acad-lbl{font-size:13.5px;font-weight:800;color:#1B4F8A;margin-bottom:6px}
 </style>
 
 <script>
-/* ===== 🎓 HỌC VIỆN LÃNH ĐẠO — NỘI DUNG (sửa ở đây) =====================
+
+/* ===== 🎓 HỌC VIỆN — NỘI DUNG (sửa ở đây) ==============================
+   LỘ TRÌNH: Test đầu vào → GIAI ĐOẠN NỀN TẢNG (4 môn "vì sao") → 5 CẤP LÃNH ĐẠO.
+   Khóa tuần tự: xong môn trước mới mở môn sau. "QUA MÔN" 1 module =
+     học hết bài + kiểm tra ≥ pass% + giải thích "vì sao" (đo hiểu sâu) + hành động thật.
    Cách sửa nhanh:
-   • Đổi/ thêm bài học: sửa mảng lessons[] của mỗi cấp. Mỗi bài = {id,title,body,video?}.
-       - id: mã ngắn duy nhất trong cấp (vd 'l1'); body: HTML (dùng <p>, <b>, <ul><li>).
-       - video (tuỳ chọn): link YouTube → tự nhúng khung xem.
-   • Đổi câu hỏi kiểm tra: sửa test.questions[]. Mỗi câu = {q, opts:[...], correct:index(0..), why}.
-   • Đổi điểm đậu: sửa test.pass (mặc định 80 = 80%).
-   • Đổi mục tiêu/tiêu đề cấp: sửa name/subtitle/goal.
-   • Test đầu vào: sửa ACADEMY.entry.statements[] (mỗi câu tự chấm 1..5, gắn 'level' để chụp ảnh năng lực).
-   ĐỔI NỘI DUNG KHÔNG ẢNH HƯỞNG tiến độ đã lưu (khớp theo id). Xoá 1 bài đã học xong thì phần trăm tự tính lại.
-   ====================================================================== */
+   • Bài học: sửa lessons[] (mỗi bài {id,title,body,video?}); body là HTML (<p><b><ul><li>).
+   • Câu hỏi trắc nghiệm: sửa test.questions[] ({q,opts:[...],correct:index,why}).
+   • Câu "giải thích vì sao": sửa test.reflect ({prompt,min}) — min = số ký tự tối thiểu.
+   • Hành động thật: sửa action ({title,hint,prompt,link?}); link mở thẳng công cụ trong app.
+   • Điểm đậu: test.pass (mặc định 80). Thêm/bớt môn: thêm phần tử vào foundations[] hoặc levels[].
+   Đổi nội dung KHÔNG mất tiến độ (khớp theo id). ====================================== */
 var ACADEMY={
   entry:{
     title:'Test đầu vào — Ảnh chụp năng lực lãnh đạo',
-    intro:'10 câu tự đánh giá. Chọn mức đúng với bạn hiện tại (1 = gần như không · 5 = gần như luôn luôn). Không có đúng/sai — đây là điểm khởi hành để bạn thấy mình đang mạnh ở bậc nào. Làm xong sẽ <b>mở Cấp 1</b>.',
+    intro:'10 câu tự đánh giá. Chọn mức đúng với bạn hiện tại (1 = gần như không · 5 = gần như luôn luôn). Không có đúng/sai — đây là điểm khởi hành. Làm xong sẽ <b>mở Giai đoạn Nền tảng</b>.',
     statements:[
       {level:1,q:'Tôi hiểu rõ vai trò & trách nhiệm của mình trong đội Tâm An.'},
       {level:1,q:'Tôi nắm được vì sao người khác nên đi theo mình — ngoài chức danh/cấp bậc.'},
@@ -15482,6 +15488,152 @@ var ACADEMY={
       {level:5,q:'Đội nhóm vẫn vận hành & phát triển tốt kể cả khi vắng tôi.'}
     ]
   },
+
+  /* ---- GIAI ĐOẠN NỀN TẢNG: 4 môn "VÌ SAO" (học trước 5 cấp lãnh đạo) ---- */
+  foundations:[
+    { id:'wheel', name:'Bánh xe cuộc đời', icon:'🎡', color:'#2BA8A8',
+      subtitle:'Biết mình đang ở đâu trước khi đi đâu',
+      goal:'Hiểu VÌ SAO phát triển bản thân phải bắt đầu bằng việc nhìn rõ sự (mất) cân bằng trong 8 lĩnh vực sống của chính mình.',
+      lessons:[
+        {id:'l1', title:'Bánh xe cuộc đời là gì & vì sao bắt đầu từ đây', body:`
+          <p><b>Bánh xe cuộc đời</b> chia cuộc sống thành các lĩnh vực (sức khỏe, tài chính, sự nghiệp, gia đình, quan hệ, phát triển bản thân, tinh thần, giải trí…). Bạn tự chấm điểm mỗi lĩnh vực để thấy bức tranh tổng thể mình đang cân bằng hay lệch.</p>
+          <p><b>Vì sao đây là bước đầu tiên?</b> Nguyên tắc nền tảng của phát triển bản thân: <b>"Bạn không thể cải thiện điều bạn không đo, và không thể tới đích nếu không biết mình đang đứng ở đâu."</b> Nhiều người lao vào kiếm tiền, xây đội mà bỏ quên sức khỏe hay gia đình — đến khi mất cân bằng nặng mới nhận ra. Bánh xe giúp bạn thấy điều đó <b>sớm</b>.</p>`},
+        {id:'l2', title:'Đọc bánh xe & chọn lĩnh vực đòn bẩy', body:`
+          <p>Sau khi chấm, đừng cố sửa mọi thứ cùng lúc. Hãy:</p>
+          <ul>
+            <li><b>Nhìn lĩnh vực thấp nhất</b> đang kéo cả bánh xe lệch — nó ảnh hưởng tới những lĩnh vực khác thế nào?</li>
+            <li><b>Chọn 1–2 lĩnh vực đòn bẩy</b> để cải thiện trước; cải thiện đúng chỗ này thường kéo theo nhiều chỗ khác.</li>
+            <li><b>Đặt 1 hành động nhỏ</b> cho lĩnh vực đó — bắt đầu ngay, không chờ hoàn hảo.</li>
+          </ul>
+          <p>Bánh xe không phải để chấm điểm rồi bỏ đó — nó là <b>la bàn</b> để bạn biết mình cần đi đâu tiếp theo.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Bánh xe cuộc đời dùng để làm gì?',
+           opts:['Chấm điểm người khác','Nhìn ra sự (mất) cân bằng giữa các lĩnh vực sống của chính mình','Tính thu nhập','Xếp hạng leader'],
+           correct:1, why:'Bánh xe là công cụ tự nhận thức — cho thấy chính bạn đang cân bằng hay lệch ở đâu.'},
+          {q:'Vì sao nên bắt đầu phát triển bản thân từ Bánh xe cuộc đời?',
+           opts:['Vì nó vui','Vì "biết mình đang ở đâu" là điều kiện để biết cần đi đâu','Vì bắt buộc','Vì để khoe với đội'],
+           correct:1, why:'Không đo được hiện trạng thì không thể đặt mục tiêu và cải thiện có chủ đích.'},
+          {q:'Sau khi chấm bánh xe, bước khôn ngoan là?',
+           opts:['Cố sửa tất cả cùng lúc','Bỏ qua lĩnh vực yếu','Chọn 1–2 lĩnh vực đòn bẩy để cải thiện trước','Chỉ tập trung lĩnh vực đã mạnh'],
+           correct:2, why:'Tập trung vào 1–2 lĩnh vực đòn bẩy tạo thay đổi thật, thay vì dàn mỏng nỗ lực.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO chấm Bánh xe cuộc đời lại là bước khởi đầu của phát triển bản thân? Nó giúp bạn nhìn thấy điều gì về chính mình?'} },
+      action:{ title:'Hành động thật — Bánh xe cuộc đời',
+        hint:'Làm thật ngay trong app.',
+        prompt:'Vào 🧭 La bàn → Bánh xe cuộc đời và chấm điểm 8 lĩnh vực sống của bạn hôm nay. Ghi ra 1 lĩnh vực bạn chọn cải thiện trước & vì sao.',
+        link:{label:'🧭 Mở Bánh xe cuộc đời', main:'tp', sub:'tp:laban'} } },
+
+    { id:'quadrant', name:'Kim tứ đồ', icon:'💠', color:'#3F51B5',
+      subtitle:'4 cách tạo thu nhập — vì sao B & I mới cho tự do',
+      goal:'Hiểu VÌ SAO muốn tự do tài chính thì phải dịch chuyển từ nhóm Làm công / Tự doanh sang nhóm Chủ hệ thống / Nhà đầu tư.',
+      lessons:[
+        {id:'l1', title:'4 nhóm của Kim tứ đồ', body:`
+          <p>Kim tứ đồ (Cashflow Quadrant — Robert Kiyosaki) chia người tạo thu nhập thành 4 nhóm:</p>
+          <ul>
+            <li><b>E – Làm công (Employee):</b> đổi thời gian lấy lương. An toàn cảm giác, nhưng thu nhập trần và phụ thuộc chủ.</li>
+            <li><b>S – Tự doanh (Self-employed):</b> tự làm chủ công việc, nhưng <i>nghỉ là hết thu nhập</i> — bạn chính là công việc.</li>
+            <li><b>B – Chủ hệ thống (Business owner):</b> xây hệ thống & đội nhóm làm việc cho mình; thu nhập không phụ thuộc sức một người.</li>
+            <li><b>I – Nhà đầu tư (Investor):</b> tiền làm việc thay cho mình.</li>
+          </ul>
+          <p><b>Vì sao quan trọng?</b> Đa số mắc kẹt ở E và S — làm càng nhiều càng mệt mà không giàu thêm bền vững.</p>`},
+        {id:'l2', title:'Vì sao B & I mới mang lại tự do', body:`
+          <p>Tự do tài chính = thu nhập <b>không còn phụ thuộc vào việc bạn đổi thời gian lấy tiền</b>. Chỉ nhóm B và I đạt được điều đó, nhờ <b>đòn bẩy</b>: B dùng đòn bẩy hệ thống & con người, I dùng đòn bẩy tiền.</p>
+          <p>Đây chính là lý do MLM / mô hình Tâm An hấp dẫn: nó là <b>con đường bước vào nhóm B</b> (xây hệ thống nhân bản) với <b>vốn nhỏ</b> và rủi ro thấp hơn nhiều so với mở một doanh nghiệp truyền thống. Bạn không cần nhà xưởng, không cần thuê hàng chục nhân viên — bạn xây một mạng lưới.</p>
+          <p>Hiểu Kim tứ đồ giúp bạn trả lời được câu hỏi lớn: <b>"Tôi đang ở nhóm nào, và tôi cần dịch chuyển về đâu?"</b></p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Kim tứ đồ (Cashflow Quadrant) gồm 4 nhóm nào?',
+           opts:['E-Làm công, S-Tự doanh, B-Chủ hệ thống, I-Nhà đầu tư','A-B-C-D','4 cấp bậc MLM','4 mùa trong năm'],
+           correct:0, why:'4 nhóm: E (làm công), S (tự doanh), B (chủ hệ thống), I (nhà đầu tư).'},
+          {q:'Vì sao nhóm B và I mới mang lại tự do tài chính?',
+           opts:['Vì họ làm nhiều giờ hơn','Vì thu nhập không còn phụ thuộc vào việc đổi thời gian lấy tiền','Vì họ may mắn','Vì họ không làm gì cả'],
+           correct:1, why:'B và I dùng đòn bẩy (hệ thống/tiền) nên thu nhập không bị trói vào thời gian cá nhân.'},
+          {q:'Người ở nhóm E/S thường gặp giới hạn gì?',
+           opts:['Thu nhập gắn chặt với thời gian & sức của chính họ','Quá nhiều thời gian rảnh','Không thể kiếm tiền','Hoàn toàn không có rủi ro'],
+           correct:0, why:'E/S đổi thời gian lấy tiền — ngừng làm là ngừng thu nhập, nên khó tự do.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: bạn đang chủ yếu ở nhóm nào (E/S/B/I)? VÌ SAO muốn tự do tài chính thì phải dịch chuyển sang nhóm B và I?'} },
+      action:{ title:'Hành động thật — Kim tứ đồ',
+        hint:'Xác định vị trí & 1 bước dịch chuyển.',
+        prompt:'Viết ra: bạn đang chủ yếu ở nhóm nào, và 1 việc cụ thể bạn sẽ làm trong tháng này để dịch dần sang nhóm B (xây hệ thống Tâm An).'} },
+
+    { id:'system', name:'Vì sao xây hệ thống MLM', icon:'🌐', color:'#EF6C00',
+      subtitle:'Đòn bẩy con người — nhân bản thay vì làm một mình',
+      goal:'Hiểu VÌ SAO xây một hệ thống (mạng lưới) tạo ra kết quả lớn, bền và tự do hơn hẳn việc tự làm giỏi một mình.',
+      lessons:[
+        {id:'l1', title:'Đòn bẩy & nhân bản', body:`
+          <p>Câu hỏi kinh điển: bạn muốn <b>1% nỗ lực của 100 người</b>, hay <b>100% nỗ lực của riêng bạn</b>? Một người dù giỏi đến đâu cũng chỉ có 24 giờ và một đôi tay. Một <b>hệ thống</b> gồm nhiều người cùng làm và <b>nhân bản</b> tạo ra kết quả mà cá nhân không thể với tới.</p>
+          <p>Đó là <b>đòn bẩy con người & thời gian</b>. Khi bạn đào tạo người khác làm được việc bạn làm, rồi họ lại đào tạo người tiếp theo, thu nhập của bạn không còn dừng lại khi bạn nghỉ — hệ thống vẫn chạy. Đây là gốc rễ của <b>thu nhập thụ động</b>.</p>`},
+        {id:'l2', title:'MLM chân chính vs biến tướng', body:`
+          <p>Không phải mô hình nào cũng như nhau. Hãy phân biệt rõ:</p>
+          <ul>
+            <li><b>MLM chân chính:</b> có <b>sản phẩm/dịch vụ thật, giá trị thật</b> cho người dùng; thu nhập đến từ tiêu dùng & phân phối thật; xây người bền vững.</li>
+            <li><b>Mô hình biến tướng:</b> chỉ xoay quanh tuyển người, hứa giàu nhanh, không có sản phẩm giá trị.</li>
+          </ul>
+          <p>Vì sao điều này quan trọng? Vì một hệ thống chỉ <b>bền</b> khi nó tạo ra giá trị thật. Chọn đúng mô hình có sản phẩm & dịch vụ thật (như Tâm An) là chọn một hệ thống có thể đứng vững lâu dài — không phải trò chơi tổng-bằng-không.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Sức mạnh cốt lõi của mô hình hệ thống (MLM) là gì?',
+           opts:['Bán thật nhiều một mình','Đòn bẩy: nhiều người cùng làm & nhân bản → thu nhập không phụ thuộc mình bạn','Không cần sản phẩm','Tuyển càng nhiều càng tốt bất kể chất lượng'],
+           correct:1, why:'Giá trị của hệ thống nằm ở đòn bẩy con người và khả năng nhân bản.'},
+          {q:'Điều gì phân biệt MLM chân chính với mô hình biến tướng?',
+           opts:['Có sản phẩm/dịch vụ thật, giá trị thật cho người dùng','Chỉ cần tuyển người là đủ','Hứa giàu nhanh','Không có sản phẩm'],
+           correct:0, why:'Giá trị thật cho người dùng là ranh giới giữa MLM chân chính và trò biến tướng.'},
+          {q:'Vì sao "100 người làm 1%" mạnh hơn "1 người làm 100%"?',
+           opts:['Vì đòn bẩy con người tạo kết quả lớn & bền hơn sức một người','Vì lười hơn','Vì không cần cố gắng','Không đúng — một người luôn tốt hơn'],
+           correct:0, why:'Đòn bẩy giúp vượt qua giới hạn thời gian & sức lực của một cá nhân.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO xây hệ thống (đòn bẩy con người) lại tạo được tự do tài chính mà làm một mình không thể? Và vì sao phải chọn mô hình có sản phẩm thật?'} },
+      action:{ title:'Hành động thật — Hệ thống của bạn',
+        hint:'Đặt mục tiêu hệ thống.',
+        prompt:'Viết ra mục tiêu hệ thống của bạn: số nhánh & số ID bạn muốn xây trong 12 tháng, và bước ĐẦU TIÊN bạn sẽ làm ngay tuần này.',
+        link:{label:'🌳 Mở Sơ đồ', main:'tree'} } },
+
+    { id:'taman', name:'Vì sao Tâm An', icon:'🌿', color:'#1B7A5E',
+      subtitle:'Đúng mô hình, đúng nỗi đau, đúng thời điểm',
+      goal:'Hiểu sâu VÌ SAO bạn chọn Tâm An — mô hình này giải quyết điều gì mà các con đường khác không làm được.',
+      lessons:[
+        {id:'l1', title:'Mô hình Tâm An & nhiều nguồn thu', body:`
+          <p>Tâm An không phải MLM sản phẩm thuần. Nó kết hợp <b>nhiều tầng thu nhập</b>:</p>
+          <ul>
+            <li><b>Dịch vụ chăm sóc sức khỏe (CLB):</b> tạo <b>thu nhập hàng ngày</b> — dòng tiền đều, không chờ tuyển được người mới.</li>
+            <li><b>Sản phẩm & thiết bị:</b> giá trị thật, kết quả sức khỏe thật.</li>
+            <li><b>Xây mạng lưới:</b> đòn bẩy hệ thống cho thu nhập dài hạn & thụ động.</li>
+          </ul>
+          <p><b>Vì sao vững hơn?</b> Vì khi một nguồn chậm, các nguồn khác vẫn nuôi bạn. Người mới không phải "sống chết" chỉ nhờ tuyển người — họ có dịch vụ tạo tiền ngay.</p>`},
+        {id:'l2', title:'Vì sao Tâm An giải đúng nỗi đau', body:`
+          <p>Tệp khách vàng của bạn — người từng làm MLM sản phẩm (vd Herbalife) — thường thất bại vì 3 nỗi đau: <b>hàng phá giá, khó mời khách trải nghiệm, không có thu nhập hàng ngày.</b></p>
+          <p>Tâm An giải đúng cả ba:</p>
+          <ul>
+            <li><b>Dịch vụ massage sức khỏe</b> → thu nhập hàng ngày, không lệ thuộc bán hàng.</li>
+            <li><b>Trải nghiệm tại CLB</b> → khách cảm nhận kết quả thật, dễ mời hơn bán một hộp sản phẩm.</li>
+            <li><b>Kết quả sức khỏe thật</b> → bằng chứng tạo niềm tin & giữ khách bền.</li>
+          </ul>
+          <p>Hiểu rõ "vì sao Tâm An" giúp bạn chia sẻ bằng <b>niềm tin thật</b>, không phải học thuộc kịch bản. Đó là nền của mọi buổi 2:1 hiệu quả.</p>`}
+      ],
+      test:{ pass:80,
+        questions:[
+          {q:'Điểm khác biệt của mô hình Tâm An so với MLM sản phẩm thuần là?',
+           opts:['Không có gì khác','Kết hợp nhiều nguồn thu — dịch vụ sức khỏe tạo thu nhập hàng ngày + sản phẩm + xây mạng lưới','Chỉ bán thiết bị','Chỉ tuyển người'],
+           correct:1, why:'Tâm An đa nguồn thu, trong đó dịch vụ tạo dòng tiền hàng ngày — vững hơn mô hình đơn nguồn.'},
+          {q:'Tâm An giải đúng nỗi đau nào của người từng làm MLM sản phẩm (vd Herbalife)?',
+           opts:['Hàng phá giá, khó mời trải nghiệm, không có thu nhập hàng ngày','Không có nỗi đau nào','Thiếu sản phẩm','Quá dễ kiếm tiền'],
+           correct:0, why:'Đây đúng 3 nỗi đau của tệp vàng — và là 3 thứ Tâm An giải quyết.'},
+          {q:'Vì sao "kết quả sức khỏe thật" quan trọng với Tâm An?',
+           opts:['Không quan trọng','Vì nó là bằng chứng giá trị thật, tạo niềm tin & giữ khách bền vững','Chỉ để quảng cáo','Chỉ để cạnh tranh giá'],
+           correct:1, why:'Kết quả thật là bằng chứng — nền của niềm tin và sự bền vững của mô hình.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO bạn chọn Tâm An? Nó giải quyết được điều gì cho bạn và cho khách mà các mô hình khác không làm được?'} },
+      action:{ title:'Hành động thật — Câu chuyện "Vì sao Tâm An"',
+        hint:'Chuẩn bị vũ khí chia sẻ của bạn.',
+        prompt:'Viết "câu chuyện Vì sao Tâm An" của riêng bạn (3–5 câu) — để dùng khi chia sẻ với khách trong buổi 2:1. Câu chuyện thật của bạn thuyết phục hơn mọi kịch bản.'} }
+  ],
+
+  /* ---- 5 CẤP ĐỘ LÃNH ĐẠO (John Maxwell) — mở sau khi xong Nền tảng ---- */
   levels:[
     { id:1, key:'position', name:'Chức vị', icon:'🧭', color:'#6B7A8D',
       subtitle:'Người ta theo vì họ PHẢI theo',
@@ -15489,93 +15641,100 @@ var ACADEMY={
       lessons:[
         {id:'l1', title:'Chức vị chỉ là điểm xuất phát', body:`
           <p><b>Cấp 1 — Chức vị</b> là bậc thấp nhất trong 5 cấp độ lãnh đạo của John Maxwell. Ở đây, người ta đi theo bạn <b>vì họ phải theo</b> — vì bạn được bổ nhiệm, có cấp bậc, có vị trí — chứ chưa phải vì họ muốn.</p>
-          <p>Sai lầm lớn nhất của người mới lên leader hay mới mở CLB Tâm An là nghĩ: <i>"Mình có cấp bậc rồi thì đương nhiên có người theo."</i> Chức danh cho bạn <b>quyền</b>, nhưng chưa cho bạn <b>tầm ảnh hưởng</b>. Người ở Cấp 1 chỉ ra lệnh được trong giờ, trong phạm vi — ra khỏi đó, không ai đi theo.</p>
-          <p>Tin tốt: ai cũng bắt đầu từ đây. Cấp 1 không xấu — nó là <b>nền móng</b>. Vấn đề chỉ xảy ra khi bạn <b>mắc kẹt</b> ở đây và tưởng chức danh là đủ.</p>`},
+          <p>Sai lầm lớn nhất của người mới lên leader hay mới mở CLB Tâm An là nghĩ: <i>"Mình có cấp bậc rồi thì đương nhiên có người theo."</i> Chức danh cho bạn <b>quyền</b>, nhưng chưa cho bạn <b>tầm ảnh hưởng</b>.</p>
+          <p>Tin tốt: ai cũng bắt đầu từ đây. Cấp 1 là <b>nền móng</b>. Vấn đề chỉ xảy ra khi bạn <b>mắc kẹt</b> ở đây và tưởng chức danh là đủ.</p>`},
         {id:'l2', title:'Làm chắc vai trò nền tảng', body:`
-          <p>Để không mắc kẹt ở Cấp 1, hãy biến "được bổ nhiệm" thành "được tín nhiệm" bằng những việc rất căn bản:</p>
+          <p>Để không mắc kẹt ở Cấp 1, hãy biến "được bổ nhiệm" thành "được tín nhiệm" bằng những việc căn bản:</p>
           <ul>
-            <li><b>Biết rõ vai trò của mình:</b> một leader Tâm An chịu trách nhiệm gì — chăm sóc khách, dẫn dắt buổi 2:1, xây sơ đồ, phát triển ID?</li>
-            <li><b>Làm gương trước:</b> đúng giờ, giữ lời hứa, có mặt đều. Người ta tin điều bạn <b>làm</b>, không phải điều bạn <b>nói</b>.</li>
-            <li><b>Hiểu hệ thống:</b> nắm sản phẩm Prife, mô hình CLB, quy tắc thăng tiến — để nói gì cũng chắc.</li>
+            <li><b>Biết rõ vai trò của mình:</b> chăm sóc khách, dẫn dắt buổi 2:1, xây sơ đồ, phát triển ID.</li>
+            <li><b>Làm gương trước:</b> đúng giờ, giữ lời hứa, có mặt đều.</li>
+            <li><b>Hiểu hệ thống:</b> nắm sản phẩm Prife, mô hình CLB, quy tắc thăng tiến.</li>
           </ul>
-          <p>Khi bạn làm tốt phần nền này một cách nhất quán, bạn tự nhiên bước sang Cấp 2 — nơi người ta bắt đầu theo bạn <b>vì họ muốn</b>.</p>`}
+          <p>Làm tốt phần nền này một cách nhất quán, bạn tự nhiên bước sang Cấp 2 — nơi người ta theo bạn <b>vì họ muốn</b>.</p>`}
       ],
-      test:{ pass:80, questions:[
-        {q:'Ở Cấp 1 (Chức vị), người ta đi theo bạn chủ yếu vì điều gì?',
-         opts:['Vì họ tin và quý bạn','Vì kết quả bạn tạo ra','Vì họ buộc phải theo do chức danh/vị trí','Vì bạn đã đào tạo họ'],
-         correct:2, why:'Cấp 1 chỉ dựa trên quyền của vị trí — người ta theo vì "phải", chưa phải vì "muốn".'},
-        {q:'Sai lầm phổ biến của người mới lên leader ở Cấp 1 là gì?',
-         opts:['Quá quan tâm tới thành viên','Nghĩ rằng có chức danh là đương nhiên có tầm ảnh hưởng','Làm gương quá nhiều','Trao quyền quá sớm'],
-         correct:1, why:'Chức danh cho bạn quyền, không tự động cho bạn tầm ảnh hưởng. Ảnh hưởng phải xây thêm.'},
-        {q:'Việc quan trọng nhất để đứng vững ở Cấp 1 là?',
-         opts:['Ép thành viên nghe lời','Hiểu rõ vai trò, làm đúng & làm gương, giữ lời hứa','Khoe cấp bậc thường xuyên','So sánh mình với leader khác'],
-         correct:1, why:'Nền móng của lãnh đạo là làm gương và giữ chữ tín — đó là cách biến chức vị thành tín nhiệm.'}
-      ]},
-      action:{ title:'Hành động áp dụng — Cấp 1',
-        hint:'Học xong phải làm thật thì mới "đậu". Viết cụ thể, rồi ghi vào Nhật ký của app.',
-        prompt:'Viết ra 3 trách nhiệm cốt lõi trong vai trò hiện tại của bạn, và 1 việc bạn sẽ LÀM GƯƠNG ngay trong tuần này (vd: đi buổi sáng đúng giờ suốt tuần).'} },
+      test:{ pass:80,
+        questions:[
+          {q:'Ở Cấp 1 (Chức vị), người ta đi theo bạn chủ yếu vì điều gì?',
+           opts:['Vì họ tin và quý bạn','Vì kết quả bạn tạo ra','Vì họ buộc phải theo do chức danh/vị trí','Vì bạn đã đào tạo họ'],
+           correct:2, why:'Cấp 1 chỉ dựa trên quyền của vị trí — người ta theo vì "phải", chưa phải vì "muốn".'},
+          {q:'Sai lầm phổ biến của người mới lên leader ở Cấp 1 là gì?',
+           opts:['Quá quan tâm tới thành viên','Nghĩ rằng có chức danh là đương nhiên có tầm ảnh hưởng','Làm gương quá nhiều','Trao quyền quá sớm'],
+           correct:1, why:'Chức danh cho bạn quyền, không tự động cho bạn tầm ảnh hưởng.'},
+          {q:'Việc quan trọng nhất để đứng vững ở Cấp 1 là?',
+           opts:['Ép thành viên nghe lời','Hiểu rõ vai trò, làm đúng & làm gương, giữ lời hứa','Khoe cấp bậc thường xuyên','So sánh mình với leader khác'],
+           correct:1, why:'Làm gương và giữ chữ tín là cách biến chức vị thành tín nhiệm.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO chức danh/cấp bậc chưa đủ để người khác thật sự đi theo bạn?'} },
+      action:{ title:'Hành động thật — Cấp 1',
+        hint:'Làm gương một việc cụ thể trong tuần.',
+        prompt:'Viết ra 3 trách nhiệm cốt lõi trong vai trò hiện tại của bạn, và 1 việc bạn sẽ LÀM GƯƠNG ngay tuần này (vd: đi buổi sáng đúng giờ suốt tuần).',
+        link:{label:'📔 Mở Nhật ký', main:'tp', sub:'tp:actions', sub2:'act:journal'} } },
 
     { id:2, key:'permission', name:'Cho phép', icon:'🤝', color:'#2E8B57',
       subtitle:'Người ta theo vì họ MUỐN theo',
       goal:'Xây mối quan hệ và niềm tin với người trong đội — nền tảng của mọi tầm ảnh hưởng.',
       lessons:[
         {id:'l1', title:'Người ta theo người họ thích & tin', body:`
-          <p><b>Cấp 2 — Cho phép</b> được xây trên <b>mối quan hệ</b>. Người ta cho phép bạn dẫn dắt vì họ quý bạn, tin bạn — chứ không vì bị bắt buộc. Đây là lúc lãnh đạo bắt đầu trở nên "dễ thở": làm việc với nhau bằng thiện chí thay vì áp lực.</p>
-          <p>Nguyên tắc: <b>"Người ta không quan tâm bạn biết bao nhiêu, cho tới khi họ biết bạn quan tâm tới họ bao nhiêu."</b> Ở Tâm An, điều này nghĩa là: nhớ tên, nhớ hoàn cảnh, hỏi thăm sức khỏe của khách và thành viên — quan tâm con người trước, công việc sau.</p>`},
+          <p><b>Cấp 2 — Cho phép</b> được xây trên <b>mối quan hệ</b>. Người ta cho phép bạn dẫn dắt vì họ quý bạn, tin bạn — chứ không vì bị bắt buộc.</p>
+          <p>Nguyên tắc: <b>"Người ta không quan tâm bạn biết bao nhiêu, cho tới khi họ biết bạn quan tâm tới họ bao nhiêu."</b> Ở Tâm An: nhớ tên, nhớ hoàn cảnh, hỏi thăm sức khỏe của khách và thành viên — quan tâm con người trước, công việc sau.</p>`},
         {id:'l2', title:'Kết nối trước khi dẫn dắt', body:`
-          <p>Buổi trình bày 2:1 của bạn không chỉ để chốt — nó là cơ hội <b>xây quan hệ</b>. Người ra quyết định lớn (tham gia, mở CLB) cần cảm thấy <b>an toàn và được thấu hiểu</b>, không phải bị bán hàng.</p>
+          <p>Buổi 2:1 không chỉ để chốt — nó là cơ hội <b>xây quan hệ</b>. Người ra quyết định lớn cần cảm thấy <b>an toàn và được thấu hiểu</b>, không bị bán hàng.</p>
           <ul>
-            <li><b>Lắng nghe nhiều hơn nói:</b> khai thác nỗi đau/khao khát thật, đừng vội trình bày.</li>
+            <li><b>Lắng nghe nhiều hơn nói:</b> khai thác nỗi đau/khao khát thật.</li>
             <li><b>Chân thành, không thao túng:</b> tư duy trao quyền — không ép khách.</li>
-            <li><b>Theo sát sau buổi gặp:</b> quan hệ được xây bằng nhiều lần chạm, không phải một buổi.</li>
-          </ul>
-          <p>Khi người ta tin bạn, họ mở lòng nghe bạn — và bạn sẵn sàng cho Cấp 3.</p>`}
+            <li><b>Theo sát sau buổi gặp:</b> quan hệ xây bằng nhiều lần chạm.</li>
+          </ul>`}
       ],
-      test:{ pass:80, questions:[
-        {q:'Cấp 2 (Cho phép) được xây trên nền tảng nào?',
-         opts:['Quyền lực & chức danh','Kết quả doanh số','Mối quan hệ & niềm tin','Quy trình & kỷ luật'],
-         correct:2, why:'Cấp 2 là cấp của quan hệ — người ta "cho phép" bạn dẫn dắt vì tin và quý bạn.'},
-        {q:'Câu nào ĐÚNG với tinh thần Cấp 2?',
-         opts:['Người ta theo vì họ muốn theo','Người ta theo vì bị bắt buộc','Quan hệ không quan trọng bằng chỉ tiêu','Chỉ cần chốt được đơn là đủ'],
-         correct:0, why:'Bước sang Cấp 2, động lực đi theo chuyển từ "phải" (Cấp 1) sang "muốn".'},
-        {q:'Trong buổi 2:1 của Tâm An, tinh thần Cấp 2 nghĩa là?',
-         opts:['Chốt bằng mọi giá','Lắng nghe & kết nối thật trước khi dẫn dắt','Nói càng nhiều càng tốt','Bỏ qua nỗi đau của khách'],
-         correct:1, why:'Kết nối con người trước, dẫn dắt sau — đó là cách quan hệ tạo ra ảnh hưởng bền.'}
-      ]},
-      action:{ title:'Hành động áp dụng — Cấp 2',
-        hint:'Xây một mối quan hệ thật trong tuần này.',
-        prompt:'Có 1 cuộc trò chuyện QUAN TÂM THẬT (không bán gì) với 1 thành viên hoặc khách trong tuần này. Ghi lại: họ đang bận tâm/khao khát điều gì?'} },
+      test:{ pass:80,
+        questions:[
+          {q:'Cấp 2 (Cho phép) được xây trên nền tảng nào?',
+           opts:['Quyền lực & chức danh','Kết quả doanh số','Mối quan hệ & niềm tin','Quy trình & kỷ luật'],
+           correct:2, why:'Cấp 2 là cấp của quan hệ — người ta "cho phép" bạn dẫn dắt vì tin và quý bạn.'},
+          {q:'Câu nào ĐÚNG với tinh thần Cấp 2?',
+           opts:['Người ta theo vì họ muốn theo','Người ta theo vì bị bắt buộc','Quan hệ không quan trọng bằng chỉ tiêu','Chỉ cần chốt được đơn là đủ'],
+           correct:0, why:'Sang Cấp 2, động lực đi theo chuyển từ "phải" (Cấp 1) sang "muốn".'},
+          {q:'Trong buổi 2:1 của Tâm An, tinh thần Cấp 2 nghĩa là?',
+           opts:['Chốt bằng mọi giá','Lắng nghe & kết nối thật trước khi dẫn dắt','Nói càng nhiều càng tốt','Bỏ qua nỗi đau của khách'],
+           correct:1, why:'Kết nối con người trước, dẫn dắt sau — cách quan hệ tạo ảnh hưởng bền.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO mối quan hệ & niềm tin lại là nền của tầm ảnh hưởng, quan trọng hơn chức danh?'} },
+      action:{ title:'Hành động thật — Cấp 2',
+        hint:'Xây một mối quan hệ thật trong tuần.',
+        prompt:'Có 1 cuộc trò chuyện QUAN TÂM THẬT (không bán gì) với 1 thành viên hoặc khách trong tuần. Ghi lại: họ đang bận tâm/khao khát điều gì?',
+        link:{label:'📔 Mở Nhật ký', main:'tp', sub:'tp:actions', sub2:'act:journal'} } },
 
     { id:3, key:'production', name:'Sản xuất', icon:'🚀', color:'#F07B30',
       subtitle:'Người ta theo vì những gì bạn đã LÀM ĐƯỢC',
       goal:'Tự tạo ra kết quả thật và làm gương — biến bản thân thành bằng chứng sống cho đội.',
       lessons:[
         {id:'l1', title:'Lãnh đạo bằng kết quả, không bằng lời', body:`
-          <p><b>Cấp 3 — Sản xuất</b> là nơi uy tín thật sự hình thành. Người ta đi theo bạn vì <b>những gì bạn đã làm được</b> cho tổ chức: bạn tự mời được khách, tự phát sinh ID, tự tạo doanh số. Bạn không chỉ nói về thành công — bạn <b>là</b> thành công.</p>
-          <p>Ở Cấp 2 người ta quý bạn; ở Cấp 3 người ta <b>nể</b> bạn vì kết quả. Một leader nói hay mà không có số sẽ mất sức nặng. Một leader có số thật thì mỗi lời nói đều có trọng lượng.</p>`},
+          <p><b>Cấp 3 — Sản xuất</b> là nơi uy tín thật sự hình thành. Người ta đi theo bạn vì <b>những gì bạn đã làm được</b>: tự mời khách, tự phát sinh ID, tự tạo doanh số. Bạn không chỉ nói về thành công — bạn <b>là</b> thành công.</p>
+          <p>Ở Cấp 2 người ta quý bạn; ở Cấp 3 người ta <b>nể</b> bạn vì kết quả. Leader có số thật thì mỗi lời nói đều có trọng lượng.</p>`},
         {id:'l2', title:'Đội nhìn vào con số của bạn', body:`
-          <p>Cấp 3 tạo ra <b>momentum</b> — động lượng. Khi đội thấy bạn trực tiếp ra kết quả, họ tin rằng mô hình này chạy được, và họ làm theo. Bạn trở thành <b>bằng chứng sống</b>.</p>
+          <p>Cấp 3 tạo ra <b>momentum</b>. Khi đội thấy bạn trực tiếp ra kết quả, họ tin mô hình chạy được và làm theo. Bạn trở thành <b>bằng chứng sống</b>.</p>
           <ul>
             <li><b>Tự làm, đừng chỉ chỉ đạo:</b> đích thân mời khách, đích thân chốt.</li>
-            <li><b>Gắn với chỉ tiêu tháng trong app:</b> đặt con số rõ ràng và tự đạt nó trước.</li>
-            <li><b>Công khai kết quả:</b> để đội thấy và tin.</li>
+            <li><b>Gắn với chỉ tiêu tháng trong app:</b> đặt con số rõ và tự đạt trước.</li>
           </ul>
-          <p>Nhưng cẩn thận: nhiều leader giỏi <b>mắc kẹt</b> ở Cấp 3 vì họ làm giỏi tới mức ôm hết. Cấp 4 sẽ dạy bạn buông ra để nhân bản.</p>`}
+          <p>Cẩn thận: nhiều leader giỏi <b>mắc kẹt</b> ở Cấp 3 vì ôm hết. Cấp 4 dạy bạn buông ra để nhân bản.</p>`}
       ],
-      test:{ pass:80, questions:[
-        {q:'Uy tín ở Cấp 3 (Sản xuất) đến từ đâu?',
-         opts:['Chức danh','Lời hứa','Kết quả thật do chính bạn tạo ra','Quan hệ rộng'],
-         correct:2, why:'Cấp 3 là cấp của kết quả — người ta nể bạn vì thành tích thật, không phải lời nói.'},
-        {q:'Vì sao leader Cấp 3 quan trọng với đội?',
-         opts:['Vì họ nói hay','Vì họ trở thành bằng chứng sống & tạo momentum','Vì họ có nhiều cấp bậc','Vì họ ôm hết việc'],
-         correct:1, why:'Kết quả thật của leader tạo động lượng và niềm tin cho cả đội noi theo.'},
-        {q:'Biểu hiện rõ nhất của Cấp 3 trong Tâm An?',
-         opts:['Tự mời khách, tự phát sinh ID đều đặn','Chỉ ngồi chờ tuyến dưới làm','Chỉ họp nói lý thuyết','Tránh làm trực tiếp'],
-         correct:0, why:'Leader Cấp 3 đích thân tạo ra kết quả, không đứng ngoài chỉ đạo.'}
-      ]},
-      action:{ title:'Hành động áp dụng — Cấp 3',
+      test:{ pass:80,
+        questions:[
+          {q:'Uy tín ở Cấp 3 (Sản xuất) đến từ đâu?',
+           opts:['Chức danh','Lời hứa','Kết quả thật do chính bạn tạo ra','Quan hệ rộng'],
+           correct:2, why:'Cấp 3 là cấp của kết quả — người ta nể bạn vì thành tích thật.'},
+          {q:'Vì sao leader Cấp 3 quan trọng với đội?',
+           opts:['Vì họ nói hay','Vì họ trở thành bằng chứng sống & tạo momentum','Vì họ có nhiều cấp bậc','Vì họ ôm hết việc'],
+           correct:1, why:'Kết quả thật của leader tạo động lượng và niềm tin cho cả đội.'},
+          {q:'Biểu hiện rõ nhất của Cấp 3 trong Tâm An?',
+           opts:['Tự mời khách, tự phát sinh ID đều đặn','Chỉ ngồi chờ tuyến dưới làm','Chỉ họp nói lý thuyết','Tránh làm trực tiếp'],
+           correct:0, why:'Leader Cấp 3 đích thân tạo ra kết quả.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO leader phải tự tạo ra kết quả thật trước khi có thể dẫn dắt người khác?'} },
+      action:{ title:'Hành động thật — Cấp 3',
         hint:'Tự tạo 1 kết quả thật trong tuần.',
-        prompt:'Trong tuần này, đích thân tạo 1 KẾT QUẢ THẬT: mời 1 khách trải nghiệm / phát sinh 1 ID / chốt 1 đơn. Ghi lại bạn đã làm gì và kết quả ra sao.'} },
+        prompt:'Trong tuần này, đích thân tạo 1 KẾT QUẢ THẬT: mời 1 khách trải nghiệm / phát sinh 1 ID / chốt 1 đơn. Ghi lại bạn đã làm gì và kết quả ra sao.',
+        link:{label:'🎯 Mở Chỉ tiêu', main:'tp', sub:'tp:goals'} } },
 
     { id:4, key:'people', name:'Phát triển người', icon:'🌱', color:'#7B5EB5',
       subtitle:'Người ta theo vì những gì bạn làm CHO HỌ',
@@ -15583,93 +15742,114 @@ var ACADEMY={
       lessons:[
         {id:'l1', title:'Từ người làm giỏi sang người xây người', body:`
           <p><b>Cấp 4 — Phát triển người</b> là bước ngoặt lớn nhất. Ở Cấp 3 bạn tạo kết quả bằng <b>chính mình</b>; ở Cấp 4 bạn tạo kết quả bằng cách <b>phát triển người khác</b>. Đây là nơi mạng lưới thật sự nhân bản.</p>
-          <p>Người ta đi theo bạn vì <b>những gì bạn đã làm cho họ</b> — bạn giúp họ trưởng thành, giúp họ có thu nhập, giúp họ tự dẫn được nhánh của mình. Trong MLM, đây chính là điểm khác biệt giữa một người bán hàng giỏi và một người xây được hệ thống.</p>`},
+          <p>Người ta theo bạn vì <b>những gì bạn đã làm cho họ</b> — giúp họ trưởng thành, có thu nhập, tự dẫn được nhánh của mình.</p>`},
         {id:'l2', title:'Trao quyền, đừng ôm việc — nguyên tắc 20/80', body:`
           <p>Muốn nhân bản, bạn phải học cách <b>buông</b>:</p>
           <ul>
-            <li><b>Dạy người khác làm được việc bạn làm:</b> cầm tay chỉ việc, cho họ tự làm và mắc lỗi.</li>
-            <li><b>Giao nhánh & trao quyền:</b> để họ tự chủ, không chờ bạn từng bước.</li>
-            <li><b>Nguyên tắc 20/80:</b> dồn phần lớn thời gian cho <b>số ít người tiềm năng</b> — những người sẽ trở thành leader — thay vì chia đều cho tất cả.</li>
+            <li><b>Dạy người khác làm được việc bạn làm:</b> cầm tay chỉ việc, cho họ tự làm.</li>
+            <li><b>Giao nhánh & trao quyền:</b> để họ tự chủ.</li>
+            <li><b>Nguyên tắc 20/80:</b> dồn phần lớn thời gian cho <b>số ít người tiềm năng</b>.</li>
           </ul>
-          <p>Đầu tư vào con người luôn chậm hơn tự làm, nhưng đó là con đường duy nhất để đội lớn mà bạn không kiệt sức.</p>`}
+          <p>Đầu tư vào con người chậm hơn tự làm, nhưng là con đường duy nhất để đội lớn mà bạn không kiệt sức.</p>`}
       ],
-      test:{ pass:80, questions:[
-        {q:'Điểm chuyển từ Cấp 3 sang Cấp 4 là gì?',
-         opts:['Làm giỏi hơn nữa một mình','Chuyển từ "người làm giỏi" sang "người xây người"','Tăng chức danh','Bán được nhiều hơn'],
-         correct:1, why:'Cấp 4 là nhân bản: tạo kết quả qua việc phát triển người khác, không chỉ tự làm.'},
-        {q:'Nguyên tắc 20/80 ở Cấp 4 dùng để làm gì?',
-         opts:['Bỏ mặc người yếu','Dồn thời gian cho số ít người tiềm năng để nhân bản leader','Tự làm hết mọi việc','Chia đều thời gian cho tất cả'],
-         correct:1, why:'Đầu tư sâu vào số ít người tiềm năng tạo ra nhiều leader hơn là dàn đều.'},
-        {q:'Trao quyền đúng nghĩa là?',
-         opts:['Ôm hết việc cho chắc','Giao việc + kèm cặp để người khác tự chủ','Giao rồi bỏ mặc','Chỉ giao việc vặt'],
-         correct:1, why:'Trao quyền = giao trách nhiệm kèm hỗ trợ, để người khác trưởng thành và tự dẫn dắt.'}
-      ]},
-      action:{ title:'Hành động áp dụng — Cấp 4',
+      test:{ pass:80,
+        questions:[
+          {q:'Điểm chuyển từ Cấp 3 sang Cấp 4 là gì?',
+           opts:['Làm giỏi hơn nữa một mình','Chuyển từ "người làm giỏi" sang "người xây người"','Tăng chức danh','Bán được nhiều hơn'],
+           correct:1, why:'Cấp 4 là nhân bản: tạo kết quả qua việc phát triển người khác.'},
+          {q:'Nguyên tắc 20/80 ở Cấp 4 dùng để làm gì?',
+           opts:['Bỏ mặc người yếu','Dồn thời gian cho số ít người tiềm năng để nhân bản leader','Tự làm hết mọi việc','Chia đều thời gian cho tất cả'],
+           correct:1, why:'Đầu tư sâu vào số ít người tiềm năng tạo ra nhiều leader hơn là dàn đều.'},
+          {q:'Trao quyền đúng nghĩa là?',
+           opts:['Ôm hết việc cho chắc','Giao việc + kèm cặp để người khác tự chủ','Giao rồi bỏ mặc','Chỉ giao việc vặt'],
+           correct:1, why:'Trao quyền = giao trách nhiệm kèm hỗ trợ để người khác trưởng thành.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO "xây người" lại quan trọng hơn "tự làm giỏi" khi bạn muốn nhân bản hệ thống?'} },
+      action:{ title:'Hành động thật — Cấp 4',
         hint:'Bắt đầu phát triển 1 người thành leader.',
-        prompt:'Chọn 1 người trong đội để kèm cặp thành leader. Viết ra 1 việc cụ thể bạn sẽ DẠY hoặc GIAO cho họ trong tuần này (kèm cách bạn sẽ hỗ trợ).'} },
+        prompt:'Chọn 1 người trong đội để kèm cặp thành leader. Viết ra 1 việc cụ thể bạn sẽ DẠY hoặc GIAO cho họ trong tuần này (kèm cách bạn hỗ trợ).',
+        link:{label:'🌳 Mở Sơ đồ', main:'tree'} } },
 
     { id:5, key:'pinnacle', name:'Đỉnh cao', icon:'👑', color:'#C8A84B',
       subtitle:'Người ta theo vì con người bạn & giá trị bạn đại diện',
       goal:'Tạo ra những leader cấp 4 và để lại di sản — đội tự vận hành, văn hóa bền vững.',
       lessons:[
         {id:'l1', title:'Tạo ra những người tạo ra leader', body:`
-          <p><b>Cấp 5 — Đỉnh cao</b> là bậc cao nhất và hiếm nhất. Bạn đạt tới đây khi <b>những leader do bạn đào tạo cũng đang đào tạo leader khác</b>. Không phải bạn nhân bản 1 lớp — mà nhiều thế hệ leader tự sinh ra từ hệ thống bạn xây.</p>
-          <p>Ở cấp này, người ta đi theo bạn vì <b>con người bạn và những gì bạn đại diện</b>. Tầm ảnh hưởng của bạn vượt ra ngoài đội trực tiếp — bạn trở thành hình mẫu cho cả cộng đồng Tâm An.</p>`},
+          <p><b>Cấp 5 — Đỉnh cao</b> là bậc cao nhất và hiếm nhất. Bạn đạt tới đây khi <b>những leader do bạn đào tạo cũng đang đào tạo leader khác</b>. Nhiều thế hệ leader tự sinh ra từ hệ thống bạn xây.</p>
+          <p>Ở cấp này, người ta theo bạn vì <b>con người bạn và những gì bạn đại diện</b>. Tầm ảnh hưởng vượt ra ngoài đội trực tiếp.</p>`},
         {id:'l2', title:'Di sản & văn hóa đội nhóm', body:`
-          <p>Thước đo của một leader Cấp 5 không phải là "tôi làm được bao nhiêu", mà là <b>"đội vẫn phát triển tốt kể cả khi tôi vắng mặt"</b>. Đó là di sản.</p>
+          <p>Thước đo của leader Cấp 5 không phải "tôi làm được bao nhiêu", mà là <b>"đội vẫn phát triển tốt kể cả khi tôi vắng mặt"</b> — đó là di sản.</p>
           <ul>
-            <li><b>Xây văn hóa, không chỉ xây số:</b> giá trị Tâm An — sức khỏe, tử tế, trao quyền — được sống bởi mọi thành viên.</li>
-            <li><b>Chuẩn bị người kế thừa:</b> chủ động tạo ra những người có thể thay bạn dẫn dắt.</li>
+            <li><b>Xây văn hóa, không chỉ xây số:</b> giá trị Tâm An được sống bởi mọi thành viên.</li>
+            <li><b>Chuẩn bị người kế thừa.</b></li>
             <li><b>Nghĩ dài hạn:</b> quyết định hôm nay tạo ra đội nhóm 3–5 năm sau.</li>
-          </ul>
-          <p>Hoàn thành cấp này, bạn không chỉ là leader — bạn là người <b>tạo ra leader tạo ra leader</b>.</p>`}
+          </ul>`}
       ],
-      test:{ pass:80, questions:[
-        {q:'Cấp 5 (Đỉnh cao) đạt được khi nào?',
-         opts:['Bạn có thật nhiều khách','Leader do bạn đào tạo cũng đang đào tạo leader khác','Bạn lên cấp bậc cao nhất','Bạn làm việc nhiều nhất đội'],
-         correct:1, why:'Đỉnh cao là khi bạn tạo ra những người tạo ra leader — nhân bản qua nhiều thế hệ.'},
-        {q:'Dấu hiệu của di sản lãnh đạo là gì?',
-         opts:['Đội sụp đổ khi bạn vắng','Đội vẫn phát triển tốt kể cả khi vắng bạn','Mọi việc phải qua tay bạn','Không ai thay được bạn'],
-         correct:1, why:'Di sản = hệ thống tự vận hành và phát triển mà không phụ thuộc vào sự có mặt của bạn.'},
-        {q:'Trọng tâm của leader Cấp 5 là?',
-         opts:['Thành tích cá nhân','Xây con người, văn hóa & thế hệ leader kế thừa','Giữ quyền lực cho riêng mình','Tự làm tất cả'],
-         correct:1, why:'Leader đỉnh cao tập trung vào con người và di sản, không phải thành tích hay quyền lực cá nhân.'}
-      ]},
-      action:{ title:'Hành động áp dụng — Cấp 5',
+      test:{ pass:80,
+        questions:[
+          {q:'Cấp 5 (Đỉnh cao) đạt được khi nào?',
+           opts:['Bạn có thật nhiều khách','Leader do bạn đào tạo cũng đang đào tạo leader khác','Bạn lên cấp bậc cao nhất','Bạn làm việc nhiều nhất đội'],
+           correct:1, why:'Đỉnh cao là khi bạn tạo ra những người tạo ra leader — nhân bản nhiều thế hệ.'},
+          {q:'Dấu hiệu của di sản lãnh đạo là gì?',
+           opts:['Đội sụp đổ khi bạn vắng','Đội vẫn phát triển tốt kể cả khi vắng bạn','Mọi việc phải qua tay bạn','Không ai thay được bạn'],
+           correct:1, why:'Di sản = hệ thống tự vận hành, không phụ thuộc sự có mặt của bạn.'},
+          {q:'Trọng tâm của leader Cấp 5 là?',
+           opts:['Thành tích cá nhân','Xây con người, văn hóa & thế hệ leader kế thừa','Giữ quyền lực cho riêng mình','Tự làm tất cả'],
+           correct:1, why:'Leader đỉnh cao tập trung vào con người và di sản.'}
+        ],
+        reflect:{min:40, prompt:'Bằng lời của bạn: VÌ SAO di sản — đội tự chạy tốt khi vắng bạn — lại là đỉnh cao của lãnh đạo, chứ không phải thành tích cá nhân?'} },
+      action:{ title:'Hành động thật — Cấp 5',
         hint:'Phác thảo di sản của bạn.',
         prompt:'Viết ra tầm nhìn DI SẢN của bạn cho đội Tâm An trong 3 năm tới, và tên (những) leader bạn đang giúp để chính họ trở thành người đào tạo leader.'} }
   ]
 };
 
-/* ===== 🎓 ENGINE — không cần sửa phần dưới khi chỉ đổi nội dung ===== */
+/* ===== 🎓 ENGINE — không cần sửa khi chỉ đổi nội dung ===================== */
 var _acadView={mode:'home'};
 
+function acadStages(){
+  var out=[];
+  (ACADEMY.foundations||[]).forEach(function(m){out.push({sid:'f_'+m.id,group:'Nền tảng',def:m});});
+  (ACADEMY.levels||[]).forEach(function(m){out.push({sid:'l_'+m.id,group:'Lãnh đạo',def:m});});
+  out.forEach(function(s,i){s.idx=i;});
+  return out;
+}
+function acadStage(sid){var a=acadStages();for(var i=0;i<a.length;i++)if(a[i].sid===sid)return a[i];return null;}
 function acadProg(){
-  if(typeof _prefs==='undefined')return {entry:{done:false},levels:{}};
-  if(!_prefs.academy||typeof _prefs.academy!=='object')_prefs.academy={v:1,entry:{done:false,scores:{},snapshotLevel:0,at:''},levels:{}};
+  if(typeof _prefs==='undefined')return {entry:{done:false},stages:{}};
+  if(!_prefs.academy||typeof _prefs.academy!=='object')_prefs.academy={v:2,entry:{done:false,scores:{},snapshotLevel:0,at:''},stages:{}};
   if(!_prefs.academy.entry)_prefs.academy.entry={done:false,scores:{},snapshotLevel:0,at:''};
-  if(!_prefs.academy.levels)_prefs.academy.levels={};
+  if(!_prefs.academy.stages)_prefs.academy.stages={};
   return _prefs.academy;
 }
-function acadLv(n){var p=acadProg();if(!p.levels[n])p.levels[n]={lessonsDone:[],testScore:0,testPassed:false,actionDone:false,actionNote:'',passedAt:''};if(!Array.isArray(p.levels[n].lessonsDone))p.levels[n].lessonsDone=[];return p.levels[n];}
-function acadSave(){try{if(typeof savePrefs==='function')savePrefs();}catch(e){}}
-function acadDef(n){for(var i=0;i<ACADEMY.levels.length;i++)if(ACADEMY.levels[i].id===n)return ACADEMY.levels[i];return null;}
-function acadLessonsAllDone(n){var d=acadDef(n),s=acadLv(n);if(!d)return false;return d.lessons.every(function(ls){return s.lessonsDone.indexOf(ls.id)>=0;});}
-function acadLevelComplete(n){var s=acadLv(n);return acadLessonsAllDone(n)&&s.testPassed&&s.actionDone;}
-function acadLevelState(n){ // 'locked' | 'open' | 'done'
+function acadSt(sid){
   var p=acadProg();
-  if(acadLevelComplete(n))return 'done';
-  if(n===1)return p.entry.done?'open':'locked';
-  return acadLevelComplete(n-1)?'open':'locked';
+  if(!p.stages[sid])p.stages[sid]={lessonsDone:[],testScore:0,testPassed:false,reflectText:'',actionDone:false,actionNote:'',passedAt:''};
+  if(!Array.isArray(p.stages[sid].lessonsDone))p.stages[sid].lessonsDone=[];
+  return p.stages[sid];
 }
+function acadSave(){try{if(typeof savePrefs==='function')savePrefs();}catch(e){}}
+function acadLessonsAllDone(st){var s=acadSt(st.sid);return st.def.lessons.every(function(ls){return s.lessonsDone.indexOf(ls.id)>=0;});}
+function acadHasReflect(st){return !!(st.def.test&&st.def.test.reflect);}
+function acadReflectOK(st){var r=st.def.test&&st.def.test.reflect;if(!r)return true;return ((acadSt(st.sid).reflectText||'').trim().length>=(r.min||40));}
+function acadStageComplete(st){var s=acadSt(st.sid);return acadLessonsAllDone(st)&&s.testPassed&&acadReflectOK(st)&&s.actionDone;}
+function acadStageState(st){ // 'locked' | 'open' | 'done'
+  if(acadStageComplete(st))return 'done';
+  var p=acadProg();
+  if(st.idx===0)return p.entry.done?'open':'locked';
+  var all=acadStages(),prev=all[st.idx-1];
+  return acadStageComplete(prev)?'open':'locked';
+}
+function acadLevelDef(n){for(var i=0;i<ACADEMY.levels.length;i++)if(ACADEMY.levels[i].id===n)return ACADEMY.levels[i];return null;}
 function acadOverallPct(){
   var total=1,done=0; // 1 = test đầu vào
   if(acadProg().entry.done)done++;
-  ACADEMY.levels.forEach(function(L){
-    var per=L.lessons.length+2; total+=per; // mỗi bài + test + action
-    var s=acadLv(L.id);
-    done+=Math.min(s.lessonsDone.length,L.lessons.length);
+  acadStages().forEach(function(st){
+    var s=acadSt(st.sid),per=st.def.lessons.length+1+(acadHasReflect(st)?1:0)+1;
+    total+=per;
+    done+=Math.min(s.lessonsDone.length,st.def.lessons.length);
     if(s.testPassed)done++;
+    if(acadHasReflect(st)&&acadReflectOK(st))done++;
     if(s.actionDone)done++;
   });
   return Math.round(done/total*100);
@@ -15677,81 +15857,85 @@ function acadOverallPct(){
 function _acadYtEmbed(url){
   if(!url)return '';
   var m=String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_\-]{6,})/);
-  if(m)return 'https://www.youtube.com/embed/'+m[1];
-  return '';
+  return m?('https://www.youtube.com/embed/'+m[1]):'';
 }
-function _esc(s){return (typeof escHtml==='function')?escHtml(s):String(s||'');}
+function _esc(s){return (typeof escHtml==='function')?escHtml(s):String(s==null?'':s);}
 function _acadToast(m){if(typeof showToast==='function')showToast(m);}
 
 function renderAcademy(){_acadView={mode:'home'};_acadPaint();}
 function acadGo(v){_acadView=v;_acadPaint();try{window.scrollTo(0,0);}catch(e){}}
-
 function _acadPaint(){
   var el=document.getElementById('academy-content'); if(!el)return;
   var m=_acadView.mode;
   if(m==='entry')el.innerHTML=_acadEntryHtml();
-  else if(m==='level')el.innerHTML=_acadLevelHtml(_acadView.level);
-  else if(m==='lesson')el.innerHTML=_acadLessonHtml(_acadView.level,_acadView.lesson);
-  else if(m==='test')el.innerHTML=_acadTestHtml(_acadView.level);
+  else if(m==='stage')el.innerHTML=_acadStageHtml(_acadView.sid);
+  else if(m==='lesson')el.innerHTML=_acadLessonHtml(_acadView.sid,_acadView.lesson);
+  else if(m==='test')el.innerHTML=_acadTestHtml(_acadView.sid);
   else el.innerHTML=_acadHomeHtml();
 }
 
+function _acadStageCard(st){
+  var state=acadStageState(st), s=acadSt(st.sid), d=st.def;
+  var stCls=state==='done'?'st-done':(state==='open'?'st-open':'st-lock');
+  var stTxt=state==='done'?'✓ Hoàn thành':(state==='open'?'Đang mở':'🔒 Đang khóa');
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<div class="acad-card '+state+'"><div class="acad-row">'
+    +'<div class="acad-badgeico" style="background:'+d.color+'">'+d.icon+'</div>'
+    +'<div style="flex:1">'
+    +'<div class="acad-ti">'+label+' <span class="acad-state '+stCls+'">'+stTxt+'</span></div>'
+    +'<div class="acad-sub">'+_esc(d.subtitle)+'</div>'
+    +'<div class="acad-goal">🎯 '+_esc(d.goal)+'</div>';
+  if(state==='locked'){
+    var reason;
+    if(st.idx===0)reason='Hoàn thành Test đầu vào để mở môn này.';
+    else{var prev=acadStages()[st.idx-1];reason='Hoàn thành "'+(prev.group==='Lãnh đạo'?('Cấp '+prev.def.id+' · '+prev.def.name):prev.def.name)+'" (đủ bài + kiểm tra + giải thích + hành động) để mở khóa.';}
+    h+='<div class="acad-lockmsg">🔒 '+_esc(reason)+'</div>';
+  }else{
+    h+='<div class="acad-mini">'
+      +'<span class="acad-chip '+(acadLessonsAllDone(st)?'ok':'')+'">📖 Bài '+Math.min(s.lessonsDone.length,d.lessons.length)+'/'+d.lessons.length+'</span>'
+      +'<span class="acad-chip '+(s.testPassed?'ok':'')+'">📝 KT '+(s.testPassed?('đậu '+s.testScore+'%'):'chưa')+'</span>'
+      +(acadHasReflect(st)?('<span class="acad-chip '+(acadReflectOK(st)?'ok':'')+'">✍️ Vì sao '+(acadReflectOK(st)?'xong':'chưa')+'</span>'):'')
+      +'<span class="acad-chip '+(s.actionDone?'ok':'')+'">✅ Hành động '+(s.actionDone?'xong':'chưa')+'</span>'
+      +'</div>'
+      +'<div class="acad-cta"><button class="btn '+(state==='done'?'btn-d':'btn-g')+'" data-acad="go-stage" data-sid="'+st.sid+'">'+(state==='done'?'Xem lại':'Vào học →')+'</button></div>';
+  }
+  h+='</div></div></div>';
+  return h;
+}
+
 function _acadHomeHtml(){
-  var p=acadProg(), pct=acadOverallPct();
-  var h='<div class="acad-hero"><h2>🎓 Học viện Lãnh đạo Tâm An</h2>'
-      +'<p>Lộ trình tự học phát triển bản thân theo <b>5 Cấp độ Lãnh đạo</b> của John Maxwell — cá nhân hóa cho Tâm An. Học chắc từng bậc: <b>đậu cấp trước mới mở cấp sau</b>.</p>'
+  var p=acadProg(), pct=acadOverallPct(), all=acadStages();
+  var h='<div class="acad-hero"><h2>🎓 Học viện Tâm An</h2>'
+      +'<p>Lộ trình tự học phát triển bản thân: <b>Nền tảng "Vì sao"</b> trước, rồi <b>5 Cấp độ Lãnh đạo</b> (Maxwell). Học chắc từng bậc — <b>đậu môn trước mới mở môn sau</b>.</p>'
       +'<div class="acad-pbar"><i style="width:'+pct+'%"></i></div>'
       +'<div class="acad-pnum">Tiến độ toàn lộ trình: <b>'+pct+'%</b></div></div>';
-
   if(pct>=100){
-    h+='<div class="acad-cert">🏆<div class="big">Chúc mừng! Bạn đã hoàn thành Học viện Lãnh đạo</div>'
-      +'<div style="font-size:13.5px">Bạn đã đi trọn 5 cấp — từ Chức vị đến Đỉnh cao. Giờ là lúc sống nó mỗi ngày cùng đội Tâm An.</div></div>';
+    h+='<div class="acad-cert">🏆<div class="big">Chúc mừng! Bạn đã hoàn thành Học viện Tâm An</div>'
+      +'<div style="font-size:13.5px">Từ nền tảng "vì sao" đến đỉnh cao lãnh đạo. Giờ là lúc sống nó mỗi ngày cùng đội.</div></div>';
   }
-
   // Test đầu vào
   h+='<div class="acad-sec-title">Bắt đầu tại đây</div>';
   if(p.entry.done){
-    var snap=p.entry.snapshotLevel? (acadDef(p.entry.snapshotLevel)||{}) : {};
+    var snap=p.entry.snapshotLevel?(acadLevelDef(p.entry.snapshotLevel)||{}):{};
     h+='<div class="acad-card done"><div class="acad-row">'
       +'<div class="acad-badgeico" style="background:#1A7A5E">✓</div>'
       +'<div style="flex:1"><div class="acad-ti">Test đầu vào <span class="acad-state st-done">Đã hoàn thành</span></div>'
-      +'<div class="acad-goal">Ảnh chụp năng lực: bạn đang thiên về <b>Cấp '+(p.entry.snapshotLevel||1)+' — '+_esc(snap.name||'')+'</b>. Dù vậy, lộ trình bắt đầu vững từ Cấp 1 cho mọi người.'
-      +' <button class="acad-back" style="margin:0" data-acad="go-entry">Xem/làm lại →</button></div></div></div>';
+      +'<div class="acad-goal">Ảnh chụp năng lực: bạn thiên về <b>Cấp '+(p.entry.snapshotLevel||1)+' — '+_esc(snap.name||'')+'</b>. Lộ trình vẫn bắt đầu từ Nền tảng cho mọi người. <button class="acad-back" style="margin:0" data-acad="go-entry">Xem/làm lại →</button></div></div></div>';
   }else{
     h+='<div class="acad-card open"><div class="acad-row">'
       +'<div class="acad-badgeico" style="background:#1B4F8A">📝</div>'
       +'<div style="flex:1"><div class="acad-ti">Test đầu vào</div>'
-      +'<div class="acad-goal">10 câu tự đánh giá (2 phút) để chụp ảnh năng lực lãnh đạo hiện tại của bạn. <b>Hoàn thành để mở Cấp 1.</b></div>'
+      +'<div class="acad-goal">10 câu tự đánh giá (2 phút) để chụp ảnh năng lực hiện tại. <b>Hoàn thành để mở Giai đoạn Nền tảng.</b></div>'
       +'<div class="acad-cta"><button class="btn btn-g" data-acad="go-entry">Bắt đầu Test đầu vào →</button></div></div></div></div>';
   }
-
-  // 5 cấp
-  h+='<div class="acad-sec-title">5 Cấp độ Lãnh đạo</div>';
-  ACADEMY.levels.forEach(function(L){
-    var st=acadLevelState(L.id), s=acadLv(L.id);
-    var stCls=st==='done'?'st-done':(st==='open'?'st-open':'st-lock');
-    var stTxt=st==='done'?'✓ Hoàn thành':(st==='open'?'Đang mở':'🔒 Đang khóa');
-    h+='<div class="acad-card '+st+'">'
-      +'<div class="acad-row">'
-      +'<div class="acad-badgeico" style="background:'+L.color+'">'+L.icon+'</div>'
-      +'<div style="flex:1">'
-      +'<div class="acad-ti">Cấp '+L.id+' · '+_esc(L.name)+' <span class="acad-state '+stCls+'">'+stTxt+'</span></div>'
-      +'<div class="acad-sub">'+_esc(L.subtitle)+'</div>'
-      +'<div class="acad-goal">🎯 '+_esc(L.goal)+'</div>';
-    if(st==='locked'){
-      var reason=(L.id===1)?'Hoàn thành Test đầu vào để mở cấp này.':('Hoàn thành Cấp '+(L.id-1)+' (học hết bài + kiểm tra ≥'+(acadDef(L.id-1).test.pass)+'% + hành động) để mở khóa.');
-      h+='<div class="acad-lockmsg">🔒 '+reason+'</div>';
-    }else{
-      h+='<div class="acad-mini">'
-        +'<span class="acad-chip '+(acadLessonsAllDone(L.id)?'ok':'')+'">📖 Bài học '+Math.min(s.lessonsDone.length,L.lessons.length)+'/'+L.lessons.length+'</span>'
-        +'<span class="acad-chip '+(s.testPassed?'ok':'')+'">📝 Kiểm tra '+(s.testPassed?('đậu '+s.testScore+'%'):'chưa đậu')+'</span>'
-        +'<span class="acad-chip '+(s.actionDone?'ok':'')+'">✅ Hành động '+(s.actionDone?'xong':'chưa')+'</span>'
-        +'</div>'
-        +'<div class="acad-cta"><button class="btn '+(st==='done'?'btn-d':'btn-g')+'" data-acad="go-level" data-lv="'+L.id+'">'+(st==='done'?'Xem lại cấp này':'Vào học →')+'</button></div>';
-    }
-    h+='</div></div></div>';
-  });
-
+  // Nền tảng
+  h+='<div class="acad-grouphd">🌱 Giai đoạn Nền tảng — "Vì sao"</div>'
+    +'<div class="acad-groupsub">Lý thuyết nền đúng thì thực hành trúng. Học chắc 4 câu hỏi gốc trước khi bước vào lãnh đạo.</div>';
+  all.filter(function(s){return s.group==='Nền tảng';}).forEach(function(st){h+=_acadStageCard(st);});
+  // Lãnh đạo
+  h+='<div class="acad-grouphd">🎓 5 Cấp độ Lãnh đạo (John Maxwell)</div>'
+    +'<div class="acad-groupsub">Mở sau khi hoàn thành toàn bộ Giai đoạn Nền tảng.</div>';
+  all.filter(function(s){return s.group==='Lãnh đạo';}).forEach(function(st){h+=_acadStageCard(st);});
   h+='<div style="font-size:12px;color:#A6B1BD;text-align:center;margin:18px 0 6px">Tiến độ tự lưu &amp; đồng bộ trên mọi thiết bị của bạn.</div>';
   return h;
 }
@@ -15763,122 +15947,113 @@ function _acadEntryHtml(){
   E.statements.forEach(function(st,i){
     var cur=(p.entry.scores&&p.entry.scores[i])||0;
     h+='<div class="acad-stmt"><div class="q">'+(i+1)+'. '+_esc(st.q)+'</div><div class="acad-scale">';
-    for(var v=1;v<=5;v++){
-      h+='<label><input type="radio" name="ent_'+i+'" value="'+v+'"'+(cur===v?' checked':'')+'><span>'+v+'</span></label>';
-    }
+    for(var v=1;v<=5;v++)h+='<label><input type="radio" name="ent_'+i+'" value="'+v+'"'+(cur===v?' checked':'')+'><span>'+v+'</span></label>';
     h+='</div></div>';
   });
   h+='<div style="font-size:11.5px;color:#A6B1BD;margin:8px 0 14px">1 = gần như không · 3 = thỉnh thoảng · 5 = gần như luôn luôn</div>';
-  h+='<button class="btn btn-g" data-acad="submit-entry">Hoàn thành & mở Cấp 1 →</button></div>';
+  h+='<button class="btn btn-g" data-acad="submit-entry">Hoàn thành & mở Nền tảng →</button></div>';
   return h;
 }
 
-function _acadLevelHtml(n){
-  var L=acadDef(n); if(!L)return '';
-  var s=acadLv(n), st=acadLevelState(n);
-  var lessonsDone=acadLessonsAllDone(n);
+function _acadStageHtml(sid){
+  var st=acadStage(sid); if(!st)return '';
+  var d=st.def, s=acadSt(sid), lessonsDone=acadLessonsAllDone(st);
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
   var h='<button class="acad-back" data-acad="go-home">← Về Học viện</button>';
-  h+='<div class="acad-hero" style="background:linear-gradient(135deg,'+L.color+','+L.color+'cc)">'
-    +'<h2>'+L.icon+' Cấp '+L.id+' · '+_esc(L.name)+'</h2>'
-    +'<p><i>'+_esc(L.subtitle)+'</i><br>🎯 '+_esc(L.goal)+'</p></div>';
-
+  h+='<div class="acad-hero" style="background:linear-gradient(135deg,'+d.color+','+d.color+'cc)">'
+    +'<h2>'+d.icon+' '+label+'</h2>'
+    +'<p><i>'+_esc(d.subtitle)+'</i><br>🎯 '+_esc(d.goal)+'</p></div>';
   // Bài học
   h+='<div class="acad-block"><h3>📖 Bài học</h3><p class="hint">Học hết các bài rồi mới mở bài kiểm tra.</p>';
-  L.lessons.forEach(function(ls,i){
+  d.lessons.forEach(function(ls,i){
     var done=s.lessonsDone.indexOf(ls.id)>=0;
-    h+='<div class="acad-lesson '+(done?'done':'')+'" data-acad="go-lesson" data-lv="'+n+'" data-ls="'+_esc(ls.id)+'">'
-      +'<div class="ln">'+(done?'✓':(i+1))+'</div>'
-      +'<div class="lt">'+_esc(ls.title)+'</div>'
+    h+='<div class="acad-lesson '+(done?'done':'')+'" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(ls.id)+'">'
+      +'<div class="ln">'+(done?'✓':(i+1))+'</div><div class="lt">'+_esc(ls.title)+'</div>'
       +'<div class="lx">'+(done?'Đã học':'Đọc →')+'</div></div>';
   });
   h+='</div>';
-
   // Kiểm tra
-  h+='<div class="acad-block'+(lessonsDone?'':' dim')+'"><h3>📝 Bài kiểm tra <span style="font-size:12px;color:#8794A3;font-weight:600">(đậu ≥ '+L.test.pass+'%)</span></h3>';
-  if(!lessonsDone){
-    h+='<p class="hint">🔒 Hoàn thành hết bài học ở trên để mở bài kiểm tra.</p>';
-  }else{
-    h+='<p class="hint">'+(s.testPassed?('✅ Bạn đã đậu với '+s.testScore+'%. Có thể làm lại để ôn.'):'Trả lời '+L.test.questions.length+' câu. Cần đúng ≥ '+L.test.pass+'% để đậu.')+'</p>';
-    h+='<button class="btn '+(s.testPassed?'btn-d':'btn-g')+'" data-acad="go-test" data-lv="'+n+'">'+(s.testPassed?'Làm lại bài kiểm tra':'Làm bài kiểm tra →')+'</button>';
+  h+='<div class="acad-block'+(lessonsDone?'':' dim')+'"><h3>📝 Bài kiểm tra <span style="font-size:12px;color:#8794A3;font-weight:600">(đậu ≥ '+d.test.pass+'%)</span></h3>';
+  if(!lessonsDone)h+='<p class="hint">🔒 Hoàn thành hết bài học ở trên để mở bài kiểm tra.</p>';
+  else{
+    h+='<p class="hint">'+(s.testPassed?('✅ Bạn đã đậu với '+s.testScore+'%. Có thể làm lại để ôn.'):'Trả lời '+d.test.questions.length+' câu. Cần đúng ≥ '+d.test.pass+'% để đậu.')+'</p>';
+    h+='<button class="btn '+(s.testPassed?'btn-d':'btn-g')+'" data-acad="go-test" data-sid="'+sid+'">'+(s.testPassed?'Làm lại bài kiểm tra':'Làm bài kiểm tra →')+'</button>';
   }
   h+='</div>';
-
-  // Hành động thật
-  var actOpen=s.testPassed;
-  h+='<div class="acad-block'+(actOpen?'':' dim')+'"><h3>✅ '+_esc(L.action.title)+'</h3>';
-  if(!actOpen){
-    h+='<p class="hint">🔒 Đậu bài kiểm tra để mở phần hành động áp dụng.</p>';
-  }else{
-    h+='<p class="hint">'+_esc(L.action.hint)+'</p>';
-    h+='<div class="acad-body" style="font-size:14px;margin-bottom:10px"><b>Đề bài:</b> '+_esc(L.action.prompt)+'</div>';
-    h+='<textarea class="acad-note" id="acad-act-note-'+n+'" placeholder="Viết cụ thể việc bạn đã / sẽ làm...">'+_esc(s.actionNote||'')+'</textarea>';
-    h+='<label class="acad-chkline"><input type="checkbox" id="acad-act-chk-'+n+'"'+(s.actionDone?' checked':'')+'><span>Tôi xác nhận đã <b>áp dụng thật</b> bài học này vào công việc Tâm An (không chỉ học lý thuyết).</span></label>';
-    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
-      +'<button class="btn btn-g" data-acad="save-action" data-lv="'+n+'">💾 Lưu hành động</button>'
-      +'<button class="btn btn-d" data-acad="goto-journal">📔 Mở Nhật ký để ghi lại</button></div>';
+  // Qua môn: Hiểu sâu (reflect) + Hành động thật
+  var qmOpen=s.testPassed;
+  h+='<div class="acad-block'+(qmOpen?'':' dim')+'"><h3>✍️ Qua môn — Hiểu sâu &amp; Hành động thật</h3>';
+  if(!qmOpen)h+='<p class="hint">🔒 Đậu bài kiểm tra để mở phần này. Phải làm đủ cả hai mới QUA MÔN.</p>';
+  else{
+    if(acadHasReflect(st)){
+      h+='<div class="acad-subblock"><div class="acad-lbl">1 · Giải thích "vì sao" (bằng lời của bạn)</div>';
+      h+='<div class="acad-body" style="font-size:13.5px;margin-bottom:8px">'+_esc(d.test.reflect.prompt)+'</div>';
+      h+='<textarea class="acad-note" id="acad-reflect-'+sid+'" placeholder="Viết bằng chính lời của bạn (tối thiểu '+(d.test.reflect.min||40)+' ký tự)...">'+_esc(s.reflectText||'')+'</textarea>';
+      h+='<div style="font-size:11.5px;color:#A6B1BD;margin-top:4px">Viết ra "vì sao" bằng lời của mình là cách kiểm tra bạn thật sự hiểu sâu — không chỉ nhớ đáp án.</div></div>';
+    }
+    h+='<div class="acad-subblock"><div class="acad-lbl">'+(acadHasReflect(st)?'2 · ':'')+'Hành động áp dụng thật</div>';
+    h+='<p class="hint" style="margin-bottom:8px">'+_esc(d.action.hint)+'</p>';
+    h+='<div class="acad-body" style="font-size:14px;margin-bottom:10px"><b>Đề bài:</b> '+_esc(d.action.prompt)+'</div>';
+    h+='<textarea class="acad-note" id="acad-act-'+sid+'" placeholder="Viết cụ thể việc bạn đã / sẽ làm...">'+_esc(s.actionNote||'')+'</textarea>';
+    h+='<label class="acad-chkline"><input type="checkbox" id="acad-chk-'+sid+'"'+(s.actionDone?' checked':'')+'><span>Tôi xác nhận đã <b>áp dụng thật</b> vào công việc Tâm An (không chỉ học lý thuyết).</span></label>';
+    if(d.action.link)h+='<button class="btn btn-d" data-acad="goto" data-main="'+_esc(d.action.link.main||'')+'" data-sub="'+_esc(d.action.link.sub||'')+'" data-sub2="'+_esc(d.action.link.sub2||'')+'">'+_esc(d.action.link.label||'Mở công cụ')+'</button> ';
+    h+='</div>';
+    h+='<div style="margin-top:14px"><button class="btn btn-g" data-acad="save-module" data-sid="'+sid+'">💾 Lưu & Qua môn</button></div>';
   }
   h+='</div>';
-
-  if(acadLevelComplete(n)){
-    var nextN=n+1, nx=acadDef(nextN);
-    h+='<div class="acad-result pass">🎉 Bạn đã HOÀN THÀNH Cấp '+n+'!'+(nx?(' Cấp '+nextN+' — '+_esc(nx.name)+' đã được mở khóa.'):' Bạn đã đi trọn 5 cấp lãnh đạo!')+'</div>';
-    if(nx)h+='<button class="btn btn-g" data-acad="go-level" data-lv="'+nextN+'">Sang Cấp '+nextN+' →</button> ';
+  if(acadStageComplete(st)){
+    var all=acadStages(),nx=all[st.idx+1];
+    h+='<div class="acad-result pass">🎉 Bạn đã QUA MÔN "'+_esc(d.name)+'"!'+(nx?(' Môn kế tiếp — '+(nx.group==='Lãnh đạo'?('Cấp '+nx.def.id+' · '+_esc(nx.def.name)):_esc(nx.def.name))+' đã được mở khóa.'):' Bạn đã đi trọn toàn bộ lộ trình!')+'</div>';
+    if(nx)h+='<button class="btn btn-g" data-acad="go-stage" data-sid="'+nx.sid+'">Sang môn kế tiếp →</button> ';
     h+='<button class="btn btn-d" data-acad="go-home">Về Học viện</button>';
   }
   return h;
 }
 
-function _acadLessonHtml(n,lsId){
-  var L=acadDef(n); if(!L)return '';
-  var idx=-1; for(var i=0;i<L.lessons.length;i++)if(L.lessons[i].id===lsId)idx=i;
-  if(idx<0)return _acadLevelHtml(n);
-  var ls=L.lessons[idx], s=acadLv(n), done=s.lessonsDone.indexOf(ls.id)>=0;
-  var h='<button class="acad-back" data-acad="go-level" data-lv="'+n+'">← Cấp '+n+' · '+_esc(L.name)+'</button>';
-  h+='<div class="acad-block"><h3 style="color:'+L.color+'">'+L.icon+' '+_esc(ls.title)+'</h3>'
-    +'<div class="hint">Bài '+(idx+1)+'/'+L.lessons.length+' · Cấp '+n+'</div>';
+function _acadLessonHtml(sid,lsId){
+  var st=acadStage(sid); if(!st)return '';
+  var d=st.def, idx=-1; for(var i=0;i<d.lessons.length;i++)if(d.lessons[i].id===lsId)idx=i;
+  if(idx<0)return _acadStageHtml(sid);
+  var ls=d.lessons[idx], s=acadSt(sid), done=s.lessonsDone.indexOf(ls.id)>=0;
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-stage" data-sid="'+sid+'">← '+label+'</button>';
+  h+='<div class="acad-block"><h3 style="color:'+d.color+'">'+d.icon+' '+_esc(ls.title)+'</h3>'
+    +'<div class="hint">Bài '+(idx+1)+'/'+d.lessons.length+'</div>';
   var emb=_acadYtEmbed(ls.video);
   if(emb)h+='<div class="acad-video"><iframe src="'+emb+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>';
   h+='<div class="acad-body">'+(ls.body||'')+'</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
-  h+='<button class="btn '+(done?'btn-d':'btn-g')+'" data-acad="lesson-done" data-lv="'+n+'" data-ls="'+_esc(ls.id)+'">'+(done?'✓ Đã học xong':'✓ Đánh dấu đã học xong')+'</button>';
-  if(idx+1<L.lessons.length)h+='<button class="btn btn-d" data-acad="go-lesson" data-lv="'+n+'" data-ls="'+_esc(L.lessons[idx+1].id)+'">Bài tiếp theo →</button>';
-  else h+='<button class="btn btn-d" data-acad="go-level" data-lv="'+n+'">Xong — về cấp '+n+'</button>';
+  h+='<button class="btn '+(done?'btn-d':'btn-g')+'" data-acad="lesson-done" data-sid="'+sid+'" data-ls="'+_esc(ls.id)+'">'+(done?'✓ Đã học xong':'✓ Đánh dấu đã học xong')+'</button>';
+  if(idx+1<d.lessons.length)h+='<button class="btn btn-d" data-acad="go-lesson" data-sid="'+sid+'" data-ls="'+_esc(d.lessons[idx+1].id)+'">Bài tiếp theo →</button>';
+  else h+='<button class="btn btn-d" data-acad="go-stage" data-sid="'+sid+'">Xong — về môn học</button>';
   h+='</div></div>';
   return h;
 }
 
-function _acadTestHtml(n){
-  var L=acadDef(n); if(!L)return '';
-  var g=_acadView.graded;
-  var h='<button class="acad-back" data-acad="go-level" data-lv="'+n+'">← Cấp '+n+' · '+_esc(L.name)+'</button>';
-  h+='<div class="acad-block"><h3>📝 Kiểm tra — Cấp '+n+' · '+_esc(L.name)+'</h3>'
-    +'<p class="hint">Chọn đáp án đúng nhất. Cần ≥ '+L.test.pass+'% để đậu và mở phần hành động.</p>';
+function _acadTestHtml(sid){
+  var st=acadStage(sid); if(!st)return '';
+  var d=st.def, g=_acadView.graded;
+  var label=(st.group==='Lãnh đạo')?('Cấp '+d.id+' · '+_esc(d.name)):_esc(d.name);
+  var h='<button class="acad-back" data-acad="go-stage" data-sid="'+sid+'">← '+label+'</button>';
+  h+='<div class="acad-block"><h3>📝 Kiểm tra — '+_esc(d.name)+'</h3>'
+    +'<p class="hint">Chọn đáp án đúng nhất. Cần ≥ '+d.test.pass+'% để đậu và mở phần "Qua môn".</p>';
   if(g){
-    h+='<div class="acad-result '+(g.pass?'pass':'fail')+'">'+(g.pass?'✅ ĐẬU':'❌ CHƯA ĐẠT')+' — '+g.score+'% ('+g.right+'/'+L.test.questions.length+' câu đúng).'
-      +(g.pass?' Phần hành động đã mở ở dưới trang cấp.':' Cần ≥ '+L.test.pass+'%. Xem lại giải thích rồi làm lại.')+'</div>';
+    h+='<div class="acad-result '+(g.pass?'pass':'fail')+'">'+(g.pass?'✅ ĐẬU':'❌ CHƯA ĐẠT')+' — '+g.score+'% ('+g.right+'/'+d.test.questions.length+' câu đúng).'
+      +(g.pass?' Phần "Qua môn" đã mở ở trang môn học.':' Cần ≥ '+d.test.pass+'%. Xem lại giải thích rồi làm lại.')+'</div>';
   }
-  L.test.questions.forEach(function(Q,i){
+  d.test.questions.forEach(function(Q,i){
     h+='<div class="acad-q"><div class="q">'+(i+1)+'. '+_esc(Q.q)+'</div>';
     Q.opts.forEach(function(op,j){
-      var cls='acad-opt', extra='';
-      if(g){
-        if(j===Q.correct)cls+=' correct';
-        else if(g.answers[i]===j)cls+=' wrong';
-      }
-      var checked=(g&&g.answers[i]===j)?' checked':'';
-      var dis=g?' disabled':'';
+      var cls='acad-opt';
+      if(g){if(j===Q.correct)cls+=' correct';else if(g.answers[i]===j)cls+=' wrong';}
+      var checked=(g&&g.answers[i]===j)?' checked':'';var dis=g?' disabled':'';
       h+='<label class="'+cls+'"><input type="radio" name="acadq_'+i+'" value="'+j+'"'+checked+dis+'>'+_esc(op)+'</label>';
     });
     if(g)h+='<div class="acad-why">💡 '+_esc(Q.why)+'</div>';
     h+='</div>';
   });
-  if(g){
-    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
-      +'<button class="btn btn-g" data-acad="go-test" data-lv="'+n+'">🔄 Làm lại</button>'
-      +'<button class="btn btn-d" data-acad="go-level" data-lv="'+n+'">← Về cấp '+n+'</button></div>';
-  }else{
-    h+='<button class="btn btn-g" data-acad="submit-test" data-lv="'+n+'" style="margin-top:6px">Nộp bài →</button>';
-  }
+  if(g)h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="btn btn-g" data-acad="go-test" data-sid="'+sid+'">🔄 Làm lại</button><button class="btn btn-d" data-acad="go-stage" data-sid="'+sid+'">← Về môn học</button></div>';
+  else h+='<button class="btn btn-g" data-acad="submit-test" data-sid="'+sid+'" style="margin-top:6px">Nộp bài →</button>';
   h+='</div>';
   return h;
 }
@@ -15886,88 +16061,97 @@ function _acadTestHtml(n){
 /* ===== Listener click riêng cho Học viện (cô lập, không đụng handler cũ) ===== */
 document.addEventListener('click',function(e){
   var t=e.target.closest('[data-acad]'); if(!t)return;
-  var a=t.getAttribute('data-acad');
-  var n=parseInt(t.getAttribute('data-lv'),10);
+  var a=t.getAttribute('data-acad'), sid=t.getAttribute('data-sid');
 
   if(a==='go-home'){acadGo({mode:'home'});return;}
   if(a==='go-entry'){acadGo({mode:'entry'});return;}
-  if(a==='go-level'){acadGo({mode:'level',level:n});return;}
-  if(a==='go-lesson'){acadGo({mode:'lesson',level:n,lesson:t.getAttribute('data-ls')});return;}
-  if(a==='go-test'){acadGo({mode:'test',level:n});return;}
+  if(a==='go-stage'){acadGo({mode:'stage',sid:sid});return;}
+  if(a==='go-lesson'){acadGo({mode:'lesson',sid:sid,lesson:t.getAttribute('data-ls')});return;}
+  if(a==='go-test'){acadGo({mode:'test',sid:sid});return;}
 
   if(a==='submit-entry'){
     var P=acadProg(),scores={},miss=false;
     for(var i=0;i<ACADEMY.entry.statements.length;i++){
       var sel=document.querySelector('input[name="ent_'+i+'"]:checked');
-      if(!sel){miss=true;break;}
-      scores[i]=parseInt(sel.value,10);
+      if(!sel){miss=true;break;} scores[i]=parseInt(sel.value,10);
     }
     if(miss){_acadToast('Hãy trả lời hết các câu để hoàn thành.');return;}
-    // Chụp ảnh: cấp có điểm trung bình cao nhất
     var sum={},cnt={};
-    ACADEMY.entry.statements.forEach(function(st,i){var L=st.level;sum[L]=(sum[L]||0)+scores[i];cnt[L]=(cnt[L]||0)+1;});
+    ACADEMY.entry.statements.forEach(function(s,i){var L=s.level;sum[L]=(sum[L]||0)+scores[i];cnt[L]=(cnt[L]||0)+1;});
     var best=1,bestAvg=-1;
     for(var L=1;L<=5;L++){var avg=(sum[L]||0)/(cnt[L]||1);if(avg>bestAvg){bestAvg=avg;best=L;}}
     P.entry={done:true,scores:scores,snapshotLevel:best,at:new Date().toISOString()};
-    acadSave();
-    _acadToast('✓ Đã hoàn thành Test đầu vào — Cấp 1 đã mở!');
-    acadGo({mode:'home'});
-    return;
+    acadSave(); _acadToast('✓ Hoàn thành Test đầu vào — Giai đoạn Nền tảng đã mở!'); acadGo({mode:'home'}); return;
   }
 
   if(a==='lesson-done'){
-    var s=acadLv(n),id=t.getAttribute('data-ls');
+    var st=acadStage(sid); if(!st)return;
+    var s=acadSt(sid),id=t.getAttribute('data-ls');
     if(s.lessonsDone.indexOf(id)<0){s.lessonsDone.push(id);acadSave();_acadToast('✓ Đã ghi nhận học xong bài này');}
-    // sang bài kế nếu còn, không thì về cấp
-    var L=acadDef(n),idx=-1;for(var k=0;k<L.lessons.length;k++)if(L.lessons[k].id===id)idx=k;
-    if(idx+1<L.lessons.length)acadGo({mode:'lesson',level:n,lesson:L.lessons[idx+1].id});
-    else acadGo({mode:'level',level:n});
+    var d=st.def,idx=-1;for(var k=0;k<d.lessons.length;k++)if(d.lessons[k].id===id)idx=k;
+    if(idx+1<d.lessons.length)acadGo({mode:'lesson',sid:sid,lesson:d.lessons[idx+1].id});
+    else acadGo({mode:'stage',sid:sid});
     return;
   }
 
   if(a==='submit-test'){
-    var Ld=acadDef(n),answers=[],miss2=false,right=0;
-    for(var qi=0;qi<Ld.test.questions.length;qi++){
+    var st2=acadStage(sid); if(!st2)return;
+    var d2=st2.def,answers=[],miss2=false,right=0;
+    for(var qi=0;qi<d2.test.questions.length;qi++){
       var sq=document.querySelector('input[name="acadq_'+qi+'"]:checked');
       if(!sq){miss2=true;break;}
       var val=parseInt(sq.value,10);answers[qi]=val;
-      if(val===Ld.test.questions[qi].correct)right++;
+      if(val===d2.test.questions[qi].correct)right++;
     }
     if(miss2){_acadToast('Hãy trả lời hết các câu trước khi nộp.');return;}
-    var score=Math.round(right/Ld.test.questions.length*100);
-    var pass=score>=Ld.test.pass;
-    var s2=acadLv(n);
-    s2.testScore=score;
-    if(pass)s2.testPassed=true;
-    acadSave();
-    if(pass)_acadToast('✅ Đậu bài kiểm tra Cấp '+n+' ('+score+'%)!');else _acadToast('Chưa đạt ('+score+'%). Xem giải thích rồi làm lại nhé.');
-    acadGo({mode:'test',level:n,graded:{answers:answers,score:score,pass:pass,right:right}});
+    var score=Math.round(right/d2.test.questions.length*100),pass=score>=d2.test.pass;
+    var s2=acadSt(sid);s2.testScore=score;if(pass)s2.testPassed=true;acadSave();
+    if(pass)_acadToast('✅ Đậu bài kiểm tra ('+score+'%)!');else _acadToast('Chưa đạt ('+score+'%). Xem giải thích rồi làm lại.');
+    acadGo({mode:'test',sid:sid,graded:{answers:answers,score:score,pass:pass,right:right}});
     return;
   }
 
-  if(a==='save-action'){
-    var note=(document.getElementById('acad-act-note-'+n)||{}).value||'';
-    var chk=(document.getElementById('acad-act-chk-'+n)||{}).checked;
-    var s3=acadLv(n);
-    s3.actionNote=note;
-    if(!chk){s3.actionDone=false;acadSave();_acadToast('Đã lưu ghi chú. Tick xác nhận "đã áp dụng thật" để hoàn tất cấp.');acadGo({mode:'level',level:n});return;}
-    if(note.trim().length<10){s3.actionDone=false;acadSave();_acadToast('Hãy viết cụ thể hơn (tối thiểu 10 ký tự) việc bạn đã áp dụng.');acadGo({mode:'level',level:n});return;}
+  if(a==='save-module'){
+    var st3=acadStage(sid); if(!st3)return;
+    var s3=acadSt(sid);
+    var noteEl=document.getElementById('acad-act-'+sid), chkEl=document.getElementById('acad-chk-'+sid), refEl=document.getElementById('acad-reflect-'+sid);
+    if(refEl)s3.reflectText=refEl.value||'';
+    if(noteEl)s3.actionNote=noteEl.value||'';
+    var chk=chkEl?chkEl.checked:false;
+    // kiểm tra điều kiện QUA MÔN
+    if(acadHasReflect(st3)&&(s3.reflectText||'').trim().length<((st3.def.test.reflect.min)||40)){
+      s3.actionDone=!!chk&&(s3.actionNote.trim().length>=10); acadSave();
+      _acadToast('Phần "Giải thích vì sao" còn quá ngắn (tối thiểu '+((st3.def.test.reflect.min)||40)+' ký tự). Đã lưu tạm.');
+      acadGo({mode:'stage',sid:sid});return;
+    }
+    if(!chk){s3.actionDone=false;acadSave();_acadToast('Đã lưu. Hãy tick xác nhận "đã áp dụng thật" để qua môn.');acadGo({mode:'stage',sid:sid});return;}
+    if((s3.actionNote||'').trim().length<10){s3.actionDone=false;acadSave();_acadToast('Phần Hành động: hãy viết cụ thể hơn (tối thiểu 10 ký tự).');acadGo({mode:'stage',sid:sid});return;}
     s3.actionDone=true;
-    if(acadLessonsAllDone(n)&&s3.testPassed&&!s3.passedAt)s3.passedAt=new Date().toISOString();
+    if(acadStageComplete(st3)&&!s3.passedAt)s3.passedAt=new Date().toISOString();
     acadSave();
-    _acadToast(acadLevelComplete(n)?('🎉 Hoàn thành Cấp '+n+'! Cấp kế tiếp đã mở.'):'💾 Đã lưu hành động.');
-    acadGo({mode:'level',level:n});
+    _acadToast(acadStageComplete(st3)?'🎉 Qua môn! Môn kế tiếp đã mở.':'💾 Đã lưu.');
+    acadGo({mode:'stage',sid:sid});
+    return;
+  }
+
+  if(a==='goto'){
+    var mn=t.getAttribute('data-main'),sb=t.getAttribute('data-sub'),sb2=t.getAttribute('data-sub2');
+    if(mn){var mt=document.querySelector('.mtab[data-main="'+mn+'"]');if(mt)mt.click();}
+    if(sb){var s1=document.querySelector('.stab[data-sub="'+sb+'"]');if(s1)s1.click();}
+    if(sb2){var s2b=document.querySelector('.stab[data-sub="'+sb2+'"]');if(s2b)s2b.click();}
+    _acadToast('Đã mở công cụ — làm xong quay lại Học viện để lưu "Qua môn".');
     return;
   }
 
   if(a==='goto-journal'){
-    var mt=document.querySelector('.mtab[data-main="tp"]'); if(mt)mt.click();
-    var sub=document.querySelector('.stab[data-sub="tp:actions"]'); if(sub)sub.click();
+    var mt2=document.querySelector('.mtab[data-main="tp"]'); if(mt2)mt2.click();
+    var sa=document.querySelector('.stab[data-sub="tp:actions"]'); if(sa)sa.click();
     var jr=document.querySelector('.stab[data-sub="act:journal"]'); if(jr)jr.click();
     _acadToast('📔 Mở Nhật ký để ghi lại việc bạn đã làm.');
     return;
   }
 });
+
 </script>
 </body>
 </html>
