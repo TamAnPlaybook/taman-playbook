@@ -1041,6 +1041,34 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .vb-default-hero{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:14px;position:relative;background:#EFEDE6}
 .vb-default-hero .vbp-el{position:absolute}
 .vb-default-cap{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.55));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+/* ── Danh sách ước mơ (Dream List) ── */
+.dl-intro{font-size:12.5px;color:#666;margin-bottom:10px;line-height:1.5}
+.dl-legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.dl-legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid transparent}
+.dl-legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.dl-add{display:flex;gap:8px;margin-bottom:14px}
+.dl-add input{flex:1;padding:11px 13px;border:1.5px solid #E0E0E0;border-radius:10px;font-size:14px;font-family:Arial;outline:none;background:#fff}
+.dl-add input:focus{border-color:var(--accent,#C8A84B)}
+.dl-add button{flex:0 0 auto;padding:11px 16px;border:none;border-radius:10px;background:#1A7A5E;color:#fff;font-size:14px;font-weight:700;font-family:Arial;cursor:pointer}
+.dl-group-hdr{font-size:11.5px;font-weight:800;letter-spacing:.3px;margin:14px 0 7px;display:flex;align-items:center;gap:7px;text-transform:uppercase}
+.dl-group-hdr:first-child{margin-top:0}
+.dl-list{display:flex;flex-direction:column;gap:8px}
+.dl-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--surface,#fff);border:1px solid var(--line,#ECEAE2);border-left-width:5px;box-shadow:var(--shadow-sm,0 1px 3px rgba(0,0,0,.05));transition:box-shadow .15s ease,transform .12s ease}
+.dl-item.dragging{opacity:.45}
+.dl-item.dragover{transform:translateY(2px);box-shadow:0 0 0 2px var(--accent,#C8A84B) inset}
+.dl-rank{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.dl-grip{flex:0 0 auto;color:#BBB;cursor:grab;font-size:16px;line-height:1;user-select:none;touch-action:none}
+.dl-grip:active{cursor:grabbing}
+.dl-text{flex:1;font-size:14px;color:var(--ink,#1A1A1A);line-height:1.4;word-break:break-word;cursor:text;min-width:0;outline:none;border-radius:6px;padding:2px 5px;margin:-2px -5px}
+.dl-text[contenteditable="true"]:focus{background:#FFFDF3;box-shadow:0 0 0 1.5px #E7D9A3 inset}
+.dl-move{display:flex;flex-direction:column;gap:2px;flex:0 0 auto}
+.dl-move button,.dl-del{border:none;background:transparent;cursor:pointer;padding:0;line-height:1}
+.dl-move button{font-size:11px;color:#999;width:22px;height:15px;border-radius:4px}
+.dl-move button:hover{color:#1A7A5E;background:#EAF4EF}
+.dl-move button:disabled{opacity:.25;cursor:default;background:none}
+.dl-del{flex:0 0 auto;font-size:15px;color:#CBB;width:26px;height:26px;border-radius:7px}
+.dl-del:hover{color:#C62828;background:#FDECEC}
+.dl-empty{font-size:13px;color:#A99;text-align:center;padding:18px 10px;border:2px dashed #E4E0D4;border-radius:12px}
 /* Editor toàn màn hình */
 #vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
 #vb-editor.open{display:flex}
@@ -1397,6 +1425,8 @@ a.gp-att-nm:hover{text-decoration:underline}
         <div id="wheel-compare-content"></div>
         <div class="tp-sec-title">&#128444;&#65039; Bảng tầm nhìn (Vision Board)<span class="tip" data-tip="Bảng hình ảnh về cuộc sống bạn muốn có — nhìn mỗi ngày để giữ cảm hứng và động lực đi tới.">&#9432;</span></div>
         <div id="vision-board-content"></div>
+        <div class="tp-sec-title">&#128221; Danh sách ước mơ của tôi<span class="tip" data-tip="Viết ra mọi ước mơ của bạn, rồi kéo/di chuyển để sắp thứ tự ưu tiên. Màu sắc cho biết nhóm ưu tiên: 1–10, 11–30, 31–50, 51–100.">&#9432;</span></div>
+        <div id="dream-list-content"></div>
         <div style="margin-top:18px;text-align:right"><button class="btn btn-d btn-sm" data-goto-chain="tp:goals">Bước tiếp: &#127919; Đặt mục tiêu &rarr;</button></div>
       </div>
 
@@ -4556,7 +4586,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -6823,7 +6853,7 @@ function renderF3Users(){
 function renderTpSub(sub){
   sub=sub||currentSubTab.tp||'overview';
   if(sub==='overview')renderOverviewHome();
-  else if(sub==='laban'){renderLifeWheel();renderLifeMirror();renderWheelCompare();renderVisionBoards();} // Bước 1 · La bàn (quý)
+  else if(sub==='laban'){renderLifeWheel();renderLifeMirror();renderWheelCompare();renderVisionBoards();renderDreamList();} // Bước 1 · La bàn (quý)
   else if(sub==='goals'){renderAnnPlan();renderGoalsMeasure();renderPareto();} // Bước 2 · Mục tiêu (tháng)
   else if(sub==='actions')renderActSub(currentSubTab.act||'today');
   else if(sub==='results')renderResSub(currentSubTab.res||'tongquan');
@@ -13854,11 +13884,118 @@ function bindVisionBoardEvents(){
 }
 
 // ================================================================
+// DANH SÁCH ƯỚC MƠ (Dream List) — mỗi người tự điền, sắp ưu tiên trên→dưới,
+// đổi thứ tự (kéo-thả / ▲▼), tô màu theo nhóm 1–10, 11–30, 31–50, 51–100.
+// Lưu: localStorage 'ta_dreamlist' + Firestore doc 'dreamlist' (theo tài khoản).
+// ================================================================
+var _dreamList=[],_dlDrag=null;
+function _dlBand(rank){ // rank: thứ hạng 1-based
+  if(rank<=10) return {key:'a',label:'Nhóm 1–10 · Ưu tiên tối cao',range:'1–10',col:'#D64545',bg:'#FBEDED',ink:'#B23B3B'};
+  if(rank<=30) return {key:'b',label:'Nhóm 11–30 · Ưu tiên cao',range:'11–30',col:'#E08A2B',bg:'#FCF2E3',ink:'#B0701C'};
+  if(rank<=50) return {key:'c',label:'Nhóm 31–50 · Ưu tiên vừa',range:'31–50',col:'#3B7DD8',bg:'#EAF1FB',ink:'#2E63AC'};
+  return {key:'d',label:'Nhóm 51–100 · Ước mơ dài hạn',range:'51–100',col:'#8A8F98',bg:'#F1F2F4',ink:'#6C727A'};
+}
+function loadDreamListLocal(){try{var s=localStorage.getItem('ta_dreamlist');if(s){var o=JSON.parse(s)||{};_dreamList=Array.isArray(o.items)?o.items:[];}}catch(e){_dreamList=[];}}
+function loadDreamListCloud(){if(!fbDb||!fbUser)return;fsGet('dreamlist').then(function(d){if(d&&Array.isArray(d.items)){_dreamList=d.items;try{localStorage.setItem('ta_dreamlist',JSON.stringify({items:_dreamList}));}catch(e){}renderDreamList();}}).catch(function(){});}
+function saveDreamList(){try{localStorage.setItem('ta_dreamlist',JSON.stringify({items:_dreamList}));}catch(e){}if(fbDb&&fbUser)fsSet('dreamlist',{items:_dreamList}).catch(function(){});}
+function dlAddFromInput(){
+  var inp=document.getElementById('dl-new');if(!inp)return;
+  var txt=(inp.value||'').trim();if(!txt)return;
+  _dreamList.push({id:'d'+Date.now().toString(36)+Math.floor(Math.random()*9999).toString(36),text:txt});
+  inp.value='';saveDreamList();renderDreamList();inp.focus();
+}
+function dlDelete(id){_dreamList=_dreamList.filter(function(x){return x.id!==id;});saveDreamList();renderDreamList();}
+function dlMove(id,dir){ // dir: -1 lên, +1 xuống
+  var i=_dreamList.findIndex(function(x){return x.id===id;});if(i<0)return;
+  var j=i+dir;if(j<0||j>=_dreamList.length)return;
+  var t=_dreamList[i];_dreamList[i]=_dreamList[j];_dreamList[j]=t;
+  saveDreamList();renderDreamList();
+}
+function dlReorder(fromId,toId){ // đặt fromId ngay trước vị trí hiện tại của toId
+  if(fromId===toId)return;
+  var from=_dreamList.filter(function(x){return x.id===fromId;})[0];if(!from)return;
+  var rest=_dreamList.filter(function(x){return x.id!==fromId;});
+  var ti=rest.findIndex(function(x){return x.id===toId;});if(ti<0)ti=rest.length;
+  rest.splice(ti,0,from);_dreamList=rest;saveDreamList();renderDreamList();
+}
+function dlCommitEdit(id,el){
+  var it=_dreamList.filter(function(x){return x.id===id;})[0];if(!it)return;
+  var txt=(el.textContent||'').replace(/\s+/g,' ').trim();
+  if(!txt){dlDelete(id);return;}
+  if(txt!==it.text){it.text=txt;saveDreamList();}
+}
+function renderDreamList(){
+  var el=document.getElementById('dream-list-content');if(!el)return;
+  var h='';
+  h+='<div class="dl-intro">Viết ra <b>mọi ước mơ</b> của bạn (mỗi dòng một ước mơ), rồi <b>kéo</b> ⠿ hoặc bấm ▲▼ để sắp thứ tự ưu tiên từ trên xuống. Màu sắc cho biết ước mơ đó thuộc nhóm ưu tiên nào.</div>';
+  h+='<div class="dl-legend">';
+  [1,11,31,51].forEach(function(r){var b=_dlBand(r);h+='<span class="dl-legend-item" style="background:'+b.bg+';color:'+b.ink+';border-color:'+b.col+'33"><span class="dl-legend-dot" style="background:'+b.col+'"></span>'+b.range+'</span>';});
+  h+='</div>';
+  h+='<div class="dl-add"><input id="dl-new" type="text" maxlength="140" placeholder="Ước mơ của tôi là…" autocomplete="off"><button data-dl-add="1">＋ Thêm</button></div>';
+  if(!_dreamList.length){
+    h+='<div class="dl-empty">Chưa có ước mơ nào. Hãy viết ước mơ đầu tiên ở ô phía trên ✨</div>';
+  }else{
+    h+='<div class="dl-list">';
+    var prevKey='';
+    _dreamList.forEach(function(it,i){
+      var rank=i+1,b=_dlBand(rank);
+      if(b.key!==prevKey){h+='<div class="dl-group-hdr" style="color:'+b.ink+'"><span class="dl-legend-dot" style="background:'+b.col+'"></span>'+escHtml(b.label)+'</div>';prevKey=b.key;}
+      h+='<div class="dl-item" data-dl-id="'+it.id+'" style="border-left-color:'+b.col+'">';
+      h+='<span class="dl-grip" data-dl-grip="1" draggable="true" title="Kéo để đổi thứ tự">⠿</span>';
+      h+='<span class="dl-rank" style="background:'+b.col+'">'+rank+'</span>';
+      h+='<span class="dl-text" contenteditable="true" data-dl-text="'+it.id+'" spellcheck="false">'+escHtml(it.text)+'</span>';
+      h+='<span class="dl-move"><button data-dl-up="'+it.id+'"'+(i===0?' disabled':'')+' title="Lên">▲</button><button data-dl-down="'+it.id+'"'+(i===_dreamList.length-1?' disabled':'')+' title="Xuống">▼</button></span>';
+      h+='<button class="dl-del" data-dl-del="'+it.id+'" title="Xoá">🗑</button>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function bindDreamListEvents(){
+  var root=document.getElementById('dream-list-content');if(!root)return;
+  root.addEventListener('click',function(e){
+    var t=e.target.closest('[data-dl-add]');if(t){dlAddFromInput();return;}
+    t=e.target.closest('[data-dl-up]');if(t){dlMove(t.getAttribute('data-dl-up'),-1);return;}
+    t=e.target.closest('[data-dl-down]');if(t){dlMove(t.getAttribute('data-dl-down'),1);return;}
+    t=e.target.closest('[data-dl-del]');if(t){dlDelete(t.getAttribute('data-dl-del'));return;}
+  });
+  root.addEventListener('keydown',function(e){
+    if(e.target&&e.target.id==='dl-new'&&e.key==='Enter'){e.preventDefault();dlAddFromInput();return;}
+    if(e.target&&e.target.getAttribute&&e.target.getAttribute('data-dl-text')&&e.key==='Enter'){e.preventDefault();e.target.blur();}
+  });
+  root.addEventListener('focusout',function(e){
+    if(e.target&&e.target.getAttribute&&e.target.getAttribute('data-dl-text'))dlCommitEdit(e.target.getAttribute('data-dl-text'),e.target);
+  });
+  // Kéo-thả đổi thứ tự (chuột trên máy tính)
+  root.addEventListener('dragstart',function(e){
+    var g=e.target.closest('[data-dl-grip]');if(!g){if(e.preventDefault)e.preventDefault();return;}
+    var item=g.closest('.dl-item');if(!item)return;
+    _dlDrag=item.getAttribute('data-dl-id');item.classList.add('dragging');
+    try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',_dlDrag);}catch(err){}
+  });
+  root.addEventListener('dragover',function(e){
+    if(!_dlDrag)return;e.preventDefault();
+    var item=e.target.closest('.dl-item');
+    root.querySelectorAll('.dl-item.dragover').forEach(function(x){if(x!==item)x.classList.remove('dragover');});
+    if(item&&item.getAttribute('data-dl-id')!==_dlDrag)item.classList.add('dragover');
+  });
+  root.addEventListener('drop',function(e){
+    if(!_dlDrag)return;e.preventDefault();
+    var item=e.target.closest('.dl-item');
+    if(item){var toId=item.getAttribute('data-dl-id');if(toId!==_dlDrag)dlReorder(_dlDrag,toId);}
+    _dlDrag=null;
+  });
+  root.addEventListener('dragend',function(){_dlDrag=null;root.querySelectorAll('.dragging,.dragover').forEach(function(x){x.classList.remove('dragging');x.classList.remove('dragover');});});
+}
+
+// ================================================================
 // STATIC BUTTON BINDINGS
 // ================================================================
 function bindStatic(){
   loadPrefsLocal();loadBgImageLocal();applyPrefs(); // v6.15/6.16 — áp tông màu + nền cá nhân ngay khi tải
   loadVbIndexLocal();bindVisionBoardEvents(); // v6.17 — Vision Board
+  loadDreamListLocal();bindDreamListEvents(); // Danh sách ước mơ
   // v6.21 — Tìm kiếm thông minh DÙNG CHUNG cho cả 3 bản đồ (live autocomplete + Enter): tra ô theo MAPCTX
   function _mapKeyByInput(id){for(var k in MAPCTX){if(MAPCTX[k].input===id)return k;}return null;}
   document.addEventListener('input',function(e){if(!e.target||!e.target.id)return;var k=_mapKeyByInput(e.target.id);if(k)mapSearchInput(k);});
