@@ -1084,6 +1084,16 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .ids-rank{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:6px;background:#ECEFF1;color:#546E7A;font-size:11px;font-weight:800}
 .ids-bar{height:7px;border-radius:4px;background:#1565C0;min-width:6px}
 .ids-empty{font-size:13px;color:#999;text-align:center;padding:16px 10px;border:2px dashed #E0E0E0;border-radius:12px}
+.ids-matrix{min-width:auto}
+.ids-matrix th,.ids-matrix td{min-width:42px}
+.ids-matrix th.ids-cw-user,.ids-matrix td.ids-cw-user{position:sticky;left:0;z-index:2;text-align:left;font-weight:700;max-width:132px;min-width:96px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ids-matrix td.ids-cw-user{background:#fff}
+.ids-matrix th.ids-cw-user{background:#1A1A1A}
+.ids-matrix th.ids-cw-tot,.ids-matrix td.ids-cw-tot{position:sticky;right:0;z-index:2;font-weight:800;color:#1565C0}
+.ids-matrix td.ids-cw-tot{background:#EAF2FB}
+.ids-matrix th.ids-cw-tot{background:#1A1A1A}
+.ids-matrix .ids-total-row td{background:#F3F4F6;font-weight:800;color:#333;border-top:2px solid #D7DBE0}
+.ids-matrix .ids-total-row td.ids-cw-tot{background:#DCE9F8;color:#0D47A1}
 /* Editor toàn màn hình */
 #vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
 #vb-editor.open{display:flex}
@@ -12891,6 +12901,7 @@ function closeNangDong(){document.getElementById('nd-ov').classList.remove('open
 // ================================================================
 var _idsMode='f1',_idsFrom=null,_idsTo=null,_idsPreset='year';
 function _idsMonthName(abs){var y=Math.floor((abs-1)/12),m=abs-y*12;return m+'/'+y;}
+function _idsColLabel(abs){var y=Math.floor((abs-1)/12),m=abs-y*12;return 'T'+m+'<br><span style="font-weight:600;color:#90A4AE">\''+String(y).slice(-2)+'</span>';}
 function _idsCurAbs(){var d=new Date();return d.getFullYear()*12+(d.getMonth()+1);}
 function _idsMinAbs(){ // tháng vào ID sớm nhất có trong sơ đồ
   var mn=null;treeNodes.forEach(function(n){var p=parseJoinDate(n.joinDate);if(p&&(mn==null||p.abs<mn))mn=p.abs;});
@@ -12918,8 +12929,8 @@ function renderIdStats(){
   var el=document.getElementById('idstats-content');if(!el)return;
   if(_idsFrom==null||_idsTo==null)_idsApplyPreset('year');
   var lo=Math.min(_idsFrom,_idsTo),hi=Math.max(_idsFrom,_idsTo);
-  // Gộp: đếm ID mới (joinDate trong [lo,hi]) theo mỗi User
-  var byUser={},byMonth={},total=0,noDate=0;
+  // Gộp: đếm ID mới (joinDate trong [lo,hi]) theo mỗi User × từng tháng
+  var byUser={},byMonth={},mat={},maxCell=0,total=0,noDate=0;
   var idMap={};treeNodes.forEach(function(n){idMap[n.id]=n;});
   treeNodes.forEach(function(n){
     var p=parseJoinDate(n.joinDate);
@@ -12931,6 +12942,9 @@ function renderIdStats(){
     if(_idsMode==='f1'){key=(n.f1of||'').trim()||'(chưa ghi bảo trợ)';}
     else{var par=n.parentId?idMap[n.parentId]:null;key=par?(par.name||'(không tên)'):'⌂ ID Gốc (không tuyến trên)';}
     byUser[key]=(byUser[key]||0)+1;
+    if(!mat[key])mat[key]={};
+    mat[key][p.abs]=(mat[key][p.abs]||0)+1;
+    if(mat[key][p.abs]>maxCell)maxCell=mat[key][p.abs];
   });
   var users=Object.keys(byUser).map(function(k){return {name:k,c:byUser[k]};}).sort(function(a,b){return b.c-a.c||a.name.localeCompare(b.name);});
   var maxC=users.length?users[0].c:1;
@@ -12953,32 +12967,31 @@ function renderIdStats(){
   // Tổng
   h+='<div class="ids-sum"><b>'+total+'</b> ID mới gắn vào · khoảng <b>'+_idsMonthName(lo)+'</b> → <b>'+_idsMonthName(hi)+'</b><br>'
    +'<span style="font-size:11.5px;color:#1565C0">Gộp theo '+(_idsMode==='f1'?'người bảo trợ (F1 trực tiếp)':'vị trí đặt trên cây (tuyến trên trực tiếp)')+' · '+users.length+' User có ID mới'+(noDate?(' · '+noDate+' ID chưa ghi tháng vào'):'')+'</span></div>';
-  // Bảng theo User
-  h+='<div class="ids-hdr">👤 Số ID mới dưới mỗi User</div>';
+  // BẢNG SO SÁNH: mỗi User (dòng) × từng tháng.năm (cột) = số ID mới
+  h+='<div class="ids-hdr">📊 So sánh số ID mới theo tháng — mỗi User</div>';
   if(!users.length){
     h+='<div class="ids-empty">Không có ID nào gắn vào trong khoảng này. Hãy chọn khoảng thời gian khác.</div>';
   }else{
-    h+='<div class="ov-wrap"><table class="ovt"><thead><tr><th style="width:34px">#</th><th>User</th><th style="width:64px">ID mới</th><th style="width:120px">Tỷ trọng</th></tr></thead><tbody>';
-    users.forEach(function(u,i){
-      var pct=Math.round(u.c/total*100),w=Math.round(u.c/maxC*100);
-      h+='<tr><td><span class="ids-rank">'+(i+1)+'</span></td>'
-       +'<td>'+escHtml(u.name)+'</td>'
-       +'<td style="font-weight:800;color:#1565C0">'+u.c+'</td>'
-       +'<td><div style="display:flex;align-items:center;gap:6px"><div class="ids-bar" style="width:'+Math.max(w,6)+'%"></div><span style="font-size:11px;color:#888">'+pct+'%</span></div></td></tr>';
+    var mCols=[];for(var a=lo;a<=hi;a++)mCols.push(a);
+    if(mCols.length>1)h+='<div style="font-size:11px;color:#999;margin:-2px 0 6px">↔ Cuộn ngang để xem đủ các tháng. Ô đậm hơn = nhiều ID hơn.</div>';
+    h+='<div class="ov-wrap"><table class="ovt ids-matrix"><thead><tr>'
+     +'<th class="ids-cw-user">👤 User</th>';
+    mCols.forEach(function(a){h+='<th>'+_idsColLabel(a)+'</th>';});
+    h+='<th class="ids-cw-tot">Tổng</th></tr></thead><tbody>';
+    users.forEach(function(u){
+      h+='<tr><td class="ids-cw-user" title="'+escHtml(u.name)+'">'+escHtml(u.name)+'</td>';
+      mCols.forEach(function(a){
+        var v=(mat[u.name]&&mat[u.name][a])||0;
+        if(v>0){var al=(0.14+0.66*(v/maxCell)).toFixed(2);
+          h+='<td style="background:rgba(21,101,192,'+al+');color:'+(al>0.5?'#fff':'#0D47A1')+';font-weight:800">'+v+'</td>';
+        }else h+='<td style="color:#D0D5DB">·</td>';
+      });
+      h+='<td class="ids-cw-tot">'+u.c+'</td></tr>';
     });
-    h+='</tbody></table></div>';
-  }
-  // Phân bố theo tháng
-  var months=Object.keys(byMonth).map(function(a){return parseInt(a,10);}).sort(function(a,b){return a-b;});
-  if(months.length){
-    var mMax=Math.max.apply(null,months.map(function(a){return byMonth[a];}));
-    h+='<div class="ids-hdr" style="margin-top:16px">📅 Phân bố theo tháng</div>';
-    h+='<div class="ov-wrap"><table class="ovt"><thead><tr><th>Tháng/Năm</th><th style="width:64px">ID mới</th><th style="width:150px"></th></tr></thead><tbody>';
-    months.forEach(function(a){
-      var c=byMonth[a],w=Math.round(c/mMax*100);
-      h+='<tr><td>'+_idsMonthName(a)+'</td><td style="font-weight:800;color:#1565C0">'+c+'</td>'
-       +'<td><div class="ids-bar" style="width:'+Math.max(w,6)+'%"></div></td></tr>';
-    });
+    // Dòng Tổng theo từng tháng
+    h+='<tr class="ids-total-row"><td class="ids-cw-user">Tổng</td>';
+    mCols.forEach(function(a){h+='<td>'+(byMonth[a]||0)+'</td>';});
+    h+='<td class="ids-cw-tot">'+total+'</td></tr>';
     h+='</tbody></table></div>';
   }
   el.innerHTML=h;
