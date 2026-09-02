@@ -13171,8 +13171,10 @@ function _zCleanName(raw){
 // Có phải TÊN người thật không? Lọc: chữ giao diện Zoom + rác OCR (nhiều ký hiệu/số, quá ngắn, độ tự tin thấp)
 //   orig = văn bản OCR GỐC (chưa cắt) để bắt ký hiệu rác; kiểm tra chữ/độ dài trên bản đã cắt.
 function _zPlausibleName(orig,conf){
-  // 1) rác nhiều ký hiệu (xét trên bản GỐC) → loại. Dấu "/","-","." được phép (Zoom hay dùng "HC/Tên", "A-B").
-  if(/[=%^~«»®©#<>|*+\\\[\]{}:;!`"@$&?_]/.test(String(orig||'')))return false;
+  // 1) rác nhiều ký hiệu (xét trên bản GỐC) → loại. Dấu "/","-",".","_",",","(" ")" được phép
+  //    (tên Zoom hay dùng "HC/Tên", "A-B", "Thư _ cao", "HC,HOÀN", "(tôi)").
+  if(/[=^~«»®©#<>|*+\\\[\]{}:;!`"@$&?]/.test(String(orig||'')))return false;
+  if(/%/.test(String(orig||'')))return false; // % là của Zoom (Audio 9%…), không có trong tên
   var s=_zNorm(_zCleanName(orig));if(s.length<3||s.length>44)return false;
   var toks=s.split(' ').filter(Boolean);
   // 2) chứa từ giao diện Zoom → loại
@@ -13264,14 +13266,16 @@ function _zAddImages(files){
     r.readAsDataURL(f);
   });
 }
-// Tiền xử lý ảnh: phóng to (glyph nhiều pixel hơn) + chuyển xám + tăng tương phản nhẹ → đọc rõ chữ nhỏ
+// Tiền xử lý ảnh: cân chỉnh kích thước (không quá to kẻo canvas lỗi) + chuyển xám + tương phản nhẹ.
+var Z_MAX_DIM=2600, Z_MAX_AREA=5000000; // giới hạn an toàn (điện thoại chụp dọc rất cao)
 function _zPreprocess(url){
   return new Promise(function(res){
     var img=new Image();
     img.onload=function(){
-      var w0=img.width||1;
-      var scale=Math.max(1,Math.min(2.2,3600/w0)); // ảnh chụp lớn vẫn phóng ~2x cho chữ nhỏ
-      var w=Math.round(w0*scale),h=Math.round((img.height||1)*scale);
+      var w0=img.width||1,h0=img.height||1;
+      var s=Math.min(2, Z_MAX_DIM/Math.max(w0,h0), Math.sqrt(Z_MAX_AREA/(w0*h0)));
+      if(!isFinite(s)||s<=0)s=1; // an toàn
+      var w=Math.max(1,Math.round(w0*s)),h=Math.max(1,Math.round(h0*s));
       try{
         var c=document.createElement('canvas');c.width=w;c.height=h;
         var ctx=c.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,w,h);
@@ -13282,7 +13286,8 @@ function _zPreprocess(url){
           a[i]=a[i+1]=a[i+2]=g;
         }
         ctx.putImageData(d,0,0);
-        res(c.toDataURL('image/png'));
+        var out=c.toDataURL('image/png');
+        res(out&&out.length>20?out:url); // toDataURL lỗi (canvas quá lớn) → dùng ảnh gốc
       }catch(e){res(url);}
     };
     img.onerror=function(){res(url);};
