@@ -1069,6 +1069,21 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .dl-del{flex:0 0 auto;font-size:15px;color:#CBB;width:26px;height:26px;border-radius:7px}
 .dl-del:hover{color:#C62828;background:#FDECEC}
 .dl-empty{font-size:13px;color:#A99;text-align:center;padding:18px 10px;border:2px dashed #E4E0D4;border-radius:12px}
+/* ── Đếm ID vào theo tháng ── */
+.ids-seg{display:inline-flex;border:1px solid #BBDEFB;border-radius:9px;overflow:hidden;margin-bottom:12px}
+.ids-seg button{border:none;background:#fff;color:#1565C0;font-size:12.5px;font-weight:700;font-family:Arial;padding:8px 12px;cursor:pointer}
+.ids-seg button.on{background:#1565C0;color:#fff}
+.ids-range{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;font-size:12.5px;color:#444}
+.ids-range select{padding:7px 8px;border:1.5px solid #E0E0E0;border-radius:8px;font-size:13px;font-family:Arial;background:#fff;outline:none;cursor:pointer}
+.ids-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ids-presets button{border:1px solid #E0E0E0;background:#F7F7F7;color:#333;font-size:12px;font-weight:700;font-family:Arial;padding:6px 11px;border-radius:999px;cursor:pointer}
+.ids-presets button.on{background:#1565C0;border-color:#1565C0;color:#fff}
+.ids-sum{background:#E3F2FD;border:1px solid #BBDEFB;border-radius:12px;padding:11px 13px;margin-bottom:12px;font-size:13px;color:#0D47A1;line-height:1.55}
+.ids-sum b{font-size:22px}
+.ids-hdr{font-size:12.5px;font-weight:800;color:#1A1A1A;margin:14px 0 7px;display:flex;align-items:center;gap:6px}
+.ids-rank{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:6px;background:#ECEFF1;color:#546E7A;font-size:11px;font-weight:800}
+.ids-bar{height:7px;border-radius:4px;background:#1565C0;min-width:6px}
+.ids-empty{font-size:13px;color:#999;text-align:center;padding:16px 10px;border:2px dashed #E0E0E0;border-radius:12px}
 /* Editor toàn màn hình */
 #vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
 #vb-editor.open{display:flex}
@@ -1548,6 +1563,7 @@ a.gp-att-nm:hover{text-decoration:underline}
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm: tên, mã ID, SĐT, DISC, cấp bậc, bảo trợ...">
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
       <button class="tbtn" id="btn-nangdong" style="background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32">&#128197; Năng động<span class="tt-badge" id="nd-badge"></span></button>
+      <button class="tbtn" id="btn-idstats" style="background:#E3F2FD;border-color:#90CAF9;color:#1565C0">&#128202; Đếm ID vào</button>
       <div id="disc-bar"></div>
       <div id="tree-search-sug"></div>
     </div>
@@ -1898,6 +1914,17 @@ a.gp-att-nm:hover{text-decoration:underline}
       <button class="nmod-x" id="nd-close">&#10005;</button>
     </div>
     <div class="nmod-body" id="nangdong-content"></div>
+  </div>
+</div>
+
+<!-- ĐẾM ID VÀO THEO THÁNG — thống kê số ID gắn vào trong khoảng thời gian, theo mỗi User -->
+<div class="nmod-ov" id="idstats-ov">
+  <div class="nmod" style="max-width:640px">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#128202; Đếm ID vào theo tháng</div>
+      <button class="nmod-x" id="idstats-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="idstats-content"></div>
   </div>
 </div>
 
@@ -12859,6 +12886,121 @@ function closeThangTien(){document.getElementById('tt-ov').classList.remove('ope
 function openNangDong(){renderNangDong();document.getElementById('nd-ov').classList.add('open');}
 function closeNangDong(){document.getElementById('nd-ov').classList.remove('open');}
 // ================================================================
+// ĐẾM ID VÀO THEO THÁNG — số ID gắn vào (theo joinDate tháng.năm) trong 1
+// khoảng thời gian, gộp theo mỗi User: bảo trợ F1 (mặc định) hoặc vị trí cây.
+// ================================================================
+var _idsMode='f1',_idsFrom=null,_idsTo=null,_idsPreset='year';
+function _idsMonthName(abs){var y=Math.floor((abs-1)/12),m=abs-y*12;return m+'/'+y;}
+function _idsCurAbs(){var d=new Date();return d.getFullYear()*12+(d.getMonth()+1);}
+function _idsMinAbs(){ // tháng vào ID sớm nhất có trong sơ đồ
+  var mn=null;treeNodes.forEach(function(n){var p=parseJoinDate(n.joinDate);if(p&&(mn==null||p.abs<mn))mn=p.abs;});
+  return mn||_idsCurAbs();
+}
+function _idsApplyPreset(k){
+  var cur=_idsCurAbs();_idsPreset=k;
+  if(k==='month'){_idsFrom=cur;_idsTo=cur;}
+  else if(k==='q'){_idsFrom=cur-2;_idsTo=cur;}
+  else if(k==='year'){var d=new Date();_idsFrom=d.getFullYear()*12+1;_idsTo=cur;}
+  else if(k==='12'){_idsFrom=cur-11;_idsTo=cur;}
+  else if(k==='all'){_idsFrom=_idsMinAbs();_idsTo=cur;}
+}
+function openIdStats(){
+  if(_idsFrom==null||_idsTo==null)_idsApplyPreset('year');
+  renderIdStats();document.getElementById('idstats-ov').classList.add('open');
+}
+function closeIdStats(){document.getElementById('idstats-ov').classList.remove('open');}
+function _idsSelOpts(sel,cur){ // dựng option tháng/năm từ min→hiện tại
+  var minA=Math.min(_idsMinAbs(),_idsCurAbs()),maxA=_idsCurAbs(),o='';
+  for(var a=maxA;a>=minA;a--)o+='<option value="'+a+'"'+(a===cur?' selected':'')+'>'+_idsMonthName(a)+'</option>';
+  return o;
+}
+function renderIdStats(){
+  var el=document.getElementById('idstats-content');if(!el)return;
+  if(_idsFrom==null||_idsTo==null)_idsApplyPreset('year');
+  var lo=Math.min(_idsFrom,_idsTo),hi=Math.max(_idsFrom,_idsTo);
+  // Gộp: đếm ID mới (joinDate trong [lo,hi]) theo mỗi User
+  var byUser={},byMonth={},total=0,noDate=0;
+  var idMap={};treeNodes.forEach(function(n){idMap[n.id]=n;});
+  treeNodes.forEach(function(n){
+    var p=parseJoinDate(n.joinDate);
+    if(!p){noDate++;return;}
+    if(p.abs<lo||p.abs>hi)return;
+    total++;
+    byMonth[p.abs]=(byMonth[p.abs]||0)+1;
+    var key;
+    if(_idsMode==='f1'){key=(n.f1of||'').trim()||'(chưa ghi bảo trợ)';}
+    else{var par=n.parentId?idMap[n.parentId]:null;key=par?(par.name||'(không tên)'):'⌂ ID Gốc (không tuyến trên)';}
+    byUser[key]=(byUser[key]||0)+1;
+  });
+  var users=Object.keys(byUser).map(function(k){return {name:k,c:byUser[k]};}).sort(function(a,b){return b.c-a.c||a.name.localeCompare(b.name);});
+  var maxC=users.length?users[0].c:1;
+  var h='';
+  // Chế độ gộp
+  h+='<div class="ids-seg">'
+   +'<button data-ids-mode="f1" class="'+(_idsMode==='f1'?'on':'')+'">⭐ Theo bảo trợ F1</button>'
+   +'<button data-ids-mode="tree" class="'+(_idsMode==='tree'?'on':'')+'">🌳 Theo vị trí cây</button>'
+   +'</div>';
+  // Khoảng thời gian
+  h+='<div class="ids-range"><span>Từ</span><select id="ids-from">'+_idsSelOpts('from',lo)+'</select>'
+   +'<span>đến</span><select id="ids-to">'+_idsSelOpts('to',hi)+'</select></div>';
+  h+='<div class="ids-presets">'
+   +'<button data-ids-preset="month" class="'+(_idsPreset==='month'?'on':'')+'">Tháng này</button>'
+   +'<button data-ids-preset="q" class="'+(_idsPreset==='q'?'on':'')+'">3 tháng</button>'
+   +'<button data-ids-preset="year" class="'+(_idsPreset==='year'?'on':'')+'">Năm nay</button>'
+   +'<button data-ids-preset="12" class="'+(_idsPreset==='12'?'on':'')+'">12 tháng</button>'
+   +'<button data-ids-preset="all" class="'+(_idsPreset==='all'?'on':'')+'">Tất cả</button>'
+   +'</div>';
+  // Tổng
+  h+='<div class="ids-sum"><b>'+total+'</b> ID mới gắn vào · khoảng <b>'+_idsMonthName(lo)+'</b> → <b>'+_idsMonthName(hi)+'</b><br>'
+   +'<span style="font-size:11.5px;color:#1565C0">Gộp theo '+(_idsMode==='f1'?'người bảo trợ (F1 trực tiếp)':'vị trí đặt trên cây (tuyến trên trực tiếp)')+' · '+users.length+' User có ID mới'+(noDate?(' · '+noDate+' ID chưa ghi tháng vào'):'')+'</span></div>';
+  // Bảng theo User
+  h+='<div class="ids-hdr">👤 Số ID mới dưới mỗi User</div>';
+  if(!users.length){
+    h+='<div class="ids-empty">Không có ID nào gắn vào trong khoảng này. Hãy chọn khoảng thời gian khác.</div>';
+  }else{
+    h+='<div class="ov-wrap"><table class="ovt"><thead><tr><th style="width:34px">#</th><th>User</th><th style="width:64px">ID mới</th><th style="width:120px">Tỷ trọng</th></tr></thead><tbody>';
+    users.forEach(function(u,i){
+      var pct=Math.round(u.c/total*100),w=Math.round(u.c/maxC*100);
+      h+='<tr><td><span class="ids-rank">'+(i+1)+'</span></td>'
+       +'<td>'+escHtml(u.name)+'</td>'
+       +'<td style="font-weight:800;color:#1565C0">'+u.c+'</td>'
+       +'<td><div style="display:flex;align-items:center;gap:6px"><div class="ids-bar" style="width:'+Math.max(w,6)+'%"></div><span style="font-size:11px;color:#888">'+pct+'%</span></div></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  // Phân bố theo tháng
+  var months=Object.keys(byMonth).map(function(a){return parseInt(a,10);}).sort(function(a,b){return a-b;});
+  if(months.length){
+    var mMax=Math.max.apply(null,months.map(function(a){return byMonth[a];}));
+    h+='<div class="ids-hdr" style="margin-top:16px">📅 Phân bố theo tháng</div>';
+    h+='<div class="ov-wrap"><table class="ovt"><thead><tr><th>Tháng/Năm</th><th style="width:64px">ID mới</th><th style="width:150px"></th></tr></thead><tbody>';
+    months.forEach(function(a){
+      var c=byMonth[a],w=Math.round(c/mMax*100);
+      h+='<tr><td>'+_idsMonthName(a)+'</td><td style="font-weight:800;color:#1565C0">'+c+'</td>'
+       +'<td><div class="ids-bar" style="width:'+Math.max(w,6)+'%"></div></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  el.innerHTML=h;
+}
+function bindIdStatsEvents(){
+  var btn=document.getElementById('btn-idstats');if(btn)btn.addEventListener('click',openIdStats);
+  var x=document.getElementById('idstats-close');if(x)x.addEventListener('click',closeIdStats);
+  var ov=document.getElementById('idstats-ov');if(ov)ov.addEventListener('click',function(e){if(e.target===this)closeIdStats();});
+  var body=document.getElementById('idstats-content');if(!body)return;
+  body.addEventListener('click',function(e){
+    var t=e.target.closest('[data-ids-mode]');if(t){_idsMode=t.getAttribute('data-ids-mode');renderIdStats();return;}
+    t=e.target.closest('[data-ids-preset]');if(t){_idsApplyPreset(t.getAttribute('data-ids-preset'));renderIdStats();return;}
+  });
+  body.addEventListener('change',function(e){
+    if(e.target&&(e.target.id==='ids-from'||e.target.id==='ids-to')){
+      _idsFrom=parseInt(document.getElementById('ids-from').value,10);
+      _idsTo=parseInt(document.getElementById('ids-to').value,10);
+      _idsPreset='';renderIdStats();
+    }
+  });
+}
+// ================================================================
 // XEM TÀI KHOẢN (QTV) — đọc cây + thành viên của 1 tài khoản, CHỈ XEM
 // Tự chứa: không đụng tới members/treeNodes toàn cục, không ghi gì.
 // ================================================================
@@ -14188,6 +14330,7 @@ function bindStatic(){
   document.getElementById('btn-nangdong').addEventListener('click',openNangDong);
   document.getElementById('nd-close').addEventListener('click',closeNangDong);
   document.getElementById('nd-ov').addEventListener('click',function(e){if(e.target===this)closeNangDong();});
+  bindIdStatsEvents(); // 📊 Đếm ID vào theo tháng
   document.getElementById('acctview-close').addEventListener('click',closeAccountView);
   document.getElementById('acctview-ov').addEventListener('click',function(e){if(e.target===this)closeAccountView();});
   document.getElementById('prosp-modal-x').addEventListener('click',closeProspectModal);
