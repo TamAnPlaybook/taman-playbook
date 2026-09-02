@@ -13075,7 +13075,8 @@ function bindIdStatsEvents(){
 var _zAlias={},_zPending=[],_zTessLoaded=false,_zTessLoading=null,_zWorker=null;
 var _zatt={buoi:'toi',imgs:[],dets:[],scanning:false,prog:0,done:0,pick:{}};
 // Chữ giao diện Zoom (KHÔNG phải tên người) — lọc bỏ dù OCR có sai lệch đôi chút
-var Z_CHROME=['audio','video','participants','participant','chat','react','reactions','reaction','share','sharing','host','cohost','tools','hosttools','settings','setting','more','leave','end','mute','unmute','muteall','view','views','speaker','gallery','recording','record','recuil','waiting','room','workplace','meeting','meetingchat','invite','security','apps','app','whiteboard','notes','note','camera','microphone','mic','stop','start','raise','hand','raisehand','ask','askto','screen','phone','pin','spotlight','rename','allow','admit','you','search','pinned','minimize','close','fullscreen','exit','enter','captions','caption','cc','live','transcript','poll','polls','breakout','profile','avatar','more','zoom'];
+var Z_CHROME=['audio','video','participants','participant','chat','react','reactions','reaction','share','sharing','host','cohost','tools','hosttools','settings','setting','more','leave','end','mute','unmute','muteall','view','views','speaker','gallery','recording','record','recuil','waiting','room','workplace','meeting','meetingchat','invite','security','apps','app','whiteboard','notes','note','camera','microphone','mic','stop','start','raise','hand','raisehand','ask','askto','screen','phone','pin','spotlight','rename','allow','admit','you','search','pinned','minimize','close','fullscreen','exit','enter','captions','caption','cc','live','transcript','poll','polls','breakout','profile','avatar','more','zoom','huy','cancel',
+  '2g','3g','4g','5g','lte','wifi','zalo']; // thanh trạng thái điện thoại (KHÔNG thêm 'huy'/'all' vì trùng tên thật)
 function loadZoomAliasLocal(){try{var s=nmGet('zoomalias');if(s){var o=JSON.parse(s)||{};_zAlias=o.alias||{};_zPending=Array.isArray(o.pending)?o.pending:[];}}catch(e){_zAlias={};_zPending=[];}}
 function saveZoomAlias(){var o={alias:_zAlias,pending:_zPending};try{nmSet('zoomalias',JSON.stringify(o));}catch(e){}if(fbDb&&fbUser)fsSet('zoomalias',o).catch(function(){});}
 function loadZoomAliasCloud(){if(!fbDb||!fbUser)return;fsGet('zoomalias').then(function(d){if(d){_zAlias=d.alias||_zAlias;_zPending=Array.isArray(d.pending)?d.pending:_zPending;try{nmSet('zoomalias',JSON.stringify({alias:_zAlias,pending:_zPending}));}catch(e){}if(document.getElementById('list-ngay'))renderDailyCombined();}}).catch(function(){});}
@@ -13163,6 +13164,8 @@ function _zCleanName(raw){
   var s=String(raw||'');
   s=s.replace(/\((?:host|co-?host|me|you|đồng tổ chức|guest|khách|khach)\)/gi,' ');
   s=s.replace(/\bhost\b|\bco-?host\b/gi,' ');
+  // bỏ số lẻ ở cuối (thường là biểu tượng mic/cam bị đọc nhầm thành "4", "9"…)
+  s=s.replace(/\s+\d{1,3}$/,'');
   // bỏ ký tự rác đầu/cuối, gộp khoảng trắng
   s=s.replace(/^[\s\-–—_/.,:;•·«»®©#>|=%^~\\[\]{}()<]+/,'').replace(/[\s\-–—_/.,:;•·«»®©#>|=%^~\\[\]{}()<]+$/,'');
   s=s.replace(/\s{2,}/g,' ').trim();
