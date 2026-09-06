@@ -1,4 +1,4 @@
-<!-- VERSION: v6.90-joindate -->
+<!-- VERSION: v6.91-diemdanh-gom -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -5416,8 +5416,9 @@ function renderDailyCombined(){
     if(!vis[m.id]||m.name===center.name)return;
     if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
   });
-  // v6.83 — Thứ tự thẻ: theo BUỔI có mặt (Sáng ✓ → Trưa ✓ → Tối ✓ → chưa có mặt); trong mỗi buổi
-  //          xếp tiếp: cấp bậc 3★→2★→1★→FS→chưa cấp · Tàu Vàng→Bạc→còn lại · tên A-B-C.
+  // v6.91 — Thứ tự thẻ: TẤT CẢ người ĐÃ ĐIỂM DANH (có ✓ bất kỳ buổi) GOM LIỀN NHAU lên đầu, KHÔNG
+  //          xen kẽ người chưa điểm danh. Trong nhóm đã điểm danh xếp tiếp theo BUỔI (Sáng ✓ → Trưa ✓
+  //          → Tối ✓); rồi cấp bậc 3★→2★→1★→FS→chưa cấp · Tàu Vàng→Bạc→còn lại · tên A-B-C.
   //          (Ghim ★ vẫn ưu tiên tuyệt đối lên đầu.)
   var _srtMeta={};
   function _metaOf(m){
@@ -5427,15 +5428,16 @@ function renderDailyCombined(){
     var shipW=(tn&&tn.ship==='vang')?2:((tn&&tn.ship==='bac')?1:0);
     // Buổi có mặt (ưu tiên buổi sớm nhất): Sáng=3 · Trưa=2 · Tối=1 · chưa có mặt=0
     var ses=(dGet(m.id,'sang')==='yes')?3:((dGet(m.id,'trua')==='yes')?2:((dGet(m.id,'toi')==='yes')?1:0));
-    mm={rk:rk,shipW:shipW,ses:ses};_srtMeta[m.id]=mm;return mm;
+    mm={rk:rk,shipW:shipW,ses:ses,act:ses>0?1:0};_srtMeta[m.id]=mm;return mm;
   }
   function srt(a,b){
     var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;
     var A=_metaOf(a),B=_metaOf(b);
-    if(A.ses!==B.ses)return B.ses-A.ses;             // 1) buổi: Sáng→Trưa→Tối→chưa có mặt
-    if(A.rk!==B.rk)return B.rk-A.rk;                 // 2) 3★→2★→1★→FS→chưa cấp
-    if(A.shipW!==B.shipW)return B.shipW-A.shipW;     // 3) Tàu Vàng→Bạc→còn lại
-    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 4) A-B-C
+    if(A.act!==B.act)return B.act-A.act;             // 1) ĐÃ ĐIỂM DANH (✓ bất kỳ buổi) gom liền nhau lên đầu
+    if(A.ses!==B.ses)return B.ses-A.ses;             // 2) trong nhóm đã điểm danh: Sáng→Trưa→Tối
+    if(A.rk!==B.rk)return B.rk-A.rk;                 // 3) 3★→2★→1★→FS→chưa cấp
+    if(A.shipW!==B.shipW)return B.shipW-A.shipW;     // 4) Tàu Vàng→Bạc→còn lại
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 5) A-B-C
   }
   leftArr.sort(srt);rightArr.sort(srt);
   function colHtml(arr,headTxt,actColor){
@@ -5445,7 +5447,7 @@ function renderDailyCombined(){
     arr.forEach(function(m,i){hh+=dailyComboCard(m,String(i+1));});
     return hh;
   }
-  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. Thứ tự thẻ: theo buổi có mặt <b>Sáng ✓ → Trưa ✓ → Tối ✓</b>; trong mỗi buổi xếp tiếp theo cấp bậc <b>3★→2★→1★→FS</b> → Tàu <b>Vàng→Bạc</b> → tên A-B-C.</div>';
+  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. Thứ tự thẻ: <b>người đã điểm danh (✓) gom liền nhau lên đầu</b>, không xen kẽ; trong nhóm đó xếp tiếp theo buổi <b>Sáng ✓ → Trưa ✓ → Tối ✓</b> → cấp bậc <b>3★→2★→1★→FS</b> → Tàu <b>Vàng→Bạc</b> → tên A-B-C.</div>';
   var centerMember=members.find(function(m){return m.name===center.name;});
   var h='';
   // v6.40 — bảng hiện diện tháng (dashboard) — nút mở/đóng, nhớ trạng thái trong phiên
