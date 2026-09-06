@@ -1,4 +1,4 @@
-<!-- VERSION: v6.91-diemdanh-gom -->
+<!-- VERSION: v6.92-diemdanh-tren-ghim -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -5416,10 +5416,12 @@ function renderDailyCombined(){
     if(!vis[m.id]||m.name===center.name)return;
     if(Ln[m.name])leftArr.push(m);else if(Rn[m.name])rightArr.push(m);
   });
-  // v6.91 — Thứ tự thẻ: TẤT CẢ người ĐÃ ĐIỂM DANH (có ✓ bất kỳ buổi) GOM LIỀN NHAU lên đầu, KHÔNG
-  //          xen kẽ người chưa điểm danh. Trong nhóm đã điểm danh xếp tiếp theo BUỔI (Sáng ✓ → Trưa ✓
-  //          → Tối ✓); rồi cấp bậc 3★→2★→1★→FS→chưa cấp · Tàu Vàng→Bạc→còn lại · tên A-B-C.
-  //          (Ghim ★ vẫn ưu tiên tuyệt đối lên đầu.)
+  // v6.92 — Thứ tự thẻ: TẤT CẢ người ĐÃ ĐIỂM DANH (có ✓ bất kỳ buổi) GOM LIỀN NHAU lên đầu, KHÔNG
+  //          xen kẽ người chưa điểm danh — ưu tiên TUYỆT ĐỐI, TRÊN cả Ghim ★. (Trước đây Ghim đứng trên
+  //          điểm danh nên 1 người được ghim mà CHƯA điểm danh sẽ chen vào giữa nhóm đã điểm danh → lỗi
+  //          "bị ngắt quãng" anh Huy báo.) Nay Ghim chỉ ưu tiên TRONG cùng nhóm (đã / chưa điểm danh).
+  //          Trong nhóm đã điểm danh xếp tiếp theo BUỔI (Sáng ✓ → Trưa ✓ → Tối ✓); rồi cấp bậc
+  //          3★→2★→1★→FS→chưa cấp · Tàu Vàng→Bạc→còn lại · tên A-B-C.
   var _srtMeta={};
   function _metaOf(m){
     var mm=_srtMeta[m.id];if(mm)return mm;
@@ -5431,13 +5433,13 @@ function renderDailyCombined(){
     mm={rk:rk,shipW:shipW,ses:ses,act:ses>0?1:0};_srtMeta[m.id]=mm;return mm;
   }
   function srt(a,b){
-    var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;
     var A=_metaOf(a),B=_metaOf(b);
-    if(A.act!==B.act)return B.act-A.act;             // 1) ĐÃ ĐIỂM DANH (✓ bất kỳ buổi) gom liền nhau lên đầu
-    if(A.ses!==B.ses)return B.ses-A.ses;             // 2) trong nhóm đã điểm danh: Sáng→Trưa→Tối
-    if(A.rk!==B.rk)return B.rk-A.rk;                 // 3) 3★→2★→1★→FS→chưa cấp
-    if(A.shipW!==B.shipW)return B.shipW-A.shipW;     // 4) Tàu Vàng→Bạc→còn lại
-    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 5) A-B-C
+    if(A.act!==B.act)return B.act-A.act;             // 1) ĐÃ ĐIỂM DANH gom liền nhau lên đầu — TRÊN cả Ghim
+    var p=(b.pinned?1:0)-(a.pinned?1:0);if(p)return p;// 2) Ghim ★ ưu tiên TRONG cùng nhóm (đã/chưa điểm danh)
+    if(A.ses!==B.ses)return B.ses-A.ses;             // 3) trong nhóm đã điểm danh: Sáng→Trưa→Tối
+    if(A.rk!==B.rk)return B.rk-A.rk;                 // 4) 3★→2★→1★→FS→chưa cấp
+    if(A.shipW!==B.shipW)return B.shipW-A.shipW;     // 5) Tàu Vàng→Bạc→còn lại
+    return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 6) A-B-C
   }
   leftArr.sort(srt);rightArr.sort(srt);
   function colHtml(arr,headTxt,actColor){
