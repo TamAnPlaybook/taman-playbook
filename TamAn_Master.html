@@ -9459,17 +9459,25 @@ function renderTree(){
       lines+='<rect x="'+(_cx-33)+'" y="'+(_y-11)+'" width="66" height="22" rx="11" fill="#455A64"/>'; // nh\u00e3n LU\u00d4N tr\u00ean tr\u1ee5c gi\u1eefa
       lines+='<text x="'+_cx+'" y="'+(_y+5)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="Arial">T\u1ea7ng '+_lv+'</text>';
     });
-    // 1 B\u1ea2NG t\u1ed5ng \u1edf tr\u1ee5c gi\u1eefa (d\u01b0\u1edbi g\u1ed1c): CH\u00caNH L\u1ec6CH S\u1ed0 T\u1ea6NG gi\u1eefa nh\u00e1nh Tr\u00e1i v\u00e0 Ph\u1ea3i
-    var _tdiff=Math.abs(_maxL-_maxR),_by=pos[_rb].y+NH+34;
+    // 1 B\u1ea2NG t\u1ed5ng: CH\u00caNH L\u1ec6CH S\u1ed0 T\u1ea6NG gi\u1eefa nh\u00e1nh Tr\u00e1i v\u00e0 Ph\u1ea3i \u2014 \u0111\u1eb7t GI\u1eeeA KHU V\u1ef0C C\u00d2N L\u1ec6CH (c\u00e1c t\u1ea7ng ch\u1ec9 1 b\u00ean
+    //          c\u00f3 ID), \u0111\u1ea9y sang PH\u00cdA TR\u1ed0NG (nh\u00e1nh n\u00f4ng h\u01a1n) cho d\u1ec5 nh\u1eadn ra, kh\u00f4ng \u0111\u00e8 nh\u00e3n "T\u1ea7ng N" \u1edf tr\u1ee5c gi\u1eefa.
+    var _tdiff=Math.abs(_maxL-_maxR);
+    var _yOf=function(t){return t*(NH+VGAP)+60+NH/2;}; // t\u00e2m d\u1ecdc c\u1ee7a 1 t\u1ea7ng
     if(_tdiff>0){
-      var _hint=(_maxL>_maxR?'Tr\u00e1i s\u00e2u h\u01a1n':'Ph\u1ea3i s\u00e2u h\u01a1n');
-      var _bw=Math.max(96,('C\u00f2n '+_tdiff+' c\u1eb7p').length*8+24);
-      lines+='<rect x="'+(_cx-_bw/2)+'" y="'+(_by-15)+'" width="'+_bw+'" height="30" rx="15" fill="#F4511E" stroke="#fff" stroke-width="2.5"/>';
-      lines+='<text x="'+_cx+'" y="'+(_by-1)+'" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff" font-family="Arial">C\u00f2n '+_tdiff+' c\u1eb7p</text>';
-      lines+='<text x="'+_cx+'" y="'+(_by+11)+'" text-anchor="middle" font-size="8.5" font-weight="700" fill="rgba(255,255,255,.95)" font-family="Arial">'+_hint+' ('+_maxL+' \u2194 '+_maxR+' t\u1ea7ng)</text>';
-    }else if(_maxL>0||_maxR>0){
-      lines+='<rect x="'+(_cx-78)+'" y="'+(_by-14)+'" width="156" height="28" rx="14" fill="#2E7D32" stroke="#fff" stroke-width="2.5"/>';
-      lines+='<text x="'+_cx+'" y="'+(_by+5)+'" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" font-family="Arial">\u2713 2 nh\u00e1nh c\u00e2n t\u1ea7ng</text>';
+      var _minT=Math.min(_maxL,_maxR),_maxT=Math.max(_maxL,_maxR);
+      var _by=(_yOf(_minT+1)+_yOf(_maxT))/2;            // gi\u1eefa c\u00e1c t\u1ea7ng ch\u1ec9 1 b\u00ean c\u00f3 ID
+      var _leftDeep=_maxL>_maxR;                         // nh\u00e1nh s\u00e2u h\u01a1n \u2192 \u0111\u1eb7t b\u1ea3ng \u1edf b\u00ean KIA (\u0111ang tr\u1ed1ng)
+      var _l1='C\u00f2n '+_tdiff+' c\u1eb7p',_l2='nh\u00e1nh '+(_leftDeep?'Tr\u00e1i':'Ph\u1ea3i')+' s\u00e2u h\u01a1n ('+_maxL+'\u2194'+_maxR+' t\u1ea7ng)';
+      var _bw=Math.round(Math.max(_l1.length*9,_l2.length*5.4)+26);
+      var _rx=_leftDeep?(_cx+38):(_cx-38-_bw);          // tr\u1ed1ng b\u00ean PH\u1ea2I n\u1ebfu Tr\u00e1i s\u00e2u h\u01a1n (v\u00e0 ng\u01b0\u1ee3c l\u1ea1i)
+      var _tcx=_rx+_bw/2;
+      lines+='<rect x="'+_rx+'" y="'+(_by-19)+'" width="'+_bw+'" height="38" rx="12" fill="#F4511E" stroke="#fff" stroke-width="3"/>';
+      lines+='<text x="'+_tcx+'" y="'+(_by-2)+'" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" font-family="Arial">'+_l1+'</text>';
+      lines+='<text x="'+_tcx+'" y="'+(_by+13)+'" text-anchor="middle" font-size="9" font-weight="700" fill="rgba(255,255,255,.96)" font-family="Arial">'+_l2+'</text>';
+    }else if(_maxL>0){
+      var _byg=_yOf(_maxL)+NH/2+30; // \u0111\u00e3 c\u00e2n \u2192 b\u1ea3ng xanh ngay d\u01b0\u1edbi t\u1ea7ng s\u00e2u nh\u1ea5t, tr\u00ean tr\u1ee5c gi\u1eefa
+      lines+='<rect x="'+(_cx-82)+'" y="'+(_byg-14)+'" width="164" height="28" rx="14" fill="#2E7D32" stroke="#fff" stroke-width="2.5"/>';
+      lines+='<text x="'+_cx+'" y="'+(_byg+5)+'" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" font-family="Arial">\u2713 2 nh\u00e1nh c\u00e2n t\u1ea7ng</text>';
     }
   }
   svg.innerHTML=lines;
@@ -12874,7 +12882,7 @@ function buildLegendHtml(){
   h+=row(ln('#2979FF',true),'<b>Vạch xanh dương đứt (dọc)</b>: ranh giới nhánh <b>Trái / Phải</b>.');
   h+=row(ln('#FFD600',true),'<b>Vạch vàng đứt (ngang)</b>: ranh giới <b>Tầng 3 / Tầng 4</b>.');
   h+=row(ln('#455A64',true),'<b>Vạch xám đứt (ngang) + nhãn "Tầng N" trên trục giữa</b>: mỗi tầng — nối 2 ID <b>gần trục giữa nhất</b> bên Trái ↔ Phải; tầng chỉ có 1 bên thì nhãn vẫn ở giữa, gạch nối sang bên có ID.');
-  h+=row('<span style="display:inline-block;background:#F4511E;color:#fff;font-size:9px;font-weight:800;border-radius:8px;padding:2px 6px;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)">Còn 3 cặp</span>','<b>Bảng cam "Còn X cặp" (dưới gốc, trên trục giữa)</b>: <b>chênh lệch số TẦNG</b> giữa nhánh Trái và Phải — X = |số tầng Trái − số tầng Phải| (nhánh sâu hơn bao nhiêu tầng). Cân bằng thì hiện bảng xanh <b>"✓ 2 nhánh cân tầng"</b>.');
+  h+=row('<span style="display:inline-block;background:#F4511E;color:#fff;font-size:9px;font-weight:800;border-radius:8px;padding:2px 6px;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)">Còn 3 cặp</span>','<b>Bảng cam "Còn X cặp"</b>: <b>chênh lệch số TẦNG</b> giữa nhánh Trái và Phải — X = |số tầng Trái − số tầng Phải|. Đặt <b>giữa khu vực còn lệch</b> (các tầng chỉ 1 bên có ID), đẩy sang phía trống cho dễ thấy. Cân bằng thì hiện bảng xanh <b>"✓ 2 nhánh cân tầng"</b>.');
   return h;
 }
 // ================================================================
