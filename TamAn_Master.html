@@ -9436,9 +9436,10 @@ function renderTree(){
   var _sepRel=4; // Tầng 4 TƯƠNG ĐỐI từ gốc đang hiển thị (focus tính như gốc)
   var sepY=_sepRel*(NH+VGAP)+60-VGAP/2; // khe giữa Tầng 3 và Tầng 4
   if(maxY>=_sepRel*(NH+VGAP)+60){
+    var _sepCx=(_rb&&pos[_rb])?(pos[_rb].x+NW/2):(W/2); // \u0111\u1eb7t nh\u00e3n ngay TR\u1ee4C GI\u1eeeA (kh\u00f4ng ph\u1ea3i gi\u1eefa khung)
     lines+='<line x1="0" y1="'+sepY+'" x2="'+W+'" y2="'+sepY+'" stroke="#FFD600" stroke-width="8" stroke-dasharray="14,7" opacity="1"/>';
-    lines+='<rect x="'+(W/2-110)+'" y="'+(sepY-13)+'" width="220" height="26" rx="13" fill="#FFD600"/>';
-    lines+='<text x="'+(W/2)+'" y="'+(sepY+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#5D4000" font-family="Arial">T\u1ea7ng 3 \u2191 \u2502 \u2193 T\u1ea7ng 4</text>';
+    lines+='<rect x="'+(_sepCx-110)+'" y="'+(sepY-13)+'" width="220" height="26" rx="13" fill="#FFD600"/>';
+    lines+='<text x="'+_sepCx+'" y="'+(sepY+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#5D4000" font-family="Arial">T\u1ea7ng 3 \u2191 \u2502 \u2193 T\u1ea7ng 4</text>';
   }
   // v6.93 \u2014 m\u1ed7i T\u1ea6NG: nh\u00e3n "T\u1ea7ng N" N\u1eb0M NGAY TR\u00caN TR\u1ee4C GI\u1eeeA + g\u1ea1ch \u0111\u1ee9t ngang n\u1ed1i sang ID g\u1ea7n tr\u1ee5c nh\u1ea5t
   //          (\u0111\u1ee7 2 b\u00ean \u2192 n\u1ed1i Tr\u00e1i\u2194Ph\u1ea3i qua tr\u1ee5c; ch\u1ec9 1 b\u00ean \u2192 nh\u00e3n v\u1eabn \u1edf gi\u1eefa, g\u1ea1ch n\u1ed1i sang b\u00ean c\u00f3 ID)
