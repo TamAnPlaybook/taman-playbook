@@ -1929,6 +1929,7 @@ a.gp-att-nm:hover{text-decoration:underline}
   <div id="fs-head">
     <b style="font-size:15px" id="fs-title">&#x26F6; Xem toàn trang</b>
     <span style="flex:1"></span>
+    <button class="tbtn" id="btn-fs-up" style="background:rgba(255,255,255,.16);color:white;border-color:transparent;display:none;margin-right:8px">&#11014;&#65039; Lên 1 tầng</button>
     <button class="tbtn" id="btn-fs-close" style="background:rgba(255,255,255,.12);color:white;border-color:transparent">&#10005; Đóng</button>
   </div>
   <div id="fs-host"></div>
@@ -12830,6 +12831,7 @@ function openFullscreen(){
   document.getElementById('fs-host').appendChild(src);
   var fn=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
   document.getElementById('fs-title').textContent='\u26F6 '+(fn?('Nhánh: '+fn.name):(currentTreeMode==='binary'?'Cây nhị phân':'Hệ mặt trời'));
+  updateFsTitle();
   document.getElementById('fs-overlay').classList.add('open');
   document.body.classList.add('fs-mode');
   setTimeout(function(){if(currentTreeMode==='binary')treeFit();else starFit();},80);
@@ -14797,6 +14799,7 @@ function bindStatic(){
   document.getElementById('btn-import-branch').addEventListener('click',importSubtree);
   var _bfs=document.getElementById('btn-fullscreen');if(_bfs)_bfs.addEventListener('click',openFullscreen);
   document.getElementById('btn-fs-close').addEventListener('click',closeFullscreen);
+  var _bup=document.getElementById('btn-fs-up');if(_bup)_bup.addEventListener('click',fsGoUp);
   // v7 — điều hướng Tutorial nút màn hình
   var _tn=document.getElementById('tut-next');if(_tn)_tn.addEventListener('click',function(){_tutNav(1);});
   var _tp=document.getElementById('tut-prev');if(_tp)_tp.addEventListener('click',function(){_tutNav(-1);});
@@ -14883,8 +14886,37 @@ function focusSubtree(nid){
   focusNodeId=nid;
   closeNodeModal();
   renderCurrentTree();
+  updateFsTitle();
   flashNode(nid);
   showToast('🌳 Đang xem cả cây từ: '+node.name);
+}
+function updateFsTitle(){
+  // Cập nhật tiêu đề thanh focus + bật/ẩn & đổi nhãn nút "Lên 1 tầng / Lên F"
+  var t=document.getElementById('fs-title');
+  var fn=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
+  if(t)t.textContent='⛶ '+(fn?('Nhánh: '+fn.name):(currentTreeMode==='binary'?'Cây nhị phân':'Hệ mặt trời'));
+  var up=document.getElementById('btn-fs-up');
+  if(up){
+    up.style.display=fn?'':'none'; // chỉ hiện khi đang focus 1 ID
+    up.innerHTML=(currentTreeMode==='binary')?'⬆️ Lên 1 tầng':'⬆️ Lên F';
+    up.title=(currentTreeMode==='binary')?'Về ID đặt liền trên (lên 1 tầng)':'Về tuyến trên bảo trợ (lên 1 F)';
+  }
+}
+function fsGoUp(){
+  // Nhị phân: lên 1 tầng = ID cha (parentId). Mặt trời: lên F = tuyến trên bảo trợ (f1of).
+  if(!focusNodeId)return;
+  var n=treeNodes.find(function(x){return x.id===focusNodeId;});if(!n)return;
+  var target=null;
+  if(currentTreeMode==='binary'){
+    target=n.parentId?treeNodes.find(function(x){return x.id===n.parentId;}):null;
+    if(!target){showToast('Đã ở ID gốc — không còn tầng trên.');return;}
+  }else{
+    var map=nameMap();
+    target=n.f1of?map[n.f1of]:null;
+    if(!target||target.id===n.id){showToast('Đã ở đầu tuyến bảo trợ — không còn F trên.');return;}
+  }
+  focusSubtree(target.id);
+  updateFsTitle();
 }
 function treeViewActive(){
   return document.getElementById('fs-overlay').classList.contains('open')
