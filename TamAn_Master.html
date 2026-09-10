@@ -1176,6 +1176,10 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 table.adash{border-collapse:collapse;font-size:11px;width:100%}
 table.adash th,table.adash td{border:1px solid #F0EDE2;padding:2px 3px;text-align:center}
 table.adash th{background:#FAF8F2;color:#666;font-weight:700}
+/* v6.93 — cột Chủ Nhật tô màu xanh dương */
+table.adash th.adash-sun{background:#E3F2FD;color:#1565C0}
+table.adash td.adash-sun{background:#F1F8FE}
+table.adash th.adash-sun.adash-dayh:hover{background:#CDE6FA;color:#0D47A1}
 table.adash .adash-nm{position:sticky;left:0;background:#fff;text-align:left;min-width:104px;max-width:150px;font-weight:700;font-size:12px;z-index:2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 table.adash th.adash-nm{background:#FAF8F2;z-index:3}
 table.adash .adash-ord{display:inline-block;min-width:16px;color:#B8860B;font-weight:800;font-size:11px}
@@ -5352,7 +5356,7 @@ function attDashHtml(list){
     hh+='<span class="adash-nmtxt">'+escHtml(it.m.name)+'</span></td>';
     for(var d=1;d<=nDays;d++){
       var v=it.days[d-1];
-      var cls=[];if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
+      var cls=[];if(new Date(y,mo,d).getDay()===0)cls.push('adash-sun');if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
       hh+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><div class="ad-c">';
       for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
       hh+='</div></td>';
@@ -5367,7 +5371,7 @@ function attDashHtml(list){
   if(selD)h+='<div class="adash-hint">📅 Đang xem ngày <b>'+selD+'/'+(mo+1)+'</b> — ID có mặt (≥1 buổi ✓) xếp lên đầu theo cấp bậc <b>3★ → 2★ → 1★ → FS</b>, tên sáng màu. Bấm lại số ngày <b>'+selD+'</b> để bỏ chọn.</div>';
   h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){
-    var thc='adash-dayh';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
+    var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
     h+='<th class="'+thc+'" data-attdash-selday="'+d2+'" title="Bấm để xem ai có mặt ngày '+d2+'">'+d2+'</th>';
   }
   h+='<th>&sum;</th></tr>';
