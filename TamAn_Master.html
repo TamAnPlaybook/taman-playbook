@@ -9437,6 +9437,26 @@ function renderTree(){
     lines+='<rect x="'+(W/2-110)+'" y="'+(sepY-13)+'" width="220" height="26" rx="13" fill="#FFD600"/>';
     lines+='<text x="'+(W/2)+'" y="'+(sepY+5)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#5D4000" font-family="Arial">T\u1ea7ng 3 \u2191 \u2502 \u2193 T\u1ea7ng 4</text>';
   }
+  // v6.93 \u2014 m\u1ed7i T\u1ea6NG: g\u1ea1ch \u0111\u1ee9t ngang n\u1ed1i 2 ID g\u1ea7n TR\u1ee4C GI\u1eeeA nh\u1ea5t (Tr\u00e1i \u2194 Ph\u1ea3i) + nh\u00e3n "T\u1ea7ng N" tr\u00ean g\u1ea1ch
+  if(_rb&&pos[_rb]){
+    var _tierIn={}; // lvl -> {L:{x:m\u00e9p ph\u1ea3i,y}, R:{x:m\u00e9p tr\u00e1i,y}}
+    treeNodes.forEach(function(n){
+      var p=pos[n.id];if(!p||n.id===_rb)return;
+      var _lv=focusNodeId?relLevelOf(n.id,_rb):computeLevel2(n.id);
+      if(_lv<1)return;
+      var _sd=rootSideOf(n.id,_rb);if(_sd!=='L'&&_sd!=='R')return;
+      var _cy=p.y+NH/2,_t=_tierIn[_lv]||(_tierIn[_lv]={});
+      if(_sd==='L'){var _re=p.x+NW;if(!_t.L||_re>_t.L.x)_t.L={x:_re,y:_cy};} // Tr\u00e1i: m\u00e9p PH\u1ea2I g\u1ea7n tr\u1ee5c nh\u1ea5t
+      else{var _le=p.x;if(!_t.R||_le<_t.R.x)_t.R={x:_le,y:_cy};}            // Ph\u1ea3i: m\u00e9p TR\u00c1I g\u1ea7n tr\u1ee5c nh\u1ea5t
+    });
+    Object.keys(_tierIn).map(Number).sort(function(a,b){return a-b;}).forEach(function(_lv){
+      var _t=_tierIn[_lv];if(!_t.L||!_t.R)return; // c\u1ea7n c\u1ea3 2 b\u00ean m\u1edbi n\u1ed1i \u0111\u01b0\u1ee3c
+      var _y=_t.L.y,_mx=(_t.L.x+_t.R.x)/2;
+      lines+='<line x1="'+_t.L.x+'" y1="'+_y+'" x2="'+_t.R.x+'" y2="'+_y+'" stroke="#455A64" stroke-width="2.5" stroke-dasharray="8,6" opacity="0.8"/>';
+      lines+='<rect x="'+(_mx-33)+'" y="'+(_y-11)+'" width="66" height="22" rx="11" fill="#455A64"/>';
+      lines+='<text x="'+_mx+'" y="'+(_y+5)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="Arial">T\u1ea7ng '+_lv+'</text>';
+    });
+  }
   svg.innerHTML=lines;
   var h='';
   var lvlSet={};
@@ -12838,6 +12858,7 @@ function buildLegendHtml(){
   h+=row(ln('#555',true),'<b>Nét ĐỨT</b>: <b>khách / phả hệ</b> — đặt dưới một người khác với người bảo trợ.');
   h+=row(ln('#2979FF',true),'<b>Vạch xanh dương đứt (dọc)</b>: ranh giới nhánh <b>Trái / Phải</b>.');
   h+=row(ln('#FFD600',true),'<b>Vạch vàng đứt (ngang)</b>: ranh giới <b>Tầng 3 / Tầng 4</b>.');
+  h+=row(ln('#455A64',true),'<b>Vạch xám đứt (ngang) + nhãn "Tầng N"</b>: nối 2 ID <b>gần trục giữa nhất</b> của bên Trái ↔ Phải ở tầng đó — đánh dấu mỗi tầng.');
   return h;
 }
 // ================================================================
