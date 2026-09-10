@@ -9151,7 +9151,9 @@ function renderFocusBar(){
   h+='<span>\u2B50 t\u00edch c\u1ef1c: <b style="color:#C8A84B">'+starCnt+'</b></span>';
   h+='<span style="display:inline-flex;gap:4px;align-items:center">ID m\u1edbi t\u1eeb <input id="fr-from" class="nmod-inp" style="width:62px;padding:4px 6px;font-size:13px" placeholder="1.25"> \u0111\u1ebfn <input id="fr-to" class="nmod-inp" style="width:62px;padding:4px 6px;font-size:13px" placeholder="6.25">';
   h+='<button class="btn btn-g btn-sm" id="btn-fr-calc" style="padding:5px 11px;font-size:12px">T\u00ednh</button><b id="fr-result" style="color:#1A7A5E"></b></span>';
-  h+='<button class="btn btn-o btn-sm" id="btn-exit-focus" style="padding:5px 11px;font-size:12px;margin-left:auto">\u2715 Xem to\u00e0n b\u1ed9</button>';
+  var _upLbl=(currentTreeMode==='binary')?'\u2b06\ufe0f L\u00ean 1 t\u1ea7ng':'\u2b06\ufe0f L\u00ean F';
+  h+='<button class="btn btn-d btn-sm" id="btn-focus-up" style="padding:5px 11px;font-size:12px;margin-left:auto" title="'+((currentTreeMode==='binary')?'V\u1ec1 ID \u0111\u1eb7t li\u1ec1n tr\u00ean (l\u00ean 1 t\u1ea7ng)':'V\u1ec1 tuy\u1ebfn tr\u00ean b\u1ea3o tr\u1ee3 (l\u00ean 1 F)')+'">'+_upLbl+'</button>';
+  h+='<button class="btn btn-o btn-sm" id="btn-exit-focus" style="padding:5px 11px;font-size:12px;margin-left:8px">\u2715 Xem to\u00e0n b\u1ed9</button>';
   fb.style.display='flex';
   fb.innerHTML=h;
 }
@@ -12651,6 +12653,7 @@ document.addEventListener('click',function(e){
     var fnid=t.getAttribute('data-focus-nid');
     focusNodeId=(focusNodeId===fnid)?null:fnid;
     renderCurrentTree();
+    updateFsTitle();
     return;
   }
   if(e.target.id==='btn-add-lk'){
@@ -12688,6 +12691,7 @@ document.addEventListener('click',function(e){
   if(e.target.id==='btn-exit-focus'){
     focusNodeId=null;renderCurrentTree();return;
   }
+  if(e.target.closest&&e.target.closest('#btn-focus-up')){fsGoUp();return;}
   if(e.target.id==='btn-fr-calc'){calcFocusRange();return;}
 
   // Guide toggle
