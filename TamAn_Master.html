@@ -1,4 +1,4 @@
-<!-- VERSION: v6.92-diemdanh-tren-ghim -->
+<!-- VERSION: v6.93-cay-mo-uoc -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -354,6 +354,7 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .nm-badge{position:absolute;left:50%;transform:translateX(-50%);z-index:9;font-family:Arial;font-weight:800;font-size:8.5px;letter-spacing:.2px;line-height:1.4;border-radius:8px;padding:1px 6px;color:#fff;white-space:nowrap;animation:nmbadge .9s ease-in-out infinite;box-shadow:0 1px 5px rgba(0,0,0,.45)}
 .nm-badge.cur{background:linear-gradient(135deg,#00C853,#00E676)}
 .nm-badge.prev{background:linear-gradient(135deg,#FF8F00,#FFB300)}
+/* v6.93 — CÂY MƠ ƯỚC: kế hoạch ID riêng (bản sao độc lập của Nhị phân) + dấu hiệu "đúng kế hoạch" trên cây thật */.dream-pill{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);z-index:9;font-family:Arial;font-weight:800;font-size:8.5px;line-height:1.4;border-radius:8px;padding:1px 7px;color:#fff;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.35);pointer-events:none}.dream-pill.plan{background:linear-gradient(135deg,#7B1FA2,#AB47BC)}.dream-pill.done{background:linear-gradient(135deg,#2E7D32,#43A047)}.dream-pill.real{background:linear-gradient(135deg,#6A1B9A,#C8A84B)}.tnode-box.dream-plan{border-style:dashed!important}.tnode-box.dream-done{box-shadow:0 0 0 3px #43A047,0 2px 8px rgba(0,0,0,.12)!important}#dream-bar{display:none;align-items:center;gap:8px;flex-wrap:wrap;background:linear-gradient(90deg,#F3E5F5,#FFF8E1);border-bottom:2px solid #CE93D8;padding:7px 10px;font-size:12.5px;color:#4A148C}#dream-bar b{color:#6A1B9A}
 @keyframes nmspark{0%,100%{opacity:.2;transform:scale(.65) rotate(-12deg)}50%{opacity:1;transform:scale(1.2) rotate(18deg)}}
 .nm-spark{position:absolute;z-index:9;font-size:12px;pointer-events:none;animation:nmspark 1s ease-in-out infinite;text-shadow:0 0 4px rgba(255,255,255,.9)}
 
@@ -1603,6 +1604,7 @@ a.gp-att-nm:hover{text-decoration:underline}
       <button class="tbtn gold" id="btn-fullscreen" title="Toàn trang" aria-label="Toàn trang" style="font-size:17px;line-height:1">&#x26F6;</button>
       <button class="stab on" data-treemode="binary">&#127795; Nhị phân</button>
       <button class="stab" data-treemode="star">&#11088; Mặt trời</button>
+      <button class="stab" data-treemode="dream">&#127776; Cây mơ ước</button>
       <button class="tbtn" id="btn-tzoom-in">+</button>
       <button class="tbtn" id="btn-tzoom-out">&minus;</button>
       <button class="tbtn" id="btn-legend" style="background:#EEF2FF;border-color:#C7D2FE;color:#3730A3">&#10067; Chú thích</button>
@@ -1619,6 +1621,7 @@ a.gp-att-nm:hover{text-decoration:underline}
       <div id="tree-search-sug"></div>
     </div>
     <div id="branch-stats" style="background:white;border-bottom:1px solid #E8E8E8;padding:6px 10px;font-size:12px;line-height:2"></div>
+    <div id="dream-bar"></div>
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="tree-binary">
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
@@ -4393,6 +4396,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v693-cay-mo-uoc', ver:'6.93', icon:'🌠', title:'Sơ đồ có thêm thẻ “Cây mơ ước”',
+    desc:'Trong <b>Sơ đồ</b>, bấm thẻ <b>🌠 Cây mơ ước</b> để lên kế hoạch <b>ID cụ thể, con người cụ thể</b> — đầy đủ tính năng như <b>Nhị phân</b> (thêm/sửa/xoá, tìm, lọc, thăng tiến, xuất nhánh...) nhưng lưu <b>riêng</b>, không ảnh hưởng cây thật. Bấm <b>📋 Chép từ Nhị phân làm nền</b> để bắt đầu từ cây hiện tại. Khi kế hoạch thành sự thật, mở ID đó → <b>🌟 Thành hiện thực</b>, chọn ID thật + ghi chú “tầm nhìn → thực tế”; cây <b>Nhị phân</b> sẽ hiện dấu <b>🌠 Đúng kế hoạch</b> ở ID thật đó.' },
   { id:'v689-sk-admin', ver:'6.89', icon:'🩺', title:'Kết quả SK gọn tên · Quản trị gom ID mới theo Leader',
     desc:'Danh sách <b>🩺 Kết quả SK</b> chỉnh lại tên cho gọn &amp; thống nhất (giữ chi tiết từng tình trạng, viết tắt UT). Dành cho <b>quản trị viên</b>: mục <b>Mã mời</b> nay gộp chung với <b>Quản trị viên</b> (mã đã dùng tự ẩn hẳn), và <b>Hộp thư ID mới toàn đội</b> nay <b>phân vùng theo Team của Leader 1★/2★/3★</b> gần nhất ở tuyến trên — nhìn phát biết ID mới thuộc nhánh Leader nào.' },
   { id:'v688-sk-upload', ver:'6.88', icon:'📷', title:'Kết quả SK: tải thẳng ảnh/video từ máy — không cần dán link',
@@ -4676,7 +4681,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadDreamTreeCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -4724,6 +4729,7 @@ function loadBranchFeature(){
 }
 function doLogout(){
   fbSignOut().then(function(){
+    dreamMode=false;_dreamSaved=null;try{updateDreamUI();}catch(e){} // v6.93
     NS='';members=[];treeNodes=[];
     stopBanner(); // v6.5 — dừng banner khi thoát
     stopLocalMirrorWatch(); // v6.60 — gỡ listener real-time điểm danh/KPI/kỹ năng
@@ -4975,6 +4981,7 @@ async function fsGetUserMirror(uid){
 }
 
 function saveMembers(){
+  if(dreamMode){saveDreamTree();return;} // v6.93 — đang ở Cây mơ ước → ghi kho riêng, không đụng TV thật
   nmSet('members',JSON.stringify(members));
   if(fbDb&&fbUser)fsSet('members',{members:members}).catch(function(){});
 }
@@ -4983,6 +4990,7 @@ function loadMembers(){
   if(fbDb&&fbUser){
     fsGet('members').then(function(d){
       if(d&&d.members&&d.members.length){
+        if(dreamMode&&_dreamSaved){_dreamSaved.members=d.members;nmSet('members',JSON.stringify(d.members));return;} // v6.93
         members=d.members;nmSet('members',JSON.stringify(members));
         renderAll();updateStats();populateBcSel();
       }
@@ -4996,6 +5004,7 @@ function loadGuests(){try{var s=nmGet('guests_v1');var a=s?JSON.parse(s):[];retu
 function saveGuests(a){nmSet('guests_v1',JSON.stringify(a));if(fbDb&&fbUser)fsSet('guests',{guests:a}).catch(function(){});}
 function loadGuestsCloud(){if(!fbDb||!fbUser)return;fsGet('guests').then(function(d){if(d&&d.guests){nmSet('guests_v1',JSON.stringify(d.guests));renderDailyCombined();updateStats();}}).catch(function(){});}
 function saveTree2(){
+  if(dreamMode){saveDreamTree();return;} // v6.93 — đang ở Cây mơ ước → ghi kho riêng, không đụng cây thật
   nmSet('tree_v2',JSON.stringify(treeNodes));
   if(fbDb&&fbUser)fsSet('tree',{nodes:treeNodes}).catch(function(){});
 }
@@ -5004,6 +5013,7 @@ function loadTree2(){
   if(fbDb&&fbUser){
     fsGet('tree').then(function(d){
       if(d&&d.nodes){
+        if(dreamMode&&_dreamSaved){_dreamSaved.treeNodes=d.nodes;nmSet('tree_v2',JSON.stringify(d.nodes));return;} // v6.93
         treeNodes=d.nodes;nmSet('tree_v2',JSON.stringify(treeNodes));
         syncTreeToMembers(true);
         if(currentTreeMode==='binary')renderTree();else renderStarChart();
@@ -5011,6 +5021,183 @@ function loadTree2(){
       }
     }).catch(function(){});
   }
+}
+
+// ================================================================
+// v6.93 — CÂY MƠ ƯỚC: bản sao ĐỘC LẬP của cây Nhị phân để lên kế hoạch ID / con người cụ thể.
+//   Cơ chế: mở thẻ → tạm HOÁN treeNodes/members sang dữ liệu mơ ước → dùng lại 100% bộ vẽ/sửa/tìm/lọc của Nhị phân;
+//   saveTree2/saveMembers tự chuyển sang kho riêng (local 'dreamtree_v1' + Firestore users/{uid}/data/dreamtree).
+//   Rời thẻ (đổi thẻ / đổi module / chế độ xem / đăng xuất) → trả lại dữ liệu thật y nguyên.
+//   Nút "🌟 Thành hiện thực" ở mỗi ID mơ ước → liên kết ID thật (realized.realId) → cây Nhị phân hiện dấu 🌠 "Đúng kế hoạch".
+// ================================================================
+var dreamMode=false,_dreamSaved=null;
+function loadDreamTree(){
+  try{
+    var s=nmGet('dreamtree_v1');var d=s?JSON.parse(s):null;
+    return {nodes:(d&&Array.isArray(d.nodes))?d.nodes:[],members:(d&&Array.isArray(d.members))?d.members:[]};
+  }catch(e){return {nodes:[],members:[]};}
+}
+function saveDreamTree(){
+  var d=dreamMode?{nodes:treeNodes,members:members}:loadDreamTree();
+  nmSet('dreamtree_v1',JSON.stringify(d));
+  if(fbDb&&fbUser)fsSet('dreamtree',{nodes:d.nodes,members:d.members}).catch(function(){});
+}
+function loadDreamTreeCloud(){
+  if(!fbDb||!fbUser)return;
+  fsGet('dreamtree').then(function(d){
+    if(!d||!Array.isArray(d.nodes))return;
+    var mems=Array.isArray(d.members)?d.members:[];
+    nmSet('dreamtree_v1',JSON.stringify({nodes:d.nodes,members:mems}));
+    var onTree=document.getElementById('page-tree')&&document.getElementById('page-tree').classList.contains('on');
+    if(dreamMode){treeNodes=d.nodes;members=mems;try{clearRankMemo();}catch(e){}if(onTree)renderTree();}
+    else if(onTree&&currentTreeMode==='binary')renderTree(); // cập nhật dấu 🌠 trên cây thật
+  }).catch(function(){});
+}
+function enterDreamMode(){
+  if(dreamMode||viewOnlyMode)return;
+  _dreamSaved={treeNodes:treeNodes,members:members,focusNodeId:focusNodeId,disc:discFilter};
+  var d=loadDreamTree();
+  treeNodes=d.nodes;members=d.members;focusNodeId=null;discFilter=null;
+  dreamMode=true;
+  try{clearRankMemo();}catch(e){}
+}
+function exitDreamMode(){
+  if(!dreamMode)return;
+  var s=_dreamSaved||{};
+  treeNodes=s.treeNodes||[];members=s.members||[];focusNodeId=s.focusNodeId||null;discFilter=s.disc||null;
+  dreamMode=false;_dreamSaved=null;
+  try{clearRankMemo();}catch(e){}
+  try{updateDreamUI();}catch(e){}
+  document.querySelectorAll('[data-treemode]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-treemode')===currentTreeMode);});
+  try{renderAll();updateStats();populateBcSel();}catch(e){}
+}
+// Cây thật đang dùng (kể cả khi đang mở Cây mơ ước)
+function _realTreeNodes(){return (dreamMode&&_dreamSaved)?(_dreamSaved.treeNodes||[]):treeNodes;}
+// {id ID thật: node mơ ước đã thành hiện thực}
+function dreamRealizedMap(){
+  var m={};
+  var nodes=dreamMode?treeNodes:loadDreamTree().nodes;
+  nodes.forEach(function(n){if(n&&n.realized&&n.realized.realId)m[n.realized.realId]=n;});
+  return m;
+}
+function _dreamFmtDate(iso){try{var d=new Date(iso);return isNaN(d)?'':(d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear());}catch(e){return '';}}
+function updateDreamUI(){
+  var bar=document.getElementById('dream-bar');if(!bar)return;
+  if(!dreamMode){bar.style.display='none';bar.innerHTML='';return;}
+  var plan=0,done=0;
+  treeNodes.forEach(function(n){if(n.realized)done++;else if(!n.fromReal)plan++;});
+  var h='<span style="font-size:16px">🌠</span><span><b>Cây mơ ước</b> — kế hoạch riêng, KHÔNG ảnh hưởng cây thật</span>';
+  h+='<span style="background:#fff;border:1px solid #CE93D8;border-radius:10px;padding:1px 8px;font-weight:700">🎯 '+plan+' ID kế hoạch · ✅ '+done+' thành hiện thực</span>';
+  h+='<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">';
+  if(!treeNodes.some(function(n){return !n.parentId;}))h+='<button class="tbtn" data-dream-addroot="1" style="background:#6A1B9A;border-color:#6A1B9A;color:#fff">🌱 Thêm ID gốc</button>';
+  h+='<button class="tbtn" data-dream-copy="1" style="background:#fff;border-color:#CE93D8;color:#6A1B9A">📋 Chép từ Nhị phân làm nền</button>';
+  h+='</span>';
+  bar.innerHTML=h;bar.style.display='flex';
+}
+function dreamCopyFromReal(){
+  if(!dreamMode||!_dreamSaved)return;
+  var real=_dreamSaved.treeNodes||[];
+  if(!real.length){showToast('Cây Nhị phân đang trống — hãy bấm "🌱 Thêm ID gốc"');return;}
+  if(treeNodes.length&&!confirm('Cây mơ ước đang có '+treeNodes.length+' ID. Chép lại từ Nhị phân sẽ THAY THẾ toàn bộ kế hoạch hiện tại (kể cả dấu thành hiện thực). Tiếp tục?'))return;
+  treeNodes=real.map(function(n){var c=JSON.parse(JSON.stringify(n));c.fromReal=true;delete c.realized;delete c.planAt;return c;});
+  members=[];focusNodeId=null;
+  saveDreamTree();
+  renderTree();showAndFitTree();
+  showToast('✓ Đã chép '+treeNodes.length+' ID từ Nhị phân làm nền — bấm (+) ở ô trống để thêm ID kế hoạch');
+}
+// Khối thông tin mơ ước trong popup chi tiết ID (cả 2 cây)
+function dreamNodeViewHtml(n){
+  var h='';
+  if(dreamMode){
+    var r=n.realized;
+    h+='<div style="border:1.5px solid '+(r?'#81C784':'#CE93D8')+';background:'+(r?'#F1F8E9':'#FAF5FC')+';border-radius:12px;padding:10px 12px;margin-bottom:10px">';
+    if(r){
+      h+='<div style="font-weight:800;color:#2E7D32">✅ Đã thành hiện thực'+(r.at?' · '+_dreamFmtDate(r.at):'')+'</div>';
+      h+='<div style="font-size:12.5px;color:#444;margin-top:3px">Tầm nhìn ước mơ → thực tế: <b>'+escHtml(r.realName||'')+'</b>'+(r.realCode?' (Mã: '+escHtml(r.realCode)+')':'')+' trên cây Nhị phân</div>';
+      if(r.note)h+='<div style="font-size:12.5px;color:#666;white-space:pre-wrap;margin-top:3px">📝 '+escHtml(r.note)+'</div>';
+    }else if(n.fromReal){
+      h+='<div style="font-weight:700;color:#6A1B9A">📋 ID chép từ Nhị phân (đã có thật)</div>';
+    }else{
+      h+='<div style="font-weight:800;color:#6A1B9A">🎯 ID kế hoạch (tầm nhìn ước mơ)'+(n.planAt?' · lập ngày '+_dreamFmtDate(n.planAt):'')+'</div>';
+    }
+    if(!viewOnlyMode)h+='<button class="btn btn-sm" data-dream-real="'+n.id+'" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#6A1B9A,#C8A84B);color:#fff;border:none;font-weight:800">🌟 '+(r?'Sửa ghi nhận thành hiện thực':'Thành hiện thực')+'</button>';
+    h+='</div>';
+  }else{
+    var dm=dreamRealizedMap()[n.id];
+    if(dm){
+      var rr=dm.realized||{};
+      h+='<div style="border:1.5px solid #CE93D8;background:linear-gradient(90deg,#F3E5F5,#FFF8E1);border-radius:12px;padding:10px 12px;margin-bottom:10px">';
+      h+='<div style="font-weight:800;color:#6A1B9A">🌠 Đúng kế hoạch từ Cây mơ ước</div>';
+      h+='<div style="font-size:12.5px;color:#444;margin-top:3px">Kế hoạch: <b>'+escHtml(dm.name||'')+'</b>'+(dm.planAt?' · lập ngày '+_dreamFmtDate(dm.planAt):'')+(dm.joinDate?' · dự kiến vào '+escHtml(dm.joinDate):'')+'</div>';
+      h+='<div style="font-size:12.5px;color:#2E7D32;font-weight:700;margin-top:2px">✅ Thành hiện thực'+(rr.at?' ngày '+_dreamFmtDate(rr.at):'')+'</div>';
+      if(rr.note)h+='<div style="font-size:12.5px;color:#666;white-space:pre-wrap;margin-top:3px">📝 '+escHtml(rr.note)+'</div>';
+      h+='</div>';
+    }
+  }
+  return h;
+}
+function openDreamRealize(nid){
+  if(!dreamMode||viewOnlyMode)return;
+  var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
+  var real=_realTreeNodes();
+  var r=n.realized||{};
+  var pre=r.realId||'';
+  if(!pre){ // đoán sẵn: cùng id (chép từ Nhị phân) → cùng Mã ID → cùng tên
+    var c=noAccent(String(n.idCode||'').trim()),nm=noAccent(String(n.name||'').trim());
+    var g=real.find(function(x){return x.id===n.id;})
+      ||(c?real.find(function(x){return noAccent(String(x.idCode||'').trim())===c;}):null)
+      ||(nm?real.find(function(x){return noAccent(String(x.name||'').trim())===nm;}):null);
+    if(g)pre=g.id;
+  }
+  var par=n.parentId?treeNodes.find(function(x){return x.id===n.parentId;}):null;
+  activeNodeModal={mode:'dream-real',nodeId:nid};
+  var opts='';
+  real.slice().sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'vi');}).forEach(function(x){
+    opts+='<option value="'+x.id+'"'+(x.id===pre?' selected':'')+'>'+escHtml(x.name||x.id)+(x.idCode?' · '+escHtml(x.idCode):'')+'</option>';
+  });
+  var h='<div style="background:#FAF5FC;border:1.5px solid #CE93D8;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:13px;line-height:1.6">';
+  h+='<div style="font-weight:800;color:#6A1B9A">🎯 Tầm nhìn ước mơ (kế hoạch)</div>';
+  h+='<div>ID: <b>'+escHtml(n.name||'')+'</b>'+(n.idCode?' · Mã: '+escHtml(n.idCode):'')+'</div>';
+  if(par)h+='<div>Đặt dưới: <b>'+escHtml(par.name)+'</b> ('+(n.side==='L'?'Trái':'Phải')+')</div>';
+  if(n.joinDate)h+='<div>Dự kiến vào ID: <b>'+escHtml(n.joinDate)+'</b></div>';
+  if(n.planAt)h+='<div>Lập kế hoạch: '+_dreamFmtDate(n.planAt)+'</div>';
+  h+='</div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">ID thật trên Nhị phân <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Người/ID đã vào thực tế đúng như kế hoạch</div></div>';
+  h+='<div style="display:flex;flex-direction:column"><input id="dr-real-filter" class="sel-filter" style="width:190px;margin-bottom:4px" placeholder="🔍 Gõ tìm tên...">';
+  h+='<select id="dr-real-sel" class="nmod-inp" style="width:190px"><option value="">— Chọn ID thật —</option>'+opts+'</select></div></div>';
+  h+='<div class="nmod-row" style="flex-direction:column;align-items:flex-start;gap:6px"><div class="nmod-lbl">📝 Ghi chú: Tầm nhìn ước mơ → Thực tế</div>';
+  h+='<textarea id="dr-note" style="width:100%;border:1.5px solid #E0E0E0;border-radius:9px;padding:9px;font-size:14px;font-family:Arial;outline:none;resize:vertical;min-height:64px" placeholder="vd: Dự kiến T8, thực tế vào T9 — nhờ buổi chia sẻ ở CLB...">'+escHtml(r.note||'')+'</textarea></div>';
+  if(r.at)h+='<button class="btn btn-o btn-sm" data-dream-unreal="'+n.id+'" style="width:100%;margin-top:6px">↩️ Huỷ đánh dấu thành hiện thực</button>';
+  if(!real.length)h+='<div style="font-size:12px;color:#C62828;margin-top:6px">Cây Nhị phân chưa có ID nào để liên kết.</div>';
+  document.getElementById('nmod-title').textContent='🌟 Thành hiện thực: '+(n.name||'');
+  document.getElementById('nmod-body').innerHTML=h;
+  document.getElementById('nmod-save-btn').style.display='block';
+  document.getElementById('nmod-save-btn').textContent='✓ Xác nhận thành hiện thực';
+  document.getElementById('nmod-del-btn').style.display='none';
+  document.getElementById('nmod-ov').classList.add('open');
+  try{attachSelFilter(document.getElementById('dr-real-filter'),document.getElementById('dr-real-sel'));}catch(e){}
+}
+function saveDreamRealize(){
+  var n=treeNodes.find(function(x){return x.id===activeNodeModal.nodeId;});if(!n)return;
+  var rid=(document.getElementById('dr-real-sel')||{}).value||'';
+  if(!rid){showToast('Chọn ID thật trên cây Nhị phân');return;}
+  var rn=_realTreeNodes().find(function(x){return x.id===rid;});if(!rn){showToast('Không tìm thấy ID thật');return;}
+  var dup=treeNodes.find(function(x){return x.id!==n.id&&x.realized&&x.realized.realId===rid;});
+  if(dup&&!confirm('ID thật "'+rn.name+'" đang gắn với kế hoạch "'+dup.name+'". Chuyển sang kế hoạch "'+n.name+'"?'))return;
+  if(dup)delete dup.realized;
+  var first=!(n.realized&&n.realized.at);
+  n.realized={realId:rid,realName:rn.name||'',realCode:rn.idCode||'',realJoin:rn.joinDate||'',
+    at:(n.realized&&n.realized.at)||new Date().toISOString(),
+    note:((document.getElementById('dr-note')||{}).value||'').trim()};
+  saveDreamTree();closeNodeModal();renderTree();
+  showToast(first?('🌟 Chúc mừng! "'+n.name+'" đã thành hiện thực → cây Nhị phân đánh dấu 🌠 ở ID "'+rn.name+'"'):'✓ Đã cập nhật ghi nhận');
+}
+function dreamUnrealize(nid){
+  var n=treeNodes.find(function(x){return x.id===nid;});if(!n||!n.realized)return;
+  if(!confirm('Huỷ đánh dấu thành hiện thực của "'+n.name+'"? (dấu 🌠 trên cây Nhị phân sẽ mất)'))return;
+  delete n.realized;
+  saveDreamTree();closeNodeModal();renderTree();
+  showToast('✓ Đã huỷ đánh dấu');
 }
 
 // ================================================================
@@ -6822,6 +7009,7 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
 // v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
 function applyDownlineDiscToTree(list){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
+  if(dreamMode)return 0; // v6.93 — đang mở Cây mơ ước: để lần đồng bộ sau áp lên cây thật
   var changed=false,cnt=0,bcnt=0,notes=[],bnotes=[];
   (list||[]).forEach(function(u){
     if(!u||!u.matched||!u.myNodeId)return;
@@ -7536,7 +7724,7 @@ function parseBirthday(s){
 }
 function birthdayCelebrants(){ // ID có sinh nhật ĐÚNG hôm nay (so theo ngày + tháng)
   var t=new Date(),td=t.getDate(),tm=t.getMonth()+1,out=[];
-  (treeNodes||[]).forEach(function(n){var b=parseBirthday(n.birthday);if(b&&b.d===td&&b.m===tm)out.push(n);});
+  (_realTreeNodes()||[]).forEach(function(n){var b=parseBirthday(n.birthday);if(b&&b.d===td&&b.m===tm)out.push(n);});
   return out;
 }
 function birthdayRowHtml(n){ // dòng "Sinh nhật" trong popup chi tiết ID (đỏ + "Hôm nay" nếu trùng)
@@ -9178,7 +9366,7 @@ function syncTreeToMembers(rerender){
   var changed=false;
   // v6.53 — THĂNG CẤP KHÁCH: khách có "Mã ID dự phòng" trùng idCode 1 ID trên cây → thành TV thật.
   //   Member.id MỚI = khách.id nên toàn bộ lịch sử điểm danh (d_<id>_...) được kế thừa nguyên vẹn.
-  var _guests=loadGuests();
+  var _guests=dreamMode?[]:loadGuests(); // v6.93 — Cây mơ ước KHÔNG thăng cấp khách thật
   if(_guests.length){
     var byCode={};
     treeNodes.forEach(function(t){var c=noAccent(String(t.idCode||'').trim());if(c&&!byCode[c])byCode[c]=t;});
@@ -9208,6 +9396,7 @@ function syncTreeToMembers(rerender){
   members=members.filter(function(m){return nameSet[m.name];});
   if(members.length!==before)changed=true;
   if(changed){
+    if(dreamMode){saveDreamTree();return;} // v6.93 — TV của Cây mơ ước lưu kho riêng
     nmSet('members',JSON.stringify(members));
     if(fbDb&&fbUser)fsSet('members',{members:members}).catch(function(){});
     if(rerender){renderAll();updateStats();populateBcSel();}
@@ -9487,6 +9676,7 @@ function renderTree(){
   svg.innerHTML=lines;
   var h='';
   var lvlSet={};
+  var _drMap=dreamMode?null:dreamRealizedMap(); // v6.93 — ID thật đúng kế hoạch Cây mơ ước
   treeNodes.forEach(function(n){
     var p=pos[n.id];if(!p)return;
     var col=branchColor(n.id);
@@ -9513,7 +9703,8 @@ function renderTree(){
     var _discMatch=discFilter&&_discU.indexOf(discFilter)>=0;
     var _discDim=(discFilter&&!_discMatch)?'opacity:.28;':'';
     var _discRing=_discMatch?'box-shadow:0 0 0 4px '+DISC_COLORS[discFilter]+',0 2px 10px rgba(0,0,0,.3);':'';
-    h+='<div class="tnode-box'+(near?' near-rank':'')+(_isRoot?' root-box':'')+_blink+'" data-node-id="'+n.id+'" data-lvl="'+lvl+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden;'+_discDim+_discRing+'">';
+    var _drCls=dreamMode?(n.realized?' dream-done':(n.fromReal?'':' dream-plan')):'';
+    h+='<div class="tnode-box'+(near?' near-rank':'')+(_isRoot?' root-box':'')+_blink+_drCls+'" data-node-id="'+n.id+'" data-lvl="'+lvl+'" style="width:100%;height:100%;background:'+_bg+';border:2.5px solid '+(rk>0?RANKS[rk-1].color:col)+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden;'+_discDim+_discRing+'">';
     if(rk>0)h+='<div style="position:absolute;top:3px;right:4px;background:'+RANKS[rk-1].color+';color:white;font-size:8.5px;font-weight:700;border-radius:8px;padding:1px 6px;line-height:1.4">'+RANKS[rk-1].short+'</div>';
     if(hl[n.id]&&hl[n.id].nn){var _nnpos=rk>0?'top:3px;left:4px':'top:3px;right:4px';h+='<div style="position:absolute;'+_nnpos+';background:rgba(0,0,0,.45);color:#fff;font-size:9px;font-weight:700;border-radius:7px;padding:1px 5px;line-height:1.35">'+hl[n.id].nn+'</div>';}
     if(hl[n.id]&&hl[n.id].blink){h+='<div style="position:absolute;bottom:3px;right:4px;background:#F4511E;color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;line-height:1.4;box-shadow:0 0 0 2px #fff">NN='+hl[n.id].adiff+'</div>';}
@@ -9533,6 +9724,8 @@ function renderTree(){
     // PH (ph\u1ea3 h\u1ec7) gi\u1edd hi\u1ec3n th\u1ecb b\u1eb1ng nh\u00e3n d\u1ecdc tr\u00ean d\u00e2y n\u1ed1i \u0111\u1ee9t \u2014 kh\u00f4ng in ch\u1eef "PH d\u01b0\u1edbi" trong node n\u1eefa
     if(_discU)h+='<div style="position:absolute;bottom:3px;left:5px;display:flex;gap:2px">'+_discU.split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-size:8.5px;font-weight:800;border-radius:4px;padding:0 4px;line-height:1.45">'+ch+'</span>':'';}).join('')+'</div>';
     h+='</div>';
+    if(dreamMode){if(n.realized)h+='<div class="dream-pill done">✅ Hiện thực</div>';else if(!n.fromReal)h+='<div class="dream-pill plan">🎯 Kế hoạch</div>';}
+    else if(_drMap&&_drMap[n.id])h+='<div class="dream-pill real" title="Đã có kế hoạch đúng như Cây mơ ước">🌠 Đúng kế hoạch</div>';
     if(nmk){
       var _nmm=(parseJoinDate(n.joinDate)||{}).m;
       h+='<div class="nm-ring '+nmk+'" style="left:0;top:0;right:0;bottom:0"></div>';
@@ -9554,6 +9747,7 @@ function renderTree(){
   try{renderDiscBar();}catch(e){console.error('renderDiscBar lỗi:',e);}
   try{renderRankAlert();}catch(e){console.error('renderRankAlert lỗi:',e);}
   try{updateAddRootBtn();}catch(e){}
+  try{updateDreamUI();}catch(e){}
 }
 function applyTreeTransform(){
   document.getElementById('tree-canvas').style.transform='translate('+treeOffset.x+'px,'+treeOffset.y+'px) scale('+treeScale+')';
@@ -9784,6 +9978,7 @@ function buildNodeView(n){
   var spKids=sponsorKids(n);
   var plKids=treeNodes.filter(function(x){return x.parentId===n.id;});
   var h='<div class="nview">';
+  h+=dreamNodeViewHtml(n); // v6.93 \u2014 C\u00e2y m\u01a1 \u01b0\u1edbc: tr\u1ea1ng th\u00e1i k\u1ebf ho\u1ea1ch / n\u00fat Th\u00e0nh hi\u1ec7n th\u1ef1c; c\u00e2y th\u1eadt: d\u1ea5u \ud83c\udf20 \u0111\u00fang k\u1ebf ho\u1ea1ch
   h+='<div class="nmod-row"><div class="nmod-lbl">T\u1ea7ng (v\u1ecb tr\u00ed \u0111\u1eb7t)</div><div style="font-weight:700">T\u1ea7ng '+lvl+'</div></div>';
   if(si.depth>0){
     h+='<div class="nmod-row"><div class="nmod-lbl">F-s\u1ed1 (b\u1ea3o tr\u1ee3)</div><div style="font-weight:700;color:'+branchColor(n.id)+'">F'+si.depth+' c\u1ee7a '+escHtml(si.root.name)+'</div></div>';
@@ -9802,11 +9997,12 @@ function buildNodeView(n){
   // v7 — DISC: chỉ ID Gốc (chính chủ) tự đo; ID tuyến dưới tự cập nhật theo Mã ID (không đo giùm)
   h+='<div class="nmod-row"><div class="nmod-lbl">DISC</div><div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">';
   if(n.disc)h+=String(n.disc).toUpperCase().split('').map(function(ch){return DISC_LETTERS.indexOf(ch)>=0?'<span style="background:'+DISC_COLORS[ch]+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px;font-size:13px">'+ch+'</span>':'';}).join('');
-  if((typeof viewOnlyMode==='undefined'||!viewOnlyMode)&&!n.parentId)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+n.id+'\')">📝 '+(n.disc?'Đo lại':'Đo DISC')+'</button>';
+  if((typeof viewOnlyMode==='undefined'||!viewOnlyMode)&&!dreamMode&&!n.parentId)h+='<button type="button" style="border:1.5px solid #F07B30;background:#fff;color:#F07B30;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discFromNode(\''+n.id+'\')">📝 '+(n.disc?'Đo lại':'Đo DISC')+'</button>';
   else if(!n.disc&&n.parentId)h+='<span style="font-size:11px;color:#AAA;font-style:italic">Chờ tự đo (đồng bộ theo Mã ID)</span>';
   if(n.disc)h+='<button type="button" style="border:1.5px solid #1B4F8A;background:#fff;color:#1B4F8A;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer" onclick="discProfileFromNode(\''+n.id+'\')">📊 Hồ sơ</button>';
   h+='</div></div>';
   // v7 — Năng động: ID Gốc (chính chủ) tự cập nhật tháng.năm đóng Năng động gần nhất (picker tháng+năm giống Vào ID)
+  if(!dreamMode){ // v6.93 — Năng động là dữ liệu thật của chính chủ → không hiện trong Cây mơ ước
   h+='<div class="nmod-row"><div class="nmod-lbl">📅 Năng động</div><div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap">';
   if(!n.parentId){
     var _nd=(typeof loadNangDong==='function')?loadNangDong():null;
@@ -9817,6 +10013,7 @@ function buildNodeView(n){
     h+='<span style="font-size:11px;color:#AAA;font-style:italic">Mỗi ID tự cập nhật trên tài khoản của họ</span>';
   }
   h+='</div></div>';
+  }
   if(n.ship)h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu</div><div style="font-weight:700;display:flex;align-items:center;gap:6px;justify-content:flex-end;color:'+(n.ship==='vang'?'#8A6A12':'#546E7A')+'">'+shipSVG(n.ship,18)+shipLabel(n.ship)+'<button type="button" class="tbtn" data-ship-help="1" style="padding:2px 8px;font-size:12px;background:#EEF2FF;border-color:#C7D2FE;color:#3730A3;font-weight:800">?</button></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">F1 b\u1ea3o tr\u1ee3 tr\u1ef1c h\u1ec7</div><div style="font-weight:700">'+spKids.length+' ng\u01b0\u1eddi</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">Nh\u00e1nh \u0111\u1eb7t d\u01b0\u1edbi</div><div style="font-weight:700">'+plKids.length+' tr\u1ef1c ti\u1ebfp</div></div>';
@@ -9880,7 +10077,7 @@ function _dpDayOpts(sel){ // sel = ngày đang chọn (1-31) hoặc ''
 function _dpJoinYearOpts(sel2){ // value = 2 chữ số ("25"); hiển thị đủ ("2025"); sel2 = 2 chữ số đang chọn hoặc ''
   var o='<option value="">— Năm —</option>';
   var cur=new Date().getFullYear();
-  for(var y=cur;y>=2015;y--){var v2=('0'+(y%100)).slice(-2);o+='<option value="'+v2+'"'+(sel2===v2?' selected':'')+'>'+y+'</option>';} // v6.90 — KHÔNG cho năm tương lai (bỏ cur+1)
+  for(var y=(dreamMode?cur+5:cur);y>=2015;y--){var v2=('0'+(y%100)).slice(-2);o+='<option value="'+v2+'"'+(sel2===v2?' selected':'')+'>'+y+'</option>';} // v6.90 — KHÔNG cho năm tương lai (bỏ cur+1); v6.93 — Cây mơ ước cho chọn tới +5 năm (dự kiến)
   return o;
 }
 function _dpBirthYearOpts(sel){ // value = năm đủ; có ô trống vì Sinh nhật không bắt buộc năm
@@ -9901,6 +10098,7 @@ function buildNodeForm(node,addOpts){
   var defF1=v.f1of||ap.parentName||'';
   // v7 — ID Gốc = node không có parentId (chính chủ tài khoản) → siết bắt buộc riêng
   var _isRoot=(ap.isRoot!==undefined)?!!ap.isRoot:!!(node&&!node.parentId);
+  if(dreamMode)_isRoot=false; // v6.93 — Cây mơ ước: kế hoạch, không áp bắt buộc ID Gốc (DISC/Năng động/Sinh nhật thật)
   // v7 — giá trị chọn sẵn cho picker Vào ID / Sinh nhật (từ dữ liệu cũ)
   var _jd=parseJoinDate(v.joinDate);
   var _jm=_jd?_jd.m:'',_jy2=_jd?('0'+(_jd.y%100)).slice(-2):'';
@@ -10021,6 +10219,7 @@ function parseVaoID(s){
 }
 function saveNodeModal(){
   if(!activeNodeModal)return;
+  if(activeNodeModal.mode==='dream-real'){saveDreamRealize();return;} // v6.93
   if(activeNodeModal.mode==='lk-add'){
     var lkid=activeNodeModal.lkChosenId||(document.getElementById('lk-add-sel')||{}).value||'';
     if(!lkid){showToast('Gõ tên rồi bấm chọn 1 ID');return;}
@@ -10050,12 +10249,13 @@ function saveNodeModal(){
   var inpF1=((document.getElementById('nf-f1of')||{}).value||'').trim();
   // v7 — ID Gốc = node không có parentId (chính chủ tài khoản) → siết bắt buộc riêng (Sinh nhật + Đo DISC)
   var _isRootSave=(activeNodeModal.mode==='add')?(!activeNodeModal.parentId):(function(){var _n=treeNodes.find(function(x){return x.id===activeNodeModal.nodeId;});return _n?!_n.parentId:false;})();
+  if(dreamMode)_isRootSave=false; // v6.93 — Cây mơ ước: không áp cổng ID Gốc thật
   // v7 — Vào ID (bắt buộc) & Sinh nhật (tùy chọn, trừ ID Gốc) lấy từ picker, không gõ tay → luôn đúng cú pháp
   var _jm=(document.getElementById('nf-join-m')||{}).value||'';
   var _jy=(document.getElementById('nf-join-y')||{}).value||'';
   var _joinDate=(_jm&&_jy)?(_jm+'.'+_jy):'';
   // v6.90 — "Vào ID tháng.năm" KHÔNG được ở tương lai: chỉ từ tháng hiện tại (thời gian thực) trở về trước
-  if(_jm&&_jy){
+  if(_jm&&_jy&&!dreamMode){ // v6.93 — Cây mơ ước: được chọn tháng tương lai (dự kiến vào ID)
     var _now=new Date(),_curY=_now.getFullYear(),_curM=_now.getMonth()+1;
     var _selY=2000+parseInt(_jy,10),_selM=parseInt(_jm,10);
     if(_selY>_curY||(_selY===_curY&&_selM>_curM)){
@@ -10091,7 +10291,7 @@ function saveNodeModal(){
   };
   var _saveMsg='✓ Đã lưu';
   // v6.63 — BẮT BUỘC Mã ID: mọi thông tin đồng bộ tuyến dưới → tuyến trên đều căn cứ Mã ID chuẩn (PRIFE)
-  if(!data.idCode){
+  if(!data.idCode&&!dreamMode){ // v6.93 — Cây mơ ước: người dự kiến có thể chưa có Mã ID
     showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
     var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
     return;
@@ -10151,6 +10351,7 @@ function saveNodeModal(){
     data.id=uid();
     data.parentId=activeNodeModal.parentId||null;
     data.side=activeNodeModal.side||null;
+    if(dreamMode)data.planAt=new Date().toISOString(); // v6.93 — ngày lập kế hoạch
     // v6.73 — Phả hệ đặt được CẢ 2 bên (bỏ quy tắc "phả hệ chỉ bên Phải").
     // Vị trí Trái/Phải giữ nguyên theo lựa chọn; mỗi bên vẫn tối đa 1 ID (nút thêm chỉ hiện ở ô trống).
     treeNodes.push(data);
@@ -11521,7 +11722,8 @@ function doImportReplace(){
   var data=pendingImport;if(!data)return;
   treeNodes=data.nodes.map(function(n){return JSON.parse(JSON.stringify(n));});
   members=(data.members||[]).map(function(m){return JSON.parse(JSON.stringify(m));});
-  if(data.memberData){Object.keys(data.memberData).forEach(function(k){nmSet(k,data.memberData[k]);});}
+  if(data.memberData&&!dreamMode){ // v6.93 — Cây mơ ước không ghi dữ liệu điểm danh thật
+   Object.keys(data.memberData).forEach(function(k){nmSet(k,data.memberData[k]);});}
   saveTree2();saveMembers();
   afterImportRender();
   showToast('✓ Đã thay thế: '+treeNodes.length+' ID, '+members.length+' TV');
@@ -11561,7 +11763,7 @@ function doImportMerge(useAttach){
     var newMid=uid(),oldMid=m.id;
     var nm=JSON.parse(JSON.stringify(m));nm.id=newMid;
     members.push(nm);curMem[m.name]=1;memAdded++;
-    if(data.memberData){
+    if(data.memberData&&!dreamMode){ // v6.93
       Object.keys(data.memberData).forEach(function(k){
         var p=k.match(/^((?:d|mo|p)_)(m[a-z0-9]+)(_[\s\S]*)$/);
         if(p&&p[2]===oldMid)nmSet(p[1]+newMid+p[3],data.memberData[k]);
@@ -11809,6 +12011,7 @@ document.addEventListener('click',function(e){
     document.querySelectorAll('.mtab').forEach(function(b){b.classList.remove('on');});
     t.classList.add('on');
     var pg=t.getAttribute('data-main');
+    if(pg!=='tree')exitDreamMode(); // v6.93 — rời Sơ đồ → trả dữ liệu thật cho các module khác
     document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
     document.getElementById('page-'+pg).classList.add('on');
     var appEl=document.getElementById('app');
@@ -12138,7 +12341,10 @@ document.addEventListener('click',function(e){
   // Tree mode switch
   t=e.target.closest('[data-treemode]');
   if(t){
-    currentTreeMode=t.getAttribute('data-treemode');
+    // v6.93 — Cây mơ ước = cây Nhị phân chạy trên kho dữ liệu riêng (hoán dữ liệu khi vào/ra thẻ)
+    var _tm=t.getAttribute('data-treemode');
+    if(_tm==='dream'){if(viewOnlyMode){showToast('Cây mơ ước chỉ dùng trên tài khoản của bạn');return;}enterDreamMode();currentTreeMode='binary';}
+    else{exitDreamMode();currentTreeMode=_tm;}
     t.parentElement.querySelectorAll('.stab').forEach(function(b){b.classList.remove('on');});
     t.classList.add('on');
     document.getElementById('tree-binary').style.display=currentTreeMode==='binary'?'block':'none';
@@ -12597,6 +12803,16 @@ document.addEventListener('click',function(e){
     setTimeout(function(){locateNode(_ttid);},120);
     return;
   }
+
+  // v6.93 — Cây mơ ước: thêm gốc / chép từ Nhị phân / Thành hiện thực / huỷ đánh dấu
+  t=e.target.closest('[data-dream-addroot]');
+  if(t){openAddNodeModal2(null,null);attachSelFilter(document.getElementById('nf-f1of-filter'),document.getElementById('nf-f1of-sel'));return;}
+  t=e.target.closest('[data-dream-copy]');
+  if(t){dreamCopyFromReal();return;}
+  t=e.target.closest('[data-dream-real]');
+  if(t){openDreamRealize(t.getAttribute('data-dream-real'));return;}
+  t=e.target.closest('[data-dream-unreal]');
+  if(t){dreamUnrealize(t.getAttribute('data-dream-unreal'));return;}
 
   // Tree node click (binary)
   t=e.target.closest('.tnode-box');
@@ -13676,6 +13892,7 @@ function _fvClearKeys(){
 function _fvPut(key,val){try{localStorage.setItem('ta_'+FV_NS+'_'+key,val);}catch(e){}}
 function enterFullAccountView(){
   if(!_avData||!_avData.data)return;
+  exitDreamMode(); // v6.93
   var d=_avData.data,name=_avData.name;
   // 1) Lưu trạng thái QTV để khôi phục khi thoát
   _fvSaved={NS:NS,members:members,treeNodes:treeNodes,
@@ -13753,6 +13970,7 @@ function exitFullAccountView(){
 function closeAccountView(){var ov=document.getElementById('acctview-ov');if(ov)ov.classList.remove('open');}
 // === XEM sơ đồ tài khoản khác như cây thật (chỉ đọc) ===
 function enterViewMode(nodes,mems,name){
+  exitDreamMode(); // v6.93
   if(!(viewOnlyMode&&_voSaved)){
     _voSaved={treeNodes:treeNodes,members:members,focusNodeId:focusNodeId,mode:currentTreeMode,disc:discFilter,
       page:((document.querySelector('.page.on')||{}).id)||'page-admin',
@@ -13792,6 +14010,7 @@ function applyViewOnlyUI(){
   var mt=document.querySelector('.main-tabs'); if(mt)mt.style.display=(on&&!fullViewMode)?'none':'';
   var vb=document.getElementById('view-banner'); if(vb)vb.style.display=(on&&!fullViewMode)?'flex':'none';
   ['btn-add-root'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=on?'none':'';});
+var _dtb=document.querySelector('[data-treemode="dream"]'); if(_dtb)_dtb.style.display=on?'none':''; // v6.93 — ẩn Cây mơ ước khi xem tài khoản khác
   if(on){
     var be=document.getElementById('btn-export-branch'),bi=document.getElementById('btn-import-branch');
     if(be)be.style.display='none'; if(bi)bi.style.display='none';
