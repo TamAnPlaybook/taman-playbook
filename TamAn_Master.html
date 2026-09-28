@@ -1,4 +1,4 @@
-<!-- VERSION: v6.93-cay-mo-uoc -->
+<!-- VERSION: v6.94-zoom-khach -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1131,6 +1131,9 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .zatt-empty{font-size:12.5px;color:#AAA;padding:8px 2px}
 .zatt-commit{width:100%;padding:13px;border:none;border-radius:11px;background:#1A7A5E;color:#fff;font-size:15px;font-weight:800;font-family:Arial;cursor:pointer;margin-top:12px}
 .zatt-commit:disabled{opacity:.5;cursor:default}
+.zatt-gbtn{flex-shrink:0;border:1px solid #CE93D8;background:#F8EEFB;color:#8E24AA;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer}
+.zatt-guest{flex-wrap:wrap}
+.zatt-guest input{min-width:140px}
 .zatt-note{font-size:12px;color:#2E7D32;background:#EAF6EC;border:1px solid #BFE3C6;border-radius:9px;padding:8px 11px;margin-bottom:10px}
 /* Editor toàn màn hình */
 #vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
@@ -4396,6 +4399,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v694-zoom-khach', ver:'6.94', icon:'👤', title:'Điểm danh ảnh Zoom: điền tay khách chưa có ID',
+    desc:'Trong <b>📷 Điểm danh bằng ảnh Zoom</b> (cả kiểu <b>Danh sách</b> và <b>Lưới video</b>) có thêm mục <b>👤 Điền tay khách (chưa có ID trên cây)</b>: gõ tên (và Mã ID nếu có) → khách được lưu vào danh sách Khách và điểm danh cùng lúc. Tên lạ ở mục <b>Chưa gán</b> cũng có nút <b>👤 Khách</b> để lưu ngay làm khách — lần sau ảnh Zoom có tên đó sẽ tự nhận.' },
   { id:'v693-cay-mo-uoc', ver:'6.93', icon:'🌠', title:'Sơ đồ có thêm thẻ “Cây mơ ước”',
     desc:'Trong <b>Sơ đồ</b>, bấm thẻ <b>🌠 Cây mơ ước</b> để lên kế hoạch <b>ID cụ thể, con người cụ thể</b> — đầy đủ tính năng như <b>Nhị phân</b> (thêm/sửa/xoá, tìm, lọc, thăng tiến, xuất nhánh...) nhưng lưu <b>riêng</b>, không ảnh hưởng cây thật. Bấm <b>📋 Chép từ Nhị phân làm nền</b> để bắt đầu từ cây hiện tại. Khi kế hoạch thành sự thật, mở ID đó → <b>🌟 Thành hiện thực</b>, chọn ID thật + ghi chú “tầm nhìn → thực tế”; cây <b>Nhị phân</b> sẽ hiện dấu <b>🌠 Đúng kế hoạch</b> ở ID thật đó.' },
   { id:'v689-sk-admin', ver:'6.89', icon:'🩺', title:'Kết quả SK gọn tên · Quản trị gom ID mới theo Leader',
@@ -13518,7 +13523,7 @@ function renderZoomAtt(){
     matched.forEach(function(de){
       var p=_zPeople().filter(function(x){return x.id===de.mid;})[0];if(!p)return;
       h+='<div class="zatt-row ok"><input type="checkbox" class="zatt-cbx" data-zchk="'+de.mid+'" '+(de.checked!==false?'checked':'')+'>'
-       +'<div class="zatt-nm">'+escHtml(p.name)+'<span class="zsrc">📷 nhận dạng: '+escHtml(de.raw)+'</span></div></div>';
+       +'<div class="zatt-nm">'+escHtml(p.name)+(p._guest?' <span style="font-size:11px;color:#8E24AA;font-weight:700">👤 Khách</span>':'')+'<span class="zsrc">'+(de.src==='guest'?'✍️ điền tay khách':'📷 nhận dạng: '+escHtml(de.raw))+'</span></div></div>';
     });
     // Chưa gán — mỗi tên 1 ô TÌM TÊN tối ưu (gõ bỏ dấu, nhiều từ khoá, chuỗi con) như các vùng khác
     h+='<div class="zatt-sec" style="color:#B8860B">❓ Chưa gán — chỉ định ID ('+pend.length+')'+(pend.length?'<button data-zclearpend="1" style="margin-left:auto;border:none;background:#FDECEC;color:#C62828;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer">🗑 Xoá hết</button>':'')+'</div>';
@@ -13531,12 +13536,17 @@ function renderZoomAtt(){
       h+='<div class="zatt-row pend'+(chP?' assigned':'')+'" data-znorm="'+encodeURIComponent(pe.norm)+'">'
        +'<div class="zatt-nm" title="'+escHtml(pe.raw)+'">'+escHtml(pe.raw)+'<span class="zsrc">📷 tên đọc từ ảnh Zoom</span></div>'
        +'<div class="zatt-pick"><input class="zatt-pick-inp" data-zpicknorm="'+encodeURIComponent(pe.norm)+'" value="'+(chP?escHtml(chP.name):'')+'" placeholder="'+escHtml(ph)+'" autocomplete="off"><div class="zatt-pick-sug"></div></div>'
+       +'<button class="zatt-gbtn" data-zpendguest="'+encodeURIComponent(pe.norm)+'" title="Người này chưa có ID trên cây → lưu làm Khách">👤 Khách</button>'
        +'<button class="zatt-del" data-zpenddel="'+encodeURIComponent(pe.norm)+'" title="Bỏ tên này">🗑</button></div>';
     });
   }
   // Thêm tên thủ công (nếu OCR bỏ sót)
   h+='<div class="zatt-sec">✍️ Thêm tên thủ công (nếu ảnh bỏ sót)</div>';
   h+='<div class="zatt-add"><input id="zatt-manual" placeholder="Gõ tên như hiển thị trên Zoom…"><button data-zmanual="1">＋ Thêm</button></div>';
+  // Điền tay KHÁCH (chưa có ID trên cây) — lưu vào danh sách Khách + nhớ tên để lần sau ảnh Zoom tự nhận
+  h+='<div class="zatt-sec" style="color:#8E24AA">👤 Điền tay khách (chưa có ID trên cây)</div>';
+  h+='<div class="zatt-add zatt-guest"><input id="zatt-gname" placeholder="Tên khách (như trên Zoom)…"><input id="zatt-gcode" placeholder="Mã ID (nếu có)" style="flex:0 1 120px;min-width:90px"><button data-zguestadd="1" style="background:#8E24AA">＋ Thêm khách</button></div>';
+  h+='<div style="font-size:11.5px;color:#999;margin:2px 2px 0">Khách được lưu vào mục Khách của điểm danh; khi có Mã ID trùng ID trên cây sẽ tự thăng cấp.</div>';
   // Commit
   var willMark=matched.filter(function(de){return de.checked!==false;}).length;
   h+='<button class="zatt-commit" data-zcommit="1"'+(_zatt.dets.length||_zPending.length?'':' disabled')+'>✅ Điểm danh & lưu chỉ định'+(willMark?(' ('+willMark+' người)'):'')+'</button>';
@@ -13615,6 +13625,22 @@ async function _zRunScan(){
   var m=dets.filter(function(x){return x.mid;}).length,u=dets.length-m;
   showToast('🔍 Đọc xong: '+dets.length+' tên · '+m+' khớp ID · '+u+' chưa gán');
 }
+// Äiá»n tay KHÃCH (chÆ°a cÃ³ ID trÃªn cÃ¢y): dÃ¹ng láº¡i khÃ¡ch trÃ¹ng tÃªn/MÃ£ ID, náº¿u tÃªn trÃ¹ng Ä‘Ãºng 1 ID trÃªn cÃ¢y â†’ dÃ¹ng ID Ä‘Ã³
+function _zAddGuest(name,code){
+  name=String(name||'').trim();code=String(code||'').trim();if(!name)return null;
+  var norm=_zNorm(name);if(!norm)return null;
+  var mem=members.filter(function(m){return _zNorm(m.name)===norm||(code&&m.idCode&&String(m.idCode).trim()===code);});
+  if(mem.length===1){showToast('â„¹ï¸ "'+mem[0].name+'" Ä‘Ã£ cÃ³ ID trÃªn cÃ¢y â†’ Ä‘iá»ƒm danh theo ID');return {id:mem[0].id,norm:norm,guest:false};}
+  var gl=loadGuests();
+  var g=gl.filter(function(x){return _zNorm(x.name)===norm||(code&&x.idCode&&String(x.idCode).trim()===code);})[0];
+  if(g){if(code&&!g.idCode){g.idCode=code;saveGuests(gl);}}
+  else{g={id:uid(),name:name,idCode:code};gl.push(g);saveGuests(gl);}
+  _zAlias[norm]=g.id;saveZoomAlias(); // láº§n sau áº£nh Zoom cÃ³ tÃªn nÃ y â†’ tá»± nháº­n
+  if(code)syncTreeToMembers(false); // MÃ£ ID trÃ¹ng ID trÃªn cÃ¢y â†’ thÄƒng cáº¥p
+  if(typeof renderDailyCombined==='function')renderDailyCombined();
+  if(typeof updateStats==='function')updateStats();
+  return {id:g.id,norm:norm,guest:true};
+}
 function _zCommit(){
   var buoi=_zatt.buoi,marked={},aliasAdded=0;
   // 1) các dòng đã khớp + được tick
@@ -13687,6 +13713,28 @@ function bindZoomAttEvents(){
       var mnorm=_zNorm(v);if(mnorm){var mp=_zResolve(mnorm);
         if(!_zatt.dets.some(function(de){return de.norm===mnorm;}))_zatt.dets.push({raw:v,norm:mnorm,mid:mp?mp.id:null,checked:true});}
       renderZoomAtt();return;}
+    t=e.target.closest('[data-zguestadd]');if(t){
+      var gn=document.getElementById('zatt-gname'),gc=document.getElementById('zatt-gcode');
+      var gv=(gn&&gn.value||'').trim();if(!gv){showToast('Nháº­p tÃªn khÃ¡ch');if(gn)gn.focus();return;}
+      var r=_zAddGuest(gv,gc&&gc.value);if(!r)return;
+      var ex=_zatt.dets.filter(function(de){return de.norm===r.norm;})[0];
+      if(ex){ex.mid=r.id;ex.checked=true;}else _zatt.dets.push({raw:gv,norm:r.norm,mid:r.id,checked:true,src:'guest'});
+      delete _zatt.pick[r.norm];_zPending=_zPending.filter(function(p){return _zNorm(p)!==r.norm;});saveZoomAlias();
+      renderZoomAtt();if(r.guest)showToast('âœ“ ÄÃ£ thÃªm khÃ¡ch: '+gv+' â€” báº¥m Äiá»ƒm danh Ä‘á»ƒ lÆ°u');
+      var gn2=document.getElementById('zatt-gname');if(gn2)gn2.focus();
+      return;}
+    t=e.target.closest('[data-zpendguest]');if(t){
+      var pn2=decodeURIComponent(t.getAttribute('data-zpendguest'));
+      var row2=t.closest('.zatt-row'),nmEl=row2&&row2.querySelector('.zatt-nm');
+      var raw2=nmEl?(nmEl.getAttribute('title')||''):'';
+      var gnm=prompt('LÆ°u lÃ m KHÃCH (chÆ°a cÃ³ ID trÃªn cÃ¢y) â€” sá»­a tÃªn náº¿u cáº§n:',raw2);if(gnm==null)return;gnm=gnm.trim();if(!gnm)return;
+      var r2=_zAddGuest(gnm,'');if(!r2)return;
+      _zAlias[pn2]=r2.id; // tÃªn Ä‘á»c tá»« áº£nh (cÃ³ thá»ƒ khÃ¡c tÃªn Ä‘Ã£ sá»­a) cÅ©ng nhá»› â†’ khÃ¡ch
+      var ex2=_zatt.dets.filter(function(de){return de.norm===pn2;})[0];
+      if(ex2){ex2.mid=r2.id;ex2.checked=true;}else _zatt.dets.push({raw:raw2||gnm,norm:pn2,mid:r2.id,checked:true});
+      delete _zatt.pick[pn2];_zPending=_zPending.filter(function(p){var n=_zNorm(p);return n!==pn2&&n!==r2.norm;});saveZoomAlias();
+      renderZoomAtt();if(r2.guest)showToast('âœ“ ÄÃ£ lÆ°u khÃ¡ch: '+gnm);
+      return;}
     t=e.target.closest('[data-zcommit]');if(t){_zCommit();return;}
   });
   body.addEventListener('input',function(e){
