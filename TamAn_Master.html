@@ -1,4 +1,4 @@
-<!-- VERSION: v6.94-zoom-khach -->
+<!-- VERSION: v6.95-cach-ho-tro -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4399,6 +4399,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v695-cach-ho-tro', ver:'6.95', icon:'💡', title:'Kết quả SK: thêm mục “Cách hỗ trợ” cho từng tình trạng',
+    desc:'Trong <b>🩺 Kết quả SK</b>, bấm chọn 1 tình trạng → có khung <b>💡 Cách hỗ trợ</b>. Mỗi ID bấm <b>➕ Chia sẻ cách hỗ trợ</b> để góp kinh nghiệm: viết chữ (sản phẩm, cách dùng, thời gian, lưu ý…), <b>tải thẳng ảnh/video</b> từ điện thoại hoặc dán link YouTube/Drive. Cả team cùng xem; ảnh hiện thu nhỏ, video xem ngay trong trang.' },
   { id:'v694-zoom-khach', ver:'6.94', icon:'👤', title:'Điểm danh ảnh Zoom: điền tay khách chưa có ID',
     desc:'Trong <b>📷 Điểm danh bằng ảnh Zoom</b> (cả kiểu <b>Danh sách</b> và <b>Lưới video</b>) có thêm mục <b>👤 Điền tay khách (chưa có ID trên cây)</b>: gõ tên (và Mã ID nếu có) → khách được lưu vào danh sách Khách và điểm danh cùng lúc. Tên lạ ở mục <b>Chưa gán</b> cũng có nút <b>👤 Khách</b> để lưu ngay làm khách — lần sau ảnh Zoom có tên đó sẽ tự nhận.' },
   { id:'v693-cay-mo-uoc', ver:'6.93', icon:'🌠', title:'Sơ đồ có thêm thẻ “Cây mơ ước”',
@@ -4686,7 +4688,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadDreamTreeCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadDreamTreeCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();loadSupportCloud();
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -11461,7 +11463,7 @@ function importData(){
 //   Firestore của user (kể cả bảng tầm nhìn). Khôi phục → ghi lại cả localStorage
 //   lẫn Firestore của tài khoản HIỆN TẠI rồi tải lại app.
 // ================================================================
-var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','lich168','journal','disc','wheel','wheelgoal','anngoals','income','jars','guests','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity','health'];
+var BACKUP_FS_DOCS=['members','tree','prospects','actplans','tasks','lich168','journal','disc','wheel','wheelgoal','anngoals','income','jars','guests','location','clubs','vbindex','nangdong','localmirror','prefs','bgimage','activity','health','support'];
 function _dlJson(obj,fname){
   var blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
@@ -15911,6 +15913,9 @@ var HEALTH_BUILTIN=[
  'UT – các loại','Ngăn chặn UT','Kích hoạt tế bào gốc'
 ];
 var _skSelName='',_skTeam=null,_skFormOpen=false,_skEditId='',_skMatDraft=[],_skMatInit=false;
+// v6.95 — "💡 Cách hỗ trợ" theo từng tình trạng: mỗi ID góp kinh nghiệm (chữ + ảnh + video). Lưu như health: publicClubs/{uid}.support (merge)
+var _supTeam=null,_supFormOpen=false,_supEditId='',_supMatDraft=[],_supMatInit=false;
+function _skBusy(){return _skFormOpen||_supFormOpen;} // đang mở form → không tự vẽ lại (tránh mất chữ đang gõ)
 // Tên tình trạng của 1 kết quả: ưu tiên condName; tương thích dữ liệu cũ (cond = số thứ tự 1..38)
 function condNameOf(e){if(e&&e.condName)return e.condName;var c=e?+e.cond:0;if(c>=1&&c<=HEALTH_BUILTIN.length)return HEALTH_BUILTIN[c-1];return '';}
 function _skViCmp(a,b){return String(a).localeCompare(String(b),'vi',{sensitivity:'base'});}
@@ -15940,18 +15945,20 @@ async function _mirrorMyHealth(list){
 function loadHealthCloud(){
   if(!fbDb||!fbUser)return;
   fsGet('health').then(function(d){
-    if(d&&d.list){nmSet('health_v1',JSON.stringify(d.list));var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skFormOpen)renderSkPage();}
+    if(d&&d.list){nmSet('health_v1',JSON.stringify(d.list));var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skBusy())renderSkPage();}
   }).catch(function(){});
 }
 async function fetchTeamHealth(){
   if(!fbReady)await loadFirebase();
   var m=await import(FB_STORE);
   var snap=await m.getDocs(m.collection(fbDb,'publicClubs'));
-  var out=[];
+  var out=[],sup=[];
   snap.forEach(function(d){
     var v=d.data()||{},uid=d.id;
     (v.health||[]).forEach(function(hh){out.push(Object.assign({},hh,{_uid:uid,_acct:v.name||''}));});
+    (v.support||[]).forEach(function(ss){sup.push(Object.assign({},ss,{_uid:uid,_acct:v.name||''}));});
   });
+  _supTeam=sup; // cùng 1 lần đọc → có luôn "Cách hỗ trợ" toàn team
   return out;
 }
 function skTeamAll(){
@@ -15965,7 +15972,8 @@ function renderSkPage(){
   var el=document.getElementById('sk-content');if(!el)return;
   var all=skTeamAll();
   var counts=_skCounts(all),total=all.length;
-  var condList=_skCondList(counts); // gốc + tự thêm, đã xếp a–b–c
+  var _cn=Object.assign({},counts);supTeamAll().forEach(function(s){if(s.condName&&!_cn[s.condName])_cn[s.condName]=0;}); // tình trạng tự thêm chỉ có Cách hỗ trợ vẫn hiện
+  var condList=_skCondList(_cn); // gốc + tự thêm, đã xếp a–b–c
   var h='';
   h+='<div style="max-width:920px;margin:0 auto;padding:6px 2px 40px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
@@ -15985,7 +15993,7 @@ function renderSkPage(){
   h+='</div></div>';
   el.innerHTML=h;
   if(fbDb&&fbUser&&_skTeam===null){
-    fetchTeamHealth().then(function(list){_skTeam=list;var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skFormOpen)renderSkPage();}).catch(function(){_skTeam=_skTeam||[];});
+    fetchTeamHealth().then(function(list){_skTeam=list;var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skBusy())renderSkPage();}).catch(function(){_skTeam=_skTeam||[];});
   }
 }
 function _skChipsHtml(condList,counts){
@@ -16031,8 +16039,10 @@ function _skCondSectionHtml(name,all){
   var list=all.filter(function(h){return condNameOf(h)===name;});
   var vo=(typeof viewOnlyMode!=='undefined'&&viewOnlyMode);
   var h='<div id="sk-cond-section" style="margin-top:14px;border-top:1px dashed #E0E0E0;padding-top:12px;scroll-margin-top:70px">';
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
-  h+='<div style="font-size:15px;font-weight:800;color:#1A237E">'+escHtml(name)+' <span style="color:#2E7D32">('+list.length+' ca)</span></div>';
+  h+='<div style="font-size:16px;font-weight:800;color:#1A237E;margin-bottom:8px">'+escHtml(name)+'</div>';
+  h+=_supSectionHtml(name);
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:14px">';
+  h+='<div style="font-size:14.5px;font-weight:800;color:#1B5E20">📋 Các ca kết quả <span style="color:#2E7D32">('+list.length+' ca)</span></div>';
   if(!vo)h+='<button onclick="skAddOpen()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">➕ Thêm kết quả</button>';
   h+='</div>';
   if(_skFormOpen&&_skSelName===name)h+=_skFormHtml(name);
@@ -16091,11 +16101,12 @@ function _skFormHtml(name){
   h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="skSaveEntry()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="skFormCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
   return h+'</div>';
 }
-function _skMatRowsHtml(){
-  if(!_skMatDraft.length)return '<div style="font-size:12px;color:#999;padding:4px 0">Chưa có link nào.</div>';
-  return _skMatDraft.map(function(mt,i){
+function _skMatRowsHtml(){return _matRowsHtml(_skMatDraft,'skDelMatRow');}
+function _matRowsHtml(draft,delFn){
+  if(!draft.length)return '<div style="font-size:12px;color:#999;padding:4px 0">Chưa có link nào.</div>';
+  return draft.map(function(mt,i){
     var opts=[['image','🖼️ Hình ảnh'],['video','🎬 Video'],['test','🧾 Phiếu xét nghiệm'],['other','🔗 Link khác']].map(function(o){return '<option value="'+o[0]+'"'+(mt.type===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('');
-    return '<div class="sk-mat-row" style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap"><select data-mf="type" style="padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px;background:#fff">'+opts+'</select><input data-mf="url" value="'+escHtml(mt.url||'')+'" placeholder="Dán link (https://…)" style="flex:1;min-width:160px;padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px"><button onclick="skDelMatRow('+i+')" style="border:1px solid #E53935;background:#fff;color:#E53935;border-radius:7px;padding:0 10px;font-size:13px;cursor:pointer">✕</button></div>';
+    return '<div class="sk-mat-row" style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap"><select data-mf="type" style="padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px;background:#fff">'+opts+'</select><input data-mf="url" value="'+escHtml(mt.url||'')+'" placeholder="Dán link (https://…)" style="flex:1;min-width:160px;padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px"><button onclick="'+delFn+'('+i+')" style="border:1px solid #E53935;background:#fff;color:#E53935;border-radius:7px;padding:0 10px;font-size:13px;cursor:pointer">✕</button></div>';
   }).join('');
 }
 function _skSyncMat(){
@@ -16129,14 +16140,17 @@ function _skCompressImage(file){
     img.src=url;
   });
 }
-async function skUploadSelected(){
+async function skUploadSelected(kind){
   // v6.88 — Tải thẳng ảnh/video/giấy tờ lên Firebase Storage: health/{uid}/... → chỉ chủ ghi phần mình.
+  // v6.95 — dùng chung cho form "Cách hỗ trợ" (kind='sup'), cùng thư mục health/{uid} (không cần Rules mới)
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không tải được');return;}
   if(!fbDb||!fbUser){showToast('Cần đăng nhập để tải tệp lên');return;}
-  var inp=document.getElementById('sk-file-input');if(!inp||!inp.files||!inp.files.length)return;
+  var cf=kind==='sup'?{inp:'sup-file-input',st:'sup-up-status',list:'sup-mat-list',sync:_supSyncMat,draft:function(){return _supMatDraft;},rows:_supMatRowsHtml}
+                     :{inp:'sk-file-input',st:'sk-up-status',list:'sk-mat-list',sync:_skSyncMat,draft:function(){return _skMatDraft;},rows:_skMatRowsHtml};
+  var inp=document.getElementById(cf.inp);if(!inp||!inp.files||!inp.files.length)return;
   var files=Array.prototype.slice.call(inp.files);
-  var st=document.getElementById('sk-up-status');
-  _skSyncMat(); // giữ các link đang nhập tay trước khi thêm tệp mới
+  var st=document.getElementById(cf.st);
+  cf.sync(); // giữ các link đang nhập tay trước khi thêm tệp mới
   var done=0;
   try{
     var sM=await import(FB_STORAGE);
@@ -16157,25 +16171,25 @@ async function skUploadSelected(){
       var task=sM.uploadBytesResumable(r,blob,{contentType:ctype,cacheControl:'public,max-age=31536000'}); // resumable: có % + nối lại khi rớt mạng; cache 1 năm
       await new Promise(function(res,rej){task.on('state_changed',function(s){var pct=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Đang tải '+(i+1)+'/'+files.length+': '+escHtml(f.name)+' … '+pct+'%</span>';},rej,res);});
       var url=await sM.getDownloadURL(r);
-      _skMatDraft.push({type:type,url:url});done++;
+      cf.draft().push({type:type,url:url});done++;
     }
     if(st&&done)st.innerHTML+='<div style="color:#2E7D32">✅ Đã tải '+done+' tệp. Kéo xuống bấm 💾 Lưu để hoàn tất.</div>';
     inp.value='';
-    var b=document.getElementById('sk-mat-list');if(b)b.innerHTML=_skMatRowsHtml();
+    var b=document.getElementById(cf.list);if(b)b.innerHTML=cf.rows();
   }catch(e){
     console.warn('SK upload lỗi:',e);
     if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được tệp (có thể kho lưu chưa bật, hoặc mạng gián đoạn). Anh/chị dán link tư liệu ở phần dưới thay thế nhé.</span>';
   }
 }
-function skSelectCond(v){_skSelName=v||'';_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
-function skAddOpen(){if(!_skSelName){showToast('Hãy chọn tình trạng trước');return;}_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();}
+function skSelectCond(v){_skSelName=v||'';_skFormOpen=false;_skEditId='';_skMatInit=false;_supFormOpen=false;_supEditId='';_supMatInit=false;renderSkPage();}
+function skAddOpen(){if(!_skSelName){showToast('Hãy chọn tình trạng trước');return;}_supFormOpen=false;_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();}
 function skAddCustomCond(){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
   var name=prompt('Nhập tên tình trạng sức khỏe mới (ngoài danh sách):');
   if(name===null)return;name=name.trim();if(!name){showToast('Chưa nhập tên tình trạng');return;}
-  _skSelName=name;_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();
+  _skSelName=name;_supFormOpen=false;_skFormOpen=true;_skEditId='';_skMatInit=false;_skMatDraft=[];renderSkPage();
 }
-function skEditOpen(id){var e=loadHealthLocal().filter(function(x){return x.id===id;})[0];if(!e){showToast('Chỉ sửa được kết quả của chính bạn');return;}_skEditId=id;_skSelName=condNameOf(e);_skFormOpen=true;_skMatInit=false;renderSkPage();}
+function skEditOpen(id){var e=loadHealthLocal().filter(function(x){return x.id===id;})[0];if(!e){showToast('Chỉ sửa được kết quả của chính bạn');return;}_skEditId=id;_skSelName=condNameOf(e);_supFormOpen=false;_skFormOpen=true;_skMatInit=false;renderSkPage();}
 function skFormCancel(){_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
 function skRefresh(){_skTeam=null;renderSkPage();}
 function skSaveEntry(){
@@ -16218,6 +16232,160 @@ async function _qtvDeleteHealth(uid,id){
     var list=(d.health||[]).filter(function(x){return x.id!==id;});
     await m.setDoc(ref,{health:list,updatedAt:new Date().toISOString()},{merge:true});
     showToast('🗑 QTV đã xoá kết quả');skRefresh();
+  }catch(e){showToast('Xoá thất bại (cần quyền QTV)');}
+}
+
+// ================================================================
+// v6.95 — 💡 CÁCH HỖ TRỢ theo từng tình trạng
+//   • Mỗi ID (tài khoản) góp kinh nghiệm hỗ trợ: chữ + ảnh + video (tải thẳng hoặc dán link).
+//   • Của mình: local 'support_v1' + users/{uid}/data/support; toàn team: publicClubs/{uid}.support (merge, KHÔNG Rules mới).
+//   • Tệp lên Storage chung thư mục health/{uid}/ (rule sẵn). Sửa/xoá: người viết; QTV xoá mọi bài.
+// ================================================================
+function loadSupportLocal(){try{var v=JSON.parse(nmGet('support_v1')||'[]');return Array.isArray(v)?v:[];}catch(e){return [];}}
+function saveMySupport(list){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  nmSet('support_v1',JSON.stringify(list));
+  if(fbDb&&fbUser){fsSet('support',{list:list}).catch(function(){});_mirrorMySupport(list);}
+}
+async function _mirrorMySupport(list){
+  if(!fbDb||!fbUser)return;
+  try{
+    var m=await import(FB_STORE);
+    var name=(fbUser.displayName)||((fbUser.email||'').split('@')[0])||'';
+    await m.setDoc(m.doc(fbDb,'publicClubs',fbUser.uid),{uid:fbUser.uid,name:name,support:list,updatedAt:new Date().toISOString()},{merge:true});
+  }catch(e){/* thiếu quyền → bỏ qua */}
+}
+function loadSupportCloud(){
+  if(!fbDb||!fbUser)return;
+  fsGet('support').then(function(d){
+    if(d&&d.list){nmSet('support_v1',JSON.stringify(d.list));var pg=document.getElementById('page-sk');if(pg&&pg.classList.contains('on')&&!_skBusy())renderSkPage();}
+  }).catch(function(){});
+}
+function supTeamAll(){
+  var team=(_supTeam||[]).filter(function(s){return !fbUser||s._uid!==fbUser.uid;});
+  var meName=(fbUser&&(fbUser.displayName||(fbUser.email||'').split('@')[0]))||'Tôi';
+  var mine=loadSupportLocal().map(function(s){return Object.assign({},s,{_uid:(fbUser&&fbUser.uid)||'me',_acct:meName});});
+  return team.concat(mine);
+}
+function _supMediaHtml(mats){
+  // Ảnh → hiện thu nhỏ (bấm mở to); video tải lên → trình phát ngay trong trang; còn lại → link
+  if(!mats||!mats.length)return '';
+  var imgs='',vids='',links='';
+  mats.forEach(function(mt){
+    var u=escHtml(mt.url||'');if(!u)return;
+    var up=/firebasestorage/i.test(mt.url);
+    if(mt.type==='image'&&(up||/\.(jpe?g|png|webp|gif)(\?|$)/i.test(mt.url)))imgs+='<a href="'+u+'" target="_blank" rel="noopener"><img src="'+u+'" loading="lazy" alt="Ảnh" style="width:96px;height:96px;object-fit:cover;border-radius:9px;border:1px solid #E0E0E0;background:#FAFAFA"></a>';
+    else if(mt.type==='video'&&up)vids+='<video src="'+u+'" controls preload="metadata" playsinline style="width:100%;max-width:420px;border-radius:10px;background:#000;margin-top:6px;display:block"></video>';
+    else{var ic=mt.type==='video'?'🎬':(mt.type==='test'?'🧾':(mt.type==='image'?'🖼️':'🔗'));var lbl={video:'Video',test:'Giấy tờ',image:'Hình ảnh',other:'Liên kết'}[mt.type]||'Liên kết';links+='<a href="'+u+'" target="_blank" rel="noopener" style="color:#1565C0;text-decoration:none;margin-right:10px;white-space:nowrap">'+ic+' '+lbl+'</a>';}
+  });
+  var h='';
+  if(imgs)h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+imgs+'</div>';
+  if(vids)h+=vids;
+  if(links)h+='<div style="margin-top:7px;font-size:12.5px">'+links+'</div>';
+  return h;
+}
+function _supSectionHtml(name){
+  var vo=(typeof viewOnlyMode!=='undefined'&&viewOnlyMode);
+  var list=supTeamAll().filter(function(s){return s.condName===name;});
+  list.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+  var h='<div style="background:#FFFBEA;border:1px solid #F3D97A;border-radius:12px;padding:12px 13px">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+  h+='<div style="font-size:14.5px;font-weight:800;color:#8D6E00">💡 Cách hỗ trợ <span style="font-weight:700;color:#B08900">('+list.length+' chia sẻ)</span></div>';
+  if(!vo)h+='<button onclick="supAddOpen()" style="background:#F9A825;color:#fff;border:none;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer">➕ Chia sẻ cách hỗ trợ</button>';
+  h+='</div>';
+  h+='<div style="font-size:12px;color:#8a7a4a;margin-top:2px">Kinh nghiệm thực tế của các ID: sản phẩm, cách dùng, liều lượng, thời gian, lưu ý… kèm ảnh/video minh hoạ.</div>';
+  if(_supFormOpen)h+=_supFormHtml(name);
+  if(!list.length&&!_supFormOpen)h+='<div style="color:#AAA;font-size:13px;padding:10px 2px 2px">Chưa có chia sẻ nào cho tình trạng này — hãy là người đầu tiên!</div>';
+  list.forEach(function(s){h+=_supCardHtml(s);});
+  return h+'</div>';
+}
+function _supCardHtml(s){
+  var vo=(typeof viewOnlyMode!=='undefined'&&viewOnlyMode);
+  var mine=(fbUser&&s._uid===fbUser.uid)||s._uid==='me';
+  var canEdit=mine&&!vo, canDel=(mine||isBranchAdmin)&&!vo;
+  var h='<div style="background:#fff;border:1px solid #EFE3B5;border-left:4px solid #F9A825;border-radius:11px;padding:11px 13px;margin-top:10px">';
+  h+='<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><div style="font-weight:800;color:#5D4037;font-size:13px">👤 '+escHtml(s._acct||s.authorName||'—')+'</div><div style="font-size:12px;color:#888">'+escHtml(_skDate(s.updatedAt||s.createdAt))+'</div></div>';
+  if(s.text)h+='<div style="font-size:13.5px;color:#333;margin-top:6px;line-height:1.55">'+escHtml(s.text).replace(/\n/g,'<br>')+'</div>';
+  h+=_supMediaHtml(s.materials);
+  if(canEdit||canDel){
+    h+='<div style="margin-top:8px;display:flex;gap:8px">';
+    if(canEdit)h+='<button onclick="supEditOpen(\''+escHtml(s.id)+'\')" style="border:1px solid #1565C0;background:#fff;color:#1565C0;border-radius:8px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer">✏️ Sửa</button>';
+    if(canDel)h+='<button onclick="supDelete(\''+escHtml(s.id)+'\',\''+escHtml(s._uid)+'\')" style="border:1px solid #E53935;background:#fff;color:#E53935;border-radius:8px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer">🗑 Xoá</button>';
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function _supFormHtml(name){
+  var ed=null;
+  if(_supEditId)ed=loadSupportLocal().filter(function(x){return x.id===_supEditId;})[0]||null;
+  if(!_supMatInit){_supMatDraft=(ed&&ed.materials)?ed.materials.slice():[];_supMatInit=true;}
+  var h='<div style="background:#fff;border:1px solid #F3D97A;border-radius:12px;padding:13px;margin-top:10px">';
+  h+='<div style="font-weight:800;color:#8D6E00;margin-bottom:8px">'+(_supEditId?'✏️ Sửa chia sẻ':'➕ Chia sẻ cách hỗ trợ')+' — '+escHtml(name)+'</div>';
+  h+='<label style="font-size:12.5px;font-weight:700;color:#444">Nội dung</label><textarea id="sup-f-text" rows="5" placeholder="VD: Sản phẩm nào, uống/dùng thế nào, bao lâu thấy chuyển biến, lưu ý gì, câu hỏi hay gặp…" style="width:100%;margin-top:3px;padding:8px;border:1px solid #C9C9C9;border-radius:8px;font-size:13px;resize:vertical">'+escHtml(ed?(ed.text||''):'')+'</textarea>';
+  h+='<div style="margin-top:8px"><label style="font-size:12.5px;font-weight:700;color:#444">📎 Hình ảnh / video</label><div id="sup-mat-list">'+_supMatRowsHtml()+'</div>';
+  h+='<div style="margin-top:8px;padding:10px;border:1px dashed #F9A825;border-radius:9px;background:#FFFDF5">'
+    +'<div style="font-size:12px;color:#8D6E00;font-weight:700;margin-bottom:5px">📷 Tải thẳng ảnh / video từ máy</div>'
+    +'<input id="sup-file-input" type="file" multiple accept="image/*,video/*,application/pdf" onchange="skUploadSelected(\'sup\')" style="font-size:12px;max-width:100%">'
+    +'<div id="sup-up-status" style="font-size:12px;color:#666;margin-top:6px;line-height:1.5"></div>'
+    +'<div style="font-size:11px;color:#999;margin-top:4px">Ảnh tự nén nhẹ. Ảnh ≤25MB, video ≤100MB (~1–2 phút). Video dài hơn thì dán link YouTube/Drive bên dưới.</div></div>';
+  h+='<button onclick="supAddMatRow()" style="margin-top:8px;border:1px dashed #F9A825;background:#fff;color:#8D6E00;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm link (YouTube, Drive…)</button></div>';
+  h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="supSave()" style="background:#F9A825;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="supCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
+  return h+'</div>';
+}
+function _supMatRowsHtml(){return _matRowsHtml(_supMatDraft,'supDelMatRow');}
+function _supSyncMat(){
+  var arr=[];
+  document.querySelectorAll('#sup-mat-list .sk-mat-row').forEach(function(row){
+    var t=row.querySelector('[data-mf="type"]'), u=row.querySelector('[data-mf="url"]');
+    arr.push({type:t?t.value:'other',url:u?u.value.trim():''});
+  });
+  _supMatDraft=arr;
+}
+function supAddMatRow(){_supSyncMat();_supMatDraft.push({type:'video',url:''});var b=document.getElementById('sup-mat-list');if(b)b.innerHTML=_supMatRowsHtml();}
+function supDelMatRow(i){_supSyncMat();_supMatDraft.splice(i,1);var b=document.getElementById('sup-mat-list');if(b)b.innerHTML=_supMatRowsHtml();}
+function supAddOpen(){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  if(!_skSelName){showToast('Hãy chọn tình trạng trước');return;}
+  _skFormOpen=false;_supFormOpen=true;_supEditId='';_supMatInit=false;_supMatDraft=[];renderSkPage();
+  var t=document.getElementById('sup-f-text');if(t){t.focus();t.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+function supEditOpen(id){var s=loadSupportLocal().filter(function(x){return x.id===id;})[0];if(!s){showToast('Chỉ sửa được chia sẻ của chính bạn');return;}_skFormOpen=false;_supEditId=id;_skSelName=s.condName;_supFormOpen=true;_supMatInit=false;renderSkPage();}
+function supCancel(){_supFormOpen=false;_supEditId='';_supMatInit=false;renderSkPage();}
+function supSave(){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  var condName=_skSelName;if(!condName){showToast('⚠ Chưa chọn tình trạng');return;}
+  _supSyncMat();
+  var t=document.getElementById('sup-f-text'),text=t?t.value.trim():'';
+  var mats=_supMatDraft.filter(function(mt){return mt.url&&mt.url.trim();});
+  if(!text&&!mats.length){showToast('⚠ Hãy viết nội dung hoặc thêm ảnh/video');return;}
+  var list=loadSupportLocal(),now=new Date().toISOString();
+  if(_supEditId){
+    list=list.map(function(x){return x.id===_supEditId?Object.assign({},x,{condName:condName,text:text,materials:mats,updatedAt:now}):x;});
+  }else{
+    list.push({id:((fbUser&&fbUser.uid)||'me')+'_s'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),condName:condName,text:text,materials:mats,authorName:(fbUser&&(fbUser.displayName||fbUser.email))||'',createdAt:now});
+  }
+  saveMySupport(list);
+  _supFormOpen=false;_supEditId='';_supMatInit=false;
+  showToast('✅ Đã lưu cách hỗ trợ');
+  skRefresh();
+}
+function supDelete(id,uid){
+  if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
+  if(!confirm('Xoá chia sẻ này?'))return;
+  var mine=(fbUser&&uid===fbUser.uid)||uid==='me';
+  if(mine){saveMySupport(loadSupportLocal().filter(function(x){return x.id!==id;}));showToast('🗑 Đã xoá');skRefresh();}
+  else if(isBranchAdmin){_qtvDeleteSupport(uid,id);}
+  else showToast('Bạn không có quyền xoá chia sẻ này');
+}
+async function _qtvDeleteSupport(uid,id){
+  if(!fbDb||!fbUser)return;
+  try{
+    var m=await import(FB_STORE);var ref=m.doc(fbDb,'publicClubs',uid);
+    var snap=await m.getDoc(ref);var d=snap.exists()?snap.data():null;
+    if(!d){showToast('Không tìm thấy dữ liệu');return;}
+    var list=(d.support||[]).filter(function(x){return x.id!==id;});
+    await m.setDoc(ref,{support:list,updatedAt:new Date().toISOString()},{merge:true});
+    showToast('🗑 QTV đã xoá chia sẻ');skRefresh();
   }catch(e){showToast('Xoá thất bại (cần quyền QTV)');}
 }
 
