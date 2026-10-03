@@ -1,4 +1,4 @@
-<!-- VERSION: v6.95-cach-ho-tro -->
+<!-- VERSION: v6.96-ds-stt-cachhotro -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4399,6 +4399,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v696-ds-stt', ver:'6.96', icon:'🔢', title:'Kết quả SK: danh sách tình trạng đánh số + làm sáng mục đã có Cách hỗ trợ',
+    desc:'Danh sách tình trạng giờ xếp <b>a–b–c</b> và đánh <b>số thứ tự 1, 2, 3…</b> từ trên xuống. Tình trạng nào đã có <b>💡 Cách hỗ trợ</b> sẽ <b>sáng vàng</b> kèm số chia sẻ; số ca kết quả hiện ở nhãn bên phải.' },
   { id:'v695-cach-ho-tro', ver:'6.95', icon:'💡', title:'Kết quả SK: thêm mục “Cách hỗ trợ” cho từng tình trạng',
     desc:'Trong <b>🩺 Kết quả SK</b>, bấm chọn 1 tình trạng → có khung <b>💡 Cách hỗ trợ</b>. Mỗi ID bấm <b>➕ Chia sẻ cách hỗ trợ</b> để góp kinh nghiệm: viết chữ (sản phẩm, cách dùng, thời gian, lưu ý…), <b>tải thẳng ảnh/video</b> từ điện thoại hoặc dán link YouTube/Drive. Cả team cùng xem; ảnh hiện thu nhỏ, video xem ngay trong trang.' },
   { id:'v694-zoom-khach', ver:'6.94', icon:'👤', title:'Điểm danh ảnh Zoom: điền tay khách chưa có ID',
@@ -15984,7 +15986,7 @@ function renderSkPage(){
   h+=_skPieHtml(counts,total);
   h+='<div style="background:#fff;border:1px solid #E6E6E6;border-radius:14px;padding:14px;margin-top:12px">';
   h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
-  h+='<label style="font-size:13px;font-weight:700;color:#333">Danh sách tình trạng — bấm để xem/thêm · <span style="color:#2E7D32">tô màu = đã có ca</span></label>';
+  h+='<label style="font-size:13px;font-weight:700;color:#333">Danh sách tình trạng (a–b–c) — bấm để xem/thêm · <span style="background:#FFE082;border:1px solid #F9A825;border-radius:6px;padding:0 6px;color:#4E342E">💡 sáng = đã có Cách hỗ trợ</span></label>';
   if(!(typeof viewOnlyMode!=='undefined'&&viewOnlyMode))h+='<button onclick="skAddCustomCond()" style="border:1px dashed #F57C00;background:#FFF8F0;color:#E65100;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer">➕ Thêm tình trạng khác</button>';
   h+='</div>';
   h+=_skChipsHtml(condList,counts);
@@ -15997,14 +15999,20 @@ function renderSkPage(){
   }
 }
 function _skChipsHtml(condList,counts){
-  // Danh sách tình trạng dạng "chip" — tô màu nổi bật cái đã có ca, làm mờ cái chưa có
-  var h='<div style="display:flex;flex-wrap:wrap;gap:7px">';
+  // v6.96 — Danh sách đánh SỐ THỨ TỰ 1,2,3… theo a–b–c, chảy từ trên xuống (rồi sang cột kế).
+  //   Có "Cách hỗ trợ" → làm SÁNG (nền vàng + 💡 số chia sẻ). Có ca kết quả → badge màu số ca.
+  var supCnt={};supTeamAll().forEach(function(s){if(s.condName)supCnt[s.condName]=(supCnt[s.condName]||0)+1;});
+  var h='<div style="column-width:250px;column-gap:10px">';
   condList.forEach(function(name,i){
-    var cnt=counts[name]||0, sel=(_skSelName===name), col=_skColorOf[name]||'#2E7D32', st, badge='';
-    if(sel){st='background:'+col+';color:#fff;border:1.5px solid '+col+';font-weight:700;box-shadow:0 2px 7px rgba(0,0,0,.18)';badge='<span style="display:inline-block;min-width:16px;text-align:center;background:#fff;color:'+col+';border-radius:10px;padding:0 5px;font-size:11px;font-weight:800;margin-left:5px">'+cnt+'</span>';}
-    else if(cnt>0){st='background:#fff;color:'+col+';border:1.5px solid '+col+';font-weight:700';badge='<span style="display:inline-block;min-width:16px;text-align:center;background:'+col+';color:#fff;border-radius:10px;padding:0 5px;font-size:11px;font-weight:800;margin-left:5px">'+cnt+'</span>';}
-    else{st='background:#F5F5F5;color:#9A9A9A;border:1px solid #E4E4E4';}
-    h+='<button onclick="skPickChipIdx('+i+')" style="cursor:pointer;border-radius:20px;padding:6px 12px;font-size:12.5px;line-height:1.3;'+st+'">'+escHtml(name)+badge+'</button>';
+    var cnt=counts[name]||0, sc=supCnt[name]||0, sel=(_skSelName===name), col=_skColorOf[name]||'#2E7D32', st, nst;
+    if(sel){st='background:#1A237E;color:#fff;border:1.5px solid #1A237E;font-weight:800;box-shadow:0 2px 7px rgba(0,0,0,.2)';nst='color:#C5CAE9';}
+    else if(sc>0){st='background:linear-gradient(90deg,#FFE082,#FFF8E1);color:#4E342E;border:1.5px solid #F9A825;font-weight:800;box-shadow:0 0 0 2px rgba(249,168,37,.18)';nst='color:#8D6E00';}
+    else if(cnt>0){st='background:#fff;color:#333;border:1px solid #DADADA;font-weight:600';nst='color:#999';}
+    else{st='background:#FAFAFA;color:#9A9A9A;border:1px solid #EEE';nst='color:#BDBDBD';}
+    var badges='';
+    if(sc>0)badges+='<span title="'+sc+' chia sẻ Cách hỗ trợ" style="flex:0 0 auto;background:#F9A825;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;font-weight:800">💡'+sc+'</span>';
+    if(cnt>0)badges+='<span title="'+cnt+' ca kết quả" style="flex:0 0 auto;background:'+(sel?'#fff':col)+';color:'+(sel?'#1A237E':'#fff')+';border-radius:10px;padding:0 6px;font-size:11px;font-weight:800">'+cnt+' ca</span>';
+    h+='<button onclick="skPickChipIdx('+i+')" style="break-inside:avoid;display:flex;align-items:center;gap:6px;width:100%;text-align:left;cursor:pointer;border-radius:9px;padding:7px 10px;margin:0 0 6px;font-size:13px;line-height:1.3;'+st+'"><span style="flex:0 0 auto;min-width:22px;text-align:right;font-weight:800;'+nst+'">'+(i+1)+'.</span><span style="flex:1">'+escHtml(name)+'</span>'+badges+'</button>';
   });
   return h+'</div>';
 }
