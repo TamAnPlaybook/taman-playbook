@@ -1,4 +1,4 @@
-<!-- VERSION: v6.98-ds-khong-hoat-dong -->
+<!-- VERSION: v6.99-hiendien-du-ten-xep-cao -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1246,6 +1246,9 @@ table.ina-t .ina-sub{font-size:11px;color:#999;font-weight:400}
 .adash-drillbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:#14532D;background:#EEF8F1;border:1px solid #BFE3CB;border-radius:10px;padding:8px 10px;margin-bottom:8px;line-height:1.5}
 .adash-drillbtns{display:flex;flex-wrap:wrap;gap:6px}
 .adash-hichip{display:inline-block;background:#1A7A5E;color:#fff;border-radius:999px;padding:1px 9px;font-weight:800;font-size:11.5px}
+/* v6.99 — DS tuyến dưới: ưu tiên hiện ĐỦ TÊN (xuống dòng, không cắt "…") */
+table.adash.adash-drill .adash-nm{white-space:normal;overflow:visible;text-overflow:clip;min-width:190px;max-width:290px;line-height:1.35;padding-top:4px;padding-bottom:4px}
+@media(max-width:600px){table.adash.adash-drill .adash-nm{min-width:150px;max-width:190px}}
 table.adash .adash-lv{display:inline-block;font-size:10px;font-weight:800;color:#6B7A8F;background:#EEF1F5;border-radius:4px;padding:0 3px}
 table.adash tr.adash-hirow td{background:#EAF7EE}
 table.adash td.adash-nm.adash-hi{background:#D7F2E0;color:#14663F;box-shadow:inset 3px 0 0 #1A7A5E}
@@ -5717,7 +5720,7 @@ function attDashDrillHtml(root,o){
   function rowHtml(it,ord){
     var isRoot=it.depth===0;
     var clk=isRoot?(it.m.id?' data-open-mid="'+it.m.id+'" data-open-type="kh" title="Mở chi tiết"':''):' data-attdash-drill="'+it.tn.id+'" title="Xem DS từ '+escHtml(it.m.name)+' trở xuống"';
-    var hh='<tr'+(it.hi?' class="adash-hirow"':'')+'><td class="adash-nm'+(it.hi?' adash-hi':'')+'"'+clk+' style="padding-left:'+(3+Math.min(it.depth,8)*7)+'px">';
+    var hh='<tr'+(it.hi?' class="adash-hirow"':'')+'><td class="adash-nm'+(it.hi?' adash-hi':'')+'"'+clk+'>';
     hh+='<b class="adash-ord">'+ord+'.</b> ';
     if(!isRoot)hh+='<span class="adash-lv">F'+it.depth+(it.side==='L'?'⬅':it.side==='R'?'➡':'')+'</span> ';
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
@@ -5740,13 +5743,24 @@ function attDashDrillHtml(root,o){
   if(parent)h+='<button class="btn btn-d btn-sm" data-attdash-drill="'+parent.id+'">⬆️ Lên '+escHtml(parent.name)+'</button>';
   if(rootMem)h+='<button class="btn btn-d btn-sm" data-open-mid="'+rootMem.id+'" data-open-type="kh">📋 Chi tiết '+escHtml(root.name)+'</button>';
   h+='<button class="btn btn-sm" style="background:#FCE4E4;color:#C62828;border:1px solid #F3B4B4" data-attdash-drill="">✕ Về bảng chung</button></div></div>';
-  h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
-  h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
+  h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. Trong mỗi nhánh, <b>hiện diện càng cao xếp càng trên</b>. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
+  h+='<div class="adash-wrap"><table class="adash adash-drill"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){
     var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
     h+='<th class="'+thc+'" data-attdash-selday="'+d2+'">'+d2+'</th>';
   }
   h+='<th>&sum;</th><th>%</th></tr>';
+  // v6.99 — trong mỗi nhánh (Trái/Phải): hiện diện CÀNG CAO đứng CÀNG TRÊN (% → số buổi → số ngày), hoà thì giữ thứ tự cây
+  seq.forEach(function(it,i){it._ix=i;});
+  var brW={'':0,'L':1,'R':2};
+  seq.sort(function(a,b){
+    if(brW[a.br]!==brW[b.br])return brW[a.br]-brW[b.br];
+    var pa=a.pct===null?-1:a.pct,pb=b.pct===null?-1:b.pct;
+    if(pa!==pb)return pb-pa;
+    if(a.pres!==b.pres)return b.pres-a.pres;
+    if(a.tot!==b.tot)return b.tot-a.tot;
+    return a._ix-b._ix;
+  });
   var lastBr=null,ord=0;
   seq.forEach(function(it){
     if(it.depth===0){h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">👑 '+escHtml(root.name)+'</td></tr>';h+=rowHtml(it,'★');return;}
