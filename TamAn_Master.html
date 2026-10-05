@@ -1,4 +1,4 @@
-<!-- VERSION: v6.96-ds-stt-cachhotro -->
+<!-- VERSION: v6.97-hiendien-nhiphan-phantich-sinhnhat -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1202,6 +1202,47 @@ table.adash td.adash-nm.adash-on .adash-nmtxt{font-weight:800}
 table.adash td.adash-nm.adash-off{color:#B4AF9F}
 table.adash td.adash-nm.adash-off .adash-ord{color:#CFC9B6}
 tr.adash-sec.adash-secOn td{background:#E3F5EA;color:#1A7A5E}
+/* v6.97 — Phân tích: bấm thống kê → DS người liên quan */
+.an-click{cursor:pointer;border-radius:8px;transition:background .12s}
+.an-row.an-click{padding:3px 4px;margin-left:-4px;margin-right:-4px}
+.an-click:hover{background:#F2F6FB}
+.an-insights .an-ins.an-click:hover{background:#E6EFFC}
+.an-more{display:inline-block;margin-left:4px;font-size:11.5px;font-weight:800;color:#1565C0;white-space:nowrap}
+.anp-sum{font-size:13px;color:#555;background:#F7F5EE;border-radius:9px;padding:8px 10px;margin-bottom:10px;line-height:1.5}
+.anp-gh{font-size:12.5px;font-weight:800;color:#8A6D1A;background:#FFF6DE;border-radius:7px;padding:5px 9px;margin:10px 0 6px}
+.anp-row{display:flex;align-items:flex-start;gap:9px;padding:9px 4px;border-bottom:1px solid #F0EDE2}
+.anp-row .an-person-dot{margin-top:5px;flex-shrink:0}
+.anp-main{flex:1;min-width:0}
+.anp-name{font-weight:800;font-size:14px;color:#1A1A1A}
+.anp-extra{font-size:11px;font-weight:800;color:#1565C0;background:#E3F2FD;border-radius:999px;padding:1px 7px}
+.anp-meta{font-size:11.5px;color:#777;margin-top:2px;line-height:1.45;word-break:break-word}
+.anp-view{flex-shrink:0;border:1px solid #DDD;background:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:14px}
+/* v6.97 — Popup chúc mừng sinh nhật */
+.bdp-ov{position:fixed;inset:0;z-index:2500;background:rgba(40,10,40,.55);display:none;align-items:center;justify-content:center;padding:16px}
+.bdp-ov.open{display:flex}
+.bdp-card{position:relative;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;background:linear-gradient(160deg,#FFF8FC 0%,#FFFFFF 45%,#FFF8E6 100%);border:2px solid #F3C2DE;border-radius:22px;box-shadow:0 18px 50px rgba(120,20,90,.35);padding:22px 18px 16px;text-align:center;animation:bdpIn .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes bdpIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.bdp-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:#F7E3EF;color:#8E1B5E;font-size:16px;cursor:pointer}
+.bdp-cake{font-size:44px;line-height:1.1}
+.bdp-h{font-size:22px;font-weight:900;color:#C0287A;letter-spacing:.5px;margin-top:6px}
+.bdp-date{font-size:12.5px;color:#9A6A86;margin-top:2px}
+.bdp-person{background:#fff;border:1px solid #F6D3E6;border-radius:14px;padding:12px 12px 10px;margin-top:12px;box-shadow:0 2px 8px rgba(192,40,122,.08)}
+.bdp-name{font-size:17px;font-weight:900;color:#1A1A1A}
+.bdp-age{display:inline-block;font-size:11.5px;font-weight:800;color:#fff;background:#C0287A;border-radius:999px;padding:1px 8px;vertical-align:middle}
+.bdp-code{font-size:11.5px;color:#999;margin-top:2px}
+.bdp-wish{font-size:14px;color:#4A2340;line-height:1.65;margin-top:8px;font-style:italic}
+.bdp-foot{font-size:12.5px;color:#1A7A5E;font-weight:800;margin-top:14px}
+.bdp-fab{position:fixed;right:14px;bottom:84px;z-index:900;width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:linear-gradient(135deg,#E04A9B,#C0287A);color:#fff;font-size:24px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(192,40,122,.45);animation:bdpPulse 1.8s ease-in-out infinite}
+@keyframes bdpPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* v6.97 — bảng hiện diện: DS từ 1 ID trở xuống (cây Nhị phân) + tô sáng ≥80% */
+.adash-drillbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:#14532D;background:#EEF8F1;border:1px solid #BFE3CB;border-radius:10px;padding:8px 10px;margin-bottom:8px;line-height:1.5}
+.adash-drillbtns{display:flex;flex-wrap:wrap;gap:6px}
+.adash-hichip{display:inline-block;background:#1A7A5E;color:#fff;border-radius:999px;padding:1px 9px;font-weight:800;font-size:11.5px}
+table.adash .adash-lv{display:inline-block;font-size:10px;font-weight:800;color:#6B7A8F;background:#EEF1F5;border-radius:4px;padding:0 3px}
+table.adash tr.adash-hirow td{background:#EAF7EE}
+table.adash td.adash-nm.adash-hi{background:#D7F2E0;color:#14663F;box-shadow:inset 3px 0 0 #1A7A5E}
+table.adash td.adash-pct{font-weight:800;color:#888;white-space:nowrap}
+table.adash td.adash-pct.adash-pct-hi{color:#fff;background:#1A7A5E}
 .adash-hint{font-size:11.5px;color:#8A6D1A;background:#FFFBEC;border:1px solid #F1E4B8;border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
@@ -1985,6 +2026,26 @@ a.gp-att-nm:hover{text-decoration:underline}
     <div class="nmod-body" id="idstats-content"></div>
   </div>
 </div>
+
+<!-- v6.97 — PHÂN TÍCH: bấm thống kê → DS người liên quan -->
+<div class="nmod-ov" id="anpick-ov">
+  <div class="nmod" style="max-width:600px">
+    <div class="nmod-hd">
+      <div class="nmod-title" id="anpick-title">👥 Người liên quan</div>
+      <button class="nmod-x" data-close-ov="anpick-ov">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="anpick-content"></div>
+  </div>
+</div>
+
+<!-- v6.97 — POPUP CHÚC MỪNG SINH NHẬT (tự hiện cả ngày sinh nhật) -->
+<div class="bdp-ov" id="bdpop-ov">
+  <div class="bdp-card">
+    <button class="bdp-x" data-close-ov="bdpop-ov">&#10005;</button>
+    <div id="bdpop-content"></div>
+  </div>
+</div>
+<button class="bdp-fab" id="bdpop-fab" data-bdpop-open="1" title="Chúc mừng sinh nhật hôm nay" style="display:none">🎂</button>
 
 <!-- ĐIỂM DANH BẰNG ẢNH ZOOM — chụp màn hình Zoom, app OCR tên → tự điểm danh -->
 <div class="nmod-ov" id="zatt-ov">
@@ -4399,6 +4460,10 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v697-bday-popup', ver:'6.97', icon:'🎂', title:'Popup chúc mừng sinh nhật tự động',
+    desc:'Ai đã nhập <b>Sinh nhật</b> trong thông tin ID — đúng ngày đó, mở app sẽ tự hiện <b>popup chúc mừng</b> kèm 1 lời chúc về ước mơ, mục tiêu, cuộc đời đáng sống, ấm no, hạnh phúc, thịnh vượng. Đóng popup thì nút <b>🎂</b> ở góc màn hình vẫn còn để mở lại <b>suốt cả ngày</b>.' },
+  { id:'v697-attdash-drill', ver:'6.97', icon:'🌳', title:'Bảng hiện diện tháng: bấm tên → DS từ ID đó trở xuống',
+    desc:'Trong <b>Kế hoạch ngày &amp; Điểm danh → 📊 Xem bảng hiện diện tháng</b>, bấm vào <b>tên 1 ID</b> để xem danh sách từ ID đó trở xuống theo <b>cây Nhị phân</b> (chia Nhánh Trái / Phải, có tầng F1, F2…). Cột <b>%</b> = số buổi có mặt ÷ số buổi đã được điểm danh trong tháng; ID hiện diện <b>≥80%</b> được <b>⭐ tô xanh</b>. QTV: trong <b>Phân tích</b>, bấm vào Mức độ gắn kết / Phân khúc / Nhận định để xem <b>tên, Mã ID, những người liên quan</b>.' },
   { id:'v696-ds-stt', ver:'6.96', icon:'🔢', title:'Kết quả SK: danh sách tình trạng đánh số + làm sáng mục đã có Cách hỗ trợ',
     desc:'Danh sách tình trạng giờ xếp <b>a–b–c</b> và đánh <b>số thứ tự 1, 2, 3…</b> từ trên xuống. Tình trạng nào đã có <b>💡 Cách hỗ trợ</b> sẽ <b>sáng vàng</b> kèm số chia sẻ; số ca kết quả hiện ở nhãn bên phải.' },
   { id:'v695-cach-ho-tro', ver:'6.95', icon:'💡', title:'Kết quả SK: thêm mục “Cách hỗ trợ” cho từng tình trạng',
@@ -5514,6 +5579,7 @@ function dailyComboCard(m,ord){
 // ===== v6.40 — BẢNG HIỆN DIỆN THÁNG (dashboard: 1 ID hiện diện những ngày nào, Sáng/Trưa/Tối) =====
 var _attDashOpen=false,_attDashM=null; // _attDashM={y,m} (m: 0-11); null = theo tháng của ngày đang xem
 var _attDashSelDay=null; // v6.81 — ngày đang chọn (1-31) để xem ai có mặt; null = không chọn
+var _attDashDrill=null; // v6.97 — id node (cây Nhị phân) đang xem "từ ID này trở xuống"; null = bảng thường
 function _attDashBase(){
   if(_attDashM)return _attDashM;
   return {y:currentDay.getFullYear(),m:currentDay.getMonth()};
@@ -5524,20 +5590,29 @@ function attDashHtml(list){
   var nDays=new Date(y,mo+1,0).getDate();
   var tNow=new Date();
   var todayD=(tNow.getFullYear()===y&&tNow.getMonth()===mo)?tNow.getDate():0;
+  function mkIt(mm,tn){
+    if(!tn)tn=treeNodes.find(function(t){return t.name===mm.name;});
+    var rk=tn?nodeRank(tn.id):0;
+    var days=[],tot=0;
+    for(var d=1;d<=nDays;d++){
+      var v=mm.id?[dGetAt(mm.id,y,mo+1,d,'sang'),dGetAt(mm.id,y,mo+1,d,'trua'),dGetAt(mm.id,y,mo+1,d,'toi')]:['','',''];
+      days.push(v);
+      if(v[0]==='yes'||v[1]==='yes'||v[2]==='yes')tot++;
+    }
+    return {m:mm,tn:tn,rk:rk,days:days,tot:tot};
+  }
+  // v6.97 — bấm tên → DS từ ID đó trở xuống theo cây Nhị phân (nhánh ĐẶT, Trái trước Phải);
+  //   tô sáng ID hiện diện (✓ hoặc ⏰) ≥ 80% số buổi ĐÃ ĐƯỢC ĐIỂM DANH trong tháng
+  //   (1 buổi = Sáng/Trưa/Tối của 1 ngày, tính là "đã điểm danh" khi có ít nhất 1 thành viên được chấm).
+  var drillRoot=_attDashDrill?treeNodes.find(function(t){return t.id===_attDashDrill;}):null;
+  if(_attDashDrill&&!drillRoot)_attDashDrill=null;
+  if(drillRoot)return attDashDrillHtml(drillRoot,{y:y,mo:mo,nDays:nDays,todayD:todayD,mkIt:mkIt});
   // Chia 2 nhóm: khu vực đặc biệt = cấp bậc Future Star / 1★ trở lên; còn lại xuống dưới
   var stars=[],others=[];
   list.forEach(function(mm){
     if(!mm)return;
-    var tn=treeNodes.find(function(t){return t.name===mm.name;});
-    var rk=tn?nodeRank(tn.id):0;
-    var days=[],tot=0;
-    for(var d=1;d<=nDays;d++){
-      var v=[dGetAt(mm.id,y,mo+1,d,'sang'),dGetAt(mm.id,y,mo+1,d,'trua'),dGetAt(mm.id,y,mo+1,d,'toi')];
-      days.push(v);
-      if(v[0]==='yes'||v[1]==='yes'||v[2]==='yes')tot++;
-    }
-    var it={m:mm,rk:rk,days:days,tot:tot};
-    if(rk>=1)stars.push(it);else others.push(it);
+    var it=mkIt(mm);
+    if(it.rk>=1)stars.push(it);else others.push(it);
   });
   var selD=(_attDashSelDay&&_attDashSelDay>=1&&_attDashSelDay<=nDays)?_attDashSelDay:null;
   function presentOn(it,d){var v=it.days[d-1];return !!v&&(v[0]==='yes'||v[1]==='yes'||v[2]==='yes');}
@@ -5548,7 +5623,9 @@ function attDashHtml(list){
   function rowHtml(it,ord,mark){
     // mark: 1 = có mặt (sáng màu) · 0 = vắng (mờ) · null = bình thường
     var nmCls='adash-nm'+(mark===1?' adash-on':mark===0?' adash-off':'');
-    var hh='<tr><td class="'+nmCls+'" data-open-mid="'+it.m.id+'" data-open-type="kh"><b class="adash-ord">'+ord+'.</b> ';
+    // v6.97 — ID có trên cây → bấm tên mở DS tuyến dưới; khách (chưa có trên cây) → mở chi tiết như cũ
+    var clk=it.tn?' data-attdash-drill="'+it.tn.id+'" title="Xem DS từ '+escHtml(it.m.name)+' trở xuống"':' data-open-mid="'+it.m.id+'" data-open-type="kh"';
+    var hh='<tr><td class="'+nmCls+'"'+clk+'><b class="adash-ord">'+ord+'.</b> ';
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
     hh+='<span class="adash-nmtxt">'+escHtml(it.m.name)+'</span></td>';
     for(var d=1;d<=nDays;d++){
@@ -5564,7 +5641,7 @@ function attDashHtml(list){
   var cols=nDays+2;
   var h='<div class="adash-box">';
   h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
-  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên; bấm tên để mở chi tiết. <b>Bấm số ngày ở đầu cột</b> để xem ai có mặt hôm đó.</div>';
+  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên. <b>Bấm tên</b> để xem DS từ ID đó trở xuống theo cây Nhị phân (tô sáng ID hiện diện ≥80% số buổi).<b>Bấm số ngày ở đầu cột</b> để xem ai có mặt hôm đó.</div>';
   if(selD)h+='<div class="adash-hint">📅 Đang xem ngày <b>'+selD+'/'+(mo+1)+'</b> — ID có mặt (≥1 buổi ✓) xếp lên đầu theo cấp bậc <b>3★ → 2★ → 1★ → FS</b>, tên sáng màu. Bấm lại số ngày <b>'+selD+'</b> để bỏ chọn.</div>';
   h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){
@@ -5594,6 +5671,83 @@ function attDashHtml(list){
     }
     if(!stars.length&&!others.length)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:10px;text-align:left">Chưa có thành viên nào</td></tr>';
   }
+  h+='</table></div></div>';
+  return h;
+}
+// v6.97 — Bảng hiện diện: DS từ 1 ID trở xuống theo cây Nhị phân + % hiện diện / số buổi đã điểm danh trong tháng
+function attDashDrillHtml(root,o){
+  var y=o.y,mo=o.mo,nDays=o.nDays,todayD=o.todayD,SES=['sang','trua','toi'];
+  var selD=(_attDashSelDay&&_attDashSelDay>=1&&_attDashSelDay<=nDays)?_attDashSelDay:null;
+  // Buổi "đã được điểm danh" = có ít nhất 1 thành viên (hoặc khách) được chấm ✓/⏰/✗ ở buổi đó
+  var pool=members.concat(loadGuests()),held=[],nHeld=0;
+  for(var d=1;d<=nDays;d++){
+    var hd=[0,0,0];
+    for(var s=0;s<3;s++){
+      for(var i=0;i<pool.length;i++){if(pool[i]&&pool[i].id&&dGetAt(pool[i].id,y,mo+1,d,SES[s])){hd[s]=1;nHeld++;break;}}
+    }
+    held.push(hd);
+  }
+  var mBy={};members.forEach(function(m){mBy[m.name]=m;});
+  var seq=[];
+  (function walk(n,depth,br){
+    var it=o.mkIt(mBy[n.name]||{id:'',name:n.name},n);
+    it.depth=depth;it.br=br;it.side=n.side||'';
+    var pres=0;
+    for(var d=0;d<nDays;d++)for(var s=0;s<3;s++){var v=it.days[d][s];if(held[d][s]&&(v==='yes'||v==='late'))pres++;}
+    it.pres=pres;it.pct=nHeld?Math.round(pres/nHeld*100):null;it.hi=it.pct!==null&&it.pct>=80;
+    seq.push(it);
+    placementChildren(n.id).slice().sort(function(a,b){return (a.side==='L'?0:1)-(b.side==='L'?0:1);})
+      .forEach(function(c){walk(c,depth+1,depth===0?(c.side==='L'?'L':'R'):br);});
+  })(root,0,'');
+  var nHi=seq.filter(function(it){return it.hi;}).length;
+  var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
+  var cols=nDays+3;
+  var rootMem=mBy[root.name];
+  var parent=root.parentId?treeNodes.find(function(t){return t.id===root.parentId;}):null;
+  function rowHtml(it,ord){
+    var isRoot=it.depth===0;
+    var clk=isRoot?(it.m.id?' data-open-mid="'+it.m.id+'" data-open-type="kh" title="Mở chi tiết"':''):' data-attdash-drill="'+it.tn.id+'" title="Xem DS từ '+escHtml(it.m.name)+' trở xuống"';
+    var hh='<tr'+(it.hi?' class="adash-hirow"':'')+'><td class="adash-nm'+(it.hi?' adash-hi':'')+'"'+clk+' style="padding-left:'+(3+Math.min(it.depth,8)*7)+'px">';
+    hh+='<b class="adash-ord">'+ord+'.</b> ';
+    if(!isRoot)hh+='<span class="adash-lv">F'+it.depth+(it.side==='L'?'⬅':it.side==='R'?'➡':'')+'</span> ';
+    if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
+    hh+='<span class="adash-nmtxt">'+(it.hi?'⭐ ':'')+escHtml(it.m.name)+'</span></td>';
+    for(var d=1;d<=nDays;d++){
+      var v=it.days[d-1];
+      var cls=[];if(new Date(y,mo,d).getDay()===0)cls.push('adash-sun');if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
+      hh+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><div class="ad-c">';
+      for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
+      hh+='</div></td>';
+    }
+    hh+='<td class="adash-tot">'+(it.tot||'')+'</td>';
+    hh+='<td class="adash-pct'+(it.hi?' adash-pct-hi':'')+'" title="'+it.pres+'/'+nHeld+' buổi">'+(it.pct===null?'—':it.pct+'%')+'</td></tr>';
+    return hh;
+  }
+  var h='<div class="adash-box">';
+  h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
+  h+='<div class="adash-drillbar"><div>🌳 Từ <b>'+escHtml(root.name)+'</b> trở xuống theo cây Nhị phân: <b>'+seq.length+'</b> ID · tháng này đã điểm danh <b>'+nHeld+'</b> buổi · <span class="adash-hichip">⭐ ≥80%: '+nHi+' ID</span></div>';
+  h+='<div class="adash-drillbtns">';
+  if(parent)h+='<button class="btn btn-d btn-sm" data-attdash-drill="'+parent.id+'">⬆️ Lên '+escHtml(parent.name)+'</button>';
+  if(rootMem)h+='<button class="btn btn-d btn-sm" data-open-mid="'+rootMem.id+'" data-open-type="kh">📋 Chi tiết '+escHtml(root.name)+'</button>';
+  h+='<button class="btn btn-sm" style="background:#FCE4E4;color:#C62828;border:1px solid #F3B4B4" data-attdash-drill="">✕ Về bảng chung</button></div></div>';
+  h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
+  h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
+  for(var d2=1;d2<=nDays;d2++){
+    var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
+    h+='<th class="'+thc+'" data-attdash-selday="'+d2+'">'+d2+'</th>';
+  }
+  h+='<th>&sum;</th><th>%</th></tr>';
+  var lastBr=null,ord=0;
+  seq.forEach(function(it){
+    if(it.depth===0){h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">👑 '+escHtml(root.name)+'</td></tr>';h+=rowHtml(it,'★');return;}
+    if(it.br!==lastBr){
+      lastBr=it.br;ord=0;
+      var cnt=seq.filter(function(x){return x.br===it.br;}),hiC=cnt.filter(function(x){return x.hi;}).length;
+      h+='<tr class="adash-sec"><td colspan="'+cols+'">'+(it.br==='L'?'⬅️ Nhánh Trái':'➡️ Nhánh Phải')+' ('+cnt.length+' ID · ⭐ ≥80%: '+hiC+')</td></tr>';
+    }
+    h+=rowHtml(it,++ord);
+  });
+  if(seq.length===1)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">ID này chưa có tuyến dưới trên cây Nhị phân</td></tr>';
   h+='</table></div></div>';
   return h;
 }
@@ -7743,6 +7897,62 @@ function birthdayRowHtml(n){ // dòng "Sinh nhật" trong popup chi tiết ID (�
   var txt=b.d+'/'+b.m+(b.y?('/'+b.y):'');
   return '<div class="nmod-row"><div class="nmod-lbl">Sinh nhật</div><div style="font-weight:700'+(today?';color:#C0287A':'')+'">🎂 '+escHtml(txt)+(today?' — Hôm nay! 🎉':'')+'</div></div>';
 }
+// ===== v6.97 — POPUP CHÚC MỪNG SINH NHẬT: ai đã nhập Sinh nhật trong thông tin ID → đúng ngày đó app tự bật
+//   popup chúc mừng (mỗi lần mở app trong ngày, đóng thì còn nút 🎂 nổi để mở lại suốt cả ngày) + 1 lời chúc ý nghĩa.
+//   QTV bật/tắt trong 📣 Truyền thông đội nhóm → 🎉 Chúc mừng đội nhóm (banner.bdayPopup, mặc định BẬT).
+var BDAY_WISHES=[
+  'Chúc bạn tuổi mới luôn giữ ngọn lửa ƯỚC MƠ cháy sáng — mỗi ngày tiến thêm một bước tới mục tiêu lớn nhất đời mình. Một cuộc đời đáng sống là cuộc đời dám mơ và dám làm!',
+  'Tuổi mới chúc bạn ẤM NO đủ đầy, HẠNH PHÚC trọn vẹn bên gia đình, và THỊNH VƯỢNG nhờ chính những giá trị bạn trao đi cho cộng đồng.',
+  'Mỗi năm qua đi không phải là mất thêm một tuổi, mà là có thêm một năm kinh nghiệm để sống sâu sắc hơn. Chúc bạn sống một cuộc đời ĐÁNG SỐNG — có ý nghĩa với mình và với người khác!',
+  'Chúc bạn tuổi mới: sức khoẻ dồi dào để đi đường dài, trái tim rộng mở để yêu thương, và bản lĩnh vững vàng để biến mọi MỤC TIÊU thành hiện thực.',
+  'Ước mơ không có hạn sử dụng. Chúc bạn tuổi mới viết tiếp những trang đẹp nhất — sống tự do, giàu có, khoẻ mạnh và lan toả hạnh phúc tới thật nhiều người!',
+  'Chúc bạn một năm mới của cuộc đời thật THỊNH VƯỢNG: tài chính vững vàng, tinh thần an nhiên, gia đình ấm êm và đội nhóm luôn đồng hành bên bạn.',
+  'Hôm nay là ngày thế giới có thêm một người tuyệt vời. Chúc bạn luôn giữ vững niềm tin, theo đuổi đến cùng ước mơ và sống mỗi ngày với lòng biết ơn.',
+  'Chúc bạn tuổi mới gặt hái thật nhiều QUẢ NGỌT từ những hạt giống đã gieo — làm điều mình yêu, yêu điều mình làm, và sống một cuộc đời không hối tiếc.',
+  'Cuộc đời đáng sống nhất là khi ta giúp được nhiều người cùng sống tốt hơn. Chúc bạn tuổi mới khoẻ mạnh, ấm no, hạnh phúc và trở thành nguồn cảm hứng cho cả đội!',
+  'Chúc bạn tuổi mới đạt được những mục tiêu đã đặt ra, vượt qua mọi giới hạn của chính mình — và luôn nhớ: bạn xứng đáng với mọi điều tốt đẹp nhất trên đời.',
+  'Mừng sinh nhật! Chúc bạn một năm bình an, sung túc, tràn đầy năng lượng — mỗi sáng thức dậy đều có một lý do để mỉm cười và một ước mơ để theo đuổi.',
+  'Chúc bạn tuổi mới thành công rực rỡ trên hành trình tự do tài chính, sống trọn vẹn từng khoảnh khắc với người thân yêu — ẤM NO, HẠNH PHÚC và THỊNH VƯỢNG!'
+];
+function _bdayHash(s){var h=0;s=String(s);for(var i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0;}return Math.abs(h);}
+function _bdayWishFor(n){var t=new Date();return BDAY_WISHES[_bdayHash((n.name||'')+t.getFullYear()+(t.getMonth()+1)+t.getDate())%BDAY_WISHES.length];}
+function bdayPopupOn(){return !bannerCfg||bannerCfg.bdayPopup!==false;}
+function bdayPopupHtml(list,preview){
+  var t=new Date(),dd=t.getDate()+'/'+(t.getMonth()+1);
+  var h='<div class="bdp-top"><div class="bdp-cake">🎂🎉🎈</div><div class="bdp-h">CHÚC MỪNG SINH NHẬT</div><div class="bdp-date">Hôm nay '+dd+(preview?' · (xem thử)':'')+'</div></div>';
+  list.forEach(function(n){
+    var b=parseBirthday(n.birthday),age=(b&&b.y&&b.y>1900)?(t.getFullYear()-b.y):0;
+    var me=!n.parentId&&!preview;
+    h+='<div class="bdp-person">';
+    h+='<div class="bdp-name">'+(me?'🌟 Chúc mừng sinh nhật BẠN — ':'🎁 ')+escHtml(n.name||'')+(age>0&&age<120?' <span class="bdp-age">tròn '+age+' tuổi</span>':'')+'</div>';
+    if(n.idCode)h+='<div class="bdp-code">🔑 '+escHtml(n.idCode)+'</div>';
+    h+='<div class="bdp-wish">“'+escHtml(_bdayWishFor(n))+'”</div>';
+    h+='</div>';
+  });
+  h+='<div class="bdp-foot">— Đại gia đình Tâm An gửi lời chúc yêu thương 💚</div>';
+  return h;
+}
+function openBdayPopup(preview){
+  var list=birthdayCelebrants();
+  if(preview&&!list.length){
+    var me=(_realTreeNodes()||[]).find(function(x){return !x.parentId;});
+    list=[{name:(me&&me.name)||'Tên thành viên',idCode:(me&&me.idCode)||'',birthday:''}];
+  }
+  if(!list.length){showToast('Hôm nay chưa có ai sinh nhật');return;}
+  document.getElementById('bdpop-content').innerHTML=bdayPopupHtml(list,preview);
+  document.getElementById('bdpop-ov').classList.add('open');
+  try{playCelebration('confetti','🎂 Chúc mừng sinh nhật '+list.map(function(n){return n.name;}).join(' · ')+'!');}catch(e){}
+}
+function maybeBdayPopup(){
+  var fab=document.getElementById('bdpop-fab');
+  var list=(bannerCfg&&bdayPopupOn())?birthdayCelebrants():[];
+  if(fab)fab.style.display=list.length?'flex':'none';
+  if(!list.length||viewOnlyMode)return;
+  var t=new Date(),key='ta_bdpop_'+t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate()+'_'+list.map(function(n){return n.id;}).join(',');
+  try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');}catch(e){if(window._bdpopShown===key)return;window._bdpopShown=key;}
+  document.getElementById('bdpop-content').innerHTML=bdayPopupHtml(list,false);
+  document.getElementById('bdpop-ov').classList.add('open');
+}
 function activeBanner(){ // ưu tiên: priority cao nhất; hoà → chúc mừng trước; rồi mới nhất
   var cfg=bannerCfg||{},cands=[];
   (cfg.announcements||[]).forEach(function(a){if(a&&a.text&&_bnActive(a))cands.push({kind:'announce',item:a,prio:(a.priority!==undefined?+a.priority:1)});});
@@ -7763,8 +7973,9 @@ function _tkSpeed(track,chars){track.style.animationDuration=Math.max(14,Math.ro
 function renderBanner(){
   var bar=document.getElementById('ticker-bar');if(!bar)return;
   var app=document.getElementById('app');
-  if(!app||app.style.display==='none'){bar.style.display='none';_bannerSig='';return;}
+  if(!app||app.style.display==='none'){bar.style.display='none';_bannerSig='';var _bf=document.getElementById('bdpop-fab');if(_bf)_bf.style.display='none';return;}
   bar.style.display='flex';
+  try{maybeBdayPopup();}catch(e){} // v6.97 — popup chúc mừng sinh nhật (1 lần/phiên mở app trong ngày + nút 🎂 cả ngày)
   var act=activeBanner();
   if(act&&act.kind==='celebrate'&&act.item.effects!==false&&act.item.id&&act.item.id!==_lastCelebId){
     _lastCelebId=act.item.id;playCelebration(act.item.effectType||'confetti',act.item.text);
@@ -10933,6 +11144,7 @@ function renderAnalytics(data){
   var el=document.getElementById('analytics-content');if(!el)return;
   if(!data||!data.length){el.innerHTML='<div style="color:#999;font-size:13px;padding:10px 0">Chưa có tài khoản nào để phân tích.</div>';return;}
   var users=data.map(analyzeUser),now=Date.now(),total=users.length;
+  _anUsers=users; // v6.97 — giữ lại để bấm vào thống kê → xem DS người liên quan
   var dau=users.filter(function(u){return u.activeToday;}).length;
   var wau=users.filter(function(u){return u.act7>0;}).length;
   var mau=users.filter(function(u){return u.act30>0;}).length;
@@ -10961,7 +11173,7 @@ function renderAnalytics(data){
   var clsDef=[{k:'high',lbl:'Gắn kết cao',c:'#1A7A5E'},{k:'mod',lbl:'Gắn kết vừa',c:'#1565C0'},{k:'low',lbl:'Gắn kết thấp',c:'#F9A825'},{k:'atrisk',lbl:'Có nguy cơ',c:'#E65100'},{k:'inactive',lbl:'Ngưng dùng',c:'#C62828'}];
   h+='<div class="an-sec"><div class="an-h">💚 Mức độ gắn kết</div>';
   clsDef.forEach(function(cd){var n=users.filter(function(u){return u.cls===cd.k;}).length;var pct=total?Math.round(n/total*100):0;
-    h+='<div class="an-row"><div class="an-row-lbl" style="color:'+cd.c+'">'+cd.lbl+'</div>'+_anBar(pct,cd.c)+'<div class="an-row-v">'+n+' ('+pct+'%)</div></div>';});
+    h+='<div class="an-row an-click" data-an-pick="cls:'+cd.k+'" title="Bấm để xem DS người"><div class="an-row-lbl" style="color:'+cd.c+'">'+cd.lbl+'</div>'+_anBar(pct,cd.c)+'<div class="an-row-v">'+n+' ('+pct+'%) ›</div></div>';});
   h+='</div>';
   // 3) TÍNH NĂNG
   var fa=aggregateFeatures(data);
@@ -11008,7 +11220,7 @@ function renderAnalytics(data){
   var segDef=[{k:'new',lbl:'🌱 Mới (<7 ngày)',c:'#00897B'},{k:'active',lbl:'✅ Hoạt động',c:'#1565C0'},{k:'power',lbl:'⭐ Power user',c:'#1A7A5E'},{k:'atrisk',lbl:'⚠️ Có nguy cơ',c:'#E65100'},{k:'inactive',lbl:'💤 Ngưng dùng',c:'#C62828'}];
   h+='<div class="an-sec"><div class="an-h">👥 Phân khúc người dùng</div>';
   segDef.forEach(function(sd){var n=users.filter(function(u){return u.seg===sd.k;}).length;var pct=total?Math.round(n/total*100):0;
-    h+='<div class="an-row"><div class="an-row-lbl" style="color:'+sd.c+'">'+sd.lbl+'</div>'+_anBar(pct,sd.c)+'<div class="an-row-v">'+n+'</div></div>';});
+    h+='<div class="an-row an-click" data-an-pick="seg:'+sd.k+'" title="Bấm để xem DS người"><div class="an-row-lbl" style="color:'+sd.c+'">'+sd.lbl+'</div>'+_anBar(pct,sd.c)+'<div class="an-row-v">'+n+' ›</div></div>';});
   h+='</div>';
   // 6) APP HEALTH
   var d7=retentionRate(users,7),d30=retentionRate(users,30);
@@ -11025,20 +11237,71 @@ function renderAnalytics(data){
   h+=_anBar(health,hc);
   h+='<div class="an-grid" style="margin-top:10px">'+_anStat(engPct+'%','Gắn kết','#1565C0')+_anStat(activeRatio+'%','Tỉ lệ MAU','#6A1B9A')+_anStat(adopt+'%','Phủ tính năng','#00897B')+_anStat((d7===null?'—':d7+'%'),'Giữ chân D7','#1A7A5E')+'</div></div>';
   // 7) INSIGHTS & ĐỀ XUẤT
-  var ins=[];
-  if(most&&most.uses>0)ins.push('Tính năng <b>'+escHtml(most.lbl)+'</b> được dùng nhiều nhất ('+most.users+' người) — nên đầu tư &amp; làm nổi bật.');
-  if(least&&least.uses===0)ins.push('<b>'+escHtml(least.lbl)+'</b> gần như chưa ai dùng — cân nhắc hướng dẫn rõ hơn, đặt nổi bật hơn, hoặc xem lại sự cần thiết.');
-  else if(least)ins.push('<b>'+escHtml(least.lbl)+'</b> ít dùng nhất — kiểm tra xem có khó tìm/khó dùng không.');
-  if(grow&&grow.recent>grow.prior)ins.push('<b>'+escHtml(grow.lbl)+'</b> đang tăng nhanh — tận dụng đà này.');
-  if(abandon)ins.push('<b>'+escHtml(abandon.lbl)+'</b> bị bỏ rơi (>14 ngày không ai dùng) — nên cải thiện trải nghiệm.');
-  if(atrisk>0)ins.push('<b>'+atrisk+' người</b> có nguy cơ rời bỏ (14–30 ngày không hoạt động) — nên nhắc nhở/chăm sóc.');
-  if(d7!==null&&d7<30)ins.push('Giữ chân D7 chỉ <b>'+d7+'%</b> — nhiều người không quay lại sau tuần đầu. Tập trung tạo giá trị ở 7 ngày đầu (ví dụ: nhắc chấm Bánh xe + xem Tấm gương).');
-  if(returning>0&&total)ins.push('Người quay lại ≥2 ngày thường gắn kết lâu hơn — hiện có <b>'+returning+'/'+total+'</b>.');
+  var ins=[],insK=[];function addIns(s,k){ins.push(s);insK.push(k||'');} // v6.97 — k = khoá DS người liên quan (bấm để xem)
+  if(most&&most.uses>0)addIns('Tính năng <b>'+escHtml(most.lbl)+'</b> được dùng nhiều nhất ('+most.users+' người) — nên đầu tư &amp; làm nổi bật.','feat:'+most.id);
+  if(least&&least.uses===0)addIns('<b>'+escHtml(least.lbl)+'</b> gần như chưa ai dùng — cân nhắc hướng dẫn rõ hơn, đặt nổi bật hơn, hoặc xem lại sự cần thiết.','feat:'+least.id);
+  else if(least)addIns('<b>'+escHtml(least.lbl)+'</b> ít dùng nhất — kiểm tra xem có khó tìm/khó dùng không.','feat:'+least.id);
+  if(grow&&grow.recent>grow.prior)addIns('<b>'+escHtml(grow.lbl)+'</b> đang tăng nhanh — tận dụng đà này.','feat:'+grow.id);
+  if(abandon)addIns('<b>'+escHtml(abandon.lbl)+'</b> bị bỏ rơi (>14 ngày không ai dùng) — nên cải thiện trải nghiệm.','feat:'+abandon.id);
+  if(atrisk>0)addIns('<b>'+atrisk+' người</b> có nguy cơ rời bỏ (14–30 ngày không hoạt động) — nên nhắc nhở/chăm sóc.','cls:atrisk');
+  if(d7!==null&&d7<30)addIns('Giữ chân D7 chỉ <b>'+d7+'%</b> — nhiều người không quay lại sau tuần đầu. Tập trung tạo giá trị ở 7 ngày đầu (ví dụ: nhắc chấm Bánh xe + xem Tấm gương).','ret7lost');
+  if(returning>0&&total)addIns('Người quay lại ≥2 ngày thường gắn kết lâu hơn — hiện có <b>'+returning+'/'+total+'</b>.','returning');
   if(!ins.length)ins.push('Chưa đủ dữ liệu để rút ra nhận định. Hãy để người dùng hoạt động vài ngày rồi xem lại.');
   h+='<div class="an-sec an-insights"><div class="an-h">🤖 Nhận định &amp; Đề xuất sản phẩm</div>';
-  ins.forEach(function(s){h+='<div class="an-ins">💡 '+s+'</div>';});
+  ins.forEach(function(s,i){var k=insK[i];
+    h+=k?'<div class="an-ins an-click" data-an-pick="'+k+'" title="Bấm để xem những người liên quan">💡 '+s+' <span class="an-more">👥 Xem người liên quan ›</span></div>':'<div class="an-ins">💡 '+s+'</div>';});
   h+='<div class="an-frow-sub" style="margin-top:8px">Cập nhật theo dữ liệu hành vi thật (ẩn danh hoá), không phải phỏng đoán.</div></div>';
   el.innerHTML=h;
+}
+// v6.97 — Bấm vào thống kê (Mức độ gắn kết · Phân khúc · Nhận định) → popup DS tên, Mã ID, những người liên quan
+var _anUsers=null;
+var AN_CLS_LBL={high:'💚 Gắn kết cao',mod:'💙 Gắn kết vừa',low:'💛 Gắn kết thấp',atrisk:'⚠️ Có nguy cơ',inactive:'💤 Ngưng dùng'};
+var AN_SEG_LBL={'new':'🌱 Mới (<7 ngày)',active:'✅ Hoạt động',power:'⭐ Power user',atrisk:'⚠️ Có nguy cơ',inactive:'💤 Ngưng dùng'};
+function _anIdCodeOf(u){
+  var nm=noAccent(String(u.name||'').trim());if(!nm)return '';
+  var n=(_realTreeNodes()||[]).find(function(t){return noAccent(String(t.name||'').trim())===nm;});
+  return n?String(n.idCode||'').trim()||'(trên cây, chưa có Mã ID)':'';
+}
+function _anPersonRow(u,extra){
+  var dotc=u.cls==='high'?'#1A7A5E':u.cls==='mod'?'#1565C0':u.cls==='low'?'#F9A825':u.cls==='atrisk'?'#E65100':'#C62828';
+  var code=_anIdCodeOf(u);
+  var lastTxt=u.last?(fmtDT(new Date(u.last).toISOString())+' · '+_presAgo(Date.now()-u.last)):'chưa hoạt động';
+  var h='<div class="anp-row"><span class="an-person-dot" style="background:'+dotc+'"></span><div class="anp-main">';
+  h+='<div class="anp-name">'+escHtml(u.name||u.email||'(không tên)')+(extra?' <span class="anp-extra">'+extra+'</span>':'')+'</div>';
+  h+='<div class="anp-meta">'+(code?'🔑 Mã ID: <b>'+escHtml(code)+'</b>':'<span style="color:#B07A00">🔑 chưa khớp cây của bạn</span>')+(u.email?' · 📧 '+escHtml(u.email):'')+'</div>';
+  h+='<div class="anp-meta">🕒 '+lastTxt+' · '+u.activeDaysCount+' ngày · '+u.sessions+' phiên · điểm '+u.score+'</div>';
+  h+='</div><button class="anp-view" data-view-uid="'+escHtml(u.uid)+'" data-view-name="'+escHtml(u.name||u.email||'')+'" title="Xem toàn bộ nội dung (chỉ đọc)">👁️</button></div>';
+  return h;
+}
+function openAnPick(key){
+  var users=_anUsers||[];if(!users.length){showToast('Chưa có số liệu');return;}
+  var p=String(key).split(':'),typ=p[0],val=p[1]||'',now=Date.now();
+  var title='',note='',groups=[];
+  function byLast(a,b){return (b.last||0)-(a.last||0);}
+  if(typ==='cls'){title=AN_CLS_LBL[val]||val;groups.push({l:'',a:users.filter(function(u){return u.cls===val;})});
+    note=val==='atrisk'?'14–30 ngày chưa quay lại app — nên gọi hỏi thăm, nhắc nhở.':val==='inactive'?'Hơn 30 ngày chưa hoạt động (hoặc chưa từng vào).':'Phân loại theo điểm gắn kết (số ngày hoạt động, số phiên, số tính năng dùng, thời lượng).';}
+  else if(typ==='seg'){title=AN_SEG_LBL[val]||val;groups.push({l:'',a:users.filter(function(u){return u.seg===val;})});}
+  else if(typ==='feat'){
+    var f=ANALYTICS_FEATURES.find(function(x){return x.id===val;});
+    title='🧩 '+(f?f.lbl:val);note='Ai đã dùng tính năng này (số lượt) và ai chưa dùng — để hướng dẫn / nhắc thêm.';
+    var used=users.filter(function(u){return (u.feats||{})[val]>0;}).sort(function(a,b){return b.feats[val]-a.feats[val];});
+    groups.push({l:'✅ Đã dùng',a:used,x:function(u){return '×'+u.feats[val]+' lượt';},keep:1});
+    groups.push({l:'— Chưa dùng',a:users.filter(function(u){return !((u.feats||{})[val]>0);})});
+  }
+  else if(typ==='ret7lost'){title='🔁 Không quay lại sau tuần đầu';note='Đã vào app từ ≥7 ngày trước nhưng không còn hoạt động sau ngày thứ 6.';
+    groups.push({l:'',a:users.filter(function(u){return u.firstSeenT&&(now-u.firstSeenT)>=7*864e5&&!(u.last&&(u.last-u.firstSeenT)>=6*864e5);})});}
+  else if(typ==='returning'){title='🔁 Quay lại ≥2 ngày';groups.push({l:'',a:users.filter(function(u){return u.activeDaysCount>=2;})});}
+  var tot=groups.reduce(function(s,g){return s+g.a.length;},0);
+  var h='<div class="anp-sum"><b>'+tot+'</b> người'+(note?' · '+note:'')+'</div>';
+  groups.forEach(function(g){
+    if(!g.keep)g.a.sort(byLast);
+    if(g.l)h+='<div class="anp-gh">'+g.l+' ('+g.a.length+')</div>';
+    if(!g.a.length)h+='<div style="color:#999;font-size:13px;padding:6px 2px">— Không có ai</div>';
+    g.a.forEach(function(u){h+=_anPersonRow(u,g.x?g.x(u):'');});
+  });
+  document.getElementById('anpick-title').textContent=title;
+  document.getElementById('anpick-content').innerHTML=h;
+  document.getElementById('anpick-ov').classList.add('open');
 }
 var FIRESTORE_RULES="rules_version = '2';\n"+
 "service cloud.firestore {\n"+
@@ -11168,6 +11431,14 @@ function celebrateBoxHtml(banner){
   h+='<button class="btn btn-sm" style="background:#8E24AA;color:#fff" data-act="celeb-publish">🎉 Công bố chúc mừng</button>';
   h+='<button class="btn btn-d btn-sm" data-act="celeb-preview">👁️ Xem thử hiệu ứng</button>';
   if(on)h+='<button class="btn btn-r btn-sm" data-act="celeb-stop">⏹️ Tắt chúc mừng</button>';
+  h+='</div>';
+  // v6.97 — Popup chúc mừng sinh nhật tự động
+  var _bdl=birthdayCelebrants();
+  h+='<div style="margin-top:12px;border-top:1px dashed #E0C2F0;padding-top:10px">';
+  h+='<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:#6A1B9A;font-weight:800;cursor:pointer"><input type="checkbox" data-act="bdpop-toggle" '+(banner&&banner.bdayPopup===false?'':'checked')+' style="width:17px;height:17px">🎂 Tự động popup chúc mừng sinh nhật</label>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin:4px 0 8px">Ai đã nhập <b>Sinh nhật</b> trong thông tin ID — đúng ngày đó, khi mở app sẽ tự hiện <b>popup chúc mừng</b> kèm 1 lời chúc ý nghĩa (ước mơ, mục tiêu, cuộc đời đáng sống, ấm no, hạnh phúc, thịnh vượng). Đóng popup thì vẫn còn nút <b>🎂</b> ở góc màn hình để mở lại <b>suốt cả ngày</b>.</div>';
+  h+='<div style="font-size:12.5px;color:#444;margin-bottom:8px">Hôm nay: '+(_bdl.length?_bdl.map(function(n){return '<b style="color:#C0287A">🎂 '+escHtml(n.name)+'</b>';}).join(', '):'<span style="color:#999">chưa có ai sinh nhật</span>')+'</div>';
+  h+='<button class="btn btn-d btn-sm" data-bdpop-open="preview">👁️ Xem thử popup sinh nhật</button>';
   h+='</div></div>';
   return h;
 }
@@ -12387,6 +12658,30 @@ document.addEventListener('click',function(e){
     _attDashM={y:_ad.getFullYear(),m:_ad.getMonth()};
     _attDashSelDay=null; // đổi tháng thì bỏ chọn ngày
     renderDailyCombined();
+    return;
+  }
+  // v6.97 — đóng popup chung (DS người liên quan · chúc mừng sinh nhật); bấm nền tối cũng đóng
+  t=e.target.closest('[data-close-ov]');
+  if(t){var _cov=document.getElementById(t.getAttribute('data-close-ov'));if(_cov)_cov.classList.remove('open');return;}
+  if(e.target.id==='anpick-ov'||e.target.id==='bdpop-ov'){e.target.classList.remove('open');return;}
+  t=e.target.closest('[data-an-pick]');
+  if(t){openAnPick(t.getAttribute('data-an-pick'));return;}
+  if(e.target.closest('#anpick-ov [data-view-uid]'))document.getElementById('anpick-ov').classList.remove('open'); // rồi xử lý xem tài khoản như cũ
+  t=e.target.closest('[data-bdpop-open]');
+  if(t){openBdayPopup(t.getAttribute('data-bdpop-open')==='preview');return;}
+  t=e.target.closest('[data-act="bdpop-toggle"]');
+  if(t){
+    var _bdOn=!!t.checked;
+    fsSetGlobal('banner',{bdayPopup:_bdOn}).then(function(){if(bannerCfg)bannerCfg.bdayPopup=_bdOn;showToast(_bdOn?'🎂 Đã BẬT popup chúc mừng sinh nhật':'Đã TẮT popup chúc mừng sinh nhật');renderBanner();})
+      .catch(function(err){t.checked=!_bdOn;showToast('Lỗi: '+err.message);});
+    return;
+  }
+  // v6.97 — bấm tên trong bảng hiện diện → DS từ ID đó trở xuống (cây Nhị phân); "" = về bảng chung
+  t=e.target.closest('[data-attdash-drill]');
+  if(t){
+    _attDashDrill=t.getAttribute('data-attdash-drill')||null;
+    renderDailyCombined();
+    var _abx=document.querySelector('#list-ngay .adash-box');if(_abx)_abx.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
   // v6.81 — chọn ngày: ID có mặt xếp lên đầu (3★→FS) + tên sáng màu; bấm lại để bỏ chọn
