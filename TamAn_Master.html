@@ -1,4 +1,4 @@
-<!-- VERSION: v7.00-hiendien-pct-nhanh -->
+<!-- VERSION: v7.01-hiendien-tu-chon -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1270,6 +1270,11 @@ table.adst tr.adst-tot td{background:#F4FAF6;border-top:2px solid #BFE3CB}
 .adst-bar i{display:block;height:100%;background:#E57373}
 .adst-mid .adst-bar i{background:#F2B33D}.adst-hi .adst-bar i{background:#1A7A5E}
 .adst-na{color:#AAA;font-size:11px}
+.adst-rng{display:flex;flex-direction:column;align-items:center;gap:3px;white-space:nowrap}
+.adst-rng label{font-size:10.5px;font-weight:600;color:#666;display:flex;align-items:center;gap:3px}
+.adst-rng input{font-size:11px;padding:1px 3px;border:1px solid #BFE3CB;border-radius:5px;max-width:122px}
+.adst-rng button{font-size:11px;border:1px solid #F3B4B4;background:#FCE4E4;color:#C62828;border-radius:5px;padding:0 6px;cursor:pointer}
+table.adst th.adst-rngh,table.adst td.adst-c:last-child{background:#FFFBEC}
 .adst-note{font-size:11px;color:#6B7A8F;margin-top:6px;line-height:1.5}
 .adash-hint{font-size:11.5px;color:#8A6D1A;background:#FFFBEC;border:1px solid #F1E4B8;border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
@@ -4488,6 +4493,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v701-adash-range', ver:'7.01', icon:'✍️', title:'Hiện diện theo nhánh: thêm khoảng thời gian tự chọn',
+    desc:'Khung <b>👥 % thành viên hiện diện</b> có thêm cột <b>✍️ Tự chọn</b>: chọn <b>Từ ngày</b> – <b>Đến ngày</b> bất kỳ (kể cả khác tháng, tối đa 366 ngày) để xem % TV hiện diện của Nhánh Trái · Phải · Tổng 2 nhánh trong khoảng đó. Bấm <b>↺</b> để về mặc định.' },
   { id:'v700-adash-branch-pct', ver:'7.00', icon:'👥', title:'Bảng hiện diện: % TV hiện diện theo nhánh (ngày/tuần/tháng)',
     desc:'Trong bảng hiện diện, khi <b>bấm tên 1 ID</b> để xem tuyến dưới, phía trên có thêm khung <b>👥 % thành viên hiện diện / tổng số thành viên</b> của <b>Nhánh Trái · Nhánh Phải · Tổng 2 nhánh</b>, theo <b>Ngày · Tuần (T2→CN) · Tháng</b>. TV hiện diện = có ≥1 buổi ✓/⏰ trong kỳ; kèm <b>TB/ngày</b>. Bấm số ngày ở đầu cột để đổi ngày/tuần đang tính.' },
   { id:'v698-inactive', ver:'6.98', icon:'😴', title:'Quản trị: DS không hoạt động ≥15 ngày',
@@ -5829,6 +5836,14 @@ function attDashBranchStatsHtml(seq,o){
     {lb:'🗓️ Tuần '+wS.getDate()+'/'+(wS.getMonth()+1)+'–'+wE.getDate()+'/'+(wE.getMonth()+1),dates:rangeDates(wS,wE)},
     {lb:'📊 Tháng '+(mo+1)+'/'+y,dates:rangeDates(new Date(y,mo,1),new Date(y,mo,nDays))}
   ];
+  // v7.01 — khoảng TỰ CHỌN (từ ngày → đến ngày); mặc định đầu tháng → ngày đang tính; tối đa 366 ngày
+  function pD(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):null;}
+  function fD(dt){return dt.getFullYear()+'-'+('0'+(dt.getMonth()+1)).slice(-2)+'-'+('0'+dt.getDate()).slice(-2);}
+  var rA=(_attDashRange&&pD(_attDashRange.a))||new Date(y,mo,1),rB=(_attDashRange&&pD(_attDashRange.b))||ref;
+  if(rA>rB){var _t=rA;rA=rB;rB=_t;}
+  var rCut=false;if((rB-rA)/864e5>365){rA=new Date(rB.getFullYear(),rB.getMonth(),rB.getDate()-365);rCut=true;}
+  var rngLb='<div class="adst-rng">✍️ Tự chọn<label>Từ <input type="date" value="'+fD(rA)+'" onchange="attDashSetRange(\'a\',this.value)"></label><label>Đến <input type="date" value="'+fD(rB)+'" onchange="attDashSetRange(\'b\',this.value)"></label>'+(_attDashRange?'<button type="button" onclick="attDashSetRange(null)" title="Về mặc định">↺</button>':'')+'</div>';
+  periods.push({lb:rngLb,dates:rangeDates(rA,rB),rng:1});
   function cell(grp,p){
     var tot=grp.length;if(!tot)return '<td class="adst-c"><span class="adst-na">—</span></td>';
     var hd=p.dates.filter(dayHeld);
@@ -5843,15 +5858,24 @@ function attDashBranchStatsHtml(seq,o){
   }
   var rows=[['⬅️ Nhánh Trái',L],['➡️ Nhánh Phải',R],['🌳 Tổng 2 nhánh',T]];
   var h='<div class="adst-box"><div class="adst-ttl">👥 % thành viên hiện diện / tổng số thành viên</div><div class="adst-wrap"><table class="adst"><tr><th></th>';
-  periods.forEach(function(p){h+='<th>'+p.lb+'</th>';});
+  periods.forEach(function(p){h+='<th'+(p.rng?' class="adst-rngh"':'')+'>'+p.lb+'</th>';});
   h+='</tr>';
   rows.forEach(function(r,i){
     h+='<tr'+(i===2?' class="adst-tot"':'')+'><td class="adst-lb">'+r[0]+'<small>'+r[1].length+' TV</small></td>';
     periods.forEach(function(p){h+=cell(r[1],p);});
     h+='</tr>';
   });
-  h+='</table></div><div class="adst-note">TV <b>hiện diện</b> trong kỳ = có ít nhất 1 buổi ✓/⏰. Ngày đang tính: <b>'+d0+'/'+(mo+1)+'</b> — <b>bấm số ngày ở đầu cột</b> để đổi ngày (tuần đổi theo, Thứ 2 → CN). Không tính ID gốc ('+escHtml(seq[0]?seq[0].m.name:'')+').</div></div>';
+  h+='</table></div><div class="adst-note">TV <b>hiện diện</b> trong kỳ = có ít nhất 1 buổi ✓/⏰. Ngày đang tính: <b>'+d0+'/'+(mo+1)+'</b> — <b>bấm số ngày ở đầu cột</b> để đổi ngày (tuần đổi theo, Thứ 2 → CN). Cột <b>✍️ Tự chọn</b>: chọn ngày đầu – ngày cuối bất kỳ ('+rA.getDate()+'/'+(rA.getMonth()+1)+'/'+rA.getFullYear()+' → '+rB.getDate()+'/'+(rB.getMonth()+1)+'/'+rB.getFullYear()+(rCut?', tối đa 366 ngày':'')+'). Không tính ID gốc ('+escHtml(seq[0]?seq[0].m.name:'')+').</div></div>';
   return h;
+}
+var _attDashRange=null; // v7.01 — {a:'YYYY-MM-DD',b:'YYYY-MM-DD'} khoảng tự chọn; null = mặc định
+function attDashSetRange(k,v){
+  if(!k){_attDashRange=null;}
+  else{
+    if(!_attDashRange){var bx=document.querySelectorAll('.adst-rng input[type=date]');_attDashRange={a:bx[0]?bx[0].value:'',b:bx[1]?bx[1].value:''};}
+    _attDashRange[k]=v||'';
+  }
+  renderDailyCombined();
 }
 function renderDailyCombined(){
   var el=document.getElementById('list-ngay');if(!el)return;
