@@ -1,4 +1,4 @@
-<!-- VERSION: v7.01-hiendien-tu-chon -->
+<!-- VERSION: v7.02-nut-len-xuong -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -4493,6 +4493,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v702-scroll-fab', ver:'7.02', icon:'↕️', title:'Nút nổi lên đầu / xuống cuối trang',
+    desc:'Ở <b>mọi trang</b>, cạnh phải màn hình có 2 nút nổi: <b>▲</b> bấm 1 lần là <b>lên đầu trang</b>, <b>▼</b> bấm 1 lần là <b>xuống cuối trang</b>. Nút tự ẩn khi đã ở đầu/cuối trang.' },
   { id:'v701-adash-range', ver:'7.01', icon:'✍️', title:'Hiện diện theo nhánh: thêm khoảng thời gian tự chọn',
     desc:'Khung <b>👥 % thành viên hiện diện</b> có thêm cột <b>✍️ Tự chọn</b>: chọn <b>Từ ngày</b> – <b>Đến ngày</b> bất kỳ (kể cả khác tháng, tối đa 366 ngày) để xem % TV hiện diện của Nhánh Trái · Phải · Tổng 2 nhánh trong khoảng đó. Bấm <b>↺</b> để về mặc định.' },
   { id:'v700-adash-branch-pct', ver:'7.00', icon:'👥', title:'Bảng hiện diện: % TV hiện diện theo nhánh (ngày/tuần/tháng)',
@@ -17115,6 +17117,37 @@ function discRenderRecognize(){
 
 function dShade(hex,pct){var n=parseInt(hex.slice(1),16);var r=(n>>16)&255,g=(n>>8)&255,b=n&255;r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
 
+</script>
+<!-- v7.02 — nút nổi bên phải: ▲ lên đầu trang / ▼ xuống cuối trang (mọi trang) -->
+<style>
+#scroll-fab{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:450;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+#scroll-fab button{pointer-events:auto;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.7);background:rgba(26,26,26,.72);color:#fff;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;transition:opacity .2s,transform .15s;-webkit-tap-highlight-color:transparent}
+#scroll-fab button:hover{background:rgba(201,162,39,.95)}
+#scroll-fab button:active{transform:scale(.9)}
+#scroll-fab button.sf-off{opacity:0;pointer-events:none}
+@media(max-width:600px){#scroll-fab{right:6px}#scroll-fab button{width:36px;height:36px;font-size:15px}}
+@media print{#scroll-fab{display:none}}
+</style>
+<div id="scroll-fab"><button type="button" id="sf-top" class="sf-off" title="Lên đầu trang" aria-label="Lên đầu trang">▲</button><button type="button" id="sf-bot" class="sf-off" title="Xuống cuối trang" aria-label="Xuống cuối trang">▼</button></div>
+<script>
+(function(){
+  var bt=document.getElementById('sf-top'),bb=document.getElementById('sf-bot');
+  function se(){return document.scrollingElement||document.documentElement;}
+  function upd(){
+    var s=se(),y=window.pageYOffset||s.scrollTop,max=s.scrollHeight-window.innerHeight;
+    bt.classList.toggle('sf-off',y<200);
+    bb.classList.toggle('sf-off',max<200||y>max-200);
+  }
+  function go(top){var y0=window.pageYOffset;try{window.scrollTo({top:top,behavior:'smooth'});}catch(e){window.scrollTo(0,top);}setTimeout(function(){if(window.pageYOffset===y0)window.scrollTo(0,top);},700);}
+  bt.addEventListener('click',function(){go(0);});
+  bb.addEventListener('click',function(){go(se().scrollHeight);});
+  var tk=0;function q(){if(tk)return;tk=requestAnimationFrame(function(){tk=0;upd();});}
+  window.addEventListener('scroll',q,{passive:true});
+  window.addEventListener('resize',q);
+  if(window.ResizeObserver)new ResizeObserver(q).observe(document.body);
+  setInterval(upd,1500);
+  upd();
+})();
 </script>
 </body>
 </html>
