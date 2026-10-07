@@ -1,4 +1,4 @@
-<!-- VERSION: v6.99-hiendien-du-ten-xep-cao -->
+<!-- VERSION: v7.00-hiendien-pct-nhanh -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1254,6 +1254,23 @@ table.adash tr.adash-hirow td{background:#EAF7EE}
 table.adash td.adash-nm.adash-hi{background:#D7F2E0;color:#14663F;box-shadow:inset 3px 0 0 #1A7A5E}
 table.adash td.adash-pct{font-weight:800;color:#888;white-space:nowrap}
 table.adash td.adash-pct.adash-pct-hi{color:#fff;background:#1A7A5E}
+/* v7.00 — % TV hiện diện / tổng TV theo nhánh × ngày/tuần/tháng */
+.adst-box{background:#fff;border:1px solid #BFE3CB;border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.adst-ttl{font-weight:800;font-size:13px;color:#14532D;margin-bottom:6px}
+.adst-wrap{overflow-x:auto}
+table.adst{width:100%;border-collapse:collapse;font-size:12px;min-width:420px}
+table.adst th{font-size:11.5px;color:#555;font-weight:700;padding:4px 6px;text-align:center;border-bottom:1px solid #E3EAE5;white-space:nowrap}
+table.adst td{padding:5px 6px;border-bottom:1px solid #F0F3F1;text-align:center;vertical-align:middle}
+table.adst td.adst-lb{text-align:left;font-weight:800;color:#333;white-space:nowrap}
+table.adst td small{display:block;font-size:10.5px;color:#777;font-weight:600}
+table.adst tr.adst-tot td{background:#F4FAF6;border-top:2px solid #BFE3CB}
+.adst-p{font-size:16px;font-weight:900;color:#B23B3B}
+.adst-mid .adst-p{color:#B8860B}.adst-hi .adst-p{color:#1A7A5E}
+.adst-bar{height:5px;background:#EEF1F0;border-radius:3px;margin:2px auto 2px;max-width:110px;overflow:hidden}
+.adst-bar i{display:block;height:100%;background:#E57373}
+.adst-mid .adst-bar i{background:#F2B33D}.adst-hi .adst-bar i{background:#1A7A5E}
+.adst-na{color:#AAA;font-size:11px}
+.adst-note{font-size:11px;color:#6B7A8F;margin-top:6px;line-height:1.5}
 .adash-hint{font-size:11.5px;color:#8A6D1A;background:#FFFBEC;border:1px solid #F1E4B8;border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
@@ -4471,6 +4488,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v700-adash-branch-pct', ver:'7.00', icon:'👥', title:'Bảng hiện diện: % TV hiện diện theo nhánh (ngày/tuần/tháng)',
+    desc:'Trong bảng hiện diện, khi <b>bấm tên 1 ID</b> để xem tuyến dưới, phía trên có thêm khung <b>👥 % thành viên hiện diện / tổng số thành viên</b> của <b>Nhánh Trái · Nhánh Phải · Tổng 2 nhánh</b>, theo <b>Ngày · Tuần (T2→CN) · Tháng</b>. TV hiện diện = có ≥1 buổi ✓/⏰ trong kỳ; kèm <b>TB/ngày</b>. Bấm số ngày ở đầu cột để đổi ngày/tuần đang tính.' },
   { id:'v698-inactive', ver:'6.98', icon:'😴', title:'Quản trị: DS không hoạt động ≥15 ngày',
     desc:'(Dành cho QTV) Tab <b>Quản trị → Theo dõi đội</b> có thêm mục <b>😴 Không hoạt động ≥15 ngày</b>: liệt kê <b>Tên · Email · thuộc nhánh Leader · Mã ID</b> và số ngày vắng. Lọc theo nhánh Leader, đổi ngưỡng 15/30/60/90 ngày, bấm <b>📋 Sao chép DS</b> để gửi nhắc nhở chăm sóc.' },
   { id:'v697-bday-popup', ver:'6.97', icon:'🎂', title:'Popup chúc mừng sinh nhật tự động',
@@ -5743,6 +5762,7 @@ function attDashDrillHtml(root,o){
   if(parent)h+='<button class="btn btn-d btn-sm" data-attdash-drill="'+parent.id+'">⬆️ Lên '+escHtml(parent.name)+'</button>';
   if(rootMem)h+='<button class="btn btn-d btn-sm" data-open-mid="'+rootMem.id+'" data-open-type="kh">📋 Chi tiết '+escHtml(root.name)+'</button>';
   h+='<button class="btn btn-sm" style="background:#FCE4E4;color:#C62828;border:1px solid #F3B4B4" data-attdash-drill="">✕ Về bảng chung</button></div></div>';
+  h+=attDashBranchStatsHtml(seq,{y:y,mo:mo,nDays:nDays,todayD:todayD,selD:selD,held:held,pool:pool});
   h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. Trong mỗi nhánh, <b>hiện diện càng cao xếp càng trên</b>. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
   h+='<div class="adash-wrap"><table class="adash adash-drill"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){
@@ -5773,6 +5793,64 @@ function attDashDrillHtml(root,o){
   });
   if(seq.length===1)h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">ID này chưa có tuyến dưới trên cây Nhị phân</td></tr>';
   h+='</table></div></div>';
+  return h;
+}
+// v7.00 — % số TV hiện diện / tổng số TV của Nhánh Trái · Nhánh Phải · Tổng 2 nhánh, theo NGÀY / TUẦN / THÁNG
+//   TV "hiện diện" trong 1 kỳ = có ít nhất 1 buổi ✓ hoặc ⏰ trong kỳ đó. Ngày = ngày đang chọn (bấm số đầu cột),
+//   không chọn thì hôm nay (nếu đang xem tháng này) hoặc ngày gần nhất có điểm danh. Tuần = Thứ 2 → CN chứa ngày đó.
+//   "TB/ngày" = trung bình % hiện diện của các ngày có điểm danh trong kỳ.
+function attDashBranchStatsHtml(seq,o){
+  var y=o.y,mo=o.mo,nDays=o.nDays,SES=['sang','trua','toi'];
+  function isHeld(k){var hk=o.held[k-1];return !!(hk&&(hk[0]||hk[1]||hk[2]));}
+  var d0=o.selD||o.todayD;
+  if(!o.selD&&d0&&!isHeld(d0)){for(var k0=d0-1;k0>=1;k0--)if(isHeld(k0)){d0=k0;break;}}
+  if(!d0){for(var k=nDays;k>=1;k--){var hk=o.held[k-1];if(hk[0]||hk[1]||hk[2]){d0=k;break;}}}
+  if(!d0)d0=1;
+  var ref=new Date(y,mo,d0),wd=(ref.getDay()+6)%7;
+  var wS=new Date(y,mo,d0-wd),wE=new Date(y,mo,d0-wd+6);
+  function rangeDates(a,b){var r=[];for(var t=new Date(a);t<=b;t.setDate(t.getDate()+1))r.push(new Date(t));return r;}
+  var heldCache={};
+  function dayHeld(dt){
+    var key=dt.getFullYear()+'-'+dt.getMonth()+'-'+dt.getDate();
+    if(key in heldCache)return heldCache[key];
+    var res=false;
+    if(dt.getFullYear()===y&&dt.getMonth()===mo){var hh=o.held[dt.getDate()-1];res=!!(hh[0]||hh[1]||hh[2]);}
+    else{for(var i=0;i<o.pool.length&&!res;i++){var p=o.pool[i];if(!p||!p.id)continue;for(var s=0;s<3;s++)if(dGetAt(p.id,dt.getFullYear(),dt.getMonth()+1,dt.getDate(),SES[s])){res=true;break;}}}
+    return heldCache[key]=res;
+  }
+  function presOn(it,dt){
+    if(!it.m.id)return false;
+    for(var s=0;s<3;s++){var v=dGetAt(it.m.id,dt.getFullYear(),dt.getMonth()+1,dt.getDate(),SES[s]);if(v==='yes'||v==='late')return true;}
+    return false;
+  }
+  var L=seq.filter(function(it){return it.br==='L';}),R=seq.filter(function(it){return it.br==='R';}),T=L.concat(R);
+  var periods=[
+    {lb:'📅 Ngày '+d0+'/'+(mo+1),dates:[ref]},
+    {lb:'🗓️ Tuần '+wS.getDate()+'/'+(wS.getMonth()+1)+'–'+wE.getDate()+'/'+(wE.getMonth()+1),dates:rangeDates(wS,wE)},
+    {lb:'📊 Tháng '+(mo+1)+'/'+y,dates:rangeDates(new Date(y,mo,1),new Date(y,mo,nDays))}
+  ];
+  function cell(grp,p){
+    var tot=grp.length;if(!tot)return '<td class="adst-c"><span class="adst-na">—</span></td>';
+    var hd=p.dates.filter(dayHeld);
+    if(!hd.length)return '<td class="adst-c"><span class="adst-na">chưa điểm danh</span><small>0/'+tot+'</small></td>';
+    var n=0,sumPct=0;
+    grp.forEach(function(it){if(hd.some(function(dt){return presOn(it,dt);}))n++;});
+    hd.forEach(function(dt){var c=0;grp.forEach(function(it){if(presOn(it,dt))c++;});sumPct+=c/tot*100;});
+    var pct=Math.round(n/tot*100),avg=Math.round(sumPct/hd.length);
+    var cls=pct>=80?' adst-hi':pct>=50?' adst-mid':'';
+    var sub='<small><b>'+n+'</b>/'+tot+' TV'+(p.dates.length>1?' · TB/ngày '+avg+'%':'')+'</small>';
+    return '<td class="adst-c'+cls+'" title="'+n+'/'+tot+' TV có mặt ≥1 buổi'+(p.dates.length>1?' · '+hd.length+' ngày có điểm danh':'')+'"><span class="adst-p">'+pct+'%</span><div class="adst-bar"><i style="width:'+pct+'%"></i></div>'+sub+'</td>';
+  }
+  var rows=[['⬅️ Nhánh Trái',L],['➡️ Nhánh Phải',R],['🌳 Tổng 2 nhánh',T]];
+  var h='<div class="adst-box"><div class="adst-ttl">👥 % thành viên hiện diện / tổng số thành viên</div><div class="adst-wrap"><table class="adst"><tr><th></th>';
+  periods.forEach(function(p){h+='<th>'+p.lb+'</th>';});
+  h+='</tr>';
+  rows.forEach(function(r,i){
+    h+='<tr'+(i===2?' class="adst-tot"':'')+'><td class="adst-lb">'+r[0]+'<small>'+r[1].length+' TV</small></td>';
+    periods.forEach(function(p){h+=cell(r[1],p);});
+    h+='</tr>';
+  });
+  h+='</table></div><div class="adst-note">TV <b>hiện diện</b> trong kỳ = có ít nhất 1 buổi ✓/⏰. Ngày đang tính: <b>'+d0+'/'+(mo+1)+'</b> — <b>bấm số ngày ở đầu cột</b> để đổi ngày (tuần đổi theo, Thứ 2 → CN). Không tính ID gốc ('+escHtml(seq[0]?seq[0].m.name:'')+').</div></div>';
   return h;
 }
 function renderDailyCombined(){
