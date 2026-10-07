@@ -1,4 +1,4 @@
-<!-- VERSION: v7.02-nut-len-xuong -->
+<!-- VERSION: v7.03-tulieu-truoc-sau -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -1276,6 +1276,13 @@ table.adst tr.adst-tot td{background:#F4FAF6;border-top:2px solid #BFE3CB}
 .adst-rng button{font-size:11px;border:1px solid #F3B4B4;background:#FCE4E4;color:#C62828;border-radius:5px;padding:0 6px;cursor:pointer}
 table.adst th.adst-rngh,table.adst td.adst-c:last-child{background:#FFFBEC}
 .adst-note{font-size:11px;color:#6B7A8F;margin-top:6px;line-height:1.5}
+/* v7.03 — Kết quả SK: tư liệu TRƯỚC / SAU đặt cạnh nhau */
+.sk-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:5px}
+.sk-cmp-col{border-radius:10px;padding:8px;min-width:0}
+.sk-cmp-hd{display:inline-block;color:#fff;font-size:11.5px;font-weight:800;border-radius:6px;padding:2px 8px}
+.sk-cmp-hd small{font-weight:600;opacity:.9}
+.sk-cmp-col video{max-width:100%!important}
+@media(max-width:560px){#sk-mat-wrap.sk-cmp{grid-template-columns:1fr}.sk-cmp-col img{width:72px!important;height:72px!important}}
 .adash-hint{font-size:11.5px;color:#8A6D1A;background:#FFFBEC;border:1px solid #F1E4B8;border-radius:8px;padding:6px 9px;margin-bottom:8px;line-height:1.5}
 /* v6.45 — Con tàu (Tàu Vàng/Bạc) */
 .ship-ico{display:inline-block;vertical-align:-2px}
@@ -4493,6 +4500,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v703-sk-truoc-sau', ver:'7.03', icon:'🔶', title:'Kết quả SK: tư liệu chia TRƯỚC / SAU để so sánh',
+    desc:'Khi <b>➕ Thêm kết quả</b>, phần tư liệu nay có 2 mục riêng: <b>🔶 Tư liệu TRƯỚC chăm sóc</b> và <b>✅ Tư liệu SAU chăm sóc</b> (tải ảnh/video/phiếu xét nghiệm hoặc dán link cho từng mục). Khi xem, ảnh/video hiện <b>2 cột Trước – Sau đặt cạnh nhau</b> để dễ so sánh. Tư liệu cũ chưa phân loại: bấm <b>✏️ Sửa</b> để chọn Trước/Sau.' },
   { id:'v702-scroll-fab', ver:'7.02', icon:'↕️', title:'Nút nổi lên đầu / xuống cuối trang',
     desc:'Ở <b>mọi trang</b>, cạnh phải màn hình có 2 nút nổi: <b>▲</b> bấm 1 lần là <b>lên đầu trang</b>, <b>▼</b> bấm 1 lần là <b>xuống cuối trang</b>. Nút tự ẩn khi đã ở đầu/cuối trang.' },
   { id:'v701-adash-range', ver:'7.01', icon:'✍️', title:'Hiện diện theo nhánh: thêm khoảng thời gian tự chọn',
@@ -16580,9 +16589,13 @@ function _skEntryCardHtml(e){
   var note=function(lbl,val,color){return val?('<div style="margin-top:6px"><span style="display:inline-block;font-size:11px;font-weight:800;color:#fff;background:'+color+';border-radius:6px;padding:1px 7px">'+lbl+'</span> <span style="font-size:13px;color:#333">'+escHtml(val).replace(/\n/g,'<br>')+'</span></div>'):'';};
   h+=note('TRƯỚC',e.before,'#B0752B')+note('TRONG',e.during,'#2277B0')+note('SAU',e.after,'#2E7D32');
   if(e.materials&&e.materials.length){
-    h+='<div style="margin-top:8px;font-size:12.5px;color:#555"><b>📎 Tư liệu:</b> ';
-    h+=e.materials.map(function(mt){var ic=mt.type==='video'?'🎬':(mt.type==='test'?'🧾':(mt.type==='image'?'🖼️':'🔗'));var lbl={video:'Video',test:'Phiếu xét nghiệm',image:'Hình ảnh',other:'Liên kết'}[mt.type]||'Liên kết';return '<a href="'+escHtml(mt.url)+'" target="_blank" rel="noopener" style="color:#1565C0;text-decoration:none;margin-right:10px;white-space:nowrap">'+ic+' '+escHtml(lbl)+'</a>';}).join('');
-    h+='</div>';
+    // v7.03 — tư liệu chia TRƯỚC / SAU đặt cạnh nhau để so sánh; tư liệu cũ chưa phân loại → "Tư liệu khác"
+    var mB=e.materials.filter(function(mt){return mt.phase==='before';}),mA=e.materials.filter(function(mt){return mt.phase==='after';}),mO=e.materials.filter(function(mt){return mt.phase!=='before'&&mt.phase!=='after';});
+    if(mB.length||mA.length){
+      var col=function(lbl,color,bg,arr){return '<div class="sk-cmp-col" style="border:1px solid '+color+'55;background:'+bg+'"><div class="sk-cmp-hd" style="background:'+color+'">'+lbl+' <small>('+arr.length+')</small></div>'+(arr.length?_supMediaHtml(arr):'<div style="font-size:12px;color:#AAA;padding:8px 2px">Chưa có tư liệu</div>')+'</div>';};
+      h+='<div style="margin-top:9px;font-size:12.5px;color:#555;font-weight:700">📎 Tư liệu so sánh</div><div class="sk-cmp">'+col('🔶 TRƯỚC','#B0752B','#FFF8EE',mB)+col('✅ SAU','#2E7D32','#F1F8E9',mA)+'</div>';
+    }
+    if(mO.length)h+='<div style="margin-top:8px;font-size:12.5px;color:#555"><b>📎 Tư liệu khác:</b>'+_supMediaHtml(mO)+'</div>';
   }
   h+='<div style="font-size:11.5px;color:#999;margin-top:7px">Người nhập: '+escHtml(e._acct||e.authorName||'—')+'</div>';
   if(canEdit||canDel){
@@ -16610,17 +16623,41 @@ function _skFormHtml(name){
   h+=ta('Tình hình TRƯỚC chăm sóc','sk-f-before',before,'Triệu chứng / chỉ số trước');
   h+=ta('TRONG quá trình chăm sóc','sk-f-during',during,'Cách dùng, thời gian, diễn tiến…');
   h+=ta('Kết quả SAU chăm sóc','sk-f-after',after,'Cải thiện như thế nào');
-  h+='<div style="margin-bottom:6px"><label style="font-size:12.5px;font-weight:700;color:#444">📎 Tư liệu (link ảnh / video / phiếu xét nghiệm trước–sau)</label><div id="sk-mat-list">'+_skMatRowsHtml()+'</div>';
-  h+='<div style="margin-top:8px;padding:10px;border:1px dashed #7CB342;border-radius:9px;background:#fff">'
-    +'<div style="font-size:12px;color:#33691E;font-weight:700;margin-bottom:5px">📷 Tải thẳng ảnh / video / giấy tờ từ máy — không cần dán link</div>'
-    +'<input id="sk-file-input" type="file" multiple accept="image/*,video/*,application/pdf" onchange="skUploadSelected()" style="font-size:12px;max-width:100%">'
-    +'<div id="sk-up-status" style="font-size:12px;color:#666;margin-top:6px;line-height:1.5"></div>'
-    +'<div style="font-size:11px;color:#999;margin-top:4px">Ảnh tự nén nhẹ (giữ nét, đọc được chữ trên phiếu). Ảnh/giấy tờ ≤25MB, video ≤100MB (~1–2 phút). Tệp của ai lưu riêng phần người đó. Video dài hơn thì dán link (YouTube/Drive) ở dưới.</div></div>';
-  h+='<button onclick="skAddMatRow()" style="margin-top:8px;border:1px dashed #7CB342;background:#fff;color:#558B2F;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm link tư liệu (thủ công)</button></div>';
+  // v7.03 — tư liệu tách 2 mục: TRƯỚC chăm sóc / SAU chăm sóc (mỗi tệp/link lưu thêm phase:'before'|'after')
+  h+='<div style="margin-bottom:6px"><label style="font-size:12.5px;font-weight:700;color:#444">📎 Tư liệu hình ảnh / video / phiếu xét nghiệm — chia TRƯỚC và SAU để so sánh</label>';
+  h+='<div id="sk-mat-wrap" class="sk-cmp" style="margin-top:6px">';
+  [['before','🔶 Tư liệu TRƯỚC chăm sóc','#B0752B','#FFF8EE'],['after','✅ Tư liệu SAU chăm sóc','#2E7D32','#F1F8E9']].forEach(function(g){
+    h+='<div class="sk-cmp-col" style="border:1px dashed '+g[2]+';background:'+g[3]+'"><div class="sk-cmp-hd" style="background:'+g[2]+'">'+g[1]+'</div>'
+      +'<div style="font-size:11.5px;color:#555;font-weight:700;margin:4px 0">📷 Tải thẳng từ máy:</div>'
+      +'<input id="sk-file-'+g[0]+'" type="file" multiple accept="image/*,video/*,application/pdf" onchange="skUploadSelected(\''+g[0]+'\')" style="font-size:12px;max-width:100%">'
+      +'<div id="sk-up-status-'+g[0]+'" style="font-size:12px;color:#666;margin-top:6px;line-height:1.5"></div>'
+      +'<div id="sk-mat-list-'+g[0]+'" style="margin-top:4px">'+_skMatRowsHtml(g[0])+'</div>'
+      +'<button onclick="skAddMatRow(\''+g[0]+'\')" style="margin-top:8px;border:1px dashed '+g[2]+';background:#fff;color:'+g[2]+';border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer">+ Thêm link (thủ công)</button></div>';
+  });
+  h+='</div><div id="sk-mat-list-none">'+_skMatRowsHtml('none')+'</div>';
+  h+='<div style="font-size:11px;color:#999;margin-top:6px">Ảnh tự nén nhẹ (giữ nét, đọc được chữ trên phiếu). Ảnh/giấy tờ ≤25MB, video ≤100MB (~1–2 phút). Tệp của ai lưu riêng phần người đó. Video dài hơn thì dán link (YouTube/Drive).</div></div>';
   h+='<div style="margin-top:12px;display:flex;gap:8px"><button onclick="skSaveEntry()" style="background:#2E7D32;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer">💾 Lưu</button><button onclick="skFormCancel()" style="background:#fff;color:#666;border:1px solid #CCC;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer">Huỷ</button></div>';
   return h+'</div>';
 }
-function _skMatRowsHtml(){return _matRowsHtml(_skMatDraft,'skDelMatRow');}
+// v7.03 — dòng tư liệu theo nhóm phase; _skMatDraft luôn xếp theo thứ tự nhóm (TRƯỚC → SAU → chưa phân loại)
+//   để thứ tự trong DOM = thứ tự mảng (đồng bộ / xoá theo chỉ số toàn cục không lệch)
+function _skMatGrp(mt){return mt.phase==='before'?'before':(mt.phase==='after'?'after':'none');}
+function _skMatNorm(){var R={before:0,after:1,none:2};_skMatDraft=_skMatDraft.map(function(m,i){return [m,i];}).sort(function(a,b){return (R[_skMatGrp(a[0])]-R[_skMatGrp(b[0])])||(a[1]-b[1]);}).map(function(x){return x[0];});}
+function _skMatRowsHtml(grp){
+  _skMatNorm();
+  var h='',any=false;
+  _skMatDraft.forEach(function(mt,i){
+    if(_skMatGrp(mt)!==grp)return;any=true;
+    var opts=[['image','🖼️ Hình ảnh'],['video','🎬 Video'],['test','🧾 Phiếu xét nghiệm'],['other','🔗 Link khác']].map(function(o){return '<option value="'+o[0]+'"'+(mt.type===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('');
+    var ph=grp==='none'?'<select data-mf="phase" onchange="skMatPhaseChange()" style="padding:6px;border:1px solid #E0A040;border-radius:7px;font-size:12px;background:#FFF8E1"><option value="">❓ Chưa phân loại</option><option value="before">🔶 Trước</option><option value="after">✅ Sau</option></select>':'';
+    var thumb=(mt.type==='image'&&/firebasestorage/i.test(mt.url||''))?'<a href="'+escHtml(mt.url)+'" target="_blank" rel="noopener"><img src="'+escHtml(mt.url)+'" style="width:34px;height:34px;object-fit:cover;border-radius:6px;border:1px solid #DDD"></a>':'';
+    h+='<div class="sk-mat-row" data-mp="'+(grp==='none'?'':grp)+'" style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;align-items:center">'+thumb+ph+'<select data-mf="type" style="padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px;background:#fff">'+opts+'</select><input data-mf="url" value="'+escHtml(mt.url||'')+'" placeholder="Dán link (https://…)" style="flex:1;min-width:130px;padding:6px;border:1px solid #C9C9C9;border-radius:7px;font-size:12px"><button onclick="skDelMatRow('+i+')" style="border:1px solid #E53935;background:#fff;color:#E53935;border-radius:7px;padding:0 10px;font-size:13px;cursor:pointer;align-self:stretch">✕</button></div>';
+  });
+  if(grp==='none')return any?'<div style="margin-top:8px;padding:8px 10px;border:1px dashed #E0A040;border-radius:9px;background:#FFFDF5"><div style="font-size:12px;color:#8D6E00;font-weight:700">❓ Tư liệu cũ chưa phân loại — chọn Trước / Sau cho từng dòng</div>'+h+'</div>':'';
+  return any?h:'<div style="font-size:12px;color:#999;padding:4px 0">Chưa có tư liệu.</div>';
+}
+function _skRenderMatLists(){['before','after','none'].forEach(function(g){var b=document.getElementById('sk-mat-list-'+g);if(b)b.innerHTML=_skMatRowsHtml(g);});}
+function skMatPhaseChange(){_skSyncMat();_skRenderMatLists();}
 function _matRowsHtml(draft,delFn){
   if(!draft.length)return '<div style="font-size:12px;color:#999;padding:4px 0">Chưa có link nào.</div>';
   return draft.map(function(mt,i){
@@ -16630,14 +16667,16 @@ function _matRowsHtml(draft,delFn){
 }
 function _skSyncMat(){
   var arr=[];
-  document.querySelectorAll('#sk-mat-list .sk-mat-row').forEach(function(row){
-    var t=row.querySelector('[data-mf="type"]'), u=row.querySelector('[data-mf="url"]');
-    arr.push({type:t?t.value:'other',url:u?u.value.trim():''});
+  document.querySelectorAll('#sk-mat-list-before .sk-mat-row,#sk-mat-list-after .sk-mat-row,#sk-mat-list-none .sk-mat-row').forEach(function(row){
+    var t=row.querySelector('[data-mf="type"]'), u=row.querySelector('[data-mf="url"]'), p=row.querySelector('[data-mf="phase"]');
+    var o={type:t?t.value:'other',url:u?u.value.trim():''},ph=p?p.value:(row.getAttribute('data-mp')||'');
+    if(ph)o.phase=ph;
+    arr.push(o);
   });
   _skMatDraft=arr;
 }
-function skAddMatRow(){_skSyncMat();_skMatDraft.push({type:'image',url:''});var b=document.getElementById('sk-mat-list');if(b)b.innerHTML=_skMatRowsHtml();}
-function skDelMatRow(i){_skSyncMat();_skMatDraft.splice(i,1);var b=document.getElementById('sk-mat-list');if(b)b.innerHTML=_skMatRowsHtml();}
+function skAddMatRow(ph){_skSyncMat();_skMatDraft.push({type:'image',url:'',phase:ph||'before'});_skRenderMatLists();}
+function skDelMatRow(i){_skSyncMat();_skMatDraft.splice(i,1);_skRenderMatLists();}
 function _skCompressImage(file){
   // v6.88 — Nén ảnh ngay trên máy trước khi tải: thu về ≤1600px, JPEG ~80% (giữ nét, đọc được chữ).
   // Chỉ nén jpeg/png/webp; PDF/HEIC/video giữ nguyên. Lỗi hoặc nén không lợi → trả file gốc.
@@ -16665,7 +16704,7 @@ async function skUploadSelected(kind){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không tải được');return;}
   if(!fbDb||!fbUser){showToast('Cần đăng nhập để tải tệp lên');return;}
   var cf=kind==='sup'?{inp:'sup-file-input',st:'sup-up-status',list:'sup-mat-list',sync:_supSyncMat,draft:function(){return _supMatDraft;},rows:_supMatRowsHtml}
-                     :{inp:'sk-file-input',st:'sk-up-status',list:'sk-mat-list',sync:_skSyncMat,draft:function(){return _skMatDraft;},rows:_skMatRowsHtml};
+                     :{inp:'sk-file-'+(kind==='after'?'after':'before'),st:'sk-up-status-'+(kind==='after'?'after':'before'),phase:(kind==='after'?'after':'before'),sync:_skSyncMat,draft:function(){return _skMatDraft;},render:_skRenderMatLists}; // v7.03 — TRƯỚC / SAU
   var inp=document.getElementById(cf.inp);if(!inp||!inp.files||!inp.files.length)return;
   var files=Array.prototype.slice.call(inp.files);
   var st=document.getElementById(cf.st);
@@ -16690,11 +16729,12 @@ async function skUploadSelected(kind){
       var task=sM.uploadBytesResumable(r,blob,{contentType:ctype,cacheControl:'public,max-age=31536000'}); // resumable: có % + nối lại khi rớt mạng; cache 1 năm
       await new Promise(function(res,rej){task.on('state_changed',function(s){var pct=s.totalBytes?Math.round(s.bytesTransferred/s.totalBytes*100):0;if(st)st.innerHTML='<span style="color:#1565C0">⏳ Đang tải '+(i+1)+'/'+files.length+': '+escHtml(f.name)+' … '+pct+'%</span>';},rej,res);});
       var url=await sM.getDownloadURL(r);
-      cf.draft().push({type:type,url:url});done++;
+      var _mo={type:type,url:url};if(cf.phase)_mo.phase=cf.phase;
+      cf.draft().push(_mo);done++;
     }
     if(st&&done)st.innerHTML+='<div style="color:#2E7D32">✅ Đã tải '+done+' tệp. Kéo xuống bấm 💾 Lưu để hoàn tất.</div>';
     inp.value='';
-    var b=document.getElementById(cf.list);if(b)b.innerHTML=cf.rows();
+    if(cf.render)cf.render();else{var b=document.getElementById(cf.list);if(b)b.innerHTML=cf.rows();}
   }catch(e){
     console.warn('SK upload lỗi:',e);
     if(st)st.innerHTML='<span style="color:#C62828">⚠ Chưa tải được tệp (có thể kho lưu chưa bật, hoặc mạng gián đoạn). Anh/chị dán link tư liệu ở phần dưới thay thế nhé.</span>';
