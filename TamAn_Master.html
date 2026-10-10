@@ -1,4 +1,5 @@
-<!-- VERSION: v7.03-tulieu-truoc-sau -->
+<!-- VERSION: v7.04-trang-chu -->
+<!-- v7.04 — TRANG CHỦ: màn hình đầu tiên khi vào app = lưới nút lớn các Tab chính (#page-home, tab .mtab[data-main="home"] đứng đầu). Lưới dựng động từ các .mtab đang HIỆN (tôn trọng ẩn/hiện Quản trị, DISC) → renderHomePage(). Responsive: 2 cột điện thoại (kể cả 320px), 3 cột ≥600px, 4 cột ≥900px; chữ tự xuống dòng. Trang chủ ẩn thanh ngày/thống kê như Sơ đồ. applyStartModule (v6.80) không còn tự nhảy vì giờ luôn mở Trang chủ trước. -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
 <!-- v6.71 — CỔNG CẬP NHẬT THÔNG TIN BẮT BUỘC sau nâng cấp: khi user đăng nhập, nếu thiếu thông tin bắt buộc mới (chưa cần ở bản cũ) → hiện cổng #requp-ov che toàn màn hình, hướng dẫn cập nhật LẦN LƯỢT từng mục 1 (progress X/Y) rồi mới dùng bình thường. Khung mở rộng được: REQUIRED_UPDATES=[{id,title,desc,need(),html(),save()}]; mục hiện có: (1) chọn đầu nhánh liên hệ hợp lệ cho CLB chính (BRANCH_HEADS), (2) chọn "đã tốt nghiệp chia sẻ cơ hội KD" (bizGrad). Tự suy ra từ dữ liệu (need()) nên đã điền là hết nhắc; "Để sau" hoãn trong phiên. checkRequiredUpdates() gọi cuối enterAppFirebase (nạp fsGet('location') mới nhất). Handler data-requp save/later. -->
@@ -75,6 +76,21 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .fb-filter{padding:7px 12px;border:1px solid #E0E0E0;border-radius:8px;background:white;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer}
 .fb-filter.on{background:#1A1A1A;color:white;border-color:#1A1A1A}
 .page{display:none}.page.on{display:block}
+/* v7.04 — Trang chủ: lưới nút lớn, vừa mọi điện thoại (≥320px) */
+.home-wrap{max-width:960px;margin:0 auto;padding:14px 12px 90px;box-sizing:border-box}
+.home-hd{margin:2px 2px 12px}
+.home-title{font-size:clamp(17px,4.6vw,21px);font-weight:800;color:#1A1A1A}
+.home-sub{font-size:13px;color:#777;margin-top:4px;line-height:1.4}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:600px){.home-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}}
+@media(min-width:900px){.home-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.home-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:118px;padding:14px 12px;box-sizing:border-box;background:var(--surface,#fff);border:1px solid var(--line,#E7E3D9);border-left:4px solid var(--accent,#C8A84B);border-radius:14px;box-shadow:var(--shadow-sm);cursor:pointer;text-align:left;color:#1A1A1A;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,box-shadow .2s ease;min-width:0}
+.home-card:active{transform:scale(.97)}
+@media(pointer:fine){.home-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}}
+.home-ico{font-size:30px;line-height:1}
+.home-lbl{font-size:15px;font-weight:800;line-height:1.25;overflow-wrap:anywhere;white-space:normal}
+.home-desc{font-size:12px;color:#777;line-height:1.35;overflow-wrap:anywhere}
+@media(max-width:359px){.home-wrap{padding:10px 8px 90px}.home-grid{gap:8px}.home-card{padding:12px 9px;min-height:108px}.home-ico{font-size:26px}.home-lbl{font-size:14px}.home-desc{font-size:11px}}
 .content{padding:12px;max-width:900px;margin:0 auto;padding-bottom:80px}
 /* v6.22 — Khi có ảnh nền: phủ lớp mờ nhẹ sau nội dung để chữ/khoảng trống luôn dễ đọc, KHÔNG che ảnh nền ở rìa */
 body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:16px;margin-top:8px;margin-bottom:8px;box-shadow:0 6px 22px rgba(0,0,0,.10)}
@@ -1523,7 +1539,8 @@ a.gp-att-nm:hover{text-decoration:underline}
     <div class="tk-vp"><div class="tk-track" id="tk-track"></div></div>
   </div>
   <div class="main-tabs">
-    <button class="mtab on" data-main="tree">&#127795; Sơ đồ</button>
+    <button class="mtab on" data-main="home">&#127968; Trang chủ</button>
+    <button class="mtab" data-main="tree">&#127795; Sơ đồ</button>
     <button class="mtab" data-main="tp">&#127919; Mục tiêu - Hành động - Kết quả</button>
     <button class="mtab" data-main="kynang">&#11088; Kỹ năng</button>
     <button class="mtab" data-main="prospect">&#128101; DS kim cương Tiềm năng</button>
@@ -1677,8 +1694,19 @@ a.gp-att-nm:hover{text-decoration:underline}
     </div>
   </div>
 
+  <!-- v7.04 — TRANG CHỦ: lưới nút các Tab chính -->
+  <div class="page on" id="page-home">
+    <div class="home-wrap">
+      <div class="home-hd">
+        <div class="home-title">&#127968; Chọn khu vực làm việc</div>
+        <div class="home-sub">Bấm một ô để mở. Quay lại đây bất cứ lúc nào bằng tab <b>&#127968; Trang chủ</b>.</div>
+      </div>
+      <div class="home-grid" id="home-grid"></div>
+    </div>
+  </div>
+
   <!-- SƠ ĐỒ -->
-  <div class="page on" id="page-tree">
+  <div class="page" id="page-tree">
     <div id="view-banner" style="display:none;align-items:center;gap:10px;background:#FFF8E1;border-bottom:2px solid #FFD54F;padding:8px 12px;font-size:13px;font-weight:700;color:#7A5A0C">
       <span style="font-size:16px">&#128065;&#65039;</span>
       <span id="view-banner-name" style="flex:1">Đang xem sơ đồ (chỉ đọc)</span>
@@ -4500,6 +4528,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v704-trang-chu', ver:'7.04', icon:'🏠', title:'Trang chủ: mở app là thấy ngay các khu chính',
+    desc:'Vừa vào app, màn hình đầu tiên là <b>🏠 Trang chủ</b> với các <b>ô nút lớn</b>: Sơ đồ, Mục tiêu - Hành động - Kết quả, Kỹ năng, DS kim cương Tiềm năng, Vị trí các CLB, Kết quả SK, Hướng dẫn… Bấm 1 ô là mở khu đó. Muốn quay lại, bấm tab <b>🏠 Trang chủ</b> đầu thanh menu. Hiển thị gọn trên mọi điện thoại.' },
   { id:'v703-sk-truoc-sau', ver:'7.03', icon:'🔶', title:'Kết quả SK: tư liệu chia TRƯỚC / SAU để so sánh',
     desc:'Khi <b>➕ Thêm kết quả</b>, phần tư liệu nay có 2 mục riêng: <b>🔶 Tư liệu TRƯỚC chăm sóc</b> và <b>✅ Tư liệu SAU chăm sóc</b> (tải ảnh/video/phiếu xét nghiệm hoặc dán link cho từng mục). Khi xem, ảnh/video hiện <b>2 cột Trước – Sau đặt cạnh nhau</b> để dễ so sánh. Tư liệu cũ chưa phân loại: bấm <b>✏️ Sửa</b> để chọn Trước/Sau.' },
   { id:'v702-scroll-fab', ver:'7.02', icon:'↕️', title:'Nút nổi lên đầu / xuống cuối trang',
@@ -4816,10 +4846,10 @@ function enterAppFirebase(user){
   loadSkillLinks();
   recordAccount(user,{entered:true});
   startPresence(); // v6.36 — heartbeat "dang online" (ghi accounts/{uid}.lastActive moi 60s) // ghi nhận tài khoản + đánh dấu đã vào app (bước cuối)
-  // Mặc định mở tab Sơ đồ: ẩn thanh ngày/thống kê + vẽ cây
+  // v7.04 — Mặc định mở TRANG CHỦ (lưới nút các tab chính): ẩn thanh ngày/thống kê; cây vẫn vẽ sẵn, tự căn khi mở tab Sơ đồ
   document.getElementById('app').classList.add('hide-topbars');
   if(currentTreeMode==='binary')renderTree();else renderStarChart();
-  showAndFitTree();
+  showHomePage();
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
   trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
   startOnboarding(); // v7 — Chào mừng → BẮT BUỘC ID Gốc → Tutorial → "Có gì mới" → cổng cập nhật thông tin
@@ -4833,6 +4863,37 @@ function applyBranchFeatureUI(){
   // Tab Quản trị: chỉ QTV (hoặc khi chưa có QTV nào) mới thấy
   var at=document.getElementById('tab-admin');
   if(at)at.style.display=canSeeAdminTab?'':'none';
+  renderHomePage(); // v7.04 — cập nhật ô Quản trị trên Trang chủ
+}
+// v7.04 — TRANG CHỦ: lưới nút dựng từ các tab chính đang hiện
+var HOME_DESC={
+  tree:'Sơ đồ đội nhóm Nhị phân / Hệ sao, điểm danh',
+  tp:'Đặt mục tiêu, kế hoạch hôm nay, theo dõi kết quả',
+  kynang:'Kỹ năng & tài liệu học tập',
+  prospect:'Danh sách khách hàng tiềm năng',
+  map:'Bản đồ vị trí các CLB Tâm An',
+  sk:'Kho kết quả cải thiện sức khỏe',
+  disc:'Đo tính cách DISC',
+  guide:'Cách dùng app từng bước',
+  admin:'Công cụ dành cho Quản trị viên'
+};
+function renderHomePage(){
+  var g=document.getElementById('home-grid');if(!g)return;
+  var html='';
+  document.querySelectorAll('.main-tabs .mtab[data-main]').forEach(function(b){
+    var id=b.getAttribute('data-main');
+    if(id==='home'||b.style.display==='none')return;
+    var txt=(b.textContent||'').trim(),sp=txt.indexOf(' ');
+    var ico=sp>0?txt.slice(0,sp):'',lbl=sp>0?txt.slice(sp+1):txt;
+    html+='<button class="home-card" data-main="'+id+'"><span class="home-ico">'+escHtml(ico)+'</span><span class="home-lbl">'+escHtml(lbl)+'</span>'+(HOME_DESC[id]?'<span class="home-desc">'+HOME_DESC[id]+'</span>':'')+'</button>';
+  });
+  g.innerHTML=html;
+}
+function showHomePage(){
+  document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')==='home');});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id==='page-home');});
+  document.getElementById('app').classList.add('hide-topbars');
+  renderHomePage();
 }
 function loadBranchFeature(){
   // Mặc định BẬT; chỉ TẮT khi QTV chính đặt false. QTV (trong admins.emails) LUÔN thấy cả 2 nút.
@@ -12508,15 +12569,17 @@ document.addEventListener('click',function(e){
   // Main tabs
   t=e.target.closest('[data-main]');
   if(t){
-    document.querySelectorAll('.mtab').forEach(function(b){b.classList.remove('on');});
-    t.classList.add('on');
     var pg=t.getAttribute('data-main');
+    // v7.04 — bấm từ ô Trang chủ cũng sáng đúng tab trên thanh menu + cuộn lên đầu
+    document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')===pg);});
+    if(t.classList.contains('home-card'))window.scrollTo(0,0);
     if(pg!=='tree')exitDreamMode(); // v6.93 — rời Sơ đồ → trả dữ liệu thật cho các module khác
     document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
     document.getElementById('page-'+pg).classList.add('on');
     var appEl=document.getElementById('app');
-    if(pg==='tree')appEl.classList.add('hide-topbars');
+    if(pg==='tree'||pg==='home')appEl.classList.add('hide-topbars');
     else appEl.classList.remove('hide-topbars');
+    if(pg==='home')renderHomePage();
     if(pg==='tree'){
       if(currentTreeMode==='binary')renderTree();else renderStarChart();
       showAndFitTree();
@@ -14533,7 +14596,7 @@ function exitFullAccountView(){
   try{clearRankMemo();}catch(e){}
   document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')===st);});
   document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id===sp);});
-  document.getElementById('app').classList.toggle('hide-topbars',st==='tree');
+  document.getElementById('app').classList.toggle('hide-topbars',st==='tree'||st==='home');
   if(sp==='page-admin')renderAdminPage();
   else if(sp==='page-tp')renderTpSub(currentSubTab.tp);
   else if(sp==='page-tree'){ if(currentTreeMode==='binary')renderTree(); else renderStarChart(); showAndFitTree(); }
@@ -14570,7 +14633,7 @@ function exitViewMode(){
   try{clearRankMemo();}catch(e){}
   document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')===savedTab);});
   document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('on',p.id===savedPage);});
-  document.getElementById('app').classList.toggle('hide-topbars',savedTab==='tree');
+  document.getElementById('app').classList.toggle('hide-topbars',savedTab==='tree'||savedTab==='home');
   if(savedPage==='page-admin')renderAdminPage();
   else if(savedPage==='page-tp')renderTpSub(currentSubTab.tp);
   else if(savedPage==='page-tree'){ if(currentTreeMode==='binary')renderTree(); else renderStarChart(); showAndFitTree(); }
