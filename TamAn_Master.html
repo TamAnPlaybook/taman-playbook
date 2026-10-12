@@ -1,4 +1,5 @@
-<!-- VERSION: v7.06-hopthu-tung-dong -->
+<!-- VERSION: v7.07-hopthu-maid-daunhanh -->
+<!-- v7.07 — Hộp thư ID mới: MỌI thông báo (ID mới · DISC · Sinh nhật) có dòng "🆔 Mã ID · 🌿 Đầu nhánh F1" (_nidBranchHtml). Ưu tiên khớp cây QTV theo Mã ID rồi tên → teamHeadOf; không khớp thì dùng idCode/branchHead lưu lúc quét (cây tài khoản của họ). -->
 <!-- v7.06 — Hộp thư ID mới: mỗi thông báo có nút ✓ Đã đọc (↺ Chưa đọc) + 🗑️ Xoá riêng (_nidActRow / newidItemAct, khoá _nidKey). Xoá không báo lại vì baseline NEWID_SEEN_KEY giữ nguyên. -->
 <!-- v7.05 — QTV chính: bảng "Không hoạt động ≥15 ngày" có nút 🔒 Tạm đóng / 🔓 Mở / 🗑️ Xoá từng tài khoản (dùng chung handler data-block-email / data-unblock-email / data-del-acct-uid; bấm từ bảng thì _acctActDone() chỉ cập nhật tại chỗ, không quét lại cả trang Quản trị). Dòng đã tạm đóng tô xám + nhãn 🔒. -->
 <!-- v7.04 — TRANG CHỦ: màn hình đầu tiên khi vào app = lưới nút lớn các Tab chính (#page-home, tab .mtab[data-main="home"] đứng đầu). Lưới dựng động từ các .mtab đang HIỆN (tôn trọng ẩn/hiện Quản trị, DISC) → renderHomePage(). Responsive: 2 cột điện thoại (kể cả 320px), 3 cột ≥600px, 4 cột ≥900px; chữ tự xuống dòng. Trang chủ ẩn thanh ngày/thống kê như Sơ đồ. applyStartModule (v6.80) không còn tự nhảy vì giờ luôn mở Trang chủ trước. -->
@@ -2739,12 +2740,14 @@ async function scanNewIds(){
       fresh.forEach(function(n){
         var placed=n.parentId?nodeMap[n.parentId]:null;
         var ld=null;try{ld=_nearestStarLeader(n,nodeMap);}catch(e){}
+        var bh=null;try{bh=n.parentId?teamHeadOf(n):null;}catch(e){} // v7.07 — đầu nhánh F1 trên cây tài khoản này
         inbox.unshift({
           uid:a.uid, acctName:a.name||a.email||'(không tên)', acctEmail:a.email||'',
           nodeId:n.id, nodeName:n.name||n.id,
           sponsor:n.f1of||'', side:n.side||'',
           placedUnder:placed?(placed.name||placed.id):'', joinDate:n.joinDate||'',
           leaderName:ld?ld.name:'', leaderShort:ld?ld.short:'',
+          idCode:String(n.idCode||'').trim(), branchHead:bh?(bh.name||bh.id):(n.parentId?'':'(Gốc)'),
           detectedAt:now, read:false
         });
         added++;
@@ -2762,6 +2765,26 @@ async function scanNewIds(){
 function _nidSide(s){return s==='L'?'Trái':s==='R'?'Phải':'';}
 // v7.06 — nút ✓ Đã đọc / 🗑️ Xoá TỪNG thông báo. Khoá nhận diện = loại+tài khoản+nút+thời điểm phát hiện (mục cũ không có id riêng).
 //   Xoá 1 mục KHÔNG làm nó báo lại: baseline ID đã biết (NEWID_SEEN_KEY) giữ nguyên.
+// v7.07 — dòng "🆔 Mã ID · 🌿 Đầu nhánh F1" cho MỌI thông báo. Ưu tiên khớp cây QTV (Mã ID → tên không dấu) rồi teamHeadOf;
+//   không khớp → dùng Mã ID / đầu nhánh lưu lúc quét (tính trên cây tài khoản của họ). Mục cũ chưa lưu → "—".
+function _nidBranchInfo(it){
+  var code=String(it.idCode||'').trim(),head=it.branchHead||'',my=null;
+  try{
+    var rc=noAccent(code);
+    if(rc)my=treeNodes.find(function(t){return noAccent(t.idCode||'')===rc;})||null;
+    if(!my){var nm=noAccent(it.nodeName||'');if(nm)my=treeNodes.find(function(t){return noAccent(t.name||'')===nm;})||null;}
+    if(my){
+      if(!code)code=String(my.idCode||'').trim();
+      if(!my.parentId)head='(Gốc)';else{var hd=teamHeadOf(my);if(hd)head=hd.name||hd.id;}
+    }
+  }catch(e){}
+  return {code:code,head:head};
+}
+function _nidBranchHtml(it){
+  var b=_nidBranchInfo(it);
+  return '<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🆔 Mã ID: '+(b.code?'<b>'+escHtml(b.code)+'</b>':'<span style="color:#999">—</span>')
+    +' · 🌿 Đầu nhánh F1: '+(b.head?'<b style="color:#14663F">'+escHtml(b.head)+'</b>':'<span style="color:#999">—</span>')+'</div>';
+}
 function _nidKey(it){return [it.type||'id',it.uid||'',it.nodeId||it.nodeName||'',it.detectedAt||'',it.disc||it.birthday||''].join('|');}
 function _nidActRow(it){
   var k=escHtml(_nidKey(it));
@@ -2785,7 +2808,7 @@ function newIdItemHtml(it){
     var _bd=it.read?'#E8E2D2':_dc,_bg=it.read?'#FCFBF7':'#FFFBE9';
     var dh='<div style="border:1px solid '+_bd+';border-left:4px solid '+_dc+';background:'+_bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
     dh+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'🧭 <b>'+escHtml(it.nodeName||'')+'</b> vừa hoàn thành <b>đo DISC</b>: <span style="background:'+_dc+';color:#fff;font-weight:800;border-radius:5px;padding:1px 8px">'+escHtml(it.disc||'')+'</span>'+(it.prev?' <span style="font-size:11px;color:#999">(trước: '+escHtml(it.prev)+')</span>':'')+'</div>';
-    dh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>';
+    dh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>'+_nidBranchHtml(it);
     dh+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 '+escHtml(fmtDT(it.detectedAt))+'</div>'+_nidActRow(it)+'</div>';
     return dh;
   }
@@ -2793,7 +2816,7 @@ function newIdItemHtml(it){
     var _bbd=it.read?'#E8E2D2':'#C0287A',_bbg=it.read?'#FCFBF7':'#FFF0F6';
     var bh='<div style="border:1px solid '+_bbd+';border-left:4px solid #C0287A;background:'+_bbg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
     bh+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'🎂 <b>'+escHtml(it.nodeName||'')+'</b> vừa cập nhật <b>Sinh nhật</b>: <span style="background:#C0287A;color:#fff;font-weight:800;border-radius:5px;padding:1px 8px">'+escHtml(it.birthday||'')+'</span>'+(it.prev?' <span style="font-size:11px;color:#999">(trước: '+escHtml(it.prev)+')</span>':'')+'</div>';
-    bh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>';
+    bh+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Từ sơ đồ: <b>'+escHtml(it.acctName||'—')+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>✅ Đã đồng bộ lên cây của bạn (khớp Mã ID)</div>'+_nidBranchHtml(it);
     bh+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 '+escHtml(fmtDT(it.detectedAt))+'</div>'+_nidActRow(it)+'</div>';
     return bh;
   }
@@ -2802,6 +2825,7 @@ function newIdItemHtml(it){
   var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
   h+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'<b>✨ '+escHtml(it.nodeName||it.nodeId)+'</b>'+(it.joinDate?' <span style="font-size:11px;color:#999">· vào '+escHtml(it.joinDate)+'</span>':'')+'</div>';
   h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Sơ đồ: <b>'+escHtml(it.acctName)+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>👤 Bảo trợ: <b>'+escHtml(it.sponsor||'—')+'</b>'+(it.leaderName?'<br>👑 Thuộc Leader: <b>'+escHtml(it.leaderName)+'</b>'+(it.leaderShort?' <span style="background:#E64A19;color:#fff;border-radius:5px;padding:0 6px;font-size:11px;font-weight:800">'+escHtml(it.leaderShort)+'</span>':''):'')+'<br>📍 Đặt dưới: <b>'+escHtml(it.placedUnder||'(gốc)')+'</b>'+(side?' · bên '+side:'')+'</div>';
+  h+=_nidBranchHtml(it);
   h+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 Phát hiện: '+escHtml(fmtDT(it.detectedAt))+'</div>';
   h+=_nidActRow(it);
   h+='</div>';
@@ -7406,13 +7430,13 @@ function applyDownlineDiscToTree(list){
     if(u.rootDisc&&String(n.disc||'').toUpperCase()!==u.rootDisc){
       var _old=String(n.disc||'').toUpperCase();
       n.disc=u.rootDisc;changed=true;cnt++;
-      notes.push({node:n.name||n.id,disc:u.rootDisc,prev:_old,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
+      notes.push({node:n.name||n.id,idCode:n.idCode||'',disc:u.rootDisc,prev:_old,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
     }
     // v7 — Sinh nhật — ID Gốc tuyến dưới tự nhập → ghi lên đúng node theo Mã ID (giống DISC)
     if(u.rootBirthday&&String(n.birthday||'').trim()!==String(u.rootBirthday).trim()){
       var _ob=String(n.birthday||'').trim();
       n.birthday=u.rootBirthday;changed=true;bcnt++;
-      bnotes.push({node:n.name||n.id,birthday:u.rootBirthday,prev:_ob,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
+      bnotes.push({node:n.name||n.id,idCode:n.idCode||'',birthday:u.rootBirthday,prev:_ob,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
     }
   });
   if(changed){
@@ -7433,7 +7457,7 @@ function _pushDiscInbox(notes){
   var inbox=newidInbox();var now=new Date().toISOString();
   notes.forEach(function(x){
     inbox.unshift({type:'disc',uid:x.uid,acctName:x.acctName,acctEmail:x.acctEmail,
-      nodeName:x.node,disc:x.disc,prev:x.prev,detectedAt:now,read:false});
+      nodeName:x.node,idCode:x.idCode||'',disc:x.disc,prev:x.prev,detectedAt:now,read:false});
   });
   if(inbox.length>500)inbox=inbox.slice(0,500);
   _newidSave(NEWID_INBOX_KEY,inbox);
@@ -7446,7 +7470,7 @@ function _pushBdayInbox(notes){
   var inbox=newidInbox();var now=new Date().toISOString();
   notes.forEach(function(x){
     inbox.unshift({type:'bday',uid:x.uid,acctName:x.acctName,acctEmail:x.acctEmail,
-      nodeName:x.node,birthday:x.birthday,prev:x.prev,detectedAt:now,read:false});
+      nodeName:x.node,idCode:x.idCode||'',birthday:x.birthday,prev:x.prev,detectedAt:now,read:false});
   });
   if(inbox.length>500)inbox=inbox.slice(0,500);
   _newidSave(NEWID_INBOX_KEY,inbox);
