@@ -1,4 +1,5 @@
-<!-- VERSION: v7.04-trang-chu -->
+<!-- VERSION: v7.05-ina-dong-mo-xoa -->
+<!-- v7.05 — QTV chính: bảng "Không hoạt động ≥15 ngày" có nút 🔒 Tạm đóng / 🔓 Mở / 🗑️ Xoá từng tài khoản (dùng chung handler data-block-email / data-unblock-email / data-del-acct-uid; bấm từ bảng thì _acctActDone() chỉ cập nhật tại chỗ, không quét lại cả trang Quản trị). Dòng đã tạm đóng tô xám + nhãn 🔒. -->
 <!-- v7.04 — TRANG CHỦ: màn hình đầu tiên khi vào app = lưới nút lớn các Tab chính (#page-home, tab .mtab[data-main="home"] đứng đầu). Lưới dựng động từ các .mtab đang HIỆN (tôn trọng ẩn/hiện Quản trị, DISC) → renderHomePage(). Responsive: 2 cột điện thoại (kể cả 320px), 3 cột ≥600px, 4 cột ≥900px; chữ tự xuống dòng. Trang chủ ẩn thanh ngày/thống kê như Sơ đồ. applyStartModule (v6.80) không còn tự nhảy vì giờ luôn mở Trang chủ trước. -->
 <!-- v6.73 — PHẢ HỆ ĐẶT ĐƯỢC CẢ 2 BÊN: bỏ quy tắc "ID phả hệ chỉ đặt bên Phải" ở MỌI luồng (thêm ID, sửa ID, nút "Đổi bên", gắn nhánh/import + chú thích). GIỮ NGUYÊN: mỗi bên tối đa 1 ID; nét ĐỨT=phả hệ / nét LIỀN=trực hệ để vẫn phân biệt bằng màu; mọi cách đếm theo nhánh (Trái/Phải hoạt động, tàu vàng theo nhánh dọc, cấp bậc) giữ nguyên công thức. Từ nay trực hệ & phả hệ đều gắn được cả Trái lẫn Phải. -->
 <!-- v6.72 — TOUR "CÓ GÌ MỚI" sau nâng cấp: khi user đăng nhập, hiển thị LẦN LƯỢT từng mục cập nhật/tính năng MỚI (mà user CHƯA xem) để nắm thông tin, rồi mới dùng bình thường. Khung mở rộng: WHATS_NEW=[{id,icon,ver,title,desc}] (mới→cũ); đánh dấu đã xem theo id lưu _prefs.wnSeen (đồng bộ đa thiết bị, KHÔNG cần Rules mới) → xem xong hết nhắc; thêm mục mới = thêm phần tử. checkWhatsNew() gọi cuối enterAppFirebase (await fsGet('prefs')) rồi CHAIN sang checkRequiredUpdates() (cổng bắt buộc v6.71). Overlay #wn-ov, nav ‹ Trước / Tiếp theo › / Đã hiểu, nút Bỏ qua (đánh dấu đã xem hết). Handler data-wn. -->
@@ -1226,6 +1227,10 @@ table.ina-t td{padding:6px 8px;border-bottom:1px solid #F3EFE4;vertical-align:to
 table.ina-t tr.ina-grp td{background:#EEF8F1;color:#14663F;font-weight:800;font-size:12.5px}
 table.ina-t .ina-mail{color:#555;word-break:break-all;min-width:120px}
 table.ina-t .ina-sub{font-size:11px;color:#999;font-weight:400}
+table.ina-t .ina-acts{display:flex;gap:5px;flex-wrap:wrap;align-items:center;justify-content:flex-end;min-width:96px}
+table.ina-t .ina-acts .btn{white-space:nowrap}
+table.ina-t tr.ina-blk td{background:#FBF4F4;color:#8A7F7F}
+table.ina-t .ina-tag{font-size:10.5px;color:#C62828;font-weight:700;white-space:nowrap}
 /* v6.97 — Phân tích: bấm thống kê → DS người liên quan */
 .an-click{cursor:pointer;border-radius:8px;transition:background .12s}
 .an-row.an-click{padding:3px 4px;margin-left:-4px;margin-right:-4px}
@@ -9716,24 +9721,53 @@ function renderInactiveRemind(){
   _admSetBadge('inactive',list.length||'','warn');
   h+='<div style="font-size:12.5px;color:#666;margin-bottom:8px">Tổng <b>'+_inaCache.length+'</b> tài khoản · <b style="color:#C62828">'+list.length+'</b> người không hoạt động ≥ '+_inaDays+' ngày'+(_inaLeader?' · đang lọc nhánh <b>'+escHtml(_inaLeader)+'</b> ('+shown.length+')':'')+'.</div>';
   if(!shown.length){el.innerHTML=h+'<div style="font-size:13px;color:#1A7A5E;padding:6px 0">🎉 Không có ai — cả đội đều đang hoạt động.</div>';return;}
+  // v7.05 — QTV chính: tạm đóng / mở lại / xoá tài khoản ngay trong bảng (dùng chung handler data-block-email / data-unblock-email / data-del-acct-uid)
+  var ctx=_presCtx||{adminEmailsLc:[],blockedNow:[],isMainAdmin:false};
+  if(ctx.isMainAdmin)h+='<div style="font-size:12px;color:#666;margin-bottom:8px;line-height:1.6">🔒 <b>Tạm đóng</b> = chặn đăng nhập, giữ nguyên dữ liệu · 🔓 <b>Mở</b> = cho vào lại · 🗑️ <b>Xoá</b> = xoá <b>vĩnh viễn</b> tài khoản + dữ liệu cloud (có xác nhận).</div>';
   h+='<div class="ina-wrap"><table class="ina-t"><tr><th>#</th><th>Tên</th><th>Email</th><th>Nhánh Leader</th><th>Mã ID</th><th>Vắng</th><th></th></tr>';
   var lastLd=null;
   shown.forEach(function(x,i){
     var ld=x.leader||'(Chưa khớp cây)';
     if(ld!==lastLd){lastLd=ld;h+='<tr class="ina-grp"><td colspan="7">🌿 '+escHtml(ld)+'</td></tr>';}
     var dc=x.days===null?'#7B1FA2':x.days>=30?'#C62828':'#E65100';
-    h+='<tr><td>'+(i+1)+'</td><td><b>'+escHtml(x.name)+'</b>'+(x.idName&&noAccent(x.idName)!==noAccent(x.name)?'<div class="ina-sub">ID: '+escHtml(x.idName)+'</div>':'')+'</td>';
+    var em=String(x.email||'').toLowerCase(),isAdm=!!em&&ctx.adminEmailsLc.indexOf(em)>=0;
+    var isBlk=!!em&&ctx.blockedNow.some(function(b){return String(b).toLowerCase()===em;});
+    h+='<tr'+(isBlk?' class="ina-blk"':'')+'><td>'+(i+1)+'</td><td><b>'+escHtml(x.name)+'</b>'+(isBlk?' <span class="ina-tag">🔒 đã tạm đóng</span>':'')+(x.idName&&noAccent(x.idName)!==noAccent(x.name)?'<div class="ina-sub">ID: '+escHtml(x.idName)+'</div>':'')+'</td>';
     h+='<td class="ina-mail">'+escHtml(x.email||'—')+'</td>';
     h+='<td>'+(x.matched?escHtml(x.leader||'—'):'<span style="color:#B07A00">chưa khớp cây</span>')+'</td>';
     h+='<td>'+(x.code?'<b>'+escHtml(x.code)+'</b>':'<span style="color:#999">—</span>')+'</td>';
     h+='<td style="color:'+dc+';font-weight:800;white-space:nowrap">'+(x.days===null?'chưa từng vào':x.days+' ngày')+'</td>';
-    h+='<td><button class="anp-view" data-view-uid="'+escHtml(x.uid)+'" data-view-name="'+escHtml(x.name)+'" title="Xem nội dung tài khoản">👁️</button></td></tr>';
+    h+='<td><div class="ina-acts"><button class="anp-view" data-view-uid="'+escHtml(x.uid)+'" data-view-name="'+escHtml(x.name)+'" title="Xem nội dung tài khoản">👁️</button>';
+    if(ctx.isMainAdmin&&em){
+      if(isAdm)h+='<span style="font-size:11.5px;color:#1A7A5E;font-weight:700;align-self:center">QTV</span>';
+      else{
+        if(isBlk)h+='<button class="btn btn-g btn-sm" data-unblock-email="'+escHtml(em)+'" title="Mở lại quyền đăng nhập">🔓 Mở</button>';
+        else h+='<button class="btn btn-r btn-sm" data-block-email="'+escHtml(em)+'" title="Tạm đóng (chặn đăng nhập, giữ dữ liệu)">🔒 Tạm đóng</button>';
+        h+='<button class="btn btn-sm" style="background:#7A1212;color:#fff" data-del-acct-uid="'+escHtml(x.uid)+'" data-del-acct-email="'+escHtml(em)+'" data-del-acct-name="'+escHtml(x.name)+'" title="Xoá vĩnh viễn">🗑️ Xoá</button>';
+      }
+    }
+    h+='</div></td></tr>';
   });
   h+='</table></div>';
   el.innerHTML=h;
   _inaShown=shown;
 }
 var _inaShown=[];
+// v7.05 — sau Tạm đóng / Mở / Xoá: bấm từ bảng "Không hoạt động" → chỉ cập nhật tại chỗ (khỏi tải lại + quét lại cả trang Quản trị)
+function _acctActDone(inIna,kind,em,uid){
+  if(!inIna){renderAdminPage();return;}
+  var b=(_presCtx&&_presCtx.blockedNow)||null;
+  if(b&&em){
+    for(var i=b.length-1;i>=0;i--){if(String(b[i]).toLowerCase()===em)b.splice(i,1);}
+    if(kind!=='unblock')b.push(em);
+  }
+  if(kind==='del'&&uid){
+    if(_inaCache)_inaCache=_inaCache.filter(function(x){return x.uid!==uid;});
+    if(_presAccts)_presAccts=_presAccts.filter(function(a){return a.uid!==uid;});
+  }
+  renderInactiveRemind();
+  try{renderPresenceBox();}catch(e){}
+}
 function inactiveCopyText(){
   var t='DS KHÔNG HOẠT ĐỘNG ≥ '+_inaDays+' NGÀY'+(_inaLeader?' — nhánh '+_inaLeader:'')+' ('+_inaShown.length+' người)\n';
   _inaShown.forEach(function(x,i){t+=(i+1)+'. '+x.name+' | '+(x.email||'—')+' | Leader: '+(x.matched?(x.leader||'—'):'chưa khớp cây')+' | Mã ID: '+(x.code||'—')+' | '+(x.days===null?'chưa từng vào':x.days+' ngày')+'\n';});
@@ -11861,7 +11895,7 @@ function renderAdminPage(){
       h+='<div id="teamsync-inbox"></div></div>';
       // v6.98 — DS không hoạt động ≥15 ngày (nhắc nhở chăm sóc)
       h+='<div class="adm-box"><div class="adm-title">😴 Không hoạt động ≥15 ngày — nhắc nhở chăm sóc</div>';
-      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Những tài khoản <b>không mở app từ 15 ngày trở lên</b> (hoặc chưa từng vào): <b>Tên · Email · thuộc nhánh Leader · Mã ID</b>. Nhánh Leader = đầu nhánh trên cây của bạn, ghép theo Mã ID của ID Gốc (thiếu Mã ID thì theo tên). Lọc theo nhánh rồi bấm <b>📋 Sao chép DS</b> để gửi Leader nhắc nhở chăm sóc.</div>';
+      h+='<div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px">Những tài khoản <b>không mở app từ 15 ngày trở lên</b> (hoặc chưa từng vào): <b>Tên · Email · thuộc nhánh Leader · Mã ID</b>. Nhánh Leader = đầu nhánh trên cây của bạn, ghép theo Mã ID của ID Gốc (thiếu Mã ID thì theo tên). Lọc theo nhánh rồi bấm <b>📋 Sao chép DS</b> để gửi Leader nhắc nhở chăm sóc.'+(_presCtx.isMainAdmin?' QTV chính có thể <b>🔒 Tạm đóng</b> / <b>🔓 Mở</b> / <b>🗑️ Xoá</b> từng tài khoản ngay trong bảng.':'')+'</div>';
       h+='<div id="inactive-remind"></div></div>';
       // v6.27 — Danh sách nhắc đóng Năng động (đọc nangdong của mọi tài khoản)
       h+='<div class="adm-box"><div class="adm-title">📅 Nhắc đóng Năng động</div>';
@@ -13170,16 +13204,17 @@ document.addEventListener('click',function(e){
   if(t){
     var be2=String(t.getAttribute('data-block-email')||'').toLowerCase();
     if(!be2){return;}
-    if(!confirm('Khoá đăng nhập tài khoản này?\nHọ sẽ KHÔNG vào được app cho tới khi bạn mở khoá.'))return;
+    var _bIna=!!t.closest('#inactive-remind');
+    if(!confirm((_bIna?'TẠM ĐÓNG tài khoản '+be2+'?':'Khoá đăng nhập tài khoản này?')+'\nHọ sẽ KHÔNG vào được app cho tới khi bạn mở lại. Dữ liệu vẫn giữ nguyên.'))return;
     fsGetGlobal('admins').then(function(ad){
       var adminEmails=((ad&&ad.emails)||[]).map(function(x){return String(x).toLowerCase();});
       if(adminEmails.indexOf(be2)>=0){showToast('Không thể tắt quyền tài khoản quản trị viên');return;}
       return fsGetGlobal('registration').then(function(reg){
         var blocked=(reg&&reg.blockedEmails)||[];
-        if(blocked.some(function(x){return String(x).toLowerCase()===be2;})){renderAdminPage();return;}
+        if(blocked.some(function(x){return String(x).toLowerCase()===be2;})){_acctActDone(_bIna,'block',be2);return;}
         blocked.push(be2);
         return fsSetGlobal('registration',{blockedEmails:blocked}).then(function(){
-          showToast('✓ Đã tắt quyền: '+be2);renderAdminPage();
+          showToast('✓ Đã '+(_bIna?'tạm đóng':'tắt quyền')+': '+be2);_acctActDone(_bIna,'block',be2);
         });
       });
     }).catch(function(err){showToast('Lỗi: '+err.message);});
@@ -13188,11 +13223,11 @@ document.addEventListener('click',function(e){
   // QTV chính: MỞ KHOÁ đăng nhập 1 email
   t=e.target.closest('[data-unblock-email]');
   if(t){
-    var ue=t.getAttribute('data-unblock-email');
+    var ue=t.getAttribute('data-unblock-email'),_uIna=!!t.closest('#inactive-remind');
     fsGetGlobal('registration').then(function(reg){
       var blocked=((reg&&reg.blockedEmails)||[]).filter(function(x){return String(x).toLowerCase()!==String(ue).toLowerCase();});
       return fsSetGlobal('registration',{blockedEmails:blocked}).then(function(){
-        showToast('✓ Đã mở khoá: '+ue);renderAdminPage();
+        showToast('✓ Đã mở lại: '+ue);_acctActDone(_uIna,'unblock',String(ue).toLowerCase());
       });
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
@@ -13202,7 +13237,7 @@ document.addEventListener('click',function(e){
   if(t){
     var duid=t.getAttribute('data-del-acct-uid');
     var dem=String(t.getAttribute('data-del-acct-email')||'').toLowerCase();
-    var dnm=t.getAttribute('data-del-acct-name')||dem||'(không tên)';
+    var dnm=t.getAttribute('data-del-acct-name')||dem||'(không tên)',_dIna=!!t.closest('#inactive-remind');
     if(!confirm('XOÁ VĨNH VIỄN tài khoản "'+dnm+'"?\n\n• Xoá TOÀN BỘ dữ liệu của họ trên cloud (sơ đồ cây, thành viên, vị trí CLB, việc, bánh xe cuộc đời...).\n• Xoá bản ghi tài khoản + KHOÁ đăng nhập email này (chống đăng ký lại).\n• KHÔNG hoàn tác được.\n\nLưu ý: Tài khoản đăng nhập (Firebase Authentication) chỉ xoá hẳn được trong Firebase Console.'))return;
     fsGetGlobal('admins').then(function(ad){
       var adminEmails=((ad&&ad.emails)||[]).map(function(x){return String(x).toLowerCase();});
@@ -13215,7 +13250,7 @@ document.addEventListener('click',function(e){
           if(dem&&!blocked.some(function(x){return String(x).toLowerCase()===dem;}))blocked.push(dem);
           return fsSetGlobal('registration',{blockedEmails:blocked});
         });
-      }).then(function(){showToast('✓ Đã xoá vĩnh viễn tài khoản');renderAdminPage();});
+      }).then(function(){showToast('✓ Đã xoá vĩnh viễn tài khoản');_acctActDone(_dIna,'del',dem,duid);});
     }).catch(function(err){showToast('Lỗi: '+err.message);});
     return;
   }
