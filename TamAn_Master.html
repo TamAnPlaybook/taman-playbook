@@ -1,4 +1,5 @@
-<!-- VERSION: v7.08-hopthu-cay-mo-uoc -->
+<!-- VERSION: v7.09-fs-doi-cay -->
+<!-- v7.09 — Toàn màn hình sơ đồ: nút #btn-fs-swap đổi Nhị phân ⇄ Cây sao (Mặt trời) ngay trong overlay (fsSwapTreeMode: đóng fs → bấm thẻ data-treemode → mở lại fs). Nhãn đổi theo chế độ trong updateFsTitle; ẩn khi dreamMode. -->
 <!-- v7.08 — Hộp thư ID mới quét thêm CÂY MƠ ƯỚC (dreamtree; baseline riêng seen["uid#dream"], lần đầu ghi nền im lặng, bỏ node fromReal). Mục src:"dream" → khung tím + ghi chú "🌠 Từ Cây mơ ước — ID kế hoạch" (+ đã thành hiện thực / ngày lập KH); mục cây thật ghi "🌳 Nguồn: Cây thật". -->
 <!-- v7.07 — Hộp thư ID mới: MỌI thông báo (ID mới · DISC · Sinh nhật) có dòng "🆔 Mã ID · 🌿 Đầu nhánh F1" (_nidBranchHtml). Ưu tiên khớp cây QTV theo Mã ID rồi tên → teamHeadOf; không khớp thì dùng idCode/branchHead lưu lúc quét (cây tài khoản của họ). -->
 <!-- v7.06 — Hộp thư ID mới: mỗi thông báo có nút ✓ Đã đọc (↺ Chưa đọc) + 🗑️ Xoá riêng (_nidActRow / newidItemAct, khoá _nidKey). Xoá không báo lại vì baseline NEWID_SEEN_KEY giữ nguyên. -->
@@ -2053,6 +2054,7 @@ a.gp-att-nm:hover{text-decoration:underline}
     <b style="font-size:15px" id="fs-title">&#x26F6; Xem toàn trang</b>
     <span style="flex:1"></span>
     <button class="tbtn" id="btn-fs-up" style="background:rgba(255,255,255,.16);color:white;border-color:transparent;display:none;margin-right:8px">&#11014;&#65039; Lên 1 tầng</button>
+    <button class="tbtn" id="btn-fs-swap" style="background:#C8A84B;color:#1A1A1A;border-color:transparent;font-weight:800;margin-right:8px" title="Đổi kiểu cây ngay trong Toàn màn hình">&#11088; Cây sao</button>
     <button class="tbtn" id="btn-fs-close" style="background:rgba(255,255,255,.12);color:white;border-color:transparent">&#10005; Đóng</button>
   </div>
   <div id="fs-host"></div>
@@ -15757,6 +15759,7 @@ function bindStatic(){
   var _bfs=document.getElementById('btn-fullscreen');if(_bfs)_bfs.addEventListener('click',openFullscreen);
   document.getElementById('btn-fs-close').addEventListener('click',closeFullscreen);
   var _bup=document.getElementById('btn-fs-up');if(_bup)_bup.addEventListener('click',fsGoUp);
+  var _bsw=document.getElementById('btn-fs-swap');if(_bsw)_bsw.addEventListener('click',fsSwapTreeMode); // v7.09
   // v7 — điều hướng Tutorial nút màn hình
   var _tn=document.getElementById('tut-next');if(_tn)_tn.addEventListener('click',function(){_tutNav(1);});
   var _tp=document.getElementById('tut-prev');if(_tp)_tp.addEventListener('click',function(){_tutNav(-1);});
@@ -15858,6 +15861,17 @@ function updateFsTitle(){
     up.innerHTML=(currentTreeMode==='binary')?'⬆️ Lên 1 tầng':'⬆️ Lên F';
     up.title=(currentTreeMode==='binary')?'Về ID đặt liền trên (lên 1 tầng)':'Về tuyến trên bảo trợ (lên 1 F)';
   }
+  var sw=document.getElementById('btn-fs-swap');
+  if(sw){sw.style.display=dreamMode?'none':'';sw.innerHTML=currentTreeMode==='binary'?'⭐ Cây sao':'🌳 Nhị phân';}
+}
+// v7.09 — Toàn màn hình: nút đổi qua lại Nhị phân ⇄ Cây sao (Mặt trời). Ẩn khi đang ở Cây mơ ước (không có bản Cây sao).
+function fsSwapTreeMode(){
+  if(dreamMode)return;
+  var to=currentTreeMode==='binary'?'star':'binary';
+  var tab=document.querySelector('[data-treemode="'+to+'"]');if(!tab)return;
+  closeFullscreen();
+  tab.click(); // dùng lại handler đổi thẻ cây (render + fit)
+  openFullscreen();
 }
 function fsGoUp(){
   // Nhị phân: lên 1 tầng = ID cha (parentId). Mặt trời: lên F = tuyến trên bảo trợ (f1of).
