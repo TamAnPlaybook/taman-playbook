@@ -1,4 +1,5 @@
-<!-- VERSION: v7.07-hopthu-maid-daunhanh -->
+<!-- VERSION: v7.08-hopthu-cay-mo-uoc -->
+<!-- v7.08 — Hộp thư ID mới quét thêm CÂY MƠ ƯỚC (dreamtree; baseline riêng seen["uid#dream"], lần đầu ghi nền im lặng, bỏ node fromReal). Mục src:"dream" → khung tím + ghi chú "🌠 Từ Cây mơ ước — ID kế hoạch" (+ đã thành hiện thực / ngày lập KH); mục cây thật ghi "🌳 Nguồn: Cây thật". -->
 <!-- v7.07 — Hộp thư ID mới: MỌI thông báo (ID mới · DISC · Sinh nhật) có dòng "🆔 Mã ID · 🌿 Đầu nhánh F1" (_nidBranchHtml). Ưu tiên khớp cây QTV theo Mã ID rồi tên → teamHeadOf; không khớp thì dùng idCode/branchHead lưu lúc quét (cây tài khoản của họ). -->
 <!-- v7.06 — Hộp thư ID mới: mỗi thông báo có nút ✓ Đã đọc (↺ Chưa đọc) + 🗑️ Xoá riêng (_nidActRow / newidItemAct, khoá _nidKey). Xoá không báo lại vì baseline NEWID_SEEN_KEY giữ nguyên. -->
 <!-- v7.05 — QTV chính: bảng "Không hoạt động ≥15 ngày" có nút 🔒 Tạm đóng / 🔓 Mở / 🗑️ Xoá từng tài khoản (dùng chung handler data-block-email / data-unblock-email / data-del-acct-uid; bấm từ bảng thì _acctActDone() chỉ cập nhật tại chỗ, không quét lại cả trang Quản trị). Dòng đã tạm đóng tô xám + nhãn 🔒. -->
@@ -2715,6 +2716,8 @@ async function scanNewIds(){
   // Quét sơ đồ MỌI tài khoản → phát hiện ID mới so với baseline. Trả {added,firstRun,accounts}.
   var accts=await fetchAccounts().catch(function(){return [];});
   var trees=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'tree').catch(function(){return null;});}));
+  // v7.08 — quét thêm CÂY MƠ ƯỚC (users/{uid}/data/dreamtree); baseline riêng key 'uid#dream', bỏ node chép từ cây thật (fromReal)
+  var dtrees=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'dreamtree').catch(function(){return null;});}));
   var seen=_newidLoad(NEWID_SEEN_KEY,{})||{};
   var inbox=newidInbox();
   // v6.36 — bo sung Email DK cho cac muc CU trong hop thu (tao truoc v6.34 chua luu email)
@@ -2722,17 +2725,16 @@ async function scanNewIds(){
   inbox.forEach(function(it){if(!it.acctEmail&&_emap[it.uid])it.acctEmail=_emap[it.uid];});
   var firstRun=_newidLoad(NEWID_INIT_KEY,'')!=='1';
   var added=0,now=new Date().toISOString();
-  accts.forEach(function(a,i){
-    var nodes=(trees[i]&&trees[i].nodes)||[];
+  function _scanOne(a,nodes,sk,src){
     var nodeMap={};nodes.forEach(function(n){if(n&&n.id)nodeMap[n.id]=n;});
-    var known=seen[a.uid];
+    var known=seen[sk];
     if(!known){
       // Tài khoản chưa từng theo dõi → ghi nền IM LẶNG (tránh tràn hộp thư)
-      seen[a.uid]=nodes.map(function(n){return n.id;});
+      seen[sk]=nodes.map(function(n){return n.id;});
       return;
     }
     var knownSet={};known.forEach(function(id){knownSet[id]=1;});
-    var fresh=nodes.filter(function(n){return n&&n.id&&!knownSet[n.id];});
+    var fresh=nodes.filter(function(n){return n&&n.id&&!knownSet[n.id]&&!(src==='dream'&&n.fromReal);});
     if(fresh.length){
       // v6.89 — tính Leader 1★/2★/3★ gần nhất: tạm mượn treeNodes = cây tài khoản này rồi trả lại
       var _prevTree=treeNodes;
@@ -2748,13 +2750,18 @@ async function scanNewIds(){
           placedUnder:placed?(placed.name||placed.id):'', joinDate:n.joinDate||'',
           leaderName:ld?ld.name:'', leaderShort:ld?ld.short:'',
           idCode:String(n.idCode||'').trim(), branchHead:bh?(bh.name||bh.id):(n.parentId?'':'(Gốc)'),
+          src:src||'', planAt:(src==='dream'&&n.planAt)||'', realized:(src==='dream'&&n.realized)?(n.realized.realName||'✓'):'',
           detectedAt:now, read:false
         });
         added++;
       });
       try{treeNodes=_prevTree;if(typeof clearRankMemo==='function')clearRankMemo();}catch(e){}
-      seen[a.uid]=nodes.map(function(n){return n.id;});
+      seen[sk]=nodes.map(function(n){return n.id;});
     }
+  }
+  accts.forEach(function(a,i){
+    _scanOne(a,(trees[i]&&trees[i].nodes)||[],a.uid,'');
+    _scanOne(a,(dtrees[i]&&dtrees[i].nodes)||[],a.uid+'#dream','dream');
   });
   _newidSave(NEWID_SEEN_KEY,seen);
   if(inbox.length>500)inbox=inbox.slice(0,500); // giới hạn 500 mục gần nhất
@@ -2772,7 +2779,7 @@ function _nidBranchInfo(it){
   try{
     var rc=noAccent(code);
     if(rc)my=treeNodes.find(function(t){return noAccent(t.idCode||'')===rc;})||null;
-    if(!my){var nm=noAccent(it.nodeName||'');if(nm)my=treeNodes.find(function(t){return noAccent(t.name||'')===nm;})||null;}
+    if(!my&&it.src!=='dream'){var nm=noAccent(it.nodeName||'');if(nm)my=treeNodes.find(function(t){return noAccent(t.name||'')===nm;})||null;}
     if(my){
       if(!code)code=String(my.idCode||'').trim();
       if(!my.parentId)head='(Gốc)';else{var hd=teamHeadOf(my);if(hd)head=hd.name||hd.id;}
@@ -2785,7 +2792,7 @@ function _nidBranchHtml(it){
   return '<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🆔 Mã ID: '+(b.code?'<b>'+escHtml(b.code)+'</b>':'<span style="color:#999">—</span>')
     +' · 🌿 Đầu nhánh F1: '+(b.head?'<b style="color:#14663F">'+escHtml(b.head)+'</b>':'<span style="color:#999">—</span>')+'</div>';
 }
-function _nidKey(it){return [it.type||'id',it.uid||'',it.nodeId||it.nodeName||'',it.detectedAt||'',it.disc||it.birthday||''].join('|');}
+function _nidKey(it){return [(it.type||'id')+(it.src?'#'+it.src:''),it.uid||'',it.nodeId||it.nodeName||'',it.detectedAt||'',it.disc||it.birthday||''].join('|');}
 function _nidActRow(it){
   var k=escHtml(_nidKey(it));
   return '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:6px">'
@@ -2822,8 +2829,11 @@ function newIdItemHtml(it){
   }
   var side=_nidSide(it.side);
   var bd=it.read?'#E8E2D2':'#C8A84B', bg=it.read?'#FCFBF7':'#FFFBE9';
+  var _dr=it.src==='dream'; if(_dr){bd=it.read?'#E3DCEF':'#7E57C2';bg=it.read?'#FBFAFD':'#F6F1FF';} // v7.08 — ID từ Cây mơ ước: khung tím
   var h='<div style="border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:9px 11px;margin-bottom:8px;font-family:Arial">';
-  h+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'<b>✨ '+escHtml(it.nodeName||it.nodeId)+'</b>'+(it.joinDate?' <span style="font-size:11px;color:#999">· vào '+escHtml(it.joinDate)+'</span>':'')+'</div>';
+  h+='<div style="font-size:13.5px;color:#1A1A1A">'+(it.read?'':'🔴 ')+'<b>✨ '+escHtml(it.nodeName||it.nodeId)+'</b>'+(it.joinDate?' <span style="font-size:11px;color:#999">· '+(_dr?'dự kiến ':'vào ')+''+escHtml(it.joinDate)+'</span>':'')+'</div>';
+  h+=_dr?'<div style="margin-top:4px;font-size:12px;font-weight:700;color:#5E35B1;background:#EDE7F6;border:1px dashed #9575CD;border-radius:7px;padding:3px 8px;display:inline-block">🌠 Từ Cây mơ ước — ID kế hoạch, CHƯA phải ID thật'+(it.realized?' · ✅ đã thành hiện thực: '+escHtml(it.realized):'')+(it.planAt?' · lập KH '+escHtml(fmtDT(it.planAt)):'')+'</div>'
+    :'<div style="margin-top:4px;font-size:11.5px;color:#6B7B6E">🌳 Nguồn: Cây thật (Nhị phân)</div>';
   h+='<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.7">🌳 Sơ đồ: <b>'+escHtml(it.acctName)+'</b>'+(it.acctEmail?'<br>📧 Email ĐK: <b style="color:#1565C0">'+escHtml(it.acctEmail)+'</b>':'')+'<br>👤 Bảo trợ: <b>'+escHtml(it.sponsor||'—')+'</b>'+(it.leaderName?'<br>👑 Thuộc Leader: <b>'+escHtml(it.leaderName)+'</b>'+(it.leaderShort?' <span style="background:#E64A19;color:#fff;border-radius:5px;padding:0 6px;font-size:11px;font-weight:800">'+escHtml(it.leaderShort)+'</span>':''):'')+'<br>📍 Đặt dưới: <b>'+escHtml(it.placedUnder||'(gốc)')+'</b>'+(side?' · bên '+side:'')+'</div>';
   h+=_nidBranchHtml(it);
   h+='<div style="font-size:10.5px;color:#AAA;margin-top:4px">🕒 Phát hiện: '+escHtml(fmtDT(it.detectedAt))+'</div>';
@@ -2844,7 +2854,7 @@ function renderNewIdInbox(scanning){
   h+='</div>';
   if(unread)h+='<div style="font-size:13px;color:#C62828;font-weight:700;margin-bottom:8px">🔴 '+unread+' thông báo chưa đọc</div>';
   if(!inbox.length){
-    h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai), hoặc khi có người <b>🧭 hoàn thành đo DISC</b> (tự đồng bộ lên cây bạn theo Mã ID). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
+    h+='<div style="font-size:13px;color:#999;padding:6px 0;line-height:1.7">Chưa có thông báo. Hộp thư sẽ tự báo khi sơ đồ của bất kỳ tài khoản nào trong đội có thêm <b>ID mới</b> (kèm ai bảo trợ, đặt dưới ai), (kể cả ID kế hoạch trên <b>🌠 Cây mơ ước</b> — có ghi chú riêng), hoặc khi có người <b>🧭 hoàn thành đo DISC</b> (tự đồng bộ lên cây bạn theo Mã ID). <i>Lần quét đầu chỉ ghi nền, không báo.</i></div>';
   }else{
     // v6.89 — PHÂN VÙNG theo Leader 1★/2★/3★ gần nhất ở tuyến trên
     var groups={},order=[];
