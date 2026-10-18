@@ -1,4 +1,5 @@
-<!-- VERSION: v7.10-zoom-cam -->
+<!-- VERSION: v7.11-goi-y-dat-cay -->
+<!-- v7.11 — Sơ đồ: nút 🎯 Gợi ý đặt cây (#btn-placeopt, modal #po-ov, renderPlaceOpt). Ước tính thu nhập theo vị trí: cặp tầng = min(tầng Trái, Phải) × 20tr; cặp nhánh nhỏ = min(NN Trái, NN Phải) × 6tr (mốc sửa được, nmSet placeopt_cfg). poScore: lợi ngay + ½ lợi bước kế → gợi ý vị trí cụ thể (nút ➕ mở openAddNodeModal2) + lộ trình 6 ID + mục Đi sao theo tuyến bảo trợ F1. Điểm danh ảnh Zoom mở ra mặc định buổi Sáng. -->
 <!-- v7.10 — Điểm danh ảnh Zoom (kiểu Danh sách): đọc luôn biểu tượng CAMERA mỗi dòng (_zColorData + _zCamAt: dải ngang dòng tên ở 32% phải ảnh gốc → cụm biểu tượng cuối (bỏ "...") đỏ = tắt cam) → ghi dSet(mid,buoi+"_cam","on"|"off"). Nút cam trên từng dòng chạm để sửa; không đọc được → giữ dữ liệu cũ. -->
 <!-- v7.09 — Toàn màn hình sơ đồ: nút #btn-fs-swap đổi Nhị phân ⇄ Cây sao (Mặt trời) ngay trong overlay (fsSwapTreeMode: đóng fs → bấm thẻ data-treemode → mở lại fs). Nhãn đổi theo chế độ trong updateFsTitle; ẩn khi dreamMode. -->
 <!-- v7.08 — Hộp thư ID mới quét thêm CÂY MƠ ƯỚC (dreamtree; baseline riêng seen["uid#dream"], lần đầu ghi nền im lặng, bỏ node fromReal). Mục src:"dream" → khung tím + ghi chú "🌠 Từ Cây mơ ước — ID kế hoạch" (+ đã thành hiện thực / ngày lập KH); mục cây thật ghi "🌳 Nguồn: Cây thật". -->
@@ -1156,6 +1157,33 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .zatt-gbtn{flex-shrink:0;border:1px solid #CE93D8;background:#F8EEFB;color:#8E24AA;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer}
 .zatt-guest{flex-wrap:wrap}
 .zatt-guest input{min-width:140px}
+.po-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.po-card{border:1px solid #E0E6EA;border-radius:11px;padding:9px 10px;background:#fff;text-align:center;min-width:0}
+.po-card.po-tot{background:#E8F5F0;border-color:#80CBC4}
+.po-k{font-size:11.5px;color:#666;font-weight:700}
+.po-v{font-size:21px;font-weight:800;color:#1A1A1A;margin:2px 0}
+.po-tot .po-v{color:#00695C}
+.po-s{font-size:11px;color:#888}
+.po-m{font-size:12.5px;font-weight:800;color:#2E7D32;margin-top:2px}
+.po-cfg{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:#666;margin-bottom:6px}
+.po-cfg input{width:58px;padding:4px 6px;border:1px solid #D0D7DC;border-radius:7px;font-size:12.5px;margin:0 3px}
+.po-opt{position:relative;border:1px solid #E3E8EC;border-radius:11px;padding:10px 11px;margin-bottom:8px;background:#fff}
+.po-opt.best{border:2px solid #1A7A5E;background:#F3FBF7;padding-top:14px}
+.po-badge{position:absolute;top:-10px;left:10px;background:#1A7A5E;color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px}
+.po-slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;align-items:center}
+.po-slot{border:1px solid #A5D6A7;background:#fff;color:#1B5E20;font-size:12px;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.po-slot span{color:#888;font-size:10.5px;margin-left:3px}
+.po-slot:disabled{opacity:.5;cursor:default}
+.po-more{font-size:11.5px;color:#999}
+.po-plan{border:1px solid #E3E8EC;border-radius:11px;overflow:hidden;margin-bottom:6px}
+.po-step{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;border-bottom:1px solid #F0F2F4}
+.po-step:last-child{border-bottom:none}
+.po-n{width:22px;height:22px;border-radius:50%;background:#1565C0;color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.po-up{color:#2E7D32;font-weight:800;min-width:56px;text-align:right}
+.po-zero{color:#BBB;min-width:56px;text-align:right}
+.po-cum{color:#555;font-weight:700;min-width:58px;text-align:right;font-size:12px}
+.po-tip{font-size:12.5px;line-height:1.55;padding:6px 10px;border-left:3px solid #FFB74D;background:#FFF8EE;border-radius:6px;margin-bottom:5px}
+@media(max-width:420px){.po-grid{grid-template-columns:1fr 1fr}.po-card.po-tot{grid-column:1/-1}}
 .zatt-cam{flex-shrink:0;border:1px solid #CFD8DC;background:#fff;color:#546E7A;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer;white-space:nowrap}
 .zatt-cam.on{border-color:#81C784;background:#E8F5E9;color:#2E7D32}
 .zatt-cam.off{border-color:#EF9A9A;background:#FDECEC;color:#C62828}
@@ -1739,6 +1767,7 @@ a.gp-att-nm:hover{text-decoration:underline}
     </div>
     <div id="tree-search-bar">
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm: tên, mã ID, SĐT, DISC, cấp bậc, bảo trợ...">
+      <button class="tbtn" id="btn-placeopt" style="background:#E8F5F0;border-color:#80CBC4;color:#00695C">&#127919; Gợi ý đặt cây</button>
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
       <button class="tbtn" id="btn-nangdong" style="background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32">&#128197; Năng động<span class="tt-badge" id="nd-badge"></span></button>
       <button class="tbtn" id="btn-idstats" style="background:#E3F2FD;border-color:#90CAF9;color:#1565C0">&#128202; Đếm ID vào</button>
@@ -2130,6 +2159,15 @@ a.gp-att-nm:hover{text-decoration:underline}
 <button class="bdp-fab" id="bdpop-fab" data-bdpop-open="1" title="Chúc mừng sinh nhật hôm nay" style="display:none">🎂</button>
 
 <!-- ĐIỂM DANH BẰNG ẢNH ZOOM — chụp màn hình Zoom, app OCR tên → tự điểm danh -->
+<div class="nmod-ov" id="po-ov">
+  <div class="nmod" style="max-width:640px">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#127919; Gợi ý đặt cây tối ưu</div>
+      <button class="nmod-x" id="po-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="po-content"></div>
+  </div>
+</div>
 <div class="nmod-ov" id="zatt-ov">
   <div class="nmod" style="max-width:600px">
     <div class="nmod-hd">
@@ -4594,6 +4632,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v711-goi-y-dat-cay', ver:'7.11', icon:'🎯', title:'Sơ đồ: Gợi ý đặt cây tối ưu thu nhập &amp; đi sao',
+    desc:'Trong tab <b>Sơ đồ</b> bấm <b>🎯 Gợi ý đặt cây</b>: app ước tính thu nhập hiện tại (mỗi <b>cặp tầng ≈ 20 triệu</b>, mỗi <b>cặp nhánh nhỏ ≈ 6 triệu</b>, sửa được mốc), chỉ ra <b>ID mới tiếp theo nên đặt ở đâu</b> (bấm ➕ là thêm ID đúng chỗ đó), <b>lộ trình 6 ID kế tiếp</b>, và mục <b>⭐ Đi sao</b> cho biết ID mới nên thuộc nhánh F1 nào. Dùng được cả trên 🌠 Cây mơ ước để lập kế hoạch.' },
   { id:'v710-zoom-cam', ver:'7.10', icon:'📷', title:'Điểm danh ảnh Zoom: ghi luôn BẬT / TẮT cam',
     desc:'Khi chụp <b>danh sách Participants</b> trong Zoom rồi bấm <b>📷 Điểm danh bằng ảnh Zoom</b> (kiểu <b>📋 Danh sách</b>), app đọc luôn <b>biểu tượng camera</b> bên phải mỗi tên: biểu tượng <b>đỏ gạch chéo = tắt cam</b>. Mỗi dòng có nút <b>📷 Bật cam / 🚫 Tắt cam</b> — đọc sai thì chạm để sửa. Bấm Điểm danh là ghi luôn <b>Camera ON/OFF</b> cho buổi đó.' },
   { id:'v704-trang-chu', ver:'7.04', icon:'🏠', title:'Trang chủ: mở app là thấy ngay các khu chính',
@@ -10071,6 +10111,169 @@ function computeBinaryHighlights(pos,rootId){
   }
   return out;
 }
+// ================================================================
+// v7.11 — 🎯 GỢI Ý ĐẶT CÂY TỐI ƯU (thu nhập + đi sao)
+//   Thu nhập ước tính theo VỊ TRÍ ĐẶT (tương đối với gốc đang xem / ID đang focus):
+//   • Cặp tầng: mỗi tầng có ID ở CẢ 2 nhánh = 1 cặp ≈ poCfg().pair triệu (mặc định 20) → số cặp = min(số tầng Trái, Phải)
+//   • Cặp nhánh nhỏ: "ID NN" (Tầng ≥4, không phải ID đầu tầng) → min(NN Trái, NN Phải) ≈ poCfg().nn triệu (mặc định 6)
+//   Gợi ý: thử từng nước đi (tầng mới / NN mỗi bên), nhìn trước 1 bước, lập lộ trình 6 ID kế tiếp.
+//   Đi sao tính theo tuyến BẢO TRỢ (F1) → mục riêng chỉ ra nhánh F1 nên phát sinh ID.
+// ================================================================
+var PO_DEF={pair:20,nn:6};
+function poCfg(){try{var o=JSON.parse(nmGet('placeopt_cfg')||'{}');return {pair:+o.pair>0?+o.pair:PO_DEF.pair,nn:+o.nn>0?+o.nn:PO_DEF.nn};}catch(e){return {pair:PO_DEF.pair,nn:PO_DEF.nn};}}
+function poRoot(){return focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);}
+function poState(rootId){
+  var st={d:{L:0,R:0},nn:{L:0,R:0},cnt:{L:0,R:0},slots:[],info:{}};
+  var byLS={},info=st.info;
+  treeNodes.forEach(function(n){
+    if(n.id===rootId){info[n.id]={lvl:0,side:null};return;}
+    var side=rootSideOf(n.id,rootId);if(side!=='L'&&side!=='R')return;
+    var lvl=relLevelOf(n.id,rootId);if(lvl<1)return;
+    info[n.id]={lvl:lvl,side:side};st.cnt[side]++;
+    if(lvl>st.d[side])st.d[side]=lvl;
+    var k=lvl+'|'+side;byLS[k]=(byLS[k]||0)+1;
+  });
+  Object.keys(byLS).forEach(function(k){var p=k.split('|');if(+p[0]>=4)st.nn[p[1]]+=byLS[k]-1;}); // trừ ID đầu tầng (xanh lá)
+  Object.keys(info).forEach(function(id){ // khe trống Trái/Phải dưới mỗi ID
+    var inf=info[id],kids=placementChildren(id);if(kids.length>=2)return;
+    ['L','R'].forEach(function(s){
+      if(kids.some(function(k){return k.side===s;}))return;
+      st.slots.push({pid:id,ps:s,lvl:inf.lvl+1,side:inf.lvl===0?s:inf.side});
+    });
+  });
+  return st;
+}
+function poVal(d,nn,c){return c.pair*Math.min(d.L,d.R)+c.nn*Math.min(nn.L,nn.R);}
+function poMoves(st,d,nn){ // nước đi trừu tượng: 'new' = mở tầng mới · 'nn' = thêm ID NN (cần khe ở Tầng ≥4 đã có ID)
+  var m=[];
+  ['L','R'].forEach(function(s){
+    m.push({s:s,t:'new'});
+    var real=st.slots.some(function(sl){return sl.side===s&&sl.lvl>=4&&sl.lvl<=st.d[s];});
+    if(real||(d[s]>st.d[s]&&d[s]>=4))m.push({s:s,t:'nn'});
+  });
+  return m;
+}
+function poApply(d,nn,mv){var d2={L:d.L,R:d.R},n2={L:nn.L,R:nn.R};if(mv.t==='new')d2[mv.s]++;else n2[mv.s]++;return {d:d2,nn:n2};}
+function poScore(st,d,nn,c){ // chấm từng nước đi: lợi ngay + 1/2 lợi tốt nhất của bước kế (để thấy "mở tầng" chuẩn bị cho cặp)
+  var cur=poVal(d,nn,c);
+  return poMoves(st,d,nn).map(function(mv){
+    var r=poApply(d,nn,mv),v=poVal(r.d,r.nn,c),nx=0;
+    poMoves(st,r.d,r.nn).forEach(function(m2){var r2=poApply(r.d,r.nn,m2);nx=Math.max(nx,poVal(r2.d,r2.nn,c)-v);});
+    var sideLoad=r.d[mv.s]+r.nn[mv.s]*0.1;
+    return {mv:mv,gain:v-cur,next:nx,total:v,res:r,sc:(v-cur)+nx*0.5-sideLoad*1e-4};
+  }).sort(function(a,b){return b.sc-a.sc;});
+}
+function poPlan(st,c,N){
+  var d={L:st.d.L,R:st.d.R},nn={L:st.nn.L,R:st.nn.R},out=[];
+  for(var i=0;i<N;i++){
+    var b=poScore(st,d,nn,c)[0];if(!b)break;
+    d=b.res.d;nn=b.res.nn;
+    out.push({mv:b.mv,gain:b.gain,total:b.total,lvl:b.mv.t==='new'?d[b.mv.s]:null});
+  }
+  return out;
+}
+function poSlotsFor(st,mv){ // vị trí cụ thể trên cây cho 1 nước đi
+  var sl=st.slots.filter(function(x){
+    if(x.side!==mv.s)return false;
+    return mv.t==='new'?x.lvl===st.d[mv.s]+1:(x.lvl>=4&&x.lvl<=st.d[mv.s]);
+  });
+  sl.sort(function(a,b){return a.lvl-b.lvl;});
+  return sl;
+}
+function poTr(v){v=Math.round(v*10)/10;return (v%1?v.toFixed(1).replace('.',','):String(v))+' tr';}
+function poSideLbl(s){return s==='L'?'Trái':'Phải';}
+function poMoveLbl(mv,st){
+  return mv.t==='new'
+    ?'<b>Nhánh '+poSideLbl(mv.s)+'</b> · mở <b>Tầng '+(st.d[mv.s]+1)+'</b>'+(st.d[mv.s]+1<=st.d[mv.s==='L'?'R':'L']?' <span style="color:#2E7D32">(bên kia đã có → thành cặp)</span>':'')
+    :'<b>Nhánh '+poSideLbl(mv.s)+'</b> · thêm <b>ID NN</b> (Tầng ≥4)';
+}
+function poStarHtml(rootId){
+  var n=treeNodes.find(function(x){return x.id===rootId;});if(!n)return '';
+  var r=nodeRank(rootId),cur=r?RANKS[r-1]:null;
+  var h='<div style="font-size:13px;margin-bottom:6px">Cấp hiện tại của <b>'+escHtml(n.name)+'</b>: '+(cur?'<b style="color:'+cur.color+'">'+cur.name+'</b>':'<b>chưa có cấp</b>')+'</div>';
+  if(r>=10)return h+'<div class="po-tip">👑 Đã đạt cấp cao nhất.</div>';
+  var nx=RANKS[r],f1s=sponsorKids(n),cm=curMonthAbs(),tips=[];
+  var pg=rankProgress(rootId);
+  h+='<div style="font-size:13px;margin-bottom:6px">Mục tiêu kế: <b style="color:'+nx.color+'">'+nx.name+'</b> — đạt '+Math.round(pg.pct*100)+'% ('+pg.have+'/'+pg.need+' nhánh F1)</div>';
+  if(!f1s.length){tips.push('Chưa có F1 bảo trợ trực tiếp → ưu tiên <b>tự bảo trợ</b> ID mới (F1 đầu tiên).');}
+  else if(nx.id===1){
+    var act=f1s.filter(function(f){return branchCountInWindow(f,cm,1)>=1;}),idle=f1s.filter(function(f){return act.indexOf(f)<0;});
+    tips.push('Cần <b>2 nhánh F1 khác nhau</b> cùng có ID mới trong <b>tháng này</b> — đang có <b>'+act.length+'</b>.');
+    if(act.length<2&&idle.length)tips.push('ID mới tháng này nên do người trong nhánh <b>'+idle.slice(0,3).map(function(f){return escHtml(f.name);}).join('</b>, <b>')+'</b> bảo trợ.');
+    if(f1s.length<2)tips.push('Mới có '+f1s.length+' F1 → <b>tự bảo trợ thêm 1 F1</b> (tính là nhánh mới).');
+  }else if(nx.id===2){
+    var cs=f1s.map(function(f){return {f:f,c:branchCountInWindow(f,cm-1,2)};}).sort(function(a,b){return b.c-a.c;});
+    tips.push('Cần <b>2 nhánh F1</b>, mỗi nhánh <b>≥4 ID</b> trong 2 tháng liên tiếp (tháng trước + tháng này).');
+    cs.slice(0,2).forEach(function(x){tips.push(x.c>=4?'Nhánh <b>'+escHtml(x.f.name)+'</b>: ✓ đủ ('+x.c+' ID)':'Dồn ID mới vào nhánh <b>'+escHtml(x.f.name)+'</b>: còn thiếu <b>'+(4-x.c)+'</b> ID ('+x.c+'/4)');});
+    if(cs.length<2)tips.push('Cần thêm <b>1 nhánh F1</b> mới.');
+  }else{
+    var needR=nx.needRank||(nx.id-1),needC=nx.needCount||2;
+    var ok=f1s.filter(function(f){return branchMaxRank(f)>=needR;});
+    tips.push('Cần <b>'+needC+' nhánh F1</b> có ID đạt <b>'+RANKS[needR-1].name+'</b> — đang có <b>'+ok.length+'</b>.');
+    f1s.forEach(function(f){if(branchMaxRank(f)>=needR)return;var cc=branchCloseToRank(f,needR);
+      if(cc)tips.push('🔥 Hỗ trợ nhánh <b>'+escHtml(f.name)+'</b>: ID <b>'+escHtml(cc.node.name)+'</b> đã '+Math.round(cc.pct*100)+'% lên '+RANKS[needR-1].name+' → ID mới nên vào đội của người này.');});
+  }
+  tips.forEach(function(t){h+='<div class="po-tip">'+t+'</div>';});
+  return h;
+}
+function renderPlaceOpt(){
+  var el=document.getElementById('po-content');if(!el)return;
+  var rid=poRoot(),root=treeNodes.find(function(x){return x.id===rid;});
+  if(!root){el.innerHTML='<div class="zatt-empty">Chưa có sơ đồ.</div>';return;}
+  var c=poCfg(),st=poState(rid),pairs=Math.min(st.d.L,st.d.R),nnp=Math.min(st.nn.L,st.nn.R),tot=poVal(st.d,st.nn,c);
+  var h='<div class="zatt-intro">💡 Ước tính theo <b>vị trí đặt</b> tính từ <b>'+escHtml(root.name)+'</b>'+(focusNodeId?' (đang focus)':'')+(dreamMode?' · 🌠 <b>Cây mơ ước</b>':'')+'. Mỗi <b>cặp tầng</b> (tầng có ID cả 2 nhánh) ≈ <b>'+poTr(c.pair)+'</b>; mỗi <b>cặp nhánh nhỏ</b> (ID NN Tầng ≥4 cân 2 bên) ≈ <b>'+poTr(c.nn)+'</b>. Đây là số ước tính để định hướng, không phải bảng lương chính thức.</div>';
+  // Hiện trạng
+  h+='<div class="po-grid">'
+   +'<div class="po-card"><div class="po-k">Cặp tầng</div><div class="po-v">'+pairs+'</div><div class="po-s">Trái '+st.d.L+' · Phải '+st.d.R+' tầng</div><div class="po-m">'+poTr(pairs*c.pair)+'</div></div>'
+   +'<div class="po-card"><div class="po-k">Cặp nhánh nhỏ</div><div class="po-v">'+nnp+'</div><div class="po-s">NN Trái '+st.nn.L+' · Phải '+st.nn.R+'</div><div class="po-m">'+poTr(nnp*c.nn)+'</div></div>'
+   +'<div class="po-card po-tot"><div class="po-k">Ước tính hiện tại</div><div class="po-v">'+poTr(tot)+'</div></div></div>';
+  h+='<div class="po-cfg">Mốc: <label>cặp tầng <input type="number" min="0" step="0.5" data-pocfg="pair" value="'+c.pair+'"> tr</label><label>cặp nhánh nhỏ <input type="number" min="0" step="0.5" data-pocfg="nn" value="'+c.nn+'"> tr</label></div>';
+  // ID tiếp theo
+  var sc=poScore(st,st.d,st.nn,c),maxNow=Math.max.apply(null,sc.map(function(o){return o.gain;}).concat([0]));
+  h+='<div class="zatt-sec" style="color:#1A7A5E">🎯 ID mới tiếp theo nên đặt ở đâu?</div>';
+  sc.forEach(function(o,i){
+    var slots=poSlotsFor(st,o.mv);if(!slots.length)return;
+    var gainTxt=o.gain>0?'<b style="color:#2E7D32">+'+poTr(o.gain)+'</b> ngay':(o.next>maxNow?'chưa cộng ngay · mở đường <b style="color:#1565C0">+'+poTr(o.next)+'</b> cho ID kế tiếp':'<span style="color:#999">không tăng</span>');
+    h+='<div class="po-opt'+(i===0?' best':'')+'">'+(i===0?'<div class="po-badge">⭐ Tối ưu nhất</div>':'')
+      +'<div style="font-size:13.5px">'+poMoveLbl(o.mv,st)+' → '+gainTxt+'</div><div class="po-slots">';
+    slots.slice(0,4).forEach(function(sl){
+      var p=treeNodes.find(function(x){return x.id===sl.pid;});
+      h+='<button class="po-slot" data-po-add="'+sl.pid+'|'+sl.ps+'"'+(viewOnlyMode?' disabled':'')+'>➕ '+poSideLbl(sl.ps)+' của <b>'+escHtml(p?p.name:'?')+'</b> <span>T'+sl.lvl+'</span></button>';
+    });
+    if(slots.length>4)h+='<span class="po-more">+'+(slots.length-4)+' chỗ khác</span>';
+    h+='</div></div>';
+  });
+  h+='<div style="font-size:11.5px;color:#999;margin:2px 2px 8px">Đặt ở Tầng 2–3 khi tầng đó đã có ID cùng nhánh: không tạo cặp mới.</div>';
+  // Lộ trình
+  var plan=poPlan(st,c,6);
+  h+='<div class="zatt-sec" style="color:#1565C0">🗺️ Lộ trình 6 ID kế tiếp (tối ưu thu nhập)</div><div class="po-plan">';
+  plan.forEach(function(p,i){
+    h+='<div class="po-step"><span class="po-n">'+(i+1)+'</span><span style="flex:1">Nhánh <b>'+poSideLbl(p.mv.s)+'</b> · '+(p.mv.t==='new'?'Tầng '+p.lvl:'ID NN')+'</span><span class="'+(p.gain>0?'po-up':'po-zero')+'">'+(p.gain>0?'+'+poTr(p.gain):'—')+'</span><span class="po-cum">'+poTr(p.total)+'</span></div>';
+  });
+  h+='</div>';
+  // Đi sao
+  h+='<div class="zatt-sec" style="color:#E65100">⭐ Đi sao (tính theo tuyến BẢO TRỢ F1)</div>'+poStarHtml(rid);
+  h+='<div class="zatt-note" style="margin-top:10px">✅ <b>Được cả hai:</b> khi có ID mới, chọn <b>người bảo trợ</b> theo mục ⭐ (đúng nhánh F1 cần ID) và chọn <b>vị trí đặt</b> theo mục 🎯 (tạo cặp). Bảo trợ và vị trí đặt là 2 việc độc lập.</div>';
+  el.innerHTML=h;
+}
+function openPlaceOpt(){clearRankMemo();renderPlaceOpt();document.getElementById('po-ov').classList.add('open');}
+function closePlaceOpt(){document.getElementById('po-ov').classList.remove('open');}
+function bindPlaceOptEvents(){
+  var x=document.getElementById('po-close');if(x)x.addEventListener('click',closePlaceOpt);
+  var ov=document.getElementById('po-ov');if(ov)ov.addEventListener('click',function(e){if(e.target===this)closePlaceOpt();});
+  var b=document.getElementById('btn-placeopt');if(b)b.addEventListener('click',openPlaceOpt);
+  var body=document.getElementById('po-content');if(!body)return;
+  body.addEventListener('click',function(e){
+    var t=e.target.closest('[data-po-add]');if(!t||t.disabled)return;
+    var p=t.getAttribute('data-po-add').split('|');closePlaceOpt();openAddNodeModal2(p[0],p[1]);
+  });
+  body.addEventListener('change',function(e){
+    var t=e.target.closest('[data-pocfg]');if(!t)return;
+    var c=poCfg(),v=parseFloat(String(t.value).replace(',','.'));if(!(v>=0))return;
+    c[t.getAttribute('data-pocfg')]=v;try{nmSet('placeopt_cfg',JSON.stringify(c));}catch(er){}
+    renderPlaceOpt();
+  });
+}
 // Vương miện vàng kim toàn chiều rộng — đặt làm "khung trên" cho ID gốc; size = chiều rộng node nên đồng bộ với cây
 function rootCrownSVG(w,sfx){
   w=w||150;var id='rcG_'+(sfx||'x'),idb='rcB_'+(sfx||'x');
@@ -14229,7 +14432,7 @@ function _zPlausibleName(orig,conf){
   if(conf!=null&&conf<55)return false;
   return true;
 }
-function openZoomAtt(){_zatt.dets=[];_zatt.done=0;_zatt.pick={};renderZoomAtt();document.getElementById('zatt-ov').classList.add('open');}
+function openZoomAtt(){_zatt.buoi='sang';_zatt.dets=[];_zatt.done=0;_zatt.pick={};renderZoomAtt();document.getElementById('zatt-ov').classList.add('open');}
 function closeZoomAtt(){document.getElementById('zatt-ov').classList.remove('open');}
 function _zBuoiLbl(b){return b==='sang'?'Sáng':b==='trua'?'Trưa':'Tối';}
 function renderZoomAtt(){
@@ -15669,6 +15872,7 @@ function bindStatic(){
   loadVbIndexLocal();bindVisionBoardEvents(); // v6.17 — Vision Board
   loadDreamListLocal();bindDreamListEvents(); // Danh sách ước mơ
   loadZoomAliasLocal();bindZoomAttEvents(); // Điểm danh bằng ảnh Zoom
+  bindPlaceOptEvents(); // v7.11 — Gợi ý đặt cây tối ưu
   // v6.21 — Tìm kiếm thông minh DÙNG CHUNG cho cả 3 bản đồ (live autocomplete + Enter): tra ô theo MAPCTX
   function _mapKeyByInput(id){for(var k in MAPCTX){if(MAPCTX[k].input===id)return k;}return null;}
   document.addEventListener('input',function(e){if(!e.target||!e.target.id)return;var k=_mapKeyByInput(e.target.id);if(k)mapSearchInput(k);});
