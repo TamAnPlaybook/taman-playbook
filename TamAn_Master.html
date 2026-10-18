@@ -1,4 +1,5 @@
-<!-- VERSION: v7.09-fs-doi-cay -->
+<!-- VERSION: v7.10-zoom-cam -->
+<!-- v7.10 — Điểm danh ảnh Zoom (kiểu Danh sách): đọc luôn biểu tượng CAMERA mỗi dòng (_zColorData + _zCamAt: dải ngang dòng tên ở 32% phải ảnh gốc → cụm biểu tượng cuối (bỏ "...") đỏ = tắt cam) → ghi dSet(mid,buoi+"_cam","on"|"off"). Nút cam trên từng dòng chạm để sửa; không đọc được → giữ dữ liệu cũ. -->
 <!-- v7.09 — Toàn màn hình sơ đồ: nút #btn-fs-swap đổi Nhị phân ⇄ Cây sao (Mặt trời) ngay trong overlay (fsSwapTreeMode: đóng fs → bấm thẻ data-treemode → mở lại fs). Nhãn đổi theo chế độ trong updateFsTitle; ẩn khi dreamMode. -->
 <!-- v7.08 — Hộp thư ID mới quét thêm CÂY MƠ ƯỚC (dreamtree; baseline riêng seen["uid#dream"], lần đầu ghi nền im lặng, bỏ node fromReal). Mục src:"dream" → khung tím + ghi chú "🌠 Từ Cây mơ ước — ID kế hoạch" (+ đã thành hiện thực / ngày lập KH); mục cây thật ghi "🌳 Nguồn: Cây thật". -->
 <!-- v7.07 — Hộp thư ID mới: MỌI thông báo (ID mới · DISC · Sinh nhật) có dòng "🆔 Mã ID · 🌿 Đầu nhánh F1" (_nidBranchHtml). Ưu tiên khớp cây QTV theo Mã ID rồi tên → teamHeadOf; không khớp thì dùng idCode/branchHead lưu lúc quét (cây tài khoản của họ). -->
@@ -1155,6 +1156,9 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .zatt-gbtn{flex-shrink:0;border:1px solid #CE93D8;background:#F8EEFB;color:#8E24AA;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer}
 .zatt-guest{flex-wrap:wrap}
 .zatt-guest input{min-width:140px}
+.zatt-cam{flex-shrink:0;border:1px solid #CFD8DC;background:#fff;color:#546E7A;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.zatt-cam.on{border-color:#81C784;background:#E8F5E9;color:#2E7D32}
+.zatt-cam.off{border-color:#EF9A9A;background:#FDECEC;color:#C62828}
 .zatt-note{font-size:12px;color:#2E7D32;background:#EAF6EC;border:1px solid #BFE3C6;border-radius:9px;padding:8px 11px;margin-bottom:10px}
 /* Editor toàn màn hình */
 #vb-editor{display:none;position:fixed;inset:0;z-index:1200;background:#15140F;flex-direction:column}
@@ -4590,6 +4594,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v710-zoom-cam', ver:'7.10', icon:'📷', title:'Điểm danh ảnh Zoom: ghi luôn BẬT / TẮT cam',
+    desc:'Khi chụp <b>danh sách Participants</b> trong Zoom rồi bấm <b>📷 Điểm danh bằng ảnh Zoom</b> (kiểu <b>📋 Danh sách</b>), app đọc luôn <b>biểu tượng camera</b> bên phải mỗi tên: biểu tượng <b>đỏ gạch chéo = tắt cam</b>. Mỗi dòng có nút <b>📷 Bật cam / 🚫 Tắt cam</b> — đọc sai thì chạm để sửa. Bấm Điểm danh là ghi luôn <b>Camera ON/OFF</b> cho buổi đó.' },
   { id:'v704-trang-chu', ver:'7.04', icon:'🏠', title:'Trang chủ: mở app là thấy ngay các khu chính',
     desc:'Vừa vào app, màn hình đầu tiên là <b>🏠 Trang chủ</b> với các <b>ô nút lớn</b>: Sơ đồ, Mục tiêu - Hành động - Kết quả, Kỹ năng, DS kim cương Tiềm năng, Vị trí các CLB, Kết quả SK, Hướng dẫn… Bấm 1 ô là mở khu đó. Muốn quay lại, bấm tab <b>🏠 Trang chủ</b> đầu thanh menu. Hiển thị gọn trên mọi điện thoại.' },
   { id:'v703-sk-truoc-sau', ver:'7.03', icon:'🔶', title:'Kết quả SK: tư liệu chia TRƯỚC / SAU để so sánh',
@@ -14108,7 +14114,7 @@ function _zNamesFromData(data){
   var words=(data.words||[]).filter(function(w){
     return w.text&&w.text.trim()&&(w.confidence==null||w.confidence>=Z_WORD_CONF);
   }).map(function(w){
-    var b=w.bbox||{};return {t:w.text.trim(),x:b.x0||0,x1:b.x1||0,y:b.y0||0,c:(w.confidence==null?70:w.confidence)};
+    var b=w.bbox||{};return {t:w.text.trim(),x:b.x0||0,x1:b.x1||0,y:b.y0||0,y1:b.y1||b.y0||0,c:(w.confidence==null?70:w.confidence)};
   });
   if(!words.length)return [];
   words.sort(function(a,b){return a.y-b.y||a.x-b.x;});
@@ -14122,12 +14128,70 @@ function _zNamesFromData(data){
     var med=0;if(gaps.length){var sg=gaps.slice().sort(function(a,b){return a-b;});med=sg[Math.floor(sg.length/2)];}
     var thr=Math.max(med*2.4,46);
     var seg=[],prevX1=null;
-    function flush(){if(seg.length){var conf=seg.reduce(function(s,w){return s+w.c;},0)/seg.length;out.push({text:seg.map(function(s){return s.t;}).join(' '),conf:conf});seg=[];}}
+    function flush(){if(seg.length){var conf=seg.reduce(function(s,w){return s+w.c;},0)/seg.length;
+      var y0=Math.min.apply(null,seg.map(function(s){return s.y;})),y1=Math.max.apply(null,seg.map(function(s){return s.y1;}));
+      out.push({text:seg.map(function(s){return s.t;}).join(' '),conf:conf,y0:y0,y1:y1});seg=[];}}
     r.forEach(function(w){if(prevX1!==null&&(w.x-prevX1)>thr)flush();seg.push(w);prevX1=w.x1;});
     flush();
   });
-  return out; // [{text,conf}]
+  return out; // [{text,conf,y0,y1}] (y theo toạ độ ảnh đã tiền xử lý)
 }
+// v7.10 — ĐỌC TRẠNG THÁI CAMERA từ ảnh DANH SÁCH Participants: mỗi dòng tên có cụm biểu tượng bên phải
+//   [mic] [cam] [...]. Cam TẮT = biểu tượng ĐỎ có gạch chéo; cam BẬT = biểu tượng trắng/xám.
+//   Cách làm: lấy dải ngang đúng dòng tên ở 32% bên phải ảnh GỐC (màu) → tách nền (màu phổ biến nhất)
+//   → gom cột điểm ảnh khác nền thành cụm → bỏ cụm thấp (nút "..." chỉ là 3 chấm) → cụm biểu tượng
+//   CUỐI CÙNG = camera → tỷ lệ điểm đỏ cao = tắt cam. Không chắc (thiếu cụm) → null (không ghi).
+function _zColorData(url){
+  return new Promise(function(res){
+    var img=new Image();
+    img.onload=function(){
+      var w0=img.width||1,h0=img.height||1;
+      var s=Math.min(1,Z_MAX_DIM/Math.max(w0,h0),Math.sqrt(Z_MAX_AREA/(w0*h0)));if(!isFinite(s)||s<=0)s=1;
+      var w=Math.max(1,Math.round(w0*s)),h=Math.max(1,Math.round(h0*s));
+      try{var c=document.createElement('canvas');c.width=w;c.height=h;var ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        res({d:ctx.getImageData(0,0,w,h).data,w:w,h:h,s:s});}catch(e){res(null);}
+    };
+    img.onerror=function(){res(null);};
+    img.src=url;
+  });
+}
+function _zCamAt(col,y0,y1){ // y0,y1 theo toạ độ ảnh GỐC
+  if(!col)return null;
+  var d=col.d,W=col.w,H=col.h;
+  var th=Math.max(8,(y1-y0)*col.s),yc=(y0+y1)/2*col.s;
+  var ya=Math.max(0,Math.floor(yc-th*1.15)),yb=Math.min(H-1,Math.ceil(yc+th*1.15));
+  var xa=Math.floor(W*0.68),xb=W-1;if(yb<=ya||xb<=xa)return null;
+  // nền = màu (lượng tử 16 mức) xuất hiện nhiều nhất trong dải
+  var hist={},bk=null,bn=0,x,y,i;
+  for(y=ya;y<=yb;y+=2)for(x=xa;x<=xb;x+=2){i=(y*W+x)*4;var k=(d[i]>>4)+'_'+(d[i+1]>>4)+'_'+(d[i+2]>>4);hist[k]=(hist[k]||0)+1;if(hist[k]>bn){bn=hist[k];bk=k;}}
+  if(!bk)return null;
+  var bp=bk.split('_').map(function(v){return parseInt(v,10)*16+8;});
+  var cols=[];
+  for(x=xa;x<=xb;x++){
+    var cnt=0,red=0,mn=1e9,mx=-1;
+    for(y=ya;y<=yb;y++){i=(y*W+x)*4;var r=d[i],g=d[i+1],b=d[i+2];
+      if(Math.abs(r-bp[0])+Math.abs(g-bp[1])+Math.abs(b-bp[2])>90){cnt++;if(y<mn)mn=y;if(y>mx)mx=y;
+        if(r>140&&r-g>55&&r-b>45)red++;}}
+    cols.push({cnt:cnt,red:red,mn:mn,mx:mx});
+  }
+  // gom cụm theo cột (cho phép hở nhỏ trong cùng 1 biểu tượng)
+  var gapMax=Math.max(3,Math.round(th*0.35)),blobs=[],cur=null,gap=0;
+  cols.forEach(function(c,ix){
+    if(c.cnt>0){
+      if(cur&&gap<=gapMax){cur.x1=ix;cur.cnt+=c.cnt;cur.red+=c.red;cur.mn=Math.min(cur.mn,c.mn);cur.mx=Math.max(cur.mx,c.mx);}
+      else{cur={x0:ix,x1:ix,cnt:c.cnt,red:c.red,mn:c.mn,mx:c.mx};blobs.push(cur);}
+      gap=0;
+    }else gap++;
+  });
+  blobs=blobs.filter(function(b){return b.cnt>=6;});
+  if(!blobs.length)return null;
+  var maxH=Math.max.apply(null,blobs.map(function(b){return b.mx-b.mn+1;}));
+  var icons=blobs.filter(function(b){return (b.mx-b.mn+1)>=maxH*0.55;});
+  if(icons.length<2)return null; // cần thấy cả mic + cam mới tin
+  var cam=icons[icons.length-1];
+  return (cam.red/cam.cnt)>0.3?'off':'on';
+}
+function _zCamLbl(c){return c==='on'?'📷 Bật cam':c==='off'?'🚫 Tắt cam':'❔ Cam?';}
 function _zCleanName(raw){
   var s=String(raw||'');
   s=s.replace(/\((?:host|co-?host|me|you|đồng tổ chức|guest|khách|khach)\)/gi,' ');
@@ -14172,7 +14236,7 @@ function renderZoomAtt(){
   var el=document.getElementById('zatt-content');if(!el)return;
   var d=currentDay,dstr=d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
   var h='';
-  h+='<div class="zatt-intro">💡 <b>Đọc chuẩn nhất:</b> bấm <b>Participants</b> trong Zoom để mở <b>danh sách tên</b>, rồi chụp bảng danh sách đó — nền phẳng, chữ rõ nên ít sai hơn hẳn so với chụp ô video (nền ảnh, chữ nhỏ rất dễ đọc sai). Cuộn chụp hết danh sách (nhiều ảnh cũng được). App <b>đọc tên → tự điểm danh</b> ai đã gán ID; trùng tên nhiều ảnh tính <b>1 lần</b>; tên lạ xuống <b>Chưa gán</b> để bạn chỉ định <b>1 lần</b>, lần sau tự nhận. Chữ giao diện Zoom (Audio, Chat, Share…) tự được bỏ.</div>';
+  h+='<div class="zatt-intro">💡 <b>Đọc chuẩn nhất:</b> bấm <b>Participants</b> trong Zoom để mở <b>danh sách tên</b>, rồi chụp bảng danh sách đó — nền phẳng, chữ rõ nên ít sai hơn hẳn so với chụp ô video (nền ảnh, chữ nhỏ rất dễ đọc sai). Cuộn chụp hết danh sách (nhiều ảnh cũng được). App <b>đọc tên → tự điểm danh</b> ai đã gán ID; trùng tên nhiều ảnh tính <b>1 lần</b>; tên lạ xuống <b>Chưa gán</b> để bạn chỉ định <b>1 lần</b>, lần sau tự nhận. Chữ giao diện Zoom (Audio, Chat, Share…) tự được bỏ. Ảnh <b>Danh sách</b> còn được đọc luôn <b>biểu tượng camera</b> (đỏ gạch chéo = <b>tắt cam</b>) → ghi 📷 ON/OFF cho buổi đó; đọc sai thì chạm nút cam để sửa.</div>';
   // Kiểu ảnh
   h+='<div class="zatt-buoi"><span class="zb-lbl">Kiểu ảnh:</span>'
    +'<button data-zmode="list" class="'+(_zatt.mode==='list'?'on':'')+'">📋 Danh sách</button>'
@@ -14193,13 +14257,14 @@ function renderZoomAtt(){
   // Scan
   h+='<button class="zatt-scan" data-zscan="1"'+(_zatt.scanning||!_zatt.imgs.length?' disabled':'')+'>'+(_zatt.scanning?'⏳ Đang đọc tên… '+_zatt.prog+'%':'🔍 Quét tên trong ảnh')+'</button>';
   if(_zatt.scanning)h+='<div class="zatt-prog"><div style="width:'+_zatt.prog+'%"></div></div>';
-  if(_zatt.done)h+='<div class="zatt-note">✓ Đã điểm danh '+_zatt.done+' người (buổi '+_zBuoiLbl(_zatt.buoi)+', ngày '+dstr+').</div>';
+  if(_zatt.done)h+='<div class="zatt-note">✓ Đã điểm danh '+_zatt.done+' người (buổi '+_zBuoiLbl(_zatt.buoi)+', ngày '+dstr+')'+(_zatt.doneCam?(' · 📷 '+_zatt.doneCam.on+' bật cam · 🚫 '+_zatt.doneCam.off+' tắt cam'):'')+'.</div>';
+  function camBtn(de){return de&&_zatt.mode==='list'?'<button class="zatt-cam '+(de.cam||'unk')+'" data-zcam="'+encodeURIComponent(de.norm)+'" title="Trạng thái camera đọc từ ảnh — chạm để sửa">'+_zCamLbl(de.cam)+'</button>':'';}
   // Kết quả: đã khớp (dedupe theo id) + chưa gán
   var matched=[],seenMid={};
   _zatt.dets.forEach(function(de){if(de.mid&&!seenMid[de.mid]){seenMid[de.mid]=1;matched.push(de);}});
   // pending = dets chưa khớp (theo norm, unique) ∪ pending đã lưu
   var pendMap={};
-  _zatt.dets.forEach(function(de){if(!de.mid&&de.norm&&!pendMap[de.norm])pendMap[de.norm]={raw:de.raw,norm:de.norm};});
+  _zatt.dets.forEach(function(de){if(!de.mid&&de.norm&&!pendMap[de.norm])pendMap[de.norm]={raw:de.raw,norm:de.norm,det:de};});
   _zPending.forEach(function(p){var nm=_zNorm(p);if(nm&&!pendMap[nm])pendMap[nm]={raw:p,norm:nm};});
   var pend=Object.keys(pendMap).map(function(k){return pendMap[k];});
   if(_zatt.dets.length||pend.length){
@@ -14209,7 +14274,7 @@ function renderZoomAtt(){
     matched.forEach(function(de){
       var p=_zPeople().filter(function(x){return x.id===de.mid;})[0];if(!p)return;
       h+='<div class="zatt-row ok"><input type="checkbox" class="zatt-cbx" data-zchk="'+de.mid+'" '+(de.checked!==false?'checked':'')+'>'
-       +'<div class="zatt-nm">'+escHtml(p.name)+(p._guest?' <span style="font-size:11px;color:#8E24AA;font-weight:700">👤 Khách</span>':'')+'<span class="zsrc">'+(de.src==='guest'?'✍️ điền tay khách':'📷 nhận dạng: '+escHtml(de.raw))+'</span></div></div>';
+       +'<div class="zatt-nm">'+escHtml(p.name)+(p._guest?' <span style="font-size:11px;color:#8E24AA;font-weight:700">👤 Khách</span>':'')+'<span class="zsrc">'+(de.src==='guest'?'✍️ điền tay khách':'📷 nhận dạng: '+escHtml(de.raw))+'</span></div>'+(de.src==='guest'?'':camBtn(de))+'</div>';
     });
     // Chưa gán — mỗi tên 1 ô TÌM TÊN tối ưu (gõ bỏ dấu, nhiều từ khoá, chuỗi con) như các vùng khác
     h+='<div class="zatt-sec" style="color:#B8860B">❓ Chưa gán — chỉ định ID ('+pend.length+')'+(pend.length?'<button data-zclearpend="1" style="margin-left:auto;border:none;background:#FDECEC;color:#C62828;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer">🗑 Xoá hết</button>':'')+'</div>';
@@ -14220,7 +14285,7 @@ function renderZoomAtt(){
       var g=(!chP)?_zGuess(pe.norm):null;
       var ph=g?('🔎 gợi ý: '+g.name):'🔎 Gõ tên ID để gán…';
       h+='<div class="zatt-row pend'+(chP?' assigned':'')+'" data-znorm="'+encodeURIComponent(pe.norm)+'">'
-       +'<div class="zatt-nm" title="'+escHtml(pe.raw)+'">'+escHtml(pe.raw)+'<span class="zsrc">📷 tên đọc từ ảnh Zoom</span></div>'
+       +'<div class="zatt-nm" title="'+escHtml(pe.raw)+'">'+escHtml(pe.raw)+'<span class="zsrc">📷 tên đọc từ ảnh Zoom</span></div>'+camBtn(pe.det)
        +'<div class="zatt-pick"><input class="zatt-pick-inp" data-zpicknorm="'+encodeURIComponent(pe.norm)+'" value="'+(chP?escHtml(chP.name):'')+'" placeholder="'+escHtml(ph)+'" autocomplete="off"><div class="zatt-pick-sug"></div></div>'
        +'<button class="zatt-gbtn" data-zpendguest="'+encodeURIComponent(pe.norm)+'" title="Người này chưa có ID trên cây → lưu làm Khách">👤 Khách</button>'
        +'<button class="zatt-del" data-zpenddel="'+encodeURIComponent(pe.norm)+'" title="Bỏ tên này">🗑</button></div>';
@@ -14271,10 +14336,10 @@ function _zPreprocess(url,cropL,cropR){ // cắt bỏ cột avatar (trái) + bi�
         }
         ctx.putImageData(d,0,0);
         var out=c.toDataURL('image/png');
-        res(out&&out.length>20?out:url); // toDataURL lỗi (canvas quá lớn) → dùng ảnh gốc
-      }catch(e){res(url);}
+        res(out&&out.length>20?{url:out,s:s}:{url:url,s:1}); // toDataURL lỗi (canvas quá lớn) → dùng ảnh gốc
+      }catch(e){res({url:url,s:1});}
     };
-    img.onerror=function(){res(url);};
+    img.onerror=function(){res({url:url,s:1});};
     img.src=url;
   });
 }
@@ -14291,25 +14356,35 @@ async function _zRunScan(){
       var proc=_zatt.mode==='list'
         ? await _zPreprocess(_zatt.imgs[i].url, 0.13, 0.15) // danh sách: bỏ avatar (trái 13%) + mic/cam (phải 15%)
         : await _zPreprocess(_zatt.imgs[i].url, 0, 0);
-      var res=await worker.recognize(proc);
-      _zNamesFromData(res.data).forEach(function(n){raws.push(n);});
+      var res=await worker.recognize(proc.url);
+      // chế độ Danh sách: đọc luôn biểu tượng camera cùng dòng tên (ảnh gốc, có màu)
+      var col=_zatt.mode==='list'?await _zColorData(_zatt.imgs[i].url):null;
+      _zNamesFromData(res.data).forEach(function(n){
+        n.cam=col?_zCamAt(col,n.y0/proc.s,n.y1/proc.s):null;
+        raws.push(n);
+      });
     }catch(err){}
   }
   // Chuẩn hoá + lọc (giao diện Zoom + rác OCR) + gom trùng theo norm (giữ bản tự tin nhất)
+  //   cam: nhiều ảnh cùng tên → có 1 ảnh BẬT là tính bật; không đọc được thì giữ kết quả ảnh khác
   var byNorm={};
   raws.forEach(function(it){
     if(!_zPlausibleName(it.text,it.conf))return;
     var name=_zCleanName(it.text);var norm=_zNorm(name);if(!norm)return;
-    if(!byNorm[norm]||it.conf>byNorm[norm].conf)byNorm[norm]={raw:name,norm:norm,conf:it.conf};
+    var old=byNorm[norm];
+    var cam=(old&&old.cam==='on')||it.cam==='on'?'on':(it.cam||(old&&old.cam)||null);
+    if(!old||it.conf>old.conf)byNorm[norm]={raw:name,norm:norm,conf:it.conf,cam:cam};
+    else old.cam=cam;
   });
   var dets=Object.keys(byNorm).map(function(k){
     var it=byNorm[k];var p=_zResolve(it.norm);
-    return {raw:it.raw,norm:it.norm,mid:p?p.id:null,checked:true};
+    return {raw:it.raw,norm:it.norm,mid:p?p.id:null,checked:true,cam:it.cam};
   });
   _zatt.dets=dets;_zatt.scanning=false;_zatt.prog=100;
   renderZoomAtt();
   var m=dets.filter(function(x){return x.mid;}).length,u=dets.length-m;
-  showToast('🔍 Đọc xong: '+dets.length+' tên · '+m+' khớp ID · '+u+' chưa gán');
+  var con=dets.filter(function(x){return x.cam==='on';}).length,coff=dets.filter(function(x){return x.cam==='off';}).length;
+  showToast('🔍 Đọc xong: '+dets.length+' tên · '+m+' khớp ID · '+u+' chưa gán'+(_zatt.mode==='list'?(' · 📷 '+con+' bật / 🚫 '+coff+' tắt cam'):''));
 }
 // Äiá»n tay KHÃCH (chÆ°a cÃ³ ID trÃªn cÃ¢y): dÃ¹ng láº¡i khÃ¡ch trÃ¹ng tÃªn/MÃ£ ID, náº¿u tÃªn trÃ¹ng Ä‘Ãºng 1 ID trÃªn cÃ¢y â†’ dÃ¹ng ID Ä‘Ã³
 function _zAddGuest(name,code){
@@ -14344,14 +14419,21 @@ function _zCommit(){
   _zatt.dets.forEach(function(de){if(!de.mid&&de.norm&&!resolvedNorms[de.norm])stillPending[de.norm]=de.raw;});
   _zPending=Object.keys(stillPending).map(function(k){return stillPending[k];});
   // 4) ghi điểm danh (dedupe theo id — trùng tên nhiều ảnh chỉ 1 lần)
-  var ids=Object.keys(marked),n=0;
-  ids.forEach(function(mid){dSet(mid,buoi,'yes');n++;});
+  // camera theo người: có 1 tên/ảnh BẬT → bật; chỉ thấy TẮT → tắt; không đọc được → giữ nguyên dữ liệu cũ
+  var camBy={};
+  _zatt.dets.forEach(function(de){
+    var mid=de.mid||(_zatt.pick[de.norm]||null);if(!mid||!de.cam)return;
+    camBy[mid]=(camBy[mid]==='on'||de.cam==='on')?'on':'off';
+  });
+  var ids=Object.keys(marked),n=0,nOn=0,nOff=0;
+  ids.forEach(function(mid){dSet(mid,buoi,'yes');n++;
+    if(camBy[mid]){dSet(mid,buoi+'_cam',camBy[mid]);if(camBy[mid]==='on')nOn++;else nOff++;}});
   saveZoomAlias();
   if(typeof renderDailyCombined==='function')renderDailyCombined();
   if(typeof updateStats==='function')updateStats();
-  _zatt.done=n;_zatt.dets=[];_zatt.imgs=[];_zatt.pick={};
+  _zatt.done=n;_zatt.doneCam=(nOn||nOff)?{on:nOn,off:nOff}:null;_zatt.dets=[];_zatt.imgs=[];_zatt.pick={};
   renderZoomAtt();
-  showToast('✅ Đã điểm danh '+n+' người (buổi '+_zBuoiLbl(buoi)+')'+(aliasAdded?(' · lưu '+aliasAdded+' chỉ định mới'):''));
+  showToast('✅ Đã điểm danh '+n+' người (buổi '+_zBuoiLbl(buoi)+')'+((nOn||nOff)?(' · 📷 '+nOn+' bật / 🚫 '+nOff+' tắt cam'):'')+(aliasAdded?(' · lưu '+aliasAdded+' chỉ định mới'):''));
 }
 // Ô tìm tên (chỉ định ID) — dùng chung chuẩn tìm thông minh: bỏ dấu + nhiều từ khoá + chuỗi con
 function _zRenderPickSug(box,norm,q){
@@ -14387,6 +14469,11 @@ function bindZoomAttEvents(){
       if(row){row.classList.add('assigned');var inp=row.querySelector('.zatt-pick-inp');if(inp)inp.value=per?per.name:'';var sg=row.querySelector('.zatt-pick-sug');if(sg){sg.style.display='none';sg.innerHTML='';}}
       return;
     }
+    t=e.target.closest('[data-zcam]');if(t){ // sửa tay trạng thái cam: bật → tắt → chưa rõ → bật
+      var cn=decodeURIComponent(t.getAttribute('data-zcam')),cd=_zatt.dets.filter(function(x){return x.norm===cn;})[0];
+      if(cd){var nx=cd.cam==='on'?'off':cd.cam==='off'?null:'on';
+        _zatt.dets.forEach(function(x){if(x.norm===cn||(cd.mid&&x.mid===cd.mid))x.cam=nx;});renderZoomAtt();}
+      return;}
     t=e.target.closest('[data-zmode]');if(t){_zatt.mode=t.getAttribute('data-zmode');renderZoomAtt();return;}
     t=e.target.closest('[data-zbuoi]');if(t){_zatt.buoi=t.getAttribute('data-zbuoi');renderZoomAtt();return;}
     t=e.target.closest('[data-zpick]');if(t){document.getElementById('zatt-file').click();return;}
