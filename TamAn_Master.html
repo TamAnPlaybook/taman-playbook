@@ -1,4 +1,5 @@
-<!-- VERSION: v7.13-thuong-bao-tro -->
+<!-- VERSION: v7.14-soi-thu-nhap -->
+<!-- v7.14 — Sơ đồ: nút 🖱 Soi thu nhập (#btn-incprobe, nmSet incprobe). Bật → rê chuột lên ID / nút ➕: tooltip #inc-tip (probeHtml) cho biết nếu ID mới do ID đó bảo trợ và/hoặc phả hệ xuống dưới (khe trực tiếp hoặc khe tốt nhất trong nhánh) thì thu nhập từng ID của tôi + tổng thay đổi bao nhiêu. Điện thoại: cùng bảng trong popup chi tiết ID. -->
 <!-- v7.13 — Kế hoạch trả thưởng: cân cặp mỗi tầng mỗi ID chỉ 1 lần (đã đúng: min(tầng T, tầng P)); thêm thưởng bảo trợ mỗi F1 = 5tr tiền + 28tr sản phẩm (PO_DEF.sp/spp, sửa được) vào bảng Các ID của tôi + Gợi ý đặt cây. -->
 <!-- v7.12 — Sơ đồ: nút 👤 Các ID của tôi (#btn-myids, modal #myid-ov, nmSet myids đồng bộ đa thiết bị, dấu 👤 trên cây). Thu nhập mỗi ID tính theo cây dưới ID đó → cộng dồn. Gợi ý đặt cây chấm từng khe cụ thể trên MỌI ID của tôi (poMulti/poRankM/poPlanM): 1 khe dưới nhiều ID của tôi được cộng cho tất cả. -->
 <!-- v7.11 — Sơ đồ: nút 🎯 Gợi ý đặt cây (#btn-placeopt, modal #po-ov, renderPlaceOpt). Ước tính thu nhập theo vị trí: cặp tầng = min(tầng Trái, Phải) × 20tr; cặp nhánh nhỏ = min(NN Trái, NN Phải) × 6tr (mốc sửa được, nmSet placeopt_cfg). poScore: lợi ngay + ½ lợi bước kế → gợi ý vị trí cụ thể (nút ➕ mở openAddNodeModal2) + lộ trình 6 ID + mục Đi sao theo tuyến bảo trợ F1. Điểm danh ảnh Zoom mở ra mặc định buổi Sáng. -->
@@ -1187,6 +1188,17 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .po-tip{font-size:12.5px;line-height:1.55;padding:6px 10px;border-left:3px solid #FFB74D;background:#FFF8EE;border-radius:6px;margin-bottom:5px}
 @media(max-width:420px){.po-grid{grid-template-columns:1fr 1fr}.po-card.po-tot{grid-column:1/-1}}
 .po-eff{font-size:12.5px;color:#444;margin-top:3px;line-height:1.45}
+#btn-incprobe{background:#fff;border-color:#B0BEC5;color:#455A64}
+#btn-incprobe.on{background:#00695C;border-color:#00695C;color:#fff}
+#inc-tip{position:fixed;z-index:9999;display:none;max-width:360px;background:#fff;border:1.5px solid #80CBC4;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:9px 11px;font-family:Arial;font-size:12.5px;color:#222;pointer-events:none}
+.ip-box{border:1.5px solid #80CBC4;border-radius:12px;padding:9px 11px;margin-top:12px;background:#F7FCFA;font-size:12.5px}
+.ip-hd{font-size:13px;color:#00695C;margin-bottom:5px}
+.ip-row{line-height:1.5;margin-bottom:2px}
+.ip-tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:11.5px}
+.ip-tbl th{text-align:right;color:#777;font-weight:700;padding:2px 3px;border-bottom:1px solid #E0E6EA}
+.ip-tbl td{text-align:right;padding:3px;border-bottom:1px solid #F0F2F4;white-space:nowrap}
+.ip-tbl th:first-child,.ip-tbl td:first-child{text-align:left;white-space:normal}
+.ip-tbl .ip-sum td{background:#E8F5F0;color:#00695C;font-weight:700}
 .myid-tbl{margin-bottom:8px}
 .myid-sum{background:#E8F5F0}
 .myid-x{border:1px solid #E0E0E0;background:#fff;color:#C62828;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:12px;flex-shrink:0}
@@ -1776,6 +1788,7 @@ a.gp-att-nm:hover{text-decoration:underline}
     </div>
     <div id="tree-search-bar">
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm: tên, mã ID, SĐT, DISC, cấp bậc, bảo trợ...">
+      <button class="tbtn" id="btn-incprobe" title="Bật rồi rê chuột lên 1 ID: xem thu nhập nếu ID mới do ID đó bảo trợ / phả hệ xuống dưới">&#128433; Soi thu nhập</button>
       <button class="tbtn" id="btn-myids" style="background:#FFF8E1;border-color:#E6C46A;color:#8A6A12">&#128100; Các ID của tôi</button>
       <button class="tbtn" id="btn-placeopt" style="background:#E8F5F0;border-color:#80CBC4;color:#00695C">&#127919; Gợi ý đặt cây</button>
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
@@ -2169,6 +2182,7 @@ a.gp-att-nm:hover{text-decoration:underline}
 <button class="bdp-fab" id="bdpop-fab" data-bdpop-open="1" title="Chúc mừng sinh nhật hôm nay" style="display:none">🎂</button>
 
 <!-- ĐIỂM DANH BẰNG ẢNH ZOOM — chụp màn hình Zoom, app OCR tên → tự điểm danh -->
+<div id="inc-tip"></div>
 <div class="nmod-ov" id="myid-ov">
   <div class="nmod" style="max-width:600px">
     <div class="nmod-hd">
@@ -4651,6 +4665,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v714-soi-thu-nhap', ver:'7.14', icon:'🖱️', title:'Sơ đồ: Soi thu nhập — rê chuột tới đâu biết thu nhập tới đó',
+    desc:'Trong tab <b>Sơ đồ</b> bấm <b>🖱 Soi thu nhập</b> (nút chuyển xanh = đang bật), rồi <b>rê chuột</b> lên bất kỳ ID nào (hoặc nút <b>➕</b>): hiện ngay bảng cho biết nếu ID mới <b>do ID đó bảo trợ</b> và/hoặc <b>phả hệ xuống dưới ID đó</b> (bên Trái, bên Phải — app tự tìm chỗ tốt nhất nếu đã đủ 2 bên) thì <b>thu nhập từng ID của bạn</b> và <b>tổng</b> sẽ là bao nhiêu. Trên điện thoại: bật chế độ rồi chạm vào ID, bảng hiện trong cửa sổ chi tiết.' },
   { id:'v713-thuong-bao-tro', ver:'7.13', icon:'🤝', title:'Thu nhập: thêm thưởng bảo trợ 5 triệu + 28 triệu sản phẩm',
     desc:'Bảng <b>👤 Các ID của tôi</b> và <b>🎯 Gợi ý đặt cây</b> nay tính thêm <b>thưởng bảo trợ</b>: mỗi ID do ID của bạn bảo trợ (F1) được <b>5 triệu tiền + 28 triệu sản phẩm</b>. Cân cặp tính đúng luật <b>mỗi tầng, mỗi ID chỉ ăn 1 lần</b>. Tổng hiện rõ: cân cặp, thưởng bảo trợ, <b>tổng tiền</b> và <b>sản phẩm</b>. Các mốc tiền sửa được ngay trong hộp Gợi ý đặt cây.' },
   { id:'v712-cac-id-cua-toi', ver:'7.12', icon:'👤', title:'Sơ đồ: Các ID của tôi — tối ưu đặt cây trên mọi vị trí',
@@ -10390,6 +10406,100 @@ function bindMyIdsEvents(){
   });
   ov.addEventListener('input',function(e){if(e.target.id==='myid-q')renderMyIdSug(e.target.value);});
 }
+// ================================================================
+// v7.14 — 🖱️ SOI THU NHẬP: bật chế độ → rê chuột lên 1 ID (hoặc nút ➕) trên cây hiện bảng:
+//   nếu ID mới do ID này BẢO TRỢ (thưởng về ID này nếu là ID của tôi) và/hoặc PHẢ HỆ xuống dưới ID này
+//   (khe trống Trái/Phải trực tiếp, hoặc khe tốt nhất trong nhánh đó nếu đã đủ) → thu nhập từng ID của tôi + tổng.
+//   Điện thoại (không rê chuột được): cùng bảng hiện trong popup chi tiết ID khi chế độ bật.
+// ================================================================
+var _probeM=null;
+function probeOn(){return nmGet('incprobe')==='1';}
+function probeM(){if(!_probeM)_probeM=poMulti(poMine());return _probeM;}
+function probeDesc(nid){ // nid + toàn bộ hậu duệ theo vị trí đặt
+  var out=[nid],i=0;
+  while(i<out.length){placementChildren(out[i]).forEach(function(k){out.push(k.id);});i++;}
+  return out;
+}
+function probeGains(M,eff,c){ // lợi cân cặp từng ID của tôi khi đặt 1 ID vào khe có ảnh hưởng eff
+  var g={};
+  eff.forEach(function(e){var s=M.st[e.m],v0=poVal(s.d,s.nn,c),un=poDo(M,[e]);g[e.m]=poVal(s.d,s.nn,c)-v0;un();});
+  return g;
+}
+function probeBestIn(M,nid,side,c){ // khe tốt nhất phía `side` của nid: khe trực tiếp nếu trống, không thì khe tốt nhất trong nhánh con
+  var kid=placementChildren(nid).filter(function(k){return k.side===side;})[0],cands=[];
+  if(!kid)cands.push({pid:nid,ps:side});
+  else probeDesc(kid.id).forEach(function(id){
+    var ks=placementChildren(id);if(ks.length>=2)return;
+    ['L','R'].forEach(function(s){if(!ks.some(function(k){return k.side===s;}))cands.push({pid:id,ps:s});});
+  });
+  var best=null;
+  cands.forEach(function(sl){
+    var eff=poEff(M,sl.pid,sl.ps),g=probeGains(M,eff,c),sum=0;Object.keys(g).forEach(function(k){sum+=g[k];});
+    var dep=poAbsLvl(sl.pid);
+    if(!best||sum>best.sum||(sum===best.sum&&dep<best.dep))best={pid:sl.pid,ps:sl.ps,eff:eff,g:g,sum:sum,dep:dep};
+  });
+  return best;
+}
+function probeHtml(nid,fixSide){ // fixSide: khe cố định (rê lên nút ➕)
+  var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return '';
+  var M=probeM(),c=poCfg(),ids=M.ids,isMine=myIdsGet().indexOf(nid)>=0;
+  var opts=(fixSide?[fixSide]:['L','R']).map(function(s){var b=probeBestIn(M,nid,s,c);if(b)b.side=s;return b;}).filter(Boolean);
+  opts.sort(function(a,b){return b.sum-a.sum||a.dep-b.dep;});
+  var best=opts[0]||{g:{},sum:0};
+  var h='<div class="ip-hd">💰 ID mới vào dưới <b>'+escHtml(n.name)+'</b></div>';
+  h+='<div class="ip-row">🤝 <b>Bảo trợ</b>: '+(isMine?'<b style="color:#2E7D32">+'+poTr(c.sp)+'</b> + '+poTr(c.spp)+' SP về '+escHtml(n.name)
+      :'<span style="color:#999">thưởng về '+escHtml(n.name)+' (không phải ID của tôi) → +0</span>')+'</div>';
+  opts.forEach(function(o,i){
+    var where=o.pid===nid?poSideLbl(o.ps)+' của '+escHtml(n.name):'nhánh '+poSideLbl(o.side)+' → '+poSideLbl(o.ps)+' của '+escHtml(poNodeName(o.pid));
+    h+='<div class="ip-row">🌳 <b>Phả hệ</b> '+where+': '
+      +(o.sum>0?'<b style="color:#2E7D32">+'+poTr(o.sum)+'</b>':'<span style="color:#999">+0</span>')+(i===0&&opts.length>1&&o.sum>opts[1].sum?' ⭐':'')+'</div>';
+  });
+  // Bảng từng tài khoản (phương án tốt nhất: ID này bảo trợ + phả hệ chỗ tốt nhất)
+  h+='<table class="ip-tbl"><tr><th>Tài khoản</th><th>Hiện tại</th><th>Bảo trợ</th><th>Phả hệ</th><th>Sau</th></tr>';
+  var t0=0,tS=0,tP=0;
+  ids.forEach(function(m){
+    var s=M.st[m],cur=poVal(s.d,s.nn,c)+poSpCount(m)*c.sp,sp=m===nid?c.sp:0,pl=best.g[m]||0;
+    t0+=cur;tS+=sp;tP+=pl;
+    h+='<tr><td>👤 '+escHtml(poNodeName(m))+'</td><td>'+poTr(cur)+'</td><td>'+(sp?'+'+poTr(sp):'—')+'</td><td>'+(pl?'+'+poTr(pl):'—')+'</td><td><b>'+poTr(cur+sp+pl)+'</b></td></tr>';
+  });
+  h+='<tr class="ip-sum"><td>💰 Tổng</td><td>'+poTr(t0)+'</td><td>'+(tS?'+'+poTr(tS):'—')+'</td><td>'+(tP?'+'+poTr(tP):'—')+'</td><td><b>'+poTr(t0+tS+tP)+'</b></td></tr></table>';
+  if(tS)h+='<div class="ip-row" style="color:#8A6A12">🎁 Kèm <b>'+poTr(c.spp)+'</b> sản phẩm</div>';
+  if(!myIdsGet().length)h+='<div class="ip-row" style="color:#999">Chưa chọn 👤 Các ID của tôi → đang tính theo gốc '+escHtml(poNodeName(ids[0]))+'.</div>';
+  return h;
+}
+function probeShow(e,nid,side){
+  var tip=document.getElementById('inc-tip');if(!tip)return;
+  tip.innerHTML=probeHtml(nid,side);tip.style.display='block';probeMove(e);
+}
+function probeMove(e){
+  var tip=document.getElementById('inc-tip');if(!tip||tip.style.display!=='block')return;
+  var w=tip.offsetWidth,h=tip.offsetHeight,x=e.clientX+16,y=e.clientY+16;
+  if(x+w>window.innerWidth-8)x=Math.max(8,e.clientX-w-16);
+  if(y+h>window.innerHeight-8)y=Math.max(8,window.innerHeight-h-8);
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function probeHide(){var tip=document.getElementById('inc-tip');if(tip)tip.style.display='none';}
+function probeBtnUI(){var b=document.getElementById('btn-incprobe');if(b)b.classList.toggle('on',probeOn());}
+function bindProbeEvents(){
+  var b=document.getElementById('btn-incprobe');
+  if(b)b.addEventListener('click',function(){
+    if(viewOnlyMode){try{localStorage.setItem(nmKey('incprobe'),probeOn()?'0':'1');}catch(er){}}else nmSet('incprobe',probeOn()?'0':'1');
+    probeBtnUI();probeHide();
+  });
+  probeBtnUI();
+  var wrap=document.getElementById('tree-nodes');if(!wrap)return;
+  var cur=null;
+  wrap.addEventListener('mouseover',function(e){
+    if(!probeOn())return;
+    var a=e.target.closest('[data-add-pid]'),t=a||e.target.closest('.tnode-box');
+    if(!t){if(cur){cur=null;probeHide();}return;}
+    if(t===cur)return;cur=t;
+    if(a)probeShow(e,a.getAttribute('data-add-pid'),a.getAttribute('data-add-side'));
+    else probeShow(e,t.getAttribute('data-node-id'));
+  });
+  wrap.addEventListener('mousemove',function(e){if(cur)probeMove(e);});
+  wrap.addEventListener('mouseleave',function(){cur=null;probeHide();});
+}
 function openPlaceOpt(){clearRankMemo();renderPlaceOpt();document.getElementById('po-ov').classList.add('open');}
 function closePlaceOpt(){document.getElementById('po-ov').classList.remove('open');}
 function bindPlaceOptEvents(){
@@ -10494,7 +10604,7 @@ function updateAddRootBtn(){
   b.title=hasRoot?'Đã có ID gốc — nút mở lại khi ID gốc bị xoá':'';
 }
 function renderTree(){
-  clearRankMemo();
+  clearRankMemo();_probeM=null;probeHide();
   syncTreeToMembers(false);
   var pos=layoutTree();
   var svg=document.getElementById('tree-svg');
@@ -10962,6 +11072,7 @@ function buildNodeView(n){
   if(placementChildren(n.id).length||sponsorKids(n).length){
     h+='<div style="margin-top:12px"><button class="btn btn-d btn-sm nmod-focus-sub" data-focus-sub="'+n.id+'" style="width:100%">\uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y</button></div>';
   }
+  if(probeOn())h+='<div class="ip-box">'+probeHtml(n.id)+'</div>'; // v7.14 — Soi thu nhập (điện thoại)
   if(!viewOnlyMode){
   h+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">';
   h+='<button class="btn btn-g btn-sm nmod-edit-btn" data-nid="'+n.id+'">\u270F\uFE0F S\u1eeda</button>';
@@ -16011,6 +16122,7 @@ function bindStatic(){
   loadZoomAliasLocal();bindZoomAttEvents(); // Điểm danh bằng ảnh Zoom
   bindPlaceOptEvents(); // v7.11 — Gợi ý đặt cây tối ưu
   bindMyIdsEvents(); // v7.12 — Các ID của tôi
+  bindProbeEvents(); // v7.14 — Soi thu nhập khi rê chuột
   // v6.21 — Tìm kiếm thông minh DÙNG CHUNG cho cả 3 bản đồ (live autocomplete + Enter): tra ô theo MAPCTX
   function _mapKeyByInput(id){for(var k in MAPCTX){if(MAPCTX[k].input===id)return k;}return null;}
   document.addEventListener('input',function(e){if(!e.target||!e.target.id)return;var k=_mapKeyByInput(e.target.id);if(k)mapSearchInput(k);});
