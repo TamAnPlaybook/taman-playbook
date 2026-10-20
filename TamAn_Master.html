@@ -1,4 +1,5 @@
-<!-- VERSION: v7.11-goi-y-dat-cay -->
+<!-- VERSION: v7.12-cac-id-cua-toi -->
+<!-- v7.12 — Sơ đồ: nút 👤 Các ID của tôi (#btn-myids, modal #myid-ov, nmSet myids đồng bộ đa thiết bị, dấu 👤 trên cây). Thu nhập mỗi ID tính theo cây dưới ID đó → cộng dồn. Gợi ý đặt cây chấm từng khe cụ thể trên MỌI ID của tôi (poMulti/poRankM/poPlanM): 1 khe dưới nhiều ID của tôi được cộng cho tất cả. -->
 <!-- v7.11 — Sơ đồ: nút 🎯 Gợi ý đặt cây (#btn-placeopt, modal #po-ov, renderPlaceOpt). Ước tính thu nhập theo vị trí: cặp tầng = min(tầng Trái, Phải) × 20tr; cặp nhánh nhỏ = min(NN Trái, NN Phải) × 6tr (mốc sửa được, nmSet placeopt_cfg). poScore: lợi ngay + ½ lợi bước kế → gợi ý vị trí cụ thể (nút ➕ mở openAddNodeModal2) + lộ trình 6 ID + mục Đi sao theo tuyến bảo trợ F1. Điểm danh ảnh Zoom mở ra mặc định buổi Sáng. -->
 <!-- v7.10 — Điểm danh ảnh Zoom (kiểu Danh sách): đọc luôn biểu tượng CAMERA mỗi dòng (_zColorData + _zCamAt: dải ngang dòng tên ở 32% phải ảnh gốc → cụm biểu tượng cuối (bỏ "...") đỏ = tắt cam) → ghi dSet(mid,buoi+"_cam","on"|"off"). Nút cam trên từng dòng chạm để sửa; không đọc được → giữ dữ liệu cũ. -->
 <!-- v7.09 — Toàn màn hình sơ đồ: nút #btn-fs-swap đổi Nhị phân ⇄ Cây sao (Mặt trời) ngay trong overlay (fsSwapTreeMode: đóng fs → bấm thẻ data-treemode → mở lại fs). Nhãn đổi theo chế độ trong updateFsTitle; ẩn khi dreamMode. -->
@@ -1184,6 +1185,13 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .po-cum{color:#555;font-weight:700;min-width:58px;text-align:right;font-size:12px}
 .po-tip{font-size:12.5px;line-height:1.55;padding:6px 10px;border-left:3px solid #FFB74D;background:#FFF8EE;border-radius:6px;margin-bottom:5px}
 @media(max-width:420px){.po-grid{grid-template-columns:1fr 1fr}.po-card.po-tot{grid-column:1/-1}}
+.po-eff{font-size:12.5px;color:#444;margin-top:3px;line-height:1.45}
+.myid-tbl{margin-bottom:8px}
+.myid-sum{background:#E8F5F0}
+.myid-x{border:1px solid #E0E0E0;background:#fff;color:#C62828;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:12px;flex-shrink:0}
+.myid-x:disabled{opacity:.4;cursor:default}
+.myid-q{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #D0D7DC;border-radius:9px;font-size:14px;margin:4px 0 6px}
+.myid-pill{position:absolute;top:-9px;left:-7px;z-index:9;background:linear-gradient(135deg,#C8A84B,#8A6A12);color:#fff;font-size:10px;line-height:18px;width:18px;height:18px;border-radius:50%;text-align:center;box-shadow:0 0 0 2px #fff,0 1px 4px rgba(0,0,0,.3);pointer-events:none}
 .zatt-cam{flex-shrink:0;border:1px solid #CFD8DC;background:#fff;color:#546E7A;font-size:11.5px;font-weight:700;font-family:Arial;padding:6px 9px;border-radius:8px;cursor:pointer;white-space:nowrap}
 .zatt-cam.on{border-color:#81C784;background:#E8F5E9;color:#2E7D32}
 .zatt-cam.off{border-color:#EF9A9A;background:#FDECEC;color:#C62828}
@@ -1767,6 +1775,7 @@ a.gp-att-nm:hover{text-decoration:underline}
     </div>
     <div id="tree-search-bar">
       <input id="tree-search" autocomplete="off" placeholder="&#128269; Tìm: tên, mã ID, SĐT, DISC, cấp bậc, bảo trợ...">
+      <button class="tbtn" id="btn-myids" style="background:#FFF8E1;border-color:#E6C46A;color:#8A6A12">&#128100; Các ID của tôi</button>
       <button class="tbtn" id="btn-placeopt" style="background:#E8F5F0;border-color:#80CBC4;color:#00695C">&#127919; Gợi ý đặt cây</button>
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
       <button class="tbtn" id="btn-nangdong" style="background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32">&#128197; Năng động<span class="tt-badge" id="nd-badge"></span></button>
@@ -2159,6 +2168,15 @@ a.gp-att-nm:hover{text-decoration:underline}
 <button class="bdp-fab" id="bdpop-fab" data-bdpop-open="1" title="Chúc mừng sinh nhật hôm nay" style="display:none">🎂</button>
 
 <!-- ĐIỂM DANH BẰNG ẢNH ZOOM — chụp màn hình Zoom, app OCR tên → tự điểm danh -->
+<div class="nmod-ov" id="myid-ov">
+  <div class="nmod" style="max-width:600px">
+    <div class="nmod-hd">
+      <div class="nmod-title">&#128100; Các ID của tôi</div>
+      <button class="nmod-x" id="myid-close">&#10005;</button>
+    </div>
+    <div class="nmod-body" id="myid-content"></div>
+  </div>
+</div>
 <div class="nmod-ov" id="po-ov">
   <div class="nmod" style="max-width:640px">
     <div class="nmod-hd">
@@ -4632,6 +4650,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v712-cac-id-cua-toi', ver:'7.12', icon:'👤', title:'Sơ đồ: Các ID của tôi — tối ưu đặt cây trên mọi vị trí',
+    desc:'Trong tab <b>Sơ đồ</b> bấm <b>👤 Các ID của tôi</b> để chọn <b>tất cả các ID đứng tên bạn</b> (tìm theo tên / mã ID). App tính thu nhập <b>từng ID</b> theo kế hoạch trả thưởng (cặp tầng, cặp nhánh nhỏ) trên cây dưới ID đó và <b>cộng dồn về bạn</b>; các ID này có dấu <b>👤</b> trên cây. Bấm <b>🎯 Gợi ý đặt cây</b>: app chấm từng chỗ trống trên <b>toàn bộ</b> các ID của bạn — một ID mới nằm dưới nhiều ID của bạn được cộng cho tất cả — rồi chỉ ra chỗ đặt có lợi nhất và lộ trình 6 ID kế tiếp.' },
   { id:'v711-goi-y-dat-cay', ver:'7.11', icon:'🎯', title:'Sơ đồ: Gợi ý đặt cây tối ưu thu nhập &amp; đi sao',
     desc:'Trong tab <b>Sơ đồ</b> bấm <b>🎯 Gợi ý đặt cây</b>: app ước tính thu nhập hiện tại (mỗi <b>cặp tầng ≈ 20 triệu</b>, mỗi <b>cặp nhánh nhỏ ≈ 6 triệu</b>, sửa được mốc), chỉ ra <b>ID mới tiếp theo nên đặt ở đâu</b> (bấm ➕ là thêm ID đúng chỗ đó), <b>lộ trình 6 ID kế tiếp</b>, và mục <b>⭐ Đi sao</b> cho biết ID mới nên thuộc nhánh F1 nào. Dùng được cả trên 🌠 Cây mơ ước để lập kế hoạch.' },
   { id:'v710-zoom-cam', ver:'7.10', icon:'📷', title:'Điểm danh ảnh Zoom: ghi luôn BẬT / TẮT cam',
@@ -5151,7 +5171,7 @@ function pSet(mid,f,v){nmSet('p_'+mid+'_'+f,v);}
 // ================================================================
 var LOCAL_SYNC_PREFIXES=['d_','mo_','p_','goals_','pareto_'];
 function _isLocalSyncKey(k){
-  if(k==='custom_lks')return true;
+  if(k==='custom_lks'||k==='myids')return true;
   for(var i=0;i<LOCAL_SYNC_PREFIXES.length;i++){if(k.indexOf(LOCAL_SYNC_PREFIXES[i])===0)return true;}
   return false;
 }
@@ -10133,6 +10153,7 @@ function poState(rootId){
     if(lvl>st.d[side])st.d[side]=lvl;
     var k=lvl+'|'+side;byLS[k]=(byLS[k]||0)+1;
   });
+  st.byLS=byLS;
   Object.keys(byLS).forEach(function(k){var p=k.split('|');if(+p[0]>=4)st.nn[p[1]]+=byLS[k]-1;}); // trừ ID đầu tầng (xanh lá)
   Object.keys(info).forEach(function(id){ // khe trống Trái/Phải dưới mỗi ID
     var inf=info[id],kids=placementChildren(id);if(kids.length>=2)return;
@@ -10144,49 +10165,96 @@ function poState(rootId){
   return st;
 }
 function poVal(d,nn,c){return c.pair*Math.min(d.L,d.R)+c.nn*Math.min(nn.L,nn.R);}
-function poMoves(st,d,nn){ // nước đi trừu tượng: 'new' = mở tầng mới · 'nn' = thêm ID NN (cần khe ở Tầng ≥4 đã có ID)
-  var m=[];
-  ['L','R'].forEach(function(s){
-    m.push({s:s,t:'new'});
-    var real=st.slots.some(function(sl){return sl.side===s&&sl.lvl>=4&&sl.lvl<=st.d[s];});
-    if(real||(d[s]>st.d[s]&&d[s]>=4))m.push({s:s,t:'nn'});
-  });
-  return m;
+// ================================================================
+// v7.12 — 👤 CÁC ID CỦA TÔI: mỗi ID của tôi hưởng thu nhập theo cây DƯỚI ID đó (cùng luật cặp tầng / cặp NN)
+//   → tổng thu nhập = cộng dồn mọi ID của tôi. 1 ID mới đặt ở 1 khe sẽ cộng vào MỌI ID của tôi nằm phía trên khe đó
+//   (mỗi ID thấy khe ở tầng/nhánh khác nhau) → gợi ý chấm điểm từng khe cụ thể trên toàn bộ các ID của tôi.
+//   Lưu nmSet('myids') (đồng bộ đa thiết bị). Chưa chọn ID nào → dùng gốc đang xem như v7.11.
+// ================================================================
+function myIdsGet(){
+  try{var a=JSON.parse(nmGet('myids')||'[]');if(!Array.isArray(a))return [];
+    return a.filter(function(id){return treeNodes.some(function(x){return x.id===id;});});}catch(e){return [];}
 }
-function poApply(d,nn,mv){var d2={L:d.L,R:d.R},n2={L:nn.L,R:nn.R};if(mv.t==='new')d2[mv.s]++;else n2[mv.s]++;return {d:d2,nn:n2};}
-function poScore(st,d,nn,c){ // chấm từng nước đi: lợi ngay + 1/2 lợi tốt nhất của bước kế (để thấy "mở tầng" chuẩn bị cho cặp)
-  var cur=poVal(d,nn,c);
-  return poMoves(st,d,nn).map(function(mv){
-    var r=poApply(d,nn,mv),v=poVal(r.d,r.nn,c),nx=0;
-    poMoves(st,r.d,r.nn).forEach(function(m2){var r2=poApply(r.d,r.nn,m2);nx=Math.max(nx,poVal(r2.d,r2.nn,c)-v);});
-    var sideLoad=r.d[mv.s]+r.nn[mv.s]*0.1;
-    return {mv:mv,gain:v-cur,next:nx,total:v,res:r,sc:(v-cur)+nx*0.5-sideLoad*1e-4};
+function myIdsSave(a){try{nmSet('myids',JSON.stringify(a));}catch(e){}}
+function poMine(){var a=myIdsGet();if(a.length)return a;var r=poRoot();return r?[r]:[];}
+function poMulti(ids){ // trạng thái gộp: mỗi ID của tôi có d/nn/byLS riêng + danh sách khe trống (gộp theo "dấu ảnh hưởng")
+  var M={ids:ids,st:{},groups:[]},seen={},bySig={};
+  ids.forEach(function(m){var s=poState(m);M.st[m]={d:s.d,nn:s.nn,byLS:s.byLS,info:s.info,slots:s.slots};});
+  ids.forEach(function(m){
+    M.st[m].slots.forEach(function(sl){
+      var key=sl.pid+'|'+sl.ps;if(seen[key])return;seen[key]=1;
+      poAddSlot(M,bySig,poEff(M,sl.pid,sl.ps),{pid:sl.pid,ps:sl.ps});
+    });
+  });
+  M._bySig=bySig;return M;
+}
+function poEff(M,pid,ps){ // khe (pid,ps) nằm ở tầng/nhánh nào đối với từng ID của tôi
+  var e=[];
+  M.ids.forEach(function(m){var inf=M.st[m].info[pid];if(!inf)return;e.push({m:m,lvl:inf.lvl+1,side:inf.lvl===0?ps:inf.side});});
+  return e;
+}
+function poSig(eff){return eff.map(function(e){return e.m+':'+e.lvl+e.side;}).join(',');}
+function poAddSlot(M,bySig,eff,slot){
+  if(!eff.length)return;var sg=poSig(eff),g=bySig[sg];
+  if(!g){g={sig:sg,eff:eff,slots:[]};bySig[sg]=g;M.groups.push(g);}
+  g.slots.push(slot);
+}
+function poValM(M,c){var v=0;M.ids.forEach(function(m){var s=M.st[m];v+=poVal(s.d,s.nn,c);});return v;}
+function poDo(M,eff){ // đặt thử 1 ID mới → trả về hàm hoàn tác
+  var undo=[];
+  eff.forEach(function(e){
+    var s=M.st[e.m],k=e.lvl+'|'+e.side,c0=s.byLS[k]||0;
+    undo.push({s:s,k:k,c0:c0,side:e.side,d:s.d[e.side],nn:s.nn[e.side]});
+    if(e.lvl>=4&&c0>=1)s.nn[e.side]++;
+    s.byLS[k]=c0+1;if(e.lvl>s.d[e.side])s.d[e.side]=e.lvl;
+  });
+  return function(){undo.reverse().forEach(function(u){u.s.byLS[u.k]=u.c0;u.s.d[u.side]=u.d;u.s.nn[u.side]=u.nn;});};
+}
+function poKidEff(eff){return eff.map(function(e){return {m:e.m,lvl:e.lvl+1,side:e.side};});}
+function poRankM(M,c){ // chấm từng nhóm khe: lợi ngay + ½ lợi tốt nhất của ID kế tiếp (thấy được "mở tầng" chuẩn bị cho cặp)
+  var cur=poValM(M,c);
+  return M.groups.filter(function(g){return g.slots.length;}).map(function(g){
+    var un=poDo(M,g.eff),v=poValM(M,c),nx=0;
+    var cand=M.groups.filter(function(g2){return g2.slots.length&&(g2!==g||g.slots.length>1);}).map(function(g2){return g2.eff;});
+    cand.push(poKidEff(g.eff));
+    cand.forEach(function(e2){var u2=poDo(M,e2);nx=Math.max(nx,poValM(M,c)-v);u2();});
+    un();
+    var load=0;g.eff.forEach(function(e){load+=M.st[e.m].d[e.side]+M.st[e.m].nn[e.side]*0.1;});
+    return {g:g,gain:v-cur,next:nx,total:v,sc:(v-cur)+nx*0.5-load*1e-4-g.eff.length*1e-6};
   }).sort(function(a,b){return b.sc-a.sc;});
 }
-function poPlan(st,c,N){
-  var d={L:st.d.L,R:st.d.R},nn={L:st.nn.L,R:st.nn.R},out=[];
+function poCloneM(M){
+  var N={ids:M.ids,st:{},groups:[]},bySig={};
+  M.ids.forEach(function(m){var s=M.st[m],b={};Object.keys(s.byLS).forEach(function(k){b[k]=s.byLS[k];});
+    N.st[m]={d:{L:s.d.L,R:s.d.R},nn:{L:s.nn.L,R:s.nn.R},byLS:b,info:s.info};});
+  M.groups.forEach(function(g){var g2={sig:g.sig,eff:g.eff,slots:g.slots.slice()};bySig[g.sig]=g2;N.groups.push(g2);});
+  N._bySig=bySig;return N;
+}
+function poPlanM(M,c,N){ // lộ trình tham lam N ID kế tiếp; khe dưới ID mới (ảo) được thêm vào khi đặt
+  var W=poCloneM(M),out=[];
   for(var i=0;i<N;i++){
-    var b=poScore(st,d,nn,c)[0];if(!b)break;
-    d=b.res.d;nn=b.res.nn;
-    out.push({mv:b.mv,gain:b.gain,total:b.total,lvl:b.mv.t==='new'?d[b.mv.s]:null});
+    var b=poRankM(W,c)[0];if(!b)break;
+    var slot=b.g.slots.shift();poDo(W,b.g.eff);
+    out.push({eff:b.g.eff,slot:slot,gain:b.gain,total:b.total});
+    var ke=poKidEff(b.g.eff);
+    poAddSlot(W,W._bySig,ke,{v:i+1,ps:'L'});poAddSlot(W,W._bySig,ke,{v:i+1,ps:'R'});
   }
   return out;
 }
-function poSlotsFor(st,mv){ // vị trí cụ thể trên cây cho 1 nước đi
-  var sl=st.slots.filter(function(x){
-    if(x.side!==mv.s)return false;
-    return mv.t==='new'?x.lvl===st.d[mv.s]+1:(x.lvl>=4&&x.lvl<=st.d[mv.s]);
-  });
-  sl.sort(function(a,b){return a.lvl-b.lvl;});
-  return sl;
+function poNodeName(id){var n=treeNodes.find(function(x){return x.id===id;});return n?n.name:'?';}
+function poEffLbl(M,eff,c){ // mô tả ảnh hưởng của 1 khe lên từng ID của tôi
+  return eff.map(function(e){
+    var s=M.st[e.m],o=e.side==='L'?'R':'L',v0=poVal(s.d,s.nn,c),un=poDo(M,[e]),g=poVal(s.d,s.nn,c)-v0;un();
+    var t;
+    if(e.lvl>s.d[e.side])t='mở <b>Tầng '+e.lvl+'</b>'+(e.lvl<=s.d[o]?' <span style="color:#2E7D32">→ thành cặp</span>':'');
+    else if(e.lvl>=4)t='ID NN Tầng '+e.lvl+(s.nn[e.side]<s.nn[o]?' <span style="color:#2E7D32">→ cặp NN</span>':'');
+    else t='Tầng '+e.lvl+' <span style="color:#999">(đã có ID)</span>';
+    return '<div class="po-eff">'+(M.ids.length>1?'👤 <b>'+escHtml(poNodeName(e.m))+'</b>: ':'')+'Nhánh <b>'+poSideLbl(e.side)+'</b> · '+t
+      +(g>0?' <b style="color:#2E7D32">+'+poTr(g)+'</b>':'')+'</div>';
+  }).join('');
 }
 function poTr(v){v=Math.round(v*10)/10;return (v%1?v.toFixed(1).replace('.',','):String(v))+' tr';}
 function poSideLbl(s){return s==='L'?'Trái':'Phải';}
-function poMoveLbl(mv,st){
-  return mv.t==='new'
-    ?'<b>Nhánh '+poSideLbl(mv.s)+'</b> · mở <b>Tầng '+(st.d[mv.s]+1)+'</b>'+(st.d[mv.s]+1<=st.d[mv.s==='L'?'R':'L']?' <span style="color:#2E7D32">(bên kia đã có → thành cặp)</span>':'')
-    :'<b>Nhánh '+poSideLbl(mv.s)+'</b> · thêm <b>ID NN</b> (Tầng ≥4)';
-}
 function poStarHtml(rootId){
   var n=treeNodes.find(function(x){return x.id===rootId;});if(!n)return '';
   var r=nodeRank(rootId),cur=r?RANKS[r-1]:null;
@@ -10220,41 +10288,101 @@ function renderPlaceOpt(){
   var el=document.getElementById('po-content');if(!el)return;
   var rid=poRoot(),root=treeNodes.find(function(x){return x.id===rid;});
   if(!root){el.innerHTML='<div class="zatt-empty">Chưa có sơ đồ.</div>';return;}
-  var c=poCfg(),st=poState(rid),pairs=Math.min(st.d.L,st.d.R),nnp=Math.min(st.nn.L,st.nn.R),tot=poVal(st.d,st.nn,c);
-  var h='<div class="zatt-intro">💡 Ước tính theo <b>vị trí đặt</b> tính từ <b>'+escHtml(root.name)+'</b>'+(focusNodeId?' (đang focus)':'')+(dreamMode?' · 🌠 <b>Cây mơ ước</b>':'')+'. Mỗi <b>cặp tầng</b> (tầng có ID cả 2 nhánh) ≈ <b>'+poTr(c.pair)+'</b>; mỗi <b>cặp nhánh nhỏ</b> (ID NN Tầng ≥4 cân 2 bên) ≈ <b>'+poTr(c.nn)+'</b>. Đây là số ước tính để định hướng, không phải bảng lương chính thức.</div>';
-  // Hiện trạng
-  h+='<div class="po-grid">'
-   +'<div class="po-card"><div class="po-k">Cặp tầng</div><div class="po-v">'+pairs+'</div><div class="po-s">Trái '+st.d.L+' · Phải '+st.d.R+' tầng</div><div class="po-m">'+poTr(pairs*c.pair)+'</div></div>'
-   +'<div class="po-card"><div class="po-k">Cặp nhánh nhỏ</div><div class="po-v">'+nnp+'</div><div class="po-s">NN Trái '+st.nn.L+' · Phải '+st.nn.R+'</div><div class="po-m">'+poTr(nnp*c.nn)+'</div></div>'
-   +'<div class="po-card po-tot"><div class="po-k">Ước tính hiện tại</div><div class="po-v">'+poTr(tot)+'</div></div></div>';
+  var c=poCfg(),mine=myIdsGet(),ids=poMine(),M=poMulti(ids),tot=poValM(M,c);
+  var h='<div class="zatt-intro">💡 '+(mine.length
+      ?'Tối ưu trên <b>'+mine.length+' ID của tôi</b> — thu nhập mỗi ID tính theo cây dưới ID đó, <b>cộng dồn về tôi</b>.'
+      :'Ước tính theo <b>vị trí đặt</b> tính từ <b>'+escHtml(root.name)+'</b>'+(focusNodeId?' (đang focus)':'')+'. <a href="#" data-po-myids style="color:#00695C;font-weight:800">👤 Chọn các ID của tôi</a> để tối ưu trên tất cả vị trí.')
+    +(dreamMode?' · 🌠 <b>Cây mơ ước</b>':'')+' Mỗi <b>cặp tầng</b> (tầng có ID cả 2 nhánh) ≈ <b>'+poTr(c.pair)+'</b>; mỗi <b>cặp nhánh nhỏ</b> (ID NN Tầng ≥4 cân 2 bên) ≈ <b>'+poTr(c.nn)+'</b>. Đây là số ước tính để định hướng, không phải bảng lương chính thức.</div>';
+  // Hiện trạng (từng ID của tôi + tổng)
+  h+=myIdsTableHtml(M,c,false);
   h+='<div class="po-cfg">Mốc: <label>cặp tầng <input type="number" min="0" step="0.5" data-pocfg="pair" value="'+c.pair+'"> tr</label><label>cặp nhánh nhỏ <input type="number" min="0" step="0.5" data-pocfg="nn" value="'+c.nn+'"> tr</label></div>';
   // ID tiếp theo
-  var sc=poScore(st,st.d,st.nn,c),maxNow=Math.max.apply(null,sc.map(function(o){return o.gain;}).concat([0]));
+  var sc=poRankM(M,c),maxNow=Math.max.apply(null,sc.map(function(o){return o.gain;}).concat([0]));
   h+='<div class="zatt-sec" style="color:#1A7A5E">🎯 ID mới tiếp theo nên đặt ở đâu?</div>';
-  sc.forEach(function(o,i){
-    var slots=poSlotsFor(st,o.mv);if(!slots.length)return;
-    var gainTxt=o.gain>0?'<b style="color:#2E7D32">+'+poTr(o.gain)+'</b> ngay':(o.next>maxNow?'chưa cộng ngay · mở đường <b style="color:#1565C0">+'+poTr(o.next)+'</b> cho ID kế tiếp':'<span style="color:#999">không tăng</span>');
+  sc.slice(0,5).forEach(function(o,i){
+    var slots=o.g.slots;
+    var gainTxt=o.gain>0?'<b style="color:#2E7D32">+'+poTr(o.gain)+'</b> ngay'+(M.ids.length>1?' (tổng các ID)':''):(o.next>maxNow?'chưa cộng ngay · mở đường <b style="color:#1565C0">+'+poTr(o.next)+'</b> cho ID kế tiếp':'<span style="color:#999">không tăng</span>');
     h+='<div class="po-opt'+(i===0?' best':'')+'">'+(i===0?'<div class="po-badge">⭐ Tối ưu nhất</div>':'')
-      +'<div style="font-size:13.5px">'+poMoveLbl(o.mv,st)+' → '+gainTxt+'</div><div class="po-slots">';
+      +'<div style="font-size:13.5px">→ '+gainTxt+'</div>'+poEffLbl(M,o.g.eff,c)+'<div class="po-slots">';
     slots.slice(0,4).forEach(function(sl){
-      var p=treeNodes.find(function(x){return x.id===sl.pid;});
-      h+='<button class="po-slot" data-po-add="'+sl.pid+'|'+sl.ps+'"'+(viewOnlyMode?' disabled':'')+'>➕ '+poSideLbl(sl.ps)+' của <b>'+escHtml(p?p.name:'?')+'</b> <span>T'+sl.lvl+'</span></button>';
+      h+='<button class="po-slot" data-po-add="'+sl.pid+'|'+sl.ps+'"'+(viewOnlyMode?' disabled':'')+'>➕ '+poSideLbl(sl.ps)+' của <b>'+escHtml(poNodeName(sl.pid))+'</b></button>';
     });
     if(slots.length>4)h+='<span class="po-more">+'+(slots.length-4)+' chỗ khác</span>';
     h+='</div></div>';
   });
-  h+='<div style="font-size:11.5px;color:#999;margin:2px 2px 8px">Đặt ở Tầng 2–3 khi tầng đó đã có ID cùng nhánh: không tạo cặp mới.</div>';
+  h+='<div style="font-size:11.5px;color:#999;margin:2px 2px 8px">Đặt ở Tầng 2–3 khi tầng đó đã có ID cùng nhánh: không tạo cặp mới.'+(M.ids.length>1?' Khe nằm dưới nhiều ID của tôi được cộng cho tất cả các ID đó.':'')+'</div>';
   // Lộ trình
-  var plan=poPlan(st,c,6);
+  var plan=poPlanM(M,c,6);
   h+='<div class="zatt-sec" style="color:#1565C0">🗺️ Lộ trình 6 ID kế tiếp (tối ưu thu nhập)</div><div class="po-plan">';
   plan.forEach(function(p,i){
-    h+='<div class="po-step"><span class="po-n">'+(i+1)+'</span><span style="flex:1">Nhánh <b>'+poSideLbl(p.mv.s)+'</b> · '+(p.mv.t==='new'?'Tầng '+p.lvl:'ID NN')+'</span><span class="'+(p.gain>0?'po-up':'po-zero')+'">'+(p.gain>0?'+'+poTr(p.gain):'—')+'</span><span class="po-cum">'+poTr(p.total)+'</span></div>';
+    var where=p.slot.pid?poSideLbl(p.slot.ps)+' của <b>'+escHtml(poNodeName(p.slot.pid))+'</b>':poSideLbl(p.slot.ps)+' của <b>ID mới bước '+p.slot.v+'</b>';
+    h+='<div class="po-step"><span class="po-n">'+(i+1)+'</span><span style="flex:1">'+where+'<div class="po-s">'+p.eff.map(function(e){return (M.ids.length>1?escHtml(poNodeName(e.m))+': ':'')+poSideLbl(e.side)+' T'+e.lvl;}).join(' · ')+'</div></span><span class="'+(p.gain>0?'po-up':'po-zero')+'">'+(p.gain>0?'+'+poTr(p.gain):'—')+'</span><span class="po-cum">'+poTr(p.total)+'</span></div>';
   });
   h+='</div>';
-  // Đi sao
-  h+='<div class="zatt-sec" style="color:#E65100">⭐ Đi sao (tính theo tuyến BẢO TRỢ F1)</div>'+poStarHtml(rid);
+  // Đi sao — theo ID của tôi ở cao nhất trên cây
+  var starId=ids.slice().sort(function(a,b){return poAbsLvl(a)-poAbsLvl(b);})[0]||rid;
+  h+='<div class="zatt-sec" style="color:#E65100">⭐ Đi sao (tính theo tuyến BẢO TRỢ F1)</div>'+poStarHtml(starId);
   h+='<div class="zatt-note" style="margin-top:10px">✅ <b>Được cả hai:</b> khi có ID mới, chọn <b>người bảo trợ</b> theo mục ⭐ (đúng nhánh F1 cần ID) và chọn <b>vị trí đặt</b> theo mục 🎯 (tạo cặp). Bảo trợ và vị trí đặt là 2 việc độc lập.</div>';
   el.innerHTML=h;
+}
+function poAbsLvl(id){var d=0,n=treeNodes.find(function(x){return x.id===id;}),g=0;
+  while(n&&n.parentId&&g<400){n=treeNodes.find(function(x){return x.id===n.parentId;});d++;g++;}return d;}
+function myIdsTableHtml(M,c,editable){ // thu nhập ước tính từng ID của tôi + tổng
+  var tot=poValM(M,c),h='';
+  if(M.ids.length===1&&!editable){
+    var s=M.st[M.ids[0]],pairs=Math.min(s.d.L,s.d.R),nnp=Math.min(s.nn.L,s.nn.R);
+    return '<div class="po-grid">'
+     +'<div class="po-card"><div class="po-k">Cặp tầng</div><div class="po-v">'+pairs+'</div><div class="po-s">Trái '+s.d.L+' · Phải '+s.d.R+' tầng</div><div class="po-m">'+poTr(pairs*c.pair)+'</div></div>'
+     +'<div class="po-card"><div class="po-k">Cặp nhánh nhỏ</div><div class="po-v">'+nnp+'</div><div class="po-s">NN Trái '+s.nn.L+' · Phải '+s.nn.R+'</div><div class="po-m">'+poTr(nnp*c.nn)+'</div></div>'
+     +'<div class="po-card po-tot"><div class="po-k">Ước tính hiện tại</div><div class="po-v">'+poTr(tot)+'</div></div></div>';
+  }
+  h+='<div class="po-plan myid-tbl">';
+  M.ids.forEach(function(m){
+    var s=M.st[m],n=treeNodes.find(function(x){return x.id===m;})||{},pairs=Math.min(s.d.L,s.d.R),nnp=Math.min(s.nn.L,s.nn.R);
+    h+='<div class="po-step"><span style="flex:1;min-width:0">👤 <b>'+escHtml(n.name)+'</b>'+(n.idCode?' <span class="po-s">· '+escHtml(n.idCode)+'</span>':'')
+      +'<div class="po-s">Tầng T'+s.d.L+'/P'+s.d.R+' → <b>'+pairs+'</b> cặp · NN T'+s.nn.L+'/P'+s.nn.R+' → <b>'+nnp+'</b> cặp NN</div></span>'
+      +'<span class="po-up">'+poTr(poVal(s.d,s.nn,c))+'</span>'
+      +(editable?'<button class="myid-x" data-myid-del="'+m+'" title="Bỏ khỏi Các ID của tôi"'+(viewOnlyMode?' disabled':'')+'>✕</button>':'')+'</div>';
+  });
+  h+='<div class="po-step myid-sum"><span style="flex:1">💰 <b>Tổng thu nhập về tôi</b> ('+M.ids.length+' ID)</span><span class="po-up" style="font-size:15px">'+poTr(tot)+'</span>'+(editable?'<span style="width:26px"></span>':'')+'</div></div>';
+  return h;
+}
+// ---- Hộp "👤 Các ID của tôi" ----
+function renderMyIds(){
+  var el=document.getElementById('myid-content');if(!el)return;
+  var mine=myIdsGet(),c=poCfg();
+  var h='<div class="zatt-intro">👤 Chọn <b>tất cả các ID đứng tên bạn</b> trên sơ đồ. Thu nhập của mỗi ID tính theo <b>kế hoạch trả thưởng</b> (cặp tầng ≈ '+poTr(c.pair)+', cặp nhánh nhỏ ≈ '+poTr(c.nn)+') trên cây <b>dưới ID đó</b> → cộng dồn <b>về bạn</b>. Nút <b>🎯 Gợi ý đặt cây</b> sẽ tối ưu trên tất cả các ID này.'+(dreamMode?' · 🌠 Đang ở <b>Cây mơ ước</b>.':'')+'</div>';
+  if(mine.length)h+=myIdsTableHtml(poMulti(mine),c,true);
+  else{
+    var r=poRoot();
+    h+='<div class="zatt-empty">Chưa chọn ID nào. Tìm tên / mã ID bên dưới để thêm.</div>';
+    if(r&&!viewOnlyMode)h+='<div class="po-slots" style="margin-bottom:8px"><button class="po-slot" data-myid-add="'+r+'">➕ Thêm <b>'+escHtml(poNodeName(r))+'</b> (gốc đang xem)</button></div>';
+  }
+  if(!viewOnlyMode)h+='<input id="myid-q" class="myid-q" autocomplete="off" placeholder="🔍 Tìm tên, mã ID để thêm vào Các ID của tôi..."><div id="myid-sug" class="po-slots"></div>';
+  if(mine.length)h+='<button class="zatt-commit" data-myid-go>🎯 Xem gợi ý đặt cây cho '+mine.length+' ID</button>';
+  el.innerHTML=h;
+}
+function renderMyIdSug(q){
+  var box=document.getElementById('myid-sug');if(!box)return;
+  q=noAccent(String(q||'').trim());if(!q){box.innerHTML='';return;}
+  var mine=myIdsGet(),hits=treeNodes.filter(function(n){return mine.indexOf(n.id)<0&&(noAccent(n.name||'').indexOf(q)>=0||noAccent(n.idCode||'').indexOf(q)>=0);}).slice(0,8);
+  box.innerHTML=hits.length?hits.map(function(n){return '<button class="po-slot" data-myid-add="'+n.id+'">➕ <b>'+escHtml(n.name)+'</b>'+(n.idCode?' <span>'+escHtml(n.idCode)+'</span>':'')+' <span>T'+poAbsLvl(n.id)+'</span></button>';}).join(''):'<span class="po-more">Không tìm thấy.</span>';
+}
+function openMyIds(){renderMyIds();document.getElementById('myid-ov').classList.add('open');}
+function closeMyIds(){document.getElementById('myid-ov').classList.remove('open');}
+function bindMyIdsEvents(){
+  var b=document.getElementById('btn-myids');if(b)b.addEventListener('click',openMyIds);
+  var x=document.getElementById('myid-close');if(x)x.addEventListener('click',closeMyIds);
+  var ov=document.getElementById('myid-ov');if(!ov)return;
+  ov.addEventListener('click',function(e){
+    if(e.target===this){closeMyIds();return;}
+    var a=e.target.closest('[data-myid-add]'),d=e.target.closest('[data-myid-del]'),g=e.target.closest('[data-myid-go]');
+    if(a&&!a.disabled){var m=myIdsGet(),id=a.getAttribute('data-myid-add');if(m.indexOf(id)<0)m.push(id);myIdsSave(m);renderMyIds();try{renderTree();}catch(er){}
+      var q=document.getElementById('myid-q');if(q)q.focus();return;}
+    if(d&&!d.disabled){var id2=d.getAttribute('data-myid-del');myIdsSave(myIdsGet().filter(function(v){return v!==id2;}));renderMyIds();try{renderTree();}catch(er){}return;}
+    if(g){closeMyIds();openPlaceOpt();}
+  });
+  ov.addEventListener('input',function(e){if(e.target.id==='myid-q')renderMyIdSug(e.target.value);});
 }
 function openPlaceOpt(){clearRankMemo();renderPlaceOpt();document.getElementById('po-ov').classList.add('open');}
 function closePlaceOpt(){document.getElementById('po-ov').classList.remove('open');}
@@ -10264,6 +10392,7 @@ function bindPlaceOptEvents(){
   var b=document.getElementById('btn-placeopt');if(b)b.addEventListener('click',openPlaceOpt);
   var body=document.getElementById('po-content');if(!body)return;
   body.addEventListener('click',function(e){
+    if(e.target.closest('[data-po-myids]')){e.preventDefault();closePlaceOpt();openMyIds();return;}
     var t=e.target.closest('[data-po-add]');if(!t||t.disabled)return;
     var p=t.getAttribute('data-po-add').split('|');closePlaceOpt();openAddNodeModal2(p[0],p[1]);
   });
@@ -10473,6 +10602,7 @@ function renderTree(){
   var h='';
   var lvlSet={};
   var _drMap=dreamMode?null:dreamRealizedMap(); // v6.93 — ID thật đúng kế hoạch Cây mơ ước
+  var _myIds=myIdsGet(); // v7.12 — dấu 👤 ở Các ID của tôi
   treeNodes.forEach(function(n){
     var p=pos[n.id];if(!p)return;
     var col=branchColor(n.id);
@@ -10522,6 +10652,7 @@ function renderTree(){
     h+='</div>';
     if(dreamMode){if(n.realized)h+='<div class="dream-pill done">✅ Hiện thực</div>';else if(!n.fromReal)h+='<div class="dream-pill plan">🎯 Kế hoạch</div>';}
     else if(_drMap&&_drMap[n.id])h+='<div class="dream-pill real" title="Đã có kế hoạch đúng như Cây mơ ước">🌠 Đúng kế hoạch</div>';
+    if(_myIds.indexOf(n.id)>=0)h+='<div class="myid-pill" title="ID của tôi">👤</div>';
     if(nmk){
       var _nmm=(parseJoinDate(n.joinDate)||{}).m;
       h+='<div class="nm-ring '+nmk+'" style="left:0;top:0;right:0;bottom:0"></div>';
@@ -15873,6 +16004,7 @@ function bindStatic(){
   loadDreamListLocal();bindDreamListEvents(); // Danh sách ước mơ
   loadZoomAliasLocal();bindZoomAttEvents(); // Điểm danh bằng ảnh Zoom
   bindPlaceOptEvents(); // v7.11 — Gợi ý đặt cây tối ưu
+  bindMyIdsEvents(); // v7.12 — Các ID của tôi
   // v6.21 — Tìm kiếm thông minh DÙNG CHUNG cho cả 3 bản đồ (live autocomplete + Enter): tra ô theo MAPCTX
   function _mapKeyByInput(id){for(var k in MAPCTX){if(MAPCTX[k].input===id)return k;}return null;}
   document.addEventListener('input',function(e){if(!e.target||!e.target.id)return;var k=_mapKeyByInput(e.target.id);if(k)mapSearchInput(k);});
