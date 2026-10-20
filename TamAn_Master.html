@@ -1,4 +1,5 @@
-<!-- VERSION: v7.12-cac-id-cua-toi -->
+<!-- VERSION: v7.13-thuong-bao-tro -->
+<!-- v7.13 — Kế hoạch trả thưởng: cân cặp mỗi tầng mỗi ID chỉ 1 lần (đã đúng: min(tầng T, tầng P)); thêm thưởng bảo trợ mỗi F1 = 5tr tiền + 28tr sản phẩm (PO_DEF.sp/spp, sửa được) vào bảng Các ID của tôi + Gợi ý đặt cây. -->
 <!-- v7.12 — Sơ đồ: nút 👤 Các ID của tôi (#btn-myids, modal #myid-ov, nmSet myids đồng bộ đa thiết bị, dấu 👤 trên cây). Thu nhập mỗi ID tính theo cây dưới ID đó → cộng dồn. Gợi ý đặt cây chấm từng khe cụ thể trên MỌI ID của tôi (poMulti/poRankM/poPlanM): 1 khe dưới nhiều ID của tôi được cộng cho tất cả. -->
 <!-- v7.11 — Sơ đồ: nút 🎯 Gợi ý đặt cây (#btn-placeopt, modal #po-ov, renderPlaceOpt). Ước tính thu nhập theo vị trí: cặp tầng = min(tầng Trái, Phải) × 20tr; cặp nhánh nhỏ = min(NN Trái, NN Phải) × 6tr (mốc sửa được, nmSet placeopt_cfg). poScore: lợi ngay + ½ lợi bước kế → gợi ý vị trí cụ thể (nút ➕ mở openAddNodeModal2) + lộ trình 6 ID + mục Đi sao theo tuyến bảo trợ F1. Điểm danh ảnh Zoom mở ra mặc định buổi Sáng. -->
 <!-- v7.10 — Điểm danh ảnh Zoom (kiểu Danh sách): đọc luôn biểu tượng CAMERA mỗi dòng (_zColorData + _zCamAt: dải ngang dòng tên ở 32% phải ảnh gốc → cụm biểu tượng cuối (bỏ "...") đỏ = tắt cam) → ghi dSet(mid,buoi+"_cam","on"|"off"). Nút cam trên từng dòng chạm để sửa; không đọc được → giữ dữ liệu cũ. -->
@@ -4650,6 +4651,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v713-thuong-bao-tro', ver:'7.13', icon:'🤝', title:'Thu nhập: thêm thưởng bảo trợ 5 triệu + 28 triệu sản phẩm',
+    desc:'Bảng <b>👤 Các ID của tôi</b> và <b>🎯 Gợi ý đặt cây</b> nay tính thêm <b>thưởng bảo trợ</b>: mỗi ID do ID của bạn bảo trợ (F1) được <b>5 triệu tiền + 28 triệu sản phẩm</b>. Cân cặp tính đúng luật <b>mỗi tầng, mỗi ID chỉ ăn 1 lần</b>. Tổng hiện rõ: cân cặp, thưởng bảo trợ, <b>tổng tiền</b> và <b>sản phẩm</b>. Các mốc tiền sửa được ngay trong hộp Gợi ý đặt cây.' },
   { id:'v712-cac-id-cua-toi', ver:'7.12', icon:'👤', title:'Sơ đồ: Các ID của tôi — tối ưu đặt cây trên mọi vị trí',
     desc:'Trong tab <b>Sơ đồ</b> bấm <b>👤 Các ID của tôi</b> để chọn <b>tất cả các ID đứng tên bạn</b> (tìm theo tên / mã ID). App tính thu nhập <b>từng ID</b> theo kế hoạch trả thưởng (cặp tầng, cặp nhánh nhỏ) trên cây dưới ID đó và <b>cộng dồn về bạn</b>; các ID này có dấu <b>👤</b> trên cây. Bấm <b>🎯 Gợi ý đặt cây</b>: app chấm từng chỗ trống trên <b>toàn bộ</b> các ID của bạn — một ID mới nằm dưới nhiều ID của bạn được cộng cho tất cả — rồi chỉ ra chỗ đặt có lợi nhất và lộ trình 6 ID kế tiếp.' },
   { id:'v711-goi-y-dat-cay', ver:'7.11', icon:'🎯', title:'Sơ đồ: Gợi ý đặt cây tối ưu thu nhập &amp; đi sao',
@@ -10139,8 +10142,10 @@ function computeBinaryHighlights(pos,rootId){
 //   Gợi ý: thử từng nước đi (tầng mới / NN mỗi bên), nhìn trước 1 bước, lập lộ trình 6 ID kế tiếp.
 //   Đi sao tính theo tuyến BẢO TRỢ (F1) → mục riêng chỉ ra nhánh F1 nên phát sinh ID.
 // ================================================================
-var PO_DEF={pair:20,nn:6};
-function poCfg(){try{var o=JSON.parse(nmGet('placeopt_cfg')||'{}');return {pair:+o.pair>0?+o.pair:PO_DEF.pair,nn:+o.nn>0?+o.nn:PO_DEF.nn};}catch(e){return {pair:PO_DEF.pair,nn:PO_DEF.nn};}}
+var PO_DEF={pair:20,nn:6,sp:5,spp:28}; // v7.13: sp = thưởng bảo trợ (tiền, triệu/ID F1), spp = sản phẩm kèm (triệu/ID F1)
+function poCfg(){var o={};try{o=JSON.parse(nmGet('placeopt_cfg')||'{}')||{};}catch(e){}
+  var c={};Object.keys(PO_DEF).forEach(function(k){c[k]=+o[k]>=0&&o[k]!==''&&o[k]!=null?+o[k]:PO_DEF[k];});return c;}
+function poSpCount(id){var n=treeNodes.find(function(x){return x.id===id;});return n?sponsorKids(n).length:0;} // số ID do ID này bảo trợ (F1)
 function poRoot(){return focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id);}
 function poState(rootId){
   var st={d:{L:0,R:0},nn:{L:0,R:0},cnt:{L:0,R:0},slots:[],info:{}};
@@ -10292,13 +10297,14 @@ function renderPlaceOpt(){
   var h='<div class="zatt-intro">💡 '+(mine.length
       ?'Tối ưu trên <b>'+mine.length+' ID của tôi</b> — thu nhập mỗi ID tính theo cây dưới ID đó, <b>cộng dồn về tôi</b>.'
       :'Ước tính theo <b>vị trí đặt</b> tính từ <b>'+escHtml(root.name)+'</b>'+(focusNodeId?' (đang focus)':'')+'. <a href="#" data-po-myids style="color:#00695C;font-weight:800">👤 Chọn các ID của tôi</a> để tối ưu trên tất cả vị trí.')
-    +(dreamMode?' · 🌠 <b>Cây mơ ước</b>':'')+' Mỗi <b>cặp tầng</b> (tầng có ID cả 2 nhánh) ≈ <b>'+poTr(c.pair)+'</b>; mỗi <b>cặp nhánh nhỏ</b> (ID NN Tầng ≥4 cân 2 bên) ≈ <b>'+poTr(c.nn)+'</b>. Đây là số ước tính để định hướng, không phải bảng lương chính thức.</div>';
+    +(dreamMode?' · 🌠 <b>Cây mơ ước</b>':'')+' Mỗi <b>cặp tầng</b> (tầng có ID cả 2 nhánh) ≈ <b>'+poTr(c.pair)+'</b> — <b>mỗi tầng, mỗi ID chỉ ăn cân cặp 1 lần</b> (thêm ID vào tầng đã thành cặp không ra cặp mới); mỗi <b>cặp nhánh nhỏ</b> (ID NN Tầng ≥4 cân 2 bên) ≈ <b>'+poTr(c.nn)+'</b>; mỗi ID <b>bảo trợ</b> (F1) ≈ <b>'+poTr(c.sp)+'</b> tiền + <b>'+poTr(c.spp)+'</b> sản phẩm. Đây là số ước tính để định hướng, không phải bảng lương chính thức.</div>';
   // Hiện trạng (từng ID của tôi + tổng)
   h+=myIdsTableHtml(M,c,false);
-  h+='<div class="po-cfg">Mốc: <label>cặp tầng <input type="number" min="0" step="0.5" data-pocfg="pair" value="'+c.pair+'"> tr</label><label>cặp nhánh nhỏ <input type="number" min="0" step="0.5" data-pocfg="nn" value="'+c.nn+'"> tr</label></div>';
+  h+='<div class="po-cfg">Mốc: <label>cặp tầng <input type="number" min="0" step="0.5" data-pocfg="pair" value="'+c.pair+'"> tr</label><label>cặp nhánh nhỏ <input type="number" min="0" step="0.5" data-pocfg="nn" value="'+c.nn+'"> tr</label><label>bảo trợ <input type="number" min="0" step="0.5" data-pocfg="sp" value="'+c.sp+'"> tr</label><label>+ SP <input type="number" min="0" step="0.5" data-pocfg="spp" value="'+c.spp+'"> tr</label></div>';
   // ID tiếp theo
   var sc=poRankM(M,c),maxNow=Math.max.apply(null,sc.map(function(o){return o.gain;}).concat([0]));
   h+='<div class="zatt-sec" style="color:#1A7A5E">🎯 ID mới tiếp theo nên đặt ở đâu?</div>';
+  h+='<div class="po-tip" style="border-left-color:#1A7A5E;background:#F3FBF7">🤝 <b>Người bảo trợ</b> nên là <b>'+(mine.length?'1 ID của tôi':escHtml(root.name))+'</b> → thêm <b>+'+poTr(c.sp)+'</b> tiền + <b>'+poTr(c.spp)+'</b> sản phẩm, <b>đặt ở đâu cũng được hưởng</b>. Vị trí đặt bên dưới quyết định phần cân cặp.</div>';
   sc.slice(0,5).forEach(function(o,i){
     var slots=o.g.slots;
     var gainTxt=o.gain>0?'<b style="color:#2E7D32">+'+poTr(o.gain)+'</b> ngay'+(M.ids.length>1?' (tổng các ID)':''):(o.next>maxNow?'chưa cộng ngay · mở đường <b style="color:#1565C0">+'+poTr(o.next)+'</b> cho ID kế tiếp':'<span style="color:#999">không tăng</span>');
@@ -10313,45 +10319,45 @@ function renderPlaceOpt(){
   h+='<div style="font-size:11.5px;color:#999;margin:2px 2px 8px">Đặt ở Tầng 2–3 khi tầng đó đã có ID cùng nhánh: không tạo cặp mới.'+(M.ids.length>1?' Khe nằm dưới nhiều ID của tôi được cộng cho tất cả các ID đó.':'')+'</div>';
   // Lộ trình
   var plan=poPlanM(M,c,6);
-  h+='<div class="zatt-sec" style="color:#1565C0">🗺️ Lộ trình 6 ID kế tiếp (tối ưu thu nhập)</div><div class="po-plan">';
+  h+='<div class="zatt-sec" style="color:#1565C0">🗺️ Lộ trình 6 ID kế tiếp (tối ưu cân cặp)</div><div class="po-plan">';
   plan.forEach(function(p,i){
     var where=p.slot.pid?poSideLbl(p.slot.ps)+' của <b>'+escHtml(poNodeName(p.slot.pid))+'</b>':poSideLbl(p.slot.ps)+' của <b>ID mới bước '+p.slot.v+'</b>';
     h+='<div class="po-step"><span class="po-n">'+(i+1)+'</span><span style="flex:1">'+where+'<div class="po-s">'+p.eff.map(function(e){return (M.ids.length>1?escHtml(poNodeName(e.m))+': ':'')+poSideLbl(e.side)+' T'+e.lvl;}).join(' · ')+'</div></span><span class="'+(p.gain>0?'po-up':'po-zero')+'">'+(p.gain>0?'+'+poTr(p.gain):'—')+'</span><span class="po-cum">'+poTr(p.total)+'</span></div>';
   });
   h+='</div>';
+  if(plan.length){var pg=plan[plan.length-1].total-tot;
+    h+='<div style="font-size:12px;color:#555;margin:2px 2px 8px">Sau '+plan.length+' ID: cân cặp <b>+'+poTr(pg)+'</b>; nếu cả '+plan.length+' ID do ID của tôi bảo trợ thì thêm <b>+'+poTr(plan.length*c.sp)+'</b> tiền + <b>'+poTr(plan.length*c.spp)+'</b> sản phẩm → tổng tiền <b style="color:#2E7D32">+'+poTr(pg+plan.length*c.sp)+'</b>.</div>';}
   // Đi sao — theo ID của tôi ở cao nhất trên cây
   var starId=ids.slice().sort(function(a,b){return poAbsLvl(a)-poAbsLvl(b);})[0]||rid;
   h+='<div class="zatt-sec" style="color:#E65100">⭐ Đi sao (tính theo tuyến BẢO TRỢ F1)</div>'+poStarHtml(starId);
-  h+='<div class="zatt-note" style="margin-top:10px">✅ <b>Được cả hai:</b> khi có ID mới, chọn <b>người bảo trợ</b> theo mục ⭐ (đúng nhánh F1 cần ID) và chọn <b>vị trí đặt</b> theo mục 🎯 (tạo cặp). Bảo trợ và vị trí đặt là 2 việc độc lập.</div>';
+  h+='<div class="zatt-note" style="margin-top:10px">✅ <b>Được cả hai:</b> khi có ID mới, chọn <b>người bảo trợ</b> theo mục ⭐ (đúng nhánh F1 cần ID) và chọn <b>vị trí đặt</b> theo mục 🎯 (tạo cặp). Bảo trợ và vị trí đặt là 2 việc độc lập. Lưu ý: thưởng bảo trợ '+poTr(c.sp)+' + '+poTr(c.spp)+' SP về <b>người đứng bảo trợ</b> — để người nhánh F1 bảo trợ (giúp đi sao) thì người đó hưởng phần này.</div>';
   el.innerHTML=h;
 }
 function poAbsLvl(id){var d=0,n=treeNodes.find(function(x){return x.id===id;}),g=0;
   while(n&&n.parentId&&g<400){n=treeNodes.find(function(x){return x.id===n.parentId;});d++;g++;}return d;}
 function myIdsTableHtml(M,c,editable){ // thu nhập ước tính từng ID của tôi + tổng
-  var tot=poValM(M,c),h='';
-  if(M.ids.length===1&&!editable){
-    var s=M.st[M.ids[0]],pairs=Math.min(s.d.L,s.d.R),nnp=Math.min(s.nn.L,s.nn.R);
-    return '<div class="po-grid">'
-     +'<div class="po-card"><div class="po-k">Cặp tầng</div><div class="po-v">'+pairs+'</div><div class="po-s">Trái '+s.d.L+' · Phải '+s.d.R+' tầng</div><div class="po-m">'+poTr(pairs*c.pair)+'</div></div>'
-     +'<div class="po-card"><div class="po-k">Cặp nhánh nhỏ</div><div class="po-v">'+nnp+'</div><div class="po-s">NN Trái '+s.nn.L+' · Phải '+s.nn.R+'</div><div class="po-m">'+poTr(nnp*c.nn)+'</div></div>'
-     +'<div class="po-card po-tot"><div class="po-k">Ước tính hiện tại</div><div class="po-v">'+poTr(tot)+'</div></div></div>';
-  }
-  h+='<div class="po-plan myid-tbl">';
+  // v7.13: + thưởng bảo trợ: mỗi ID F1 do ID của tôi bảo trợ = c.sp triệu tiền + c.spp triệu sản phẩm
+  var tot=poValM(M,c),spAll=0,h='<div class="po-plan myid-tbl">';
   M.ids.forEach(function(m){
-    var s=M.st[m],n=treeNodes.find(function(x){return x.id===m;})||{},pairs=Math.min(s.d.L,s.d.R),nnp=Math.min(s.nn.L,s.nn.R);
+    var s=M.st[m],n=treeNodes.find(function(x){return x.id===m;})||{},pairs=Math.min(s.d.L,s.d.R),nnp=Math.min(s.nn.L,s.nn.R),sp=poSpCount(m);
+    spAll+=sp;
     h+='<div class="po-step"><span style="flex:1;min-width:0">👤 <b>'+escHtml(n.name)+'</b>'+(n.idCode?' <span class="po-s">· '+escHtml(n.idCode)+'</span>':'')
-      +'<div class="po-s">Tầng T'+s.d.L+'/P'+s.d.R+' → <b>'+pairs+'</b> cặp · NN T'+s.nn.L+'/P'+s.nn.R+' → <b>'+nnp+'</b> cặp NN</div></span>'
-      +'<span class="po-up">'+poTr(poVal(s.d,s.nn,c))+'</span>'
+      +'<div class="po-s">Tầng T'+s.d.L+'/P'+s.d.R+' → <b>'+pairs+'</b> cặp · NN T'+s.nn.L+'/P'+s.nn.R+' → <b>'+nnp+'</b> cặp NN · Bảo trợ <b>'+sp+'</b> F1</div></span>'
+      +'<span class="po-up">'+poTr(poVal(s.d,s.nn,c)+sp*c.sp)+(sp?'<div class="po-s" style="font-weight:700">+'+poTr(sp*c.spp)+' SP</div>':'')+'</span>'
       +(editable?'<button class="myid-x" data-myid-del="'+m+'" title="Bỏ khỏi Các ID của tôi"'+(viewOnlyMode?' disabled':'')+'>✕</button>':'')+'</div>';
   });
-  h+='<div class="po-step myid-sum"><span style="flex:1">💰 <b>Tổng thu nhập về tôi</b> ('+M.ids.length+' ID)</span><span class="po-up" style="font-size:15px">'+poTr(tot)+'</span>'+(editable?'<span style="width:26px"></span>':'')+'</div></div>';
+  var pad=editable?'<span style="width:26px"></span>':'';
+  h+='<div class="po-step"><span style="flex:1">⚖️ Cân cặp (tầng + nhánh nhỏ)</span><span class="po-up">'+poTr(tot)+'</span>'+pad+'</div>'
+   +'<div class="po-step"><span style="flex:1">🤝 Thưởng bảo trợ: '+spAll+' ID × '+poTr(c.sp)+'</span><span class="po-up">'+poTr(spAll*c.sp)+'</span>'+pad+'</div>'
+   +'<div class="po-step myid-sum"><span style="flex:1">💰 <b>Tổng tiền về tôi</b> ('+M.ids.length+' ID)</span><span class="po-up" style="font-size:15px">'+poTr(tot+spAll*c.sp)+'</span>'+pad+'</div>'
+   +'<div class="po-step myid-sum"><span style="flex:1">🎁 <b>Sản phẩm</b>: '+spAll+' ID × '+poTr(c.spp)+'</span><span class="po-up" style="font-size:15px">'+poTr(spAll*c.spp)+'</span>'+pad+'</div></div>';
   return h;
 }
 // ---- Hộp "👤 Các ID của tôi" ----
 function renderMyIds(){
   var el=document.getElementById('myid-content');if(!el)return;
   var mine=myIdsGet(),c=poCfg();
-  var h='<div class="zatt-intro">👤 Chọn <b>tất cả các ID đứng tên bạn</b> trên sơ đồ. Thu nhập của mỗi ID tính theo <b>kế hoạch trả thưởng</b> (cặp tầng ≈ '+poTr(c.pair)+', cặp nhánh nhỏ ≈ '+poTr(c.nn)+') trên cây <b>dưới ID đó</b> → cộng dồn <b>về bạn</b>. Nút <b>🎯 Gợi ý đặt cây</b> sẽ tối ưu trên tất cả các ID này.'+(dreamMode?' · 🌠 Đang ở <b>Cây mơ ước</b>.':'')+'</div>';
+  var h='<div class="zatt-intro">👤 Chọn <b>tất cả các ID đứng tên bạn</b> trên sơ đồ. Thu nhập của mỗi ID tính theo <b>kế hoạch trả thưởng</b> (cặp tầng ≈ '+poTr(c.pair)+' — mỗi tầng chỉ ăn 1 lần, cặp nhánh nhỏ ≈ '+poTr(c.nn)+') trên cây <b>dưới ID đó</b>, cộng <b>thưởng bảo trợ</b> mỗi F1 ≈ '+poTr(c.sp)+' tiền + '+poTr(c.spp)+' sản phẩm → cộng dồn <b>về bạn</b>. Nút <b>🎯 Gợi ý đặt cây</b> sẽ tối ưu trên tất cả các ID này.'+(dreamMode?' · 🌠 Đang ở <b>Cây mơ ước</b>.':'')+'</div>';
   if(mine.length)h+=myIdsTableHtml(poMulti(mine),c,true);
   else{
     var r=poRoot();
