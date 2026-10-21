@@ -1,4 +1,5 @@
-<!-- VERSION: v7.14-soi-thu-nhap -->
+<!-- VERSION: v7.15-nhanh-doc -->
+<!-- v7.15 — Sơ đồ Nhị phân: nút ↕️ Xem nhánh dọc trong popup ID (data-vline → showVline, biến vlineNodeId, vlineSet()). Chỉ hiện tuyến trên (theo vị trí ĐẶT, tới gốc đang xem) + ID đó + toàn bộ tuyến dưới, gồm cả trực hệ & phả hệ; ẩn sideline. Thanh #vline-bar đếm tuyến trên/dưới + ✕ Thoát. -->
 <!-- v7.14 — Sơ đồ: nút 🖱 Soi thu nhập (#btn-incprobe, nmSet incprobe). Bật → rê chuột lên ID / nút ➕: tooltip #inc-tip (probeHtml) cho biết nếu ID mới do ID đó bảo trợ và/hoặc phả hệ xuống dưới (khe trực tiếp hoặc khe tốt nhất trong nhánh) thì thu nhập từng ID của tôi + tổng thay đổi bao nhiêu. Điện thoại: cùng bảng trong popup chi tiết ID. -->
 <!-- v7.13 — Kế hoạch trả thưởng: cân cặp mỗi tầng mỗi ID chỉ 1 lần (đã đúng: min(tầng T, tầng P)); thêm thưởng bảo trợ mỗi F1 = 5tr tiền + 28tr sản phẩm (PO_DEF.sp/spp, sửa được) vào bảng Các ID của tôi + Gợi ý đặt cây. -->
 <!-- v7.12 — Sơ đồ: nút 👤 Các ID của tôi (#btn-myids, modal #myid-ov, nmSet myids đồng bộ đa thiết bị, dấu 👤 trên cây). Thu nhập mỗi ID tính theo cây dưới ID đó → cộng dồn. Gợi ý đặt cây chấm từng khe cụ thể trên MỌI ID của tôi (poMulti/poRankM/poPlanM): 1 khe dưới nhiều ID của tôi được cộng cho tất cả. -->
@@ -1800,6 +1801,7 @@ a.gp-att-nm:hover{text-decoration:underline}
     <div id="branch-stats" style="background:white;border-bottom:1px solid #E8E8E8;padding:6px 10px;font-size:12px;line-height:2"></div>
     <div id="dream-bar"></div>
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
+    <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
@@ -4665,6 +4667,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v715-nhanh-doc', ver:'7.15', icon:'↕️', title:'Sơ đồ: Xem nhánh dọc — ẩn sideline',
+    desc:'Trong <b>Sơ đồ Nhị phân</b>, bấm vào 1 ID rồi chọn <b>↕️ Xem nhánh dọc (ẩn sideline)</b>: cây chỉ còn <b>tuyến trên</b> (từ ID đó lên tới gốc), <b>chính ID đó</b> và <b>toàn bộ tuyến dưới</b> — gồm cả <b>trực hệ</b> lẫn <b>phả hệ</b>. Các nhánh ngang (sideline) được ẩn đi cho dễ nhìn. Bấm <b>✕ Thoát nhánh dọc</b> để xem lại cả cây.' },
   { id:'v714-soi-thu-nhap', ver:'7.14', icon:'🖱️', title:'Sơ đồ: Soi thu nhập — rê chuột tới đâu biết thu nhập tới đó',
     desc:'Trong tab <b>Sơ đồ</b> bấm <b>🖱 Soi thu nhập</b> (nút chuyển xanh = đang bật), rồi <b>rê chuột</b> lên bất kỳ ID nào (hoặc nút <b>➕</b>): hiện ngay bảng cho biết nếu ID mới <b>do ID đó bảo trợ</b> và/hoặc <b>phả hệ xuống dưới ID đó</b> (bên Trái, bên Phải — app tự tìm chỗ tốt nhất nếu đã đủ 2 bên) thì <b>thu nhập từng ID của bạn</b> và <b>tổng</b> sẽ là bao nhiêu. Trên điện thoại: bật chế độ rồi chạm vào ID, bảng hiện trong cửa sổ chi tiết.' },
   { id:'v713-thuong-bao-tro', ver:'7.13', icon:'🤝', title:'Thu nhập: thêm thưởng bảo trợ 5 triệu + 28 triệu sản phẩm',
@@ -9353,6 +9357,55 @@ function isPhaHe(n){
   return par&&par.name!==n.f1of;
 }
 var focusNodeId=null;
+// v7.15 — NHÁNH DỌC: chọn 1 ID → chỉ hiện tuyến trên (đặt trên, tới gốc đang xem) + chính ID đó + toàn bộ tuyến dưới.
+// Đi theo vị trí ĐẶT nên gồm cả trực hệ lẫn phả hệ. KHÔNG hiện sideline (các nhánh ngang rẽ ra khỏi đường dọc).
+var vlineNodeId=null;
+function vlineSet(){
+  if(!vlineNodeId)return null;
+  var byId={},byParent={};
+  treeNodes.forEach(function(x){
+    byId[x.id]=x;
+    if(x.parentId)(byParent[x.parentId]=byParent[x.parentId]||[]).push(x);
+  });
+  var n=byId[vlineNodeId];
+  if(!n){vlineNodeId=null;return null;}
+  var set={},cur=n,g=0;
+  while(cur&&!set[cur.id]&&g<500){
+    set[cur.id]=1;
+    if(cur.id===focusNodeId)break;
+    cur=cur.parentId?byId[cur.parentId]:null;g++;
+  }
+  if(focusNodeId&&!set[focusNodeId]){vlineNodeId=null;return null;} // ID nằm ngoài nhánh đang focus → bỏ nhánh dọc
+  (function down(id){
+    (byParent[id]||[]).forEach(function(c){if(set[c.id])return;set[c.id]=1;down(c.id);});
+  })(n.id);
+  return set;
+}
+function renderVlineBar(){
+  var vb=document.getElementById('vline-bar');if(!vb)return;
+  var vs=(currentTreeMode==='binary')?vlineSet():null;
+  if(!vs){vb.style.display='none';vb.innerHTML='';return;}
+  var n=treeNodes.find(function(x){return x.id===vlineNodeId;});
+  var up=0,cur=n,g=0;
+  while(cur&&cur.parentId&&cur.id!==focusNodeId&&g<500){up++;cur=treeNodes.find(function(x){return x.id===cur.parentId;});g++;}
+  var dn=Object.keys(vs).length-up-1;
+  var h='↕️ <b>Nhánh dọc: '+escHtml(n.name)+'</b>';
+  h+='<span>⬆️ Tuyến trên: <b style="color:#5E35B1">'+up+'</b></span>';
+  h+='<span>⬇️ Tuyến dưới: <b style="color:#1A7A5E">'+dn+'</b></span>';
+  h+='<span style="color:#777">Cả trực hệ &amp; phả hệ · ẩn sideline</span>';
+  h+='<button class="btn btn-o btn-sm" id="btn-exit-vline" style="padding:5px 11px;font-size:12px;margin-left:auto">✕ Thoát nhánh dọc</button>';
+  vb.style.display='flex';
+  vb.innerHTML=h;
+}
+function showVline(nid){
+  var node=treeNodes.find(function(x){return x.id===nid;});if(!node)return;
+  vlineNodeId=nid;
+  if(!vlineSet()){focusNodeId=null;vlineNodeId=nid;} // ID ngoài nhánh focus → bỏ focus để thấy đủ tuyến trên
+  if(typeof closeNodeModal==='function')closeNodeModal();
+  renderCurrentTree();
+  flashNode(nid);
+  showToast('↕️ Nhánh dọc của '+node.name+' — đã ẩn sideline');
+}
 function layoutTree(){
   var roots;
   if(focusNodeId){
@@ -9361,10 +9414,12 @@ function layoutTree(){
   }else{
     roots=treeNodes.filter(function(x){return !x.parentId;});
   }
+  var _vs=vlineSet(); // v7.15 — nhánh dọc: chỉ đi qua các ID thuộc đường dọc
+  if(_vs)roots=roots.filter(function(r){return _vs[r.id];});
   var pos={};
   var nextX=0;
   function walk(nid,depth){
-    var kids=treeNodes.filter(function(x){return x.parentId===nid;});
+    var kids=treeNodes.filter(function(x){return x.parentId===nid&&(!_vs||_vs[x.id]);});
     var L=kids.find(function(k){return k.side==='L';});
     var R=kids.find(function(k){return k.side==='R';});
     var x;
@@ -10605,6 +10660,7 @@ function updateAddRootBtn(){
 }
 function renderTree(){
   clearRankMemo();_probeM=null;probeHide();
+  renderVlineBar();
   syncTreeToMembers(false);
   var pos=layoutTree();
   var svg=document.getElementById('tree-svg');
@@ -10914,7 +10970,7 @@ function locateNode(nid){
   var node=treeNodes.find(function(x){return x.id===nid;});if(!node)return false;
   if(currentTreeMode==='binary'){
     var pos=layoutTree();
-    if(!pos[nid]){focusNodeId=null;renderTree();pos=layoutTree();} // node ngoài focus hiện tại → bỏ focus
+    if(!pos[nid]){focusNodeId=null;vlineNodeId=null;renderTree();pos=layoutTree();} // node ngoài focus / nhánh dọc hiện tại → bỏ
     if(!pos[nid])return false;
     var wrap=document.getElementById('tree-canvas-wrap');
     var ww=wrap.clientWidth||600,wh=wrap.clientHeight||500;
@@ -11071,6 +11127,10 @@ function buildNodeView(n){
   // \uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y \u2014 l\u1EA5y ID n\u00E0y l\u00E0m G\u1ED0C T\u1EA0M (focus), \u0111\u1EE7 t\u00EDnh n\u0103ng nh\u01B0 g\u1ED1c th\u1EADt (zoom/pan/t\u00ECm/\u0111\u1ED5i nh\u00E1nh...). Hi\u1EC7n \u1EDF c\u1EA3 ch\u1EBF \u0111\u1ED9 xem (view-only).
   if(placementChildren(n.id).length||sponsorKids(n).length){
     h+='<div style="margin-top:12px"><button class="btn btn-d btn-sm nmod-focus-sub" data-focus-sub="'+n.id+'" style="width:100%">\uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y</button></div>';
+  }
+  // v7.15 \u2014 Nh\u00E1nh d\u1ECDc: tuy\u1EBFn tr\u00EAn + ID n\u00E0y + tuy\u1EBFn d\u01B0\u1EDBi (c\u1EA3 tr\u1EF1c h\u1EC7 & ph\u1EA3 h\u1EC7), \u1EA9n sideline
+  if(currentTreeMode==='binary'&&(n.parentId||placementChildren(n.id).length)){
+    h+='<div style="margin-top:8px"><button class="btn btn-sm" data-vline="'+n.id+'" style="width:100%;background:#EDE7F6;border:1px solid #B39DDB;color:#4527A0">\u2195\uFE0F Xem nh\u00E1nh d\u1ECDc (\u1EA9n sideline)</button></div>';
   }
   if(probeOn())h+='<div class="ip-box">'+probeHtml(n.id)+'</div>'; // v7.14 — Soi thu nhập (điện thoại)
   if(!viewOnlyMode){
@@ -11627,6 +11687,7 @@ function buildSponsorTree(focusId){
 }
 function renderStarChart(){
   clearRankMemo();
+  renderVlineBar(); // v7.15 — nhánh dọc chỉ áp dụng Nhị phân → ẩn thanh ở Mặt trời
   var svg=document.getElementById('star-svg');
   var box=document.getElementById('star-nodes');
   if(!treeNodes.length){
@@ -13990,6 +14051,8 @@ document.addEventListener('click',function(e){
   // Xem cả cây từ ID này: lấy ID làm gốc tạm (focus) rồi đóng popup
   t=e.target.closest('[data-focus-sub]');
   if(t){focusSubtree(t.getAttribute('data-focus-sub'));return;}
+  t=e.target.closest('[data-vline]');
+  if(t){showVline(t.getAttribute('data-vline'));return;}
 
   // v6.45 — mở ma trận phân loại Con tàu (nút ? trong modal ID)
   t=e.target.closest('[data-ship-help]');
@@ -14053,6 +14116,9 @@ document.addEventListener('click',function(e){
   }
   if(e.target.id==='btn-exit-focus'){
     focusNodeId=null;renderCurrentTree();return;
+  }
+  if(e.target.id==='btn-exit-vline'){
+    var _vn=vlineNodeId;vlineNodeId=null;renderCurrentTree();if(_vn)setTimeout(function(){flashNode(_vn);},80);return;
   }
   if(e.target.closest&&e.target.closest('#btn-focus-up')){fsGoUp();return;}
   if(e.target.id==='btn-fr-calc'){calcFocusRange();return;}
