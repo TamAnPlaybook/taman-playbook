@@ -1,4 +1,5 @@
-<!-- VERSION: v7.15-nhanh-doc -->
+<!-- VERSION: v7.16-cay-doc-can-nn -->
+<!-- v7.16 — Sơ đồ: nút ↕️ Hiện cây dọc (data-vline → showVline) chạy cả Nhị phân (vị trí đặt) lẫn Mặt trời (chuỗi bảo trợ); bỏ gốc tạm để hiện ĐỦ tuyến trên tới gốc thật + toàn bộ tuyến dưới, ẩn sideline. Soi thu nhập tách cột Cân cặp (20tr/cặp tầng) và Cân NN (6tr/cặp nhánh nhỏ) — probeParts, probeGains g._p/g._n. -->
 <!-- v7.15 — Sơ đồ Nhị phân: nút ↕️ Xem nhánh dọc trong popup ID (data-vline → showVline, biến vlineNodeId, vlineSet()). Chỉ hiện tuyến trên (theo vị trí ĐẶT, tới gốc đang xem) + ID đó + toàn bộ tuyến dưới, gồm cả trực hệ & phả hệ; ẩn sideline. Thanh #vline-bar đếm tuyến trên/dưới + ✕ Thoát. -->
 <!-- v7.14 — Sơ đồ: nút 🖱 Soi thu nhập (#btn-incprobe, nmSet incprobe). Bật → rê chuột lên ID / nút ➕: tooltip #inc-tip (probeHtml) cho biết nếu ID mới do ID đó bảo trợ và/hoặc phả hệ xuống dưới (khe trực tiếp hoặc khe tốt nhất trong nhánh) thì thu nhập từng ID của tôi + tổng thay đổi bao nhiêu. Điện thoại: cùng bảng trong popup chi tiết ID. -->
 <!-- v7.13 — Kế hoạch trả thưởng: cân cặp mỗi tầng mỗi ID chỉ 1 lần (đã đúng: min(tầng T, tầng P)); thêm thưởng bảo trợ mỗi F1 = 5tr tiền + 28tr sản phẩm (PO_DEF.sp/spp, sửa được) vào bảng Các ID của tôi + Gợi ý đặt cây. -->
@@ -1191,7 +1192,7 @@ body{background:var(--app-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-s
 .po-eff{font-size:12.5px;color:#444;margin-top:3px;line-height:1.45}
 #btn-incprobe{background:#fff;border-color:#B0BEC5;color:#455A64}
 #btn-incprobe.on{background:#00695C;border-color:#00695C;color:#fff}
-#inc-tip{position:fixed;z-index:9999;display:none;max-width:360px;background:#fff;border:1.5px solid #80CBC4;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:9px 11px;font-family:Arial;font-size:12.5px;color:#222;pointer-events:none}
+#inc-tip{position:fixed;z-index:9999;display:none;max-width:430px;background:#fff;border:1.5px solid #80CBC4;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:9px 11px;font-family:Arial;font-size:12.5px;color:#222;pointer-events:none}
 .ip-box{border:1.5px solid #80CBC4;border-radius:12px;padding:9px 11px;margin-top:12px;background:#F7FCFA;font-size:12.5px}
 .ip-hd{font-size:13px;color:#00695C;margin-bottom:5px}
 .ip-row{line-height:1.5;margin-bottom:2px}
@@ -4667,6 +4668,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v716-cay-doc-can-nn', ver:'7.16', icon:'↕️', title:'Sơ đồ: Hiện cây dọc + Soi thu nhập có Cân nhánh nhỏ',
+    desc:'Bấm vào 1 ID trong <b>Sơ đồ</b> → nút <b>↕️ Hiện cây dọc</b>: hiện <b>tất cả ID tuyến trên</b> (tới tận gốc) và <b>toàn bộ tuyến dưới</b> của ID đó, ẩn các nhánh ngang. Dùng được cả <b>Nhị phân</b> (theo vị trí đặt) lẫn <b>Mặt trời</b> (theo chuỗi bảo trợ). <b>🖱 Soi thu nhập</b> nay tách riêng 2 cột: <b>Cân cặp</b> (20 triệu/cặp tầng) và <b>Cân nhánh nhỏ</b> (6 triệu/cặp), kèm số nhánh nhỏ Trái/Phải hiện có của từng ID.' },
   { id:'v715-nhanh-doc', ver:'7.15', icon:'↕️', title:'Sơ đồ: Xem nhánh dọc — ẩn sideline',
     desc:'Trong <b>Sơ đồ Nhị phân</b>, bấm vào 1 ID rồi chọn <b>↕️ Xem nhánh dọc (ẩn sideline)</b>: cây chỉ còn <b>tuyến trên</b> (từ ID đó lên tới gốc), <b>chính ID đó</b> và <b>toàn bộ tuyến dưới</b> — gồm cả <b>trực hệ</b> lẫn <b>phả hệ</b>. Các nhánh ngang (sideline) được ẩn đi cho dễ nhìn. Bấm <b>✕ Thoát nhánh dọc</b> để xem lại cả cây.' },
   { id:'v714-soi-thu-nhap', ver:'7.14', icon:'🖱️', title:'Sơ đồ: Soi thu nhập — rê chuột tới đâu biết thu nhập tới đó',
@@ -9370,6 +9373,17 @@ function vlineSet(){
   var n=byId[vlineNodeId];
   if(!n){vlineNodeId=null;return null;}
   var set={},cur=n,g=0;
+  if(currentTreeMode!=='binary'){ // v7.16 — Mặt trời: tuyến trên theo chuỗi bảo trợ (f1of) + toàn bộ tuyến dưới bảo trợ
+    var map=nameMap();
+    while(cur&&!set[cur.id]&&g<500){
+      set[cur.id]=1;
+      if(cur.id===focusNodeId)break;
+      cur=(cur.f1of&&map[cur.f1of]&&map[cur.f1of].id!==cur.id)?map[cur.f1of]:null;g++;
+    }
+    if(focusNodeId&&!set[focusNodeId]){vlineNodeId=null;return null;}
+    sponsorDescendants(n).forEach(function(d){set[d.id]=1;});
+    return set;
+  }
   while(cur&&!set[cur.id]&&g<500){
     set[cur.id]=1;
     if(cur.id===focusNodeId)break;
@@ -9383,28 +9397,30 @@ function vlineSet(){
 }
 function renderVlineBar(){
   var vb=document.getElementById('vline-bar');if(!vb)return;
-  var vs=(currentTreeMode==='binary')?vlineSet():null;
+  var vs=vlineSet();
   if(!vs){vb.style.display='none';vb.innerHTML='';return;}
   var n=treeNodes.find(function(x){return x.id===vlineNodeId;});
+  var bin=currentTreeMode==='binary',map=bin?null:nameMap();
+  var upOf=function(x){return bin?(x.parentId?treeNodes.find(function(y){return y.id===x.parentId;}):null):((x.f1of&&map[x.f1of]&&map[x.f1of].id!==x.id)?map[x.f1of]:null);};
   var up=0,cur=n,g=0;
-  while(cur&&cur.parentId&&cur.id!==focusNodeId&&g<500){up++;cur=treeNodes.find(function(x){return x.id===cur.parentId;});g++;}
+  while(cur&&upOf(cur)&&cur.id!==focusNodeId&&g<500){up++;cur=upOf(cur);g++;}
   var dn=Object.keys(vs).length-up-1;
-  var h='↕️ <b>Nhánh dọc: '+escHtml(n.name)+'</b>';
+  var h='↕️ <b>Cây dọc: '+escHtml(n.name)+'</b>';
   h+='<span>⬆️ Tuyến trên: <b style="color:#5E35B1">'+up+'</b></span>';
   h+='<span>⬇️ Tuyến dưới: <b style="color:#1A7A5E">'+dn+'</b></span>';
-  h+='<span style="color:#777">Cả trực hệ &amp; phả hệ · ẩn sideline</span>';
-  h+='<button class="btn btn-o btn-sm" id="btn-exit-vline" style="padding:5px 11px;font-size:12px;margin-left:auto">✕ Thoát nhánh dọc</button>';
+  h+='<span style="color:#777">'+(bin?'Theo vị trí đặt · cả trực hệ &amp; phả hệ':'Theo chuỗi bảo trợ')+' · ẩn sideline</span>';
+  h+='<button class="btn btn-o btn-sm" id="btn-exit-vline" style="padding:5px 11px;font-size:12px;margin-left:auto">✕ Thoát cây dọc</button>';
   vb.style.display='flex';
   vb.innerHTML=h;
 }
 function showVline(nid){
   var node=treeNodes.find(function(x){return x.id===nid;});if(!node)return;
   vlineNodeId=nid;
-  if(!vlineSet()){focusNodeId=null;vlineNodeId=nid;} // ID ngoài nhánh focus → bỏ focus để thấy đủ tuyến trên
+  focusNodeId=null; // v7.16 — Hiện cây dọc: bỏ gốc tạm để thấy ĐỦ tuyến trên tới gốc thật
   if(typeof closeNodeModal==='function')closeNodeModal();
   renderCurrentTree();
-  flashNode(nid);
-  showToast('↕️ Nhánh dọc của '+node.name+' — đã ẩn sideline');
+  setTimeout(function(){try{flashNode(nid);}catch(e){}},90);
+  showToast('↕️ Cây dọc của '+node.name+' — tuyến trên + tuyến dưới, đã ẩn sideline');
 }
 function layoutTree(){
   var roots;
@@ -10475,9 +10491,11 @@ function probeDesc(nid){ // nid + toàn bộ hậu duệ theo vị trí đặt
   while(i<out.length){placementChildren(out[i]).forEach(function(k){out.push(k.id);});i++;}
   return out;
 }
-function probeGains(M,eff,c){ // lợi cân cặp từng ID của tôi khi đặt 1 ID vào khe có ảnh hưởng eff
-  var g={};
-  eff.forEach(function(e){var s=M.st[e.m],v0=poVal(s.d,s.nn,c),un=poDo(M,[e]);g[e.m]=poVal(s.d,s.nn,c)-v0;un();});
+function probeParts(s,c){return {p:c.pair*Math.min(s.d.L,s.d.R),n:c.nn*Math.min(s.nn.L,s.nn.R)};} // v7.16 — tách cân cặp tầng / cân nhánh nhỏ
+function probeGains(M,eff,c){ // lợi cân cặp từng ID của tôi khi đặt 1 ID vào khe có ảnh hưởng eff (g = tổng, gp = cân cặp, gn = cân nhánh nhỏ)
+  var g={},gp={},gn={};
+  eff.forEach(function(e){var s=M.st[e.m],a=probeParts(s,c),un=poDo(M,[e]),b=probeParts(s,c);gp[e.m]=b.p-a.p;gn[e.m]=b.n-a.n;g[e.m]=gp[e.m]+gn[e.m];un();});
+  Object.defineProperty(g,'_p',{value:gp});Object.defineProperty(g,'_n',{value:gn}); // không liệt kê → Object.keys(g) chỉ còn ID
   return g;
 }
 function probeBestIn(M,nid,side,c){ // khe tốt nhất phía `side` của nid: khe trực tiếp nếu trống, không thì khe tốt nhất trong nhánh con
@@ -10506,18 +10524,21 @@ function probeHtml(nid,fixSide){ // fixSide: khe cố định (rê lên nút ➕
       :'<span style="color:#999">thưởng về '+escHtml(n.name)+' (không phải ID của tôi) → +0</span>')+'</div>';
   opts.forEach(function(o,i){
     var where=o.pid===nid?poSideLbl(o.ps)+' của '+escHtml(n.name):'nhánh '+poSideLbl(o.side)+' → '+poSideLbl(o.ps)+' của '+escHtml(poNodeName(o.pid));
+    var sP=0,sN=0;Object.keys(o.g).forEach(function(k){sP+=o.g._p[k]||0;sN+=o.g._n[k]||0;});
+    var parts=[];if(sP)parts.push('cân cặp +'+poTr(sP));if(sN)parts.push('cân nhánh nhỏ +'+poTr(sN));
     h+='<div class="ip-row">🌳 <b>Phả hệ</b> '+where+': '
-      +(o.sum>0?'<b style="color:#2E7D32">+'+poTr(o.sum)+'</b>':'<span style="color:#999">+0</span>')+(i===0&&opts.length>1&&o.sum>opts[1].sum?' ⭐':'')+'</div>';
+      +(o.sum>0?'<b style="color:#2E7D32">+'+poTr(o.sum)+'</b>'+(parts.length?' <span style="color:#777">('+parts.join(' · ')+')</span>':''):'<span style="color:#999">+0</span>')+(i===0&&opts.length>1&&o.sum>opts[1].sum?' ⭐':'')+'</div>';
   });
-  // Bảng từng tài khoản (phương án tốt nhất: ID này bảo trợ + phả hệ chỗ tốt nhất)
-  h+='<table class="ip-tbl"><tr><th>Tài khoản</th><th>Hiện tại</th><th>Bảo trợ</th><th>Phả hệ</th><th>Sau</th></tr>';
-  var t0=0,tS=0,tP=0;
+  // Bảng từng tài khoản (phương án tốt nhất: ID này bảo trợ + phả hệ chỗ tốt nhất). v7.16: tách Cân cặp (20tr/cặp tầng) & Cân nhánh nhỏ (6tr/cặp NN)
+  h+='<table class="ip-tbl"><tr><th>Tài khoản</th><th>Hiện tại</th><th>Bảo trợ</th><th>Cân cặp</th><th>Cân NN</th><th>Sau</th></tr>';
+  var t0=0,tS=0,tP=0,tN=0;
   ids.forEach(function(m){
-    var s=M.st[m],cur=poVal(s.d,s.nn,c)+poSpCount(m)*c.sp,sp=m===nid?c.sp:0,pl=best.g[m]||0;
-    t0+=cur;tS+=sp;tP+=pl;
-    h+='<tr><td>👤 '+escHtml(poNodeName(m))+'</td><td>'+poTr(cur)+'</td><td>'+(sp?'+'+poTr(sp):'—')+'</td><td>'+(pl?'+'+poTr(pl):'—')+'</td><td><b>'+poTr(cur+sp+pl)+'</b></td></tr>';
+    var s=M.st[m],cur=poVal(s.d,s.nn,c)+poSpCount(m)*c.sp,sp=m===nid?c.sp:0,pp=(best.g._p||{})[m]||0,pn=(best.g._n||{})[m]||0;
+    t0+=cur;tS+=sp;tP+=pp;tN+=pn;
+    h+='<tr><td>👤 '+escHtml(poNodeName(m))+'<div style="font-size:10px;color:#8E24AA">⚖️ NN T'+s.nn.L+'/P'+s.nn.R+' → '+Math.min(s.nn.L,s.nn.R)+' cặp = '+poTr(c.nn*Math.min(s.nn.L,s.nn.R))+'</div></td><td>'+poTr(cur)+'</td><td>'+(sp?'+'+poTr(sp):'—')+'</td><td>'+(pp?'+'+poTr(pp):'—')+'</td><td>'+(pn?'<b style="color:#8E24AA">+'+poTr(pn)+'</b>':'—')+'</td><td><b>'+poTr(cur+sp+pp+pn)+'</b></td></tr>';
   });
-  h+='<tr class="ip-sum"><td>💰 Tổng</td><td>'+poTr(t0)+'</td><td>'+(tS?'+'+poTr(tS):'—')+'</td><td>'+(tP?'+'+poTr(tP):'—')+'</td><td><b>'+poTr(t0+tS+tP)+'</b></td></tr></table>';
+  h+='<tr class="ip-sum"><td>💰 Tổng</td><td>'+poTr(t0)+'</td><td>'+(tS?'+'+poTr(tS):'—')+'</td><td>'+(tP?'+'+poTr(tP):'—')+'</td><td>'+(tN?'+'+poTr(tN):'—')+'</td><td><b>'+poTr(t0+tS+tP+tN)+'</b></td></tr></table>';
+  h+='<div class="ip-row" style="color:#777;font-size:11px">⚖️ <b>Cân nhánh nhỏ</b>: '+poTr(c.nn)+'/cặp — mỗi ID tầng ≥4 không phải ID đầu tầng (tím) là 1 NN; số cặp = min(NN Trái, NN Phải).</div>';
   if(tS)h+='<div class="ip-row" style="color:#8A6A12">🎁 Kèm <b>'+poTr(c.spp)+'</b> sản phẩm</div>';
   if(!myIdsGet().length)h+='<div class="ip-row" style="color:#999">Chưa chọn 👤 Các ID của tôi → đang tính theo gốc '+escHtml(poNodeName(ids[0]))+'.</div>';
   return h;
@@ -10979,7 +11000,7 @@ function locateNode(nid){
     treeOffset={x:ww/2-cx,y:Math.max(20,wh/2-cy)};
     applyTreeTransform();flashNode(nid);return true;
   }else{
-    if(!_starCenters[nid]){focusNodeId=null;renderStarChart();}
+    if(!_starCenters[nid]){focusNodeId=null;vlineNodeId=null;renderStarChart();}
     if(!_starCenters[nid])return false;
     var c=_starCenters[nid];
     var sw2=document.getElementById('star-canvas-wrap');
@@ -11128,9 +11149,9 @@ function buildNodeView(n){
   if(placementChildren(n.id).length||sponsorKids(n).length){
     h+='<div style="margin-top:12px"><button class="btn btn-d btn-sm nmod-focus-sub" data-focus-sub="'+n.id+'" style="width:100%">\uD83C\uDF33 Xem c\u1EA3 c\u00E2y t\u1EEB ID n\u00E0y</button></div>';
   }
-  // v7.15 \u2014 Nh\u00E1nh d\u1ECDc: tuy\u1EBFn tr\u00EAn + ID n\u00E0y + tuy\u1EBFn d\u01B0\u1EDBi (c\u1EA3 tr\u1EF1c h\u1EC7 & ph\u1EA3 h\u1EC7), \u1EA9n sideline
-  if(currentTreeMode==='binary'&&(n.parentId||placementChildren(n.id).length)){
-    h+='<div style="margin-top:8px"><button class="btn btn-sm" data-vline="'+n.id+'" style="width:100%;background:#EDE7F6;border:1px solid #B39DDB;color:#4527A0">\u2195\uFE0F Xem nh\u00E1nh d\u1ECDc (\u1EA9n sideline)</button></div>';
+  // v7.15/v7.16 \u2014 Hi\u1EC7n c\u00E2y d\u1ECDc: tuy\u1EBFn tr\u00EAn (t\u1EDBi g\u1ED1c th\u1EADt) + ID n\u00E0y + tuy\u1EBFn d\u01B0\u1EDBi, \u1EA9n sideline. Nh\u1ECB ph\u00E2n theo v\u1ECB tr\u00ED \u0111\u1EB7t, M\u1EB7t tr\u1EDDi theo chu\u1ED7i b\u1EA3o tr\u1EE3
+  if(currentTreeMode==='binary'?(n.parentId||placementChildren(n.id).length):(n.f1of||sponsorKids(n).length)){
+    h+='<div style="margin-top:8px"><button class="btn btn-sm" data-vline="'+n.id+'" style="width:100%;background:#EDE7F6;border:1px solid #B39DDB;color:#4527A0;font-weight:700">\u2195\uFE0F Hi\u1EC7n c\u00E2y d\u1ECDc (tuy\u1EBFn tr\u00EAn + tuy\u1EBFn d\u01B0\u1EDBi)</button></div>';
   }
   if(probeOn())h+='<div class="ip-box">'+probeHtml(n.id)+'</div>'; // v7.14 — Soi thu nhập (điện thoại)
   if(!viewOnlyMode){
@@ -11687,7 +11708,7 @@ function buildSponsorTree(focusId){
 }
 function renderStarChart(){
   clearRankMemo();
-  renderVlineBar(); // v7.15 — nhánh dọc chỉ áp dụng Nhị phân → ẩn thanh ở Mặt trời
+  renderVlineBar(); // v7.16 — cây dọc ở Mặt trời đi theo chuỗi bảo trợ
   var svg=document.getElementById('star-svg');
   var box=document.getElementById('star-nodes');
   if(!treeNodes.length){
@@ -11695,6 +11716,11 @@ function renderStarChart(){
     svg.innerHTML='';return;
   }
   var tree=buildSponsorTree(focusNodeId);
+  var _vs=vlineSet(); // v7.16 — cây dọc: chỉ giữ chuỗi bảo trợ phía trên + tuyến dưới của ID đã chọn
+  if(_vs){
+    tree.roots=tree.roots.filter(function(r){return _vs[r.id];});
+    Object.keys(tree.children).forEach(function(k){tree.children[k]=tree.children[k].filter(function(c){return _vs[c.id];});});
+  }
   var NWs=132,NHs=46,HGAPs=26,VGAPs=72;
   var pos={};
   var nextX=0;
