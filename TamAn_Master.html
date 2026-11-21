@@ -1,4 +1,5 @@
-<!-- VERSION: v7.18-magnoseek-vd -->
+<!-- VERSION: v7.18.1-magnoseek-vd-check -->
+<!-- v7.18.1 — Kiểm tra file Cẩm nang kỹ hơn khi QTV nạp: danh sách VĐ ở từng bộ phận (organ.vd) và trang VĐ quan trọng (db.vd.groups / db.vd.muc) phải trỏ đúng thẻ có thật; file sai → báo "File không phải Cẩm nang MagnoSeek", không làm hỏng trình xem. Không đổi giao diện, không đổi Rules. -->
 <!-- v7.18 — Cẩm nang v1.8: trình xem hiển thị thẻ VĐ (kind 'v': Là gì · Dấu hiệu · Trung y · Cân bằng · Thói quen · Đi khám), trang 'VĐ quan trọng' (#vd-az theo nhóm, #vd-ml mục lục 1–38), ô VĐ ở trang đầu, mục VĐ ở từng bộ phận, tìm kiếm loại 'vd' (ưu tiên), ô chọn mục tiêu ở phiếu buổi quét có VĐ. Không đổi dữ liệu khách, Rules giữ v7.17. -->
 <!-- v7.17 — 🔬 MAGNOSEEK (tab mới data-main="mg", #page-mg, renderMgPage): 📖 Cẩm nang (trình xem Shadow DOM mgHbViewer — tìm có/không dấu + gợi ý, ◀ Lui / Tới ▶, A− A+; dữ liệu Firestore handbook/meta + handbook/magnoseek {data: chuỗi JSON}; chỉ thành viên ĐĂNG NHẬP đọc, QTV nạp file .json; bộ nhớ đệm máy 'ta_mg_hb' xoá khi Thoát) · 🧾 Khách & buổi quét (users/{uid}/mgkh/{khId}: hồ sơ + sessions theo Phiếu ghi buổi + care; chỉ CHỦ + QTV đọc theo Rules users/** sẵn có; KHÔNG lưu xuống máy; ghi = đọc bản máy chủ → gộp 3 chiều theo id → ghi; bắt buộc khách đồng ý; chỉ chữ, không ảnh; ⬇️ Xuất CSV) · 📅 Chăm sóc hôm nay (có hẹn · hỏi phản ứng 24 giờ · quét lại so sánh 3–7 ngày · lâu chưa liên lạc ≥14 ngày; câu mẫu chăm sóc; ➕ Kế hoạch ngày qua addActForKey). Rules v7.17 thêm match /handbook/{docId}. Chế độ XEM = chỉ đọc (QTV xem hồ sơ khách của thành viên khi duyệt toàn app). Ẩn thanh ngày/thống kê ở tab này như Sơ đồ. -->
 <!-- v7.16 — Sơ đồ: nút ↕️ Hiện cây dọc (data-vline → showVline) chạy cả Nhị phân (vị trí đặt) lẫn Mặt trời (chuỗi bảo trợ); bỏ gốc tạm để hiện ĐỦ tuyến trên tới gốc thật + toàn bộ tuyến dưới, ẩn sideline. Soi thu nhập tách cột Cân cặp (20tr/cặp tầng) và Cân NN (6tr/cặp nhánh nhỏ) — probeParts, probeGains g._p/g._n. -->
@@ -18761,6 +18762,11 @@ function mgHbValid(db){
     if(!db.topics.every(function(t){return Array.isArray(t)&&str(t[0])&&idok(t[1]);}))return false;
     if(!db.goals.every(function(g){return Array.isArray(g)&&str(g[0])&&cardOk(g[1])&&O[g[2]];}))return false;
     if(!Object.keys(db.secs).every(function(k){var x=db.secs[k];return idok(k)&&x&&str(x.t)&&str(x.h);}))return false;
+    // v7.18.1 — phần VĐ quan trọng (Cẩm nang v1.8+): không bắt buộc, nhưng có thì phải trỏ đúng thẻ
+    if(!db.organs.every(function(o){return o.vd===undefined||(Array.isArray(o.vd)&&o.vd.every(cardOk));}))return false;
+    if(db.vd!==undefined){var vl=function(a){return Array.isArray(a)&&a.every(function(g){return Array.isArray(g)&&str(g[0])&&Array.isArray(g[1])&&g[1].every(cardOk);});};
+      if(!(db.vd&&vl(db.vd.groups)&&vl(db.vd.muc)))return false;}
+    if(db.nVd!==undefined&&typeof db.nVd!=='number')return false;
     return true;
   }catch(e){return false;}
 }
