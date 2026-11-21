@@ -1,4 +1,5 @@
-<!-- VERSION: v7.17-magnoseek -->
+<!-- VERSION: v7.18-magnoseek-vd -->
+<!-- v7.18 — Cẩm nang v1.8: trình xem hiển thị thẻ VĐ (kind 'v': Là gì · Dấu hiệu · Trung y · Cân bằng · Thói quen · Đi khám), trang 'VĐ quan trọng' (#vd-az theo nhóm, #vd-ml mục lục 1–38), ô VĐ ở trang đầu, mục VĐ ở từng bộ phận, tìm kiếm loại 'vd' (ưu tiên), ô chọn mục tiêu ở phiếu buổi quét có VĐ. Không đổi dữ liệu khách, Rules giữ v7.17. -->
 <!-- v7.17 — 🔬 MAGNOSEEK (tab mới data-main="mg", #page-mg, renderMgPage): 📖 Cẩm nang (trình xem Shadow DOM mgHbViewer — tìm có/không dấu + gợi ý, ◀ Lui / Tới ▶, A− A+; dữ liệu Firestore handbook/meta + handbook/magnoseek {data: chuỗi JSON}; chỉ thành viên ĐĂNG NHẬP đọc, QTV nạp file .json; bộ nhớ đệm máy 'ta_mg_hb' xoá khi Thoát) · 🧾 Khách & buổi quét (users/{uid}/mgkh/{khId}: hồ sơ + sessions theo Phiếu ghi buổi + care; chỉ CHỦ + QTV đọc theo Rules users/** sẵn có; KHÔNG lưu xuống máy; ghi = đọc bản máy chủ → gộp 3 chiều theo id → ghi; bắt buộc khách đồng ý; chỉ chữ, không ảnh; ⬇️ Xuất CSV) · 📅 Chăm sóc hôm nay (có hẹn · hỏi phản ứng 24 giờ · quét lại so sánh 3–7 ngày · lâu chưa liên lạc ≥14 ngày; câu mẫu chăm sóc; ➕ Kế hoạch ngày qua addActForKey). Rules v7.17 thêm match /handbook/{docId}. Chế độ XEM = chỉ đọc (QTV xem hồ sơ khách của thành viên khi duyệt toàn app). Ẩn thanh ngày/thống kê ở tab này như Sơ đồ. -->
 <!-- v7.16 — Sơ đồ: nút ↕️ Hiện cây dọc (data-vline → showVline) chạy cả Nhị phân (vị trí đặt) lẫn Mặt trời (chuỗi bảo trợ); bỏ gốc tạm để hiện ĐỦ tuyến trên tới gốc thật + toàn bộ tuyến dưới, ẩn sideline. Soi thu nhập tách cột Cân cặp (20tr/cặp tầng) và Cân NN (6tr/cặp nhánh nhỏ) — probeParts, probeGains g._p/g._n. -->
 <!-- v7.15 — Sơ đồ Nhị phân: nút ↕️ Xem nhánh dọc trong popup ID (data-vline → showVline, biến vlineNodeId, vlineSet()). Chỉ hiện tuyến trên (theo vị trí ĐẶT, tới gốc đang xem) + ID đó + toàn bộ tuyến dưới, gồm cả trực hệ & phả hệ; ẩn sideline. Thanh #vline-bar đếm tuyến trên/dưới + ✕ Thoát. -->
@@ -4810,6 +4811,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v718-magnoseek-vd', ver:'7.18', icon:'🩺', title:'Cẩm nang MagnoSeek v1.8: thêm 92 VĐ quan trọng',
+    desc:'Tab <b>🔬 MagnoSeek → 📖 Cẩm nang</b> có ô mới <b>VĐ quan trọng</b>: VĐ huyết áp, tiểu đường, gan, thận, cột sống, khớp, tim, phổi, phụ khoa, mắt, tai, cùng nhóm VĐ chức năng Trung y hỗ trợ tốt (vai gáy, táo bón, mệt kéo dài, đau bụng kinh…). Mỗi VĐ ghi: là gì, dấu hiệu, Trung y, thứ tự cân bằng theo số vùng, thói quen, khi nào đi khám. Xem theo nhóm hoặc theo mục lục. Ở phiếu buổi quét, gõ tên VĐ để chọn mục tiêu.' },
   { id:'v717-magnoseek', ver:'7.17', icon:'🔬', title:'MagnoSeek: Cẩm nang tra cứu + hồ sơ khách và chăm sóc mỗi ngày',
     desc:'Tab mới <b>🔬 MagnoSeek</b> có 3 mục. <b>📖 Cẩm nang</b>: tra cứu bộ phận, vấn đề A–Z, chữ tiếng Anh trên máy; gõ có dấu hoặc không dấu, nút <b>◀ Lui · Tới ▶</b>. <b>🧾 Khách &amp; buổi quét</b>: ghi mỗi buổi theo Phiếu ghi buổi (an toàn, mục tiêu, vùng lệch, thứ tự cân bằng, phản ứng, hẹn). <b>📅 Chăm sóc hôm nay</b>: app tự nhắc khách có hẹn, cần hỏi thăm sau 24 giờ, nên quét lại để so sánh, lâu chưa liên lạc. Hồ sơ khách chỉ <b>bạn và Quản trị viên</b> xem; phải hỏi khách đồng ý trước khi lưu.' },
   { id:'v716-cay-doc-can-nn', ver:'7.16', icon:'↕️', title:'Sơ đồ: Hiện cây dọc + Soi thu nhập có Cân nhánh nhỏ',
@@ -18240,6 +18243,7 @@ var MG_HB_CSS = [
 ".hero .k{font-size:.72em;letter-spacing:3px;color:#CFA96B;text-transform:uppercase}.hero h1{margin:2px 0 4px;font-size:1.9em;color:#fff}",
 ".hero p{margin:4px 0 0;color:#E4D6BD;font-size:.95em}.hero .rule{width:44px;height:3px;background:#CFA96B;margin:8px 0}",
 "footer.ft{border-top:1px solid var(--line);padding-block:14px 18px;color:var(--muted);font-size:.8em;text-align:center;line-height:1.6}",
+".card.vdc{border-left-color:var(--red)}.card.vdc h4{color:var(--red)}.vdb{margin:6px 0}.tile.tv{border-top:5px solid var(--red);background:var(--red-soft)}.seg.vdseg a{display:inline-flex;align-items:center;min-height:44px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-weight:700;padding:0 16px}.seg.vdseg a.on{background:var(--red);color:#fff;border-color:var(--red)}ol.vdml{padding-left:28px}ol.vdml li{margin:10px 0}ol.vdml .refs{margin-top:4px}.ty.vd{background:var(--red-soft);color:var(--red)}",
 "@media (max-width:520px){.brand .bl{display:none}}@media (max-width:420px){.brand>span{display:none}}@media (max-width:400px){.brand{display:none}.sz{margin-left:auto}}"
 ].join("\n");
 
@@ -18298,17 +18302,40 @@ function refHTML(r, self){
   var S = {b1: ["p-b", "Nguyên lý Ngũ hành"], b1g: ["p-b", "Giờ kinh khí"], b1m: ["p-b", "Bổ mẹ – làm dịu con"], a1: ["p-a1", "A1 An toàn"], d3: ["p-d3", "Nhãn gen"]};
   var x = S[r]; return x ? "<a href='#" + x[0] + "'>" + esc(x[1]) + "</a>" : "";
 }
+
+/* v1.8 — VĐ quan trọng */
+function vdBody(c){
+  var h = "";
+  if (c.cn) h += "<div class='vdb'><span class='lbl'>Là gì</span>" + esc(c.cn) + "</div>";
+  if (c.dh) h += "<div class='vdb'><span class='lbl'>Dấu hiệu</span>" + esc(c.dh) + "</div>";
+  return h;
+}
+function vdRow(cid){
+  var c = CARD[cid]; if (!c) return "";
+  return "<a class='row vdr' href='#" + cid + "'><span class='rr'>" + esc(ORG[c.h] ? ORG[c.h].h : "") + "</span><b>" + esc(c.t) + "</b>" + (c.ak ? "<small>" + esc(c.ak) + "</small>" : "") + "</a>";
+}
+function vdPage(r){
+  var V = DB.vd || {groups: [], muc: []}, ml = r === "vd-ml";
+  var h = "<h1 class='pt'>VĐ quan trọng</h1><p class='muted'>" + (+DB.nVd || 0) + " VĐ khách hay hỏi. Sách gọi “VĐ” (vấn đề), không gọi là “bệnh”. Mỗi VĐ: là gì → dấu hiệu → Trung y → thứ tự cân bằng → thói quen → khi nào đi khám.</p>" +
+    "<div class='seg vdseg'><a href='#vd-az' class='" + (ml ? "" : "on") + "'>Theo nhóm</a><a href='#vd-ml' class='" + (ml ? "on" : "") + "'>Mục lục 1–" + V.muc.length + "</a></div>" +
+    "<div class='box'>Kết quả máy là tham khảo, không thay khám và chỉ định của bác sĩ. <b>Không tự bỏ, tự đổi thuốc.</b> Gặp dấu hiệu ở dòng đỏ ⚠ → đi khám, không dùng máy để chờ.</div>";
+  if (!ml) V.groups.forEach(function(g){ if (!g[1].length) return; h += "<h2 class='st'>" + esc(g[0]) + " (" + g[1].length + ")</h2>" + g[1].map(vdRow).join(""); });
+  else h += "<ol class='vdml'>" + V.muc.map(function(m){ return "<li><b>" + esc(m[0]) + "</b><div class='refs'>" + m[1].map(function(cid){ return CARD[cid] ? "<a href='#" + cid + "'>" + esc(CARD[cid].t) + "</a>" : ""; }).join("") + "</div></li>"; }).join("") + "</ol>";
+  return h;
+}
 function cardHTML(cid, hostView){
   var c = CARD[cid]; if (!c) return "";
-  var h = "<div class='card" + (c.kind === "g" ? " goal" : "") + "' id='" + cid + "'><h4>" + (c.g ? "<span class='gt'>MỤC TIÊU</span>" : "") + esc(c.t) +
+  var h = "<div class='card" + (c.kind === "g" ? " goal" : c.kind === "v" ? " vdc" : "") + "' id='" + cid + "'><h4>" + (c.g ? "<span class='gt'>MỤC TIÊU</span>" : "") + esc(c.t) +
           (c.ak ? " <small>· " + esc(c.ak) + "</small>" : "") + "</h4>";
   if (!hostView) h += "<div class='crumb'>Ở mục: <a href='#o-" + c.h + "'>" + esc(ORG[c.h].h) + "</a></div>";
+  if (c.kind === "v") h += vdBody(c);
   if (c.note) h += "<div class='note'>" + esc(c.note) + "</div>";
   if (c.xem) h += "<div class='xem'><b>Xem trên máy:</b> " + linkAll(esc(c.xem)) + "</div>";
   h += "<div><span class='lbl'>Trung y</span>" + esc(c.ty) + "</div>";
   if (c.kem) h += "<span class='lbl' style='margin-top:8px'>Cân bằng</span>" + chainHTML(c.kem, true);
   var refs = c.refs.map(function(r){ return refHTML(r, c.h); }).filter(Boolean);
   if (refs.length) h += "<div class='refs'>" + refs.join("") + "</div>";
+  if (c.tq) h += "<div class='vdb'><span class='lbl'>Thói quen</span>" + esc(c.tq) + "</div>";
   if (c.kh) h += "<div class='warn'>" + esc(c.kh) + "</div>";
   if (opts.onUseCard && c.kem) h += "<button type='button' class='use' data-use='" + cid + "'>📝 Ghi buổi quét với mục này</button>";
   return h + "</div>";
@@ -18327,6 +18354,7 @@ function organPage(k, o2){
         esc(v[2]) + " <span class='muted'>Dấu hiệu: " + esc(v[3]) + "</span><br>" + esc(v[4]) + " <span class='muted'>Kèm: " + rlink(esc(v[5])) + "</span></div>"; }).join("") + "</div>";
   }
   if (k === "cotsong") h += "<div class='blk'><span class='lbl'>Bảng từng đốt</span><div class='refs'><a href='#o-cotsongco'>Cột sống cổ C1–C7</a><a href='#o-cotsongnguc'>Cột sống ngực T1–T12</a><a href='#o-thatlung'>Thắt lưng L1–L5</a></div></div>";
+  if (o.vd && o.vd.length) h += "<h2 class='st'>VĐ quan trọng ở bộ phận này (" + o.vd.length + ")</h2>" + o.vd.map(function(c){ return cardHTML(c, true); }).join("");
   if (o.cards.length) h += "<h2 class='st'>Vấn đề hay gặp · cách cân bằng (" + o.cards.length + ")</h2>" + o.cards.map(function(c){ return cardHTML(c, true); }).join("");
   h += "<h2 class='st'>Cân bằng chung vùng này</h2><div class='blk'>" + chainHTML(o.kem, k !== "tktuchu") + "</div>";
   if (o.rel.length) h += "<h2 class='st'>Liên quan (đặt ở bộ phận khác)</h2><div class='blk rel'>" + o.rel.map(function(c){ return CARD[c] ? "<a href='#" + c + "'>" + esc(CARD[c].t) + " <small>· " + esc(hostName(c)) + "</small></a>" : ""; }).join("") + "</div>";
@@ -18358,7 +18386,7 @@ function cmpK(A, B){ for (var i = 0; i < Math.min(A.length, B.length); i++){ var
 function sortVN(list){ list.forEach(function(x){ x.kk = vnKey(x.l); }); list.sort(function(a, b){ return cmpK(a.kk, b.kk); }); }
 var AZ_O = null, AZ_I = null;
 function tName(id){ if (id.indexOf("o-") === 0) return ORG[id.slice(2)] ? ORG[id.slice(2)].h : id; if (CARD[id]) return CARD[id].t; if (id === "cap-cuu") return "Cấp cứu";
-  var NM = {"muc-tieu": "11 mục tiêu chăm sóc", "d-en": "Chữ tiếng Anh trên máy", "d-so": "248 vùng theo số", "c-az": "Vấn đề và bộ phận A–Z"}; if (NM[id]) return NM[id];
+  var NM = {"vd-az": "VĐ quan trọng", "vd-ml": "Mục lục VĐ", "muc-tieu": "11 mục tiêu chăm sóc", "d-en": "Chữ tiếng Anh trên máy", "d-so": "248 vùng theo số", "c-az": "Vấn đề và bộ phận A–Z"}; if (NM[id]) return NM[id];
   if (id.indexOf("p-") === 0 && DB.secs[id.slice(2)]) return DB.secs[id.slice(2)].t; return id; }
 function buildAZ(){
   if (AZ_O) return;
@@ -18385,7 +18413,7 @@ function azPage(tab){
     else if (x.em) body += "<a class='row em' href='" + x.h + "'><b>⚠ " + esc(x.l) + "</b><small>Gọi cấp cứu hoặc đi khám ngay – không dùng máy để chờ</small></a>";
     else body += "<a class='row' href='" + x.h + "'><b>" + (x.g ? "<span class='gt'>CHUNG</span>" : "") + esc(x.l) + "</b><small>" + esc(x.sub) + "</small></a>"; });
   return "<h1 class='pt'>Vấn đề và bộ phận A–Z</h1><p class='muted'>" + DB.organs.length + " bộ phận · " + (+DB.nIssues || 0) + " vấn đề. Mỗi bộ phận ghi: là gì → vấn đề hay gặp → cách cân bằng.</p>" +
-    "<div class='seg' role='tablist'><button type='button' data-tab='az' class='" + (tab !== "vd" ? "on" : "") + "'>Theo bộ phận</button><button type='button' data-tab='vd' class='" + (tab === "vd" ? "on" : "") + "'>Theo vấn đề, tên bệnh</button></div>" +
+    "<div class='seg' role='tablist'><button type='button' data-tab='az' class='" + (tab !== "vd" ? "on" : "") + "'>Theo bộ phận</button><button type='button' data-tab='vd' class='" + (tab === "vd" ? "on" : "") + "'>Theo VĐ, tên khách hay nói</button></div>" +
     "<div class='letters'>" + letters.map(function(L){ return "<a href='#' data-jump='L-" + (L === "Đ" ? "DD" : L) + "'>" + L + "</a>"; }).join("") + "</div>" + body;
 }
 function enPage(){
@@ -18460,6 +18488,7 @@ function secPage(id){ var s = DB.secs[id]; if (!s) return homePage();
 function homePage(){
   return "<section class='hero'><div class='k'>Cẩm nang</div><h1>MagnoSeek</h1><div class='rule'></div><p>Vận hành máy · Đọc chỉ số · Chăm sóc tổng hợp theo Trung y</p><p style='color:#CFA96B'>Phiên bản " + esc(DB.ver) + " · Lưu hành nội bộ TTHC</p></section>" +
   "<div class='tiles'>" +
+  "<a class='tile tv big' href='#vd-az'><b>VĐ quan trọng</b><small>" + (+DB.nVd || 0) + " VĐ: tiểu đường, huyết áp, gan, khớp, cột sống, tim, phổi… · theo nhóm và mục lục 1–" + ((DB.vd && DB.vd.muc.length) || 0) + "</small></a>" +
   "<a class='tile tc big' href='#c-az'><b>Vấn đề và bộ phận A–Z</b><small>" + DB.organs.length + " bộ phận · " + (+DB.nIssues || 0) + " vấn đề · mỗi bộ phận: là gì → vấn đề hay gặp → cách cân bằng</small></a>" +
   "<a class='tile td' href='#d-en'><b>Chữ tiếng Anh trên máy</b><small>Dòng trên màn hình → số vùng → bộ phận</small></a>" +
   "<a class='tile te' href='#cap-cuu'><b>Cấp cứu</b><small>Dấu hiệu phải đi khám ngay</small></a>" +
@@ -18481,7 +18510,7 @@ function buildIdx(){
   if (IDX) return; IDX = [];
   DB.organs.forEach(function(o){ addI("o", o.h, "#o-" + o.k, (o.tc ? "Trung y: " + o.tc + " · " : "") + "vùng " + rtxt(o.nums), o.al.join(" ") + " " + o.ten + " " + o.tc, [o.cn, o.dh, o.ty, o.kem, o.tq, o.kh].join(" "), 1);
     o.vert.forEach(function(v){ addI("v", v[0] + " · " + v[1], "#v-" + v[0], "Đốt sống · " + o.h, "dot song " + v[0], [v[2], v[3], v[4], v[5]].join(" "), 3); }); });
-  Object.keys(CARD).forEach(function(cid){ var c = CARD[cid]; addI(c.kind === "g" ? "g" : "i", c.t, "#" + cid, "ở " + ORG[c.h].h, c.ak, [c.ty, c.kem, c.kh, c.xem, c.note].join(" "), 2); });
+  Object.keys(CARD).forEach(function(cid){ var c = CARD[cid]; addI(c.kind === "g" ? "g" : c.kind === "v" ? "vd" : "i", c.t, "#" + cid, "ở " + ORG[c.h].h, c.ak, [c.cn, c.dh, c.ty, c.kem, c.tq, c.kh, c.xem, c.note].join(" "), c.kind === "v" ? 1 : 2); });
   DB.say.forEach(function(s){ addI("s", s[0], "#" + s[1][0], "→ " + s[1].map(tName).join(" · "), "", "", 2); });
   DB.tcm.forEach(function(s){ addI("s", s[0], "#" + s[1][0], "→ " + s[1].map(tName).join(" · "), "", "", 2); });
   DB.goals.forEach(function(g){ addI("g", g[0], "#" + g[1], "Mục tiêu → " + CARD[g[1]].t, "", "", 2); });
@@ -18493,8 +18522,8 @@ function buildIdx(){
   DB.topics.forEach(function(t){ addI("p", t[0], "#" + t[1], "→ " + tName(t[1]), "", "", 3); });
   DB.dict.forEach(function(d){ addI("d", d[0], "#p-d3", d[1], d[1], "", 4); });
 }
-var TYL = {o: "Bộ phận", i: "Vấn đề", g: "Mục tiêu", s: "Tên bệnh, Trung y", e: "Cấp cứu", en: "Chữ trên máy", r: "Số vùng", v: "Đốt sống", p: "Mục sách", d: "Từ điển máy"};
-var TYC = {o: "o", i: "i", g: "g", s: "", e: "e", en: "en", r: "en", v: "o", p: "", d: "en"};
+var TYL = {vd: "VĐ quan trọng", o: "Bộ phận", i: "Vấn đề", g: "Mục tiêu", s: "Tên VĐ, Trung y", e: "Cấp cứu", en: "Chữ trên máy", r: "Số vùng", v: "Đốt sống", p: "Mục sách", d: "Từ điển máy"};
+var TYC = {vd: "vd", o: "o", i: "i", g: "g", s: "", e: "e", en: "en", r: "en", v: "o", p: "", d: "en"};
 function score(it, q, toks, toksA){
   var tw = it.tw, s = 0;
   if (/^\d{1,3}$/.test(q)){ if (it.t === "r" && tw.split(" ")[0] === q) return 1000; }
@@ -18553,7 +18582,7 @@ function showSugg(){
 function resultsPage(q){
   var res = search(q, 0);
   var h = "<h1 class='pt'>Kết quả tìm kiếm</h1><div class='res-h'>“" + esc(q) + "” · " + res.length + " mục" + (res.length ? "" : " – thử từ ngắn hơn hoặc gõ không dấu") + "</div>";
-  var order = ["e", "o", "i", "g", "s", "v", "en", "r", "p", "d"], by = {};
+  var order = ["e", "vd", "o", "i", "g", "s", "v", "en", "r", "p", "d"], by = {};
   res.forEach(function(it){ (by[it.t] = by[it.t] || []).push(it); });
   order.forEach(function(t){ var L = by[t]; if (!L) return;
     h += "<div class='grp-h'>" + TYL[t] + " · " + L.length + "</div>" + L.map(function(it){ var sn = it._s < 200 && it.raw ? snippet(it.raw, q) : "";
@@ -18577,7 +18606,8 @@ function render(r, entry, restore){
   else if (r.indexOf("tim-") === 0) h = entry && entry.q ? resultsPage(entry.q) : "<h1 class='pt'>Tìm kiếm</h1><p class='muted'>Gõ từ cần tìm vào ô phía trên.</p>";
   else if (r.indexOf("p-") === 0) h = secPage(r.slice(2));
   else if (r.indexOf("o-") === 0 && ORG[r.slice(2)]) h = organPage(r.slice(2));
-  else if ((r.indexOf("i-") === 0 || r.indexOf("g-") === 0) && CARD[r]){ h = organPage(CARD[r].h); focusId = r; }
+  else if (r === "vd-az" || r === "vd-ml") h = vdPage(r);
+  else if ((r.indexOf("i-") === 0 || r.indexOf("g-") === 0 || r.indexOf("vd-") === 0) && CARD[r]){ h = organPage(CARD[r].h); focusId = r; }
   else if (r.indexOf("v-") === 0){ var code = r.slice(2), hst = code[0] === "C" ? "cotsongco" : code[0] === "T" ? "cotsongnguc" : "thatlung"; h = organPage(hst); focusId = r; }
   else if (r.indexOf("r-") === 0 && REG[+r.slice(2)]){ reg = +r.slice(2); h = organPage(REG[reg][3], {reg: reg}); }
   else h = homePage();
@@ -18633,7 +18663,7 @@ $("#fsp").addEventListener("click", function(){ setFS(FS + 1); });
 ST = [{r: "trang-chu"}]; IX = 0; main.innerHTML = homePage(); updNav(); syncTop();
 /* ---------- chỉ mục gọn cho ô chọn mục tiêu ở phiếu buổi quét */
 function pickList(q, limit){
-  var res = search(q, 0).filter(function(it){ return it.t === "i" || it.t === "g" || it.t === "s"; }), out = [], seen = {};
+  var res = search(q, 0).filter(function(it){ return it.t === "vd" || it.t === "i" || it.t === "g" || it.t === "s"; }), out = [], seen = {};
   res.forEach(function(it){ var id = it.href.slice(1); if (!CARD[id] || seen[id]) return; seen[id] = 1; out.push({id: id, t: CARD[id].t, sub: (it.t === "s" ? it.title + " → " : "") + "ở " + ORG[CARD[id].h].h}); });
   return out.slice(0, limit || 8);
 }
