@@ -1,4 +1,5 @@
-<!-- VERSION: v7.21-magnoseek-vd-gom -->
+<!-- VERSION: v7.22-magnoseek-vung-bo-sung -->
+<!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.19 — Cẩm nang v1.9: trình xem ghi tên tiếng Anh trên máy (dòng chữ nhỏ) sau mỗi bước cân bằng ở mọi thẻ VĐ, thẻ vấn đề, mục tiêu và 'Cân bằng chung' của 78 bộ phận; bảng đốt sống ghi tên tiếng Anh của từng đốt. Tên lấy từ danh mục D1 trong dữ liệu Cẩm nang, không lưu thêm dữ liệu. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -4815,6 +4816,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v722-magnoseek-vung-bo-sung', ver:'7.22', icon:'🧬', title:'Cẩm nang MagnoSeek v2.2: thêm vùng bạch mạch, từ điển quét sâu',
+    desc:'Trong <b>📖 Cẩm nang</b>: thêm <b>23 vùng</b> có trên danh sách phiên quét mà sách còn thiếu (bạch mạch nách – cổ, tay, chân, hạch bẹn, gan, tụy, vùng chậu; dây thần kinh mặt; góc mắt; mạch – thần kinh thành ngực), bộ phận mới <b>Bạch mạch, hạch ngoại biên</b>. Mục <b>D3 Quét sâu</b> có thêm cách đọc cây quét sâu (ty thể, nhân, DNA, A–G–C–T–U), hơn 40 từ mới và 7 nhãn gen mới.' },
   { id:'v721-magnoseek-vd-gom', ver:'7.21', icon:'📋', title:'Cẩm nang MagnoSeek v2.1: gom chung “VĐ”, thêm chi tiết đầy đủ',
     desc:'Trong <b>📖 Cẩm nang</b>, “Vấn đề” và “VĐ quan trọng” gom thành một mục <b>VĐ</b> (265 VĐ: theo nhóm, mục lục, A–Z). Thêm <b>Chi tiết đầy đủ</b> cho ung thư (phòng ngừa, tầm soát và 14 loại hay gặp), vảy nến và da liễu (mề đay, chàm, nấm, zona, nám, bạch biến, gàu, ngứa da), Alzheimer, Parkinson – mỗi thẻ có Tây y, Trung y, chăm sóc, cách nói với khách.' },
   { id:'v720-magnoseek-bophan', ver:'7.20', icon:'🧍', title:'Cẩm nang MagnoSeek v2.0: đủ bộ phận cơ thể nam – nữ',
@@ -18294,7 +18297,7 @@ function enNames(s){
       var prev = off > 0 ? str[off - 1] : "";
       if (/[\w–]/.test(prev)) return mm;
       var x = +a, y = b ? +b : x;
-      if (x < 1 || x > 248 || y < x || y > 248 || y - x > 40) return mm;
+      if (x < 1 || !REG[x] || y < x || !REG[y] || y - x > 40) return mm;
       for (var n = x; n <= y; n++){ var t = ENN[n]; if (t && !seen[t]){ seen[t] = 1; out.push(t); } }
       return mm;
     });
@@ -18322,12 +18325,12 @@ function rlink(txt){
     return "(" + inner.replace(/(\d{1,3})(?:–(\d{1,3}))?/g, function(mm, a, b, off, str){
       var prev = off > 0 ? str[off - 1] : "";
       if (/[\w–]/.test(prev)) return mm;
-      var n = +a; if (n < 1 || n > 248) return mm;
+      var n = +a; if (n < 1 || !REG[n]) return mm;
       return "<a class='rn' href='#r-" + n + "'>" + mm + "</a>";
     }) + ")";
   });
 }
-function linkAll(txt){ return txt.replace(/(^|[^\w–])(\d{1,3})(?:–(\d{1,3}))?(?![\w])/g, function(m, pre, a){ var n = +a; if (n < 1 || n > 248) return m; return pre + "<a class='rn' href='#r-" + n + "'>" + m.slice(pre.length) + "</a>"; }); }
+function linkAll(txt){ return txt.replace(/(^|[^\w–])(\d{1,3})(?:–(\d{1,3}))?(?![\w])/g, function(m, pre, a){ var n = +a; if (n < 1 || !REG[n]) return m; return pre + "<a class='rn' href='#r-" + n + "'>" + m.slice(pre.length) + "</a>"; }); }
 function chainHTML(kem, withTuchu){
   var steps = esc(kem).split(" → ");
   if (withTuchu) steps.unshift("Tự chủ (130–133)");
@@ -18465,7 +18468,7 @@ function cmpK(A, B){ for (var i = 0; i < Math.min(A.length, B.length); i++){ var
 function sortVN(list){ list.forEach(function(x){ x.kk = vnKey(x.l); }); list.sort(function(a, b){ return cmpK(a.kk, b.kk); }); }
 var AZ_O = null, AZ_I = null;
 function tName(id){ if (id.indexOf("o-") === 0) return ORG[id.slice(2)] ? ORG[id.slice(2)].h : id; if (CARD[id]) return CARD[id].t; if (id === "cap-cuu") return "Cấp cứu";
-  var NM = {"bp-az": "Bộ phận cơ thể", "bp-nam": "Bộ phận cơ thể nam", "bp-nu": "Bộ phận cơ thể nữ", "vd-az": "VĐ", "vd-ml": "Mục lục VĐ", "c-vd": "VĐ A–Z", "muc-tieu": "11 mục tiêu chăm sóc", "d-en": "Chữ tiếng Anh trên máy", "d-so": "248 vùng theo số", "c-az": "Bộ phận A–Z"}; if (NM[id]) return NM[id];
+  var NM = {"bp-az": "Bộ phận cơ thể", "bp-nam": "Bộ phận cơ thể nam", "bp-nu": "Bộ phận cơ thể nữ", "vd-az": "VĐ", "vd-ml": "Mục lục VĐ", "c-vd": "VĐ A–Z", "muc-tieu": "11 mục tiêu chăm sóc", "d-en": "Chữ tiếng Anh trên máy", "d-so": DB.regions.length + " vùng theo số", "c-az": "Bộ phận A–Z"}; if (NM[id]) return NM[id];
   if (id.indexOf("p-") === 0 && DB.secs[id.slice(2)]) return DB.secs[id.slice(2)].t; return id; }
 function buildAZ(){
   if (AZ_O) return;
@@ -18506,7 +18509,7 @@ function enPage(){
     "<div class='letters en'>" + letters.map(function(L){ return "<a href='#' data-jump='E-" + L + "'>" + L + "</a>"; }).join("") + "</div>" + body;
 }
 function soPage(){
-  var h = "<h1 class='pt'>Danh mục 248 vùng theo thứ tự máy</h1><p class='muted'>Vùng sinh sản nam chỉ có ở hồ sơ nam, vùng sinh sản nữ chỉ có ở hồ sơ nữ. Vùng 247 nằm sau 145, vùng 248 nằm sau 111.</p><div class='letters'>" +
+  var h = "<h1 class='pt'>Danh mục " + DB.regions.length + " vùng theo số</h1><p class='muted'>Số vùng dùng trong sách, xếp theo nhóm cơ thể; danh sách phiên quét trên máy có thể xếp khác – tra nhanh bằng chữ tiếng Anh. Vùng sinh sản nam chỉ có ở hồ sơ nam, vùng sinh sản nữ chỉ có ở hồ sơ nữ. Vùng từ 247 trở đi là vùng bổ sung, đã xếp vào nhóm phù hợp.</p><div class='letters'>" +
     DB.groups.map(function(g){ return "<a href='#' data-jump='G-" + g[0] + "' style='min-width:auto;padding:0 10px'>" + esc(g[2]) + "</a>"; }).join("") + "</div>";
   DB.groups.forEach(function(g){ h += "<div class='lh en' id='G-" + g[0] + "'>" + esc(g[1]) + " · " + esc(g[2]) + "</div>";
     g[3].forEach(function(n){ var r = REG[n]; h += "<a class='row' href='#r-" + n + "'><span class='rr'>" + esc(ORG[r[3]].h) + "</span><b>" + n + " · " + esc(r[2]) + "</b><small>" + esc(r[1]) + "</small></a>"; }); });
@@ -18578,7 +18581,7 @@ function homePage(){
   "<a class='tile tb' href='#muc-tieu'><b>11 mục tiêu chăm sóc</b><small>Ngủ, căng thẳng, tiêu hóa, khớp…</small></a>" +
   "<a class='tile ta' href='#p-a1'><b>Vận hành máy</b><small>A1–A6: an toàn, quét, đọc chỉ số, cân bằng</small></a>" +
   "<a class='tile tb' href='#p-b'><b>Nguyên lý Trung y</b><small>Ngũ hành · bổ mẹ, làm dịu con · giờ kinh khí</small></a>" +
-  "<a class='tile td' href='#d-so'><b>248 vùng theo số</b><small>Đúng thứ tự máy hiện</small></a>" +
+  "<a class='tile td' href='#d-so'><b>" + DB.regions.length + " vùng theo số</b><small>Số vùng trong sách, xếp theo nhóm cơ thể</small></a>" +
   "<a class='tile td' href='#p-d3'><b>Quét sâu, nhãn gen</b><small>Từ điển chữ trên máy khi quét sâu</small></a>" +
   "<a class='tile ta' href='#p-form'><b>Phiếu ghi buổi</b><small>Việc cần ghi sau mỗi buổi</small></a>" +
   "<a class='tile ta' href='#p-how'><b>Cách dùng</b><small>Tìm kiếm, nút lui – tới, cỡ chữ</small></a>" +
@@ -18826,10 +18829,10 @@ function mgCacheDel(){try{localStorage.removeItem(MG_HB_CACHE);}catch(e){}}
 function mgHbValid(db){
   // kiểm tra kỹ cấu trúc + liên kết chéo: file lỗi không làm hỏng trình xem, mã khoá chỉ gồm chữ thường/số/-/_
   try{
-    if(!(db&&Array.isArray(db.organs)&&db.organs.length>=50&&db.cards&&typeof db.cards==='object'&&Array.isArray(db.regions)&&db.regions.length===248&&
+    if(!(db&&Array.isArray(db.organs)&&db.organs.length>=50&&db.cards&&typeof db.cards==='object'&&Array.isArray(db.regions)&&db.regions.length>=248&&db.regions.length<=400&&
       db.secs&&typeof db.secs==='object'&&Array.isArray(db.en)&&Array.isArray(db.groups)&&Array.isArray(db.say)&&Array.isArray(db.tcm)&&Array.isArray(db.topics)&&
       Array.isArray(db.goals)&&Array.isArray(db.emerg)&&Array.isArray(db.dict)&&typeof db.nIssues==='number'))return false;
-    var idok=function(x){return typeof x==='string'&&/^[a-z0-9_-]{1,80}$/.test(x);},num=function(n){return typeof n==='number'&&n>=1&&n<=248&&Math.floor(n)===n;};
+    var idok=function(x){return typeof x==='string'&&/^[a-z0-9_-]{1,80}$/.test(x);},num=function(n){return typeof n==='number'&&n>=1&&n<=400&&Math.floor(n)===n;};
     var str=function(x){return typeof x==='string';},O={},C=db.cards;
     db.organs.forEach(function(o){if(o&&idok(o.k))O[o.k]=1;});
     var cardOk=function(id){return idok(id)&&Object.prototype.hasOwnProperty.call(C,id);};
@@ -18837,7 +18840,7 @@ function mgHbValid(db){
       Array.isArray(o.cards)&&o.cards.every(cardOk)&&Array.isArray(o.rel)&&o.rel.every(cardOk)&&Array.isArray(o.roots)&&o.roots.every(cardOk)&&
       Array.isArray(o.vert)&&o.vert.every(function(v){return Array.isArray(v)&&/^[CTL]\d{1,2}$/.test(v[0])&&num(v[6]);});}))return false;
     if(!Object.keys(C).every(function(k){var c=C[k];return idok(k)&&c&&str(c.t)&&O[c.h]&&Array.isArray(c.refs)&&c.refs.every(str);}))return false;
-    if(!db.regions.every(function(r){return Array.isArray(r)&&num(r[0])&&O[r[3]];}))return false;
+    if(!db.regions.every(function(r,i){return Array.isArray(r)&&num(r[0])&&r[0]===i+1&&O[r[3]];}))return false;
     if(!db.groups.every(function(g){return Array.isArray(g)&&/^[A-Z0-9]{1,4}$/.test(g[0])&&Array.isArray(g[3])&&g[3].every(num);}))return false;
     if(!db.en.every(function(x){return Array.isArray(x)&&str(x[0])&&Array.isArray(x[1])&&x[1].length&&x[1].every(num);}))return false;
     var tg=function(x){return Array.isArray(x)&&str(x[0])&&Array.isArray(x[1])&&x[1].length&&x[1].every(idok);};
