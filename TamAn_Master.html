@@ -1,4 +1,4 @@
-<!-- VERSION: v7.23-kynang-sync-viec-khac -->
+<!-- VERSION: v7.24-pokayoke-maid-tungu -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -4816,6 +4816,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v724-pokayoke', ver:'7.24', icon:'🛡️', title:'Chống sai sót: Mã ID trùng/sai + từ ngữ quá công dụng',
+    desc:'<b>🔑 Mã ID:</b> khi thêm/sửa ID, app kiểm tra ngay lúc gõ — <b>trùng</b> với ID khác trên cây hoặc <b>sai định dạng</b> (khoảng trắng, chữ có dấu, ký tự lạ) sẽ báo đỏ và <b>không cho lưu</b>. Vì Kỹ năng, DISC, Sinh nhật đều đồng bộ lên tuyến trên theo Mã ID.<br><b>🩺 Kết quả SK var WHATS_NEW=[amp; Cách hỗ trợ:</b> khi lưu, app soát các cách nói quá công dụng (vd “chữa khỏi”, “khỏi hẳn”, “thần dược”, “bỏ thuốc”, “diệt ung thư”) — có cách nói an toàn thì bấm OK để <b>tự thay</b>; chỗ bắt buộc phải sửa tay sẽ được chỉ rõ. Sản phẩm là TPCN/thiết bị hỗ trợ, không phải thuốc chữa bệnh.' },
   { id:'v723-kynang-sync', ver:'7.23', icon:'⭐', title:'Kỹ năng tự cập nhật lên tuyến trên · Lịch 168 có “Việc khác”',
     desc:'<b>⭐ Kỹ năng:</b> khi thành viên tuyến dưới tick hoàn thành 1 kỹ năng trên tài khoản của họ, kỹ năng đó <b>tự cập nhật lên đúng ID</b> (theo <b>Mã ID</b>, thiếu Mã ID thì theo tên) trên cây của <b>tất cả tuyến trên</b> — cả nhánh đặt cây lẫn nhánh bảo trợ. Tuyến dưới bỏ tick thì bên trên cũng tự gỡ. Mở tab Kỹ năng là được cập nhật mới nhất.<br><b>🗓️ Lịch 168:</b> thêm loại <b>🧩 Việc khác</b> để tô các khung giờ ngoài những đầu mục sẵn có.' },
   { id:'v722-magnoseek-vung-bo-sung', ver:'7.22', icon:'🧬', title:'Cẩm nang MagnoSeek v2.2: thêm vùng bạch mạch, từ điển quét sâu',
@@ -5729,6 +5731,32 @@ function _skFindNode(code,name){
   var nm=noAccent(String(name||'').trim());if(!nm)return null;
   var hit=treeNodes.filter(function(t){return noAccent(String(t.name||''))===nm;});
   return hit.length===1?hit[0]:null; // trùng tên nhiều ID → không đoán
+}
+// v7.24 — POKA-YOKE Mã ID: trả về câu báo lỗi (hoặc '' nếu ổn).
+//   • TRÙNG (so không dấu, không phân biệt hoa/thường) với ID khác trên cây → luôn chặn (dữ liệu sẽ đổ nhầm người).
+//   • SAI ĐỊNH DẠNG (khoảng trắng, chữ có dấu, ký tự lạ) → chặn khi Mã ID MỚI nhập/đổi (mã cũ đã lưu giữ nguyên).
+function _idCodeProblem(code,selfId,oldCode){
+  code=String(code||'').trim();if(!code)return '';
+  var nc=noAccent(code).toLowerCase();
+  var dup=treeNodes.filter(function(t){return t.id!==selfId&&noAccent(String(t.idCode||'').trim()).toLowerCase()===nc;});
+  if(dup.length)return '⛔ Mã ID "'+code+'" đã dùng cho ID "'+(dup[0].name||'')+'"'+(dup.length>1?' (+'+(dup.length-1)+' ID khác)':'')+'. Mỗi người chỉ có 1 Mã ID — kiểm tra lại trên web PRIFE.';
+  if(code!==String(oldCode||'').trim()){
+    if(/\s/.test(code))return '⛔ Mã ID không được có khoảng trắng.';
+    if(/[^\x00-\x7F]/.test(code))return '⛔ Mã ID không có chữ có dấu tiếng Việt — gõ đúng như trên web PRIFE (vd: lanchi88hptv).';
+    if(!/^[A-Za-z0-9._\-]+$/.test(code))return '⛔ Mã ID chỉ gồm chữ không dấu, số (và . _ -).';
+    if(code.length<4)return '⛔ Mã ID quá ngắn — kiểm tra lại trên web PRIFE.';
+  }
+  return '';
+}
+function _idCodeLiveHint(inp){
+  var el=document.getElementById('nf-idcode-hint');if(!inp||!el)return;
+  var selfId=(activeNodeModal&&activeNodeModal.mode==='edit')?activeNodeModal.nodeId:null;
+  var old=selfId?String(((treeNodes.find(function(x){return x.id===selfId;})||{}).idCode)||'').trim():'';
+  var v=String(inp.value||'').trim();
+  if(!v){el.innerHTML='';inp.style.borderColor='';return;}
+  var err=_idCodeProblem(v,selfId,old);
+  if(err){el.innerHTML='<span style="color:#C62828">'+escHtml(err)+'</span>';inp.style.borderColor='#E53935';}
+  else{el.innerHTML='<span style="color:#2E7D32">✓ Mã ID hợp lệ, chưa trùng</span>';inp.style.borderColor='#43A047';}
 }
 // src có phải CHÍNH tgt hoặc nằm phía trên tgt (theo nhánh đặt cây HOẶC theo bảo trợ) trong cây của tôi?
 function _skIsAtOrAbove(src,tgt){
@@ -11432,7 +11460,7 @@ function switchNodeToEdit(nid){
   var n=treeNodes.find(function(x){return x.id===nid;});if(!n)return;
   activeNodeModal={mode:'edit',nodeId:nid};
   document.getElementById('nmod-title').textContent='S\u1eeda: '+n.name;
-  document.getElementById('nmod-body').innerHTML=buildNodeForm(n,{isRoot:!n.parentId});
+  document.getElementById('nmod-body').innerHTML=buildNodeForm(n,{isRoot:!n.parentId});try{_idCodeLiveHint(document.getElementById('nf-idcode'));}catch(e){} // v7.24 — báo ngay nếu Mã ID đang trùng
   document.getElementById('nmod-save-btn').style.display='block';
   document.getElementById('nmod-save-btn').textContent='\u2713 L\u01b0u';
   document.getElementById('nmod-del-btn').style.display='block';
@@ -11526,7 +11554,7 @@ function buildNodeForm(node,addOpts){
   h+='<select id="nf-bday-y" class="nmod-inp" style="width:132px">'+_dpBirthYearOpts(_bdY)+'</select>';
   h+='</div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">M\u00e3 ID <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 v\u00e0o web <b>PRIFE</b> l\u1ea5y M\u00e3 ID chu\u1ea9n (vd: lanchi88hptv). \u0110\u00e2y l\u00e0 c\u0103n c\u1ee9 \u0111\u1ed3ng b\u1ed9 tuy\u1ebfn d\u01b0\u1edbi \u2192 tuy\u1ebfn tr\u00ean.</div></div>';
-  h+='<input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
+  h+='<div style="display:flex;flex-direction:column;gap:3px"><input id="nf-idcode" class="nmod-inp" style="width:150px" value="'+escHtml(v.idCode||'')+'" placeholder="vd: lanchi88hptv" autocapitalize="off" autocomplete="off" spellcheck="false" oninput="_idCodeLiveHint(this)"><div id="nf-idcode-hint" style="font-size:11.5px;max-width:240px;line-height:1.4"></div></div></div>';
   h+='<div class="nmod-row"><div class="nmod-lbl">B\u1ea3o tr\u1ee3 (F1 c\u1ee7a ai) <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">B\u1eaft bu\u1ed9c \u2014 ch\u1ecdn trong danh s\u00e1ch tuy\u1ebfn tr\u00ean, ho\u1eb7c g\u00f5 th\u00eam t\u00ean b\u00ean ngo\u00e0i. \u0110\u1eb7t kh\u00e1c v\u1ecb tr\u00ed = ph\u1ea3 h\u1ec7 t\u1ef1 \u0111\u1ed9ng</div></div>';
   h+='<div style="display:flex;flex-direction:column;gap:4px">';
   h+='<input id="nf-f1of-filter" class="sel-filter" style="width:160px;margin-bottom:4px" placeholder="\uD83D\uDD0D G\u00f5 t\u00ecm t\u00ean...">';
@@ -11679,6 +11707,17 @@ function saveNodeModal(){
     showToast('⛔ Vui lòng nhập Mã ID (bắt buộc). Vào web PRIFE lấy Mã ID chuẩn của ID này rồi nhập vào — không có Mã ID sẽ không đồng bộ được lên tuyến trên.');
     var _fi=document.getElementById('nf-idcode');if(_fi){try{_fi.focus();}catch(e){}_fi.style.borderColor='#E53935';}
     return;
+  }
+  // v7.24 — POKA-YOKE Mã ID: mọi đồng bộ (Kỹ năng/DISC/Sinh nhật) khớp theo Mã ID → chặn TRÙNG và SAI ĐỊNH DẠNG ngay khi nhập
+  if(data.idCode){
+    var _selfNid=(activeNodeModal.mode==='edit')?activeNodeModal.nodeId:null;
+    var _oldCode=_selfNid?String(((treeNodes.find(function(x){return x.id===_selfNid;})||{}).idCode)||'').trim():'';
+    var _idErr=_idCodeProblem(data.idCode,_selfNid,_oldCode);
+    if(_idErr){
+      showToast(_idErr);
+      var _fi2=document.getElementById('nf-idcode');if(_fi2){try{_fi2.focus();_fi2.select();}catch(e){}_fi2.style.borderColor='#E53935';}
+      return;
+    }
   }
   // v7 — BẮT BUỘC Bảo trợ (F1 của ai): chọn trong danh sách tuyến trên, hoặc gõ thêm tên bên ngoài
   if(!data.f1of){
@@ -17829,10 +17868,57 @@ function skAddCustomCond(){
 function skEditOpen(id){var e=loadHealthLocal().filter(function(x){return x.id===id;})[0];if(!e){showToast('Chỉ sửa được kết quả của chính bạn');return;}_skEditId=id;_skSelName=condNameOf(e);_supFormOpen=false;_skFormOpen=true;_skMatInit=false;renderSkPage();}
 function skFormCancel(){_skFormOpen=false;_skEditId='';_skMatInit=false;renderSkPage();}
 function skRefresh(){_skTeam=null;renderSkPage();}
+// ================================================================
+// v7.24 — POKA-YOKE TỪ NGỮ: chặn câu nói quá công dụng (TPCN không phải thuốc, không thay thế thuốc chữa bệnh).
+//   Khớp KHÔNG DẤU (gõ "chua khoi" cũng bắt). Có cách nói an toàn → 1 bấm tự thay; không có → bắt buộc tự sửa.
+// ================================================================
+// Mẫu viết CÓ DẤU. Chữ có dấu → khớp đúng dấu (phân biệt "chưa khỏi" ≠ "chữa khỏi");
+// đoạn gõ KHÔNG DẤU (toàn ASCII) → khớp bản không dấu của mẫu.
+var CLAIM_RULES=[
+  {p:'chữa khỏi|chữa dứt|chữa hết bệnh|chữa tận gốc|trị dứt|trị tận gốc|dứt điểm|dứt bệnh',pb:'tri dut|tri tan goc|dut diem|dut benh',fix:'hỗ trợ cải thiện'}, // pb: bản không dấu riêng — bỏ 'chua …' vì không phân biệt được chưa/chữa
+  {p:'khỏi hẳn|khỏi hoàn toàn|khỏi bệnh|hết bệnh|lành bệnh|hết hoàn toàn|khỏi tuyệt đối',fix:'đỡ rõ rệt'},
+  {p:'khỏi 100%|100% khỏi|hiệu quả 100%|hiệu quả tuyệt đối',fix:'hiệu quả tốt'},
+  {p:'đặc trị',fix:'hỗ trợ'},
+  {p:'thần dược|thuốc thần|tiên dược',fix:'sản phẩm hỗ trợ'},
+  {p:'thay thuốc|thay thế thuốc|bỏ thuốc|bỏ uống thuốc|ngưng thuốc|ngừng thuốc|ngưng uống thuốc|ngừng uống thuốc|không cần (?:uống |dùng )?thuốc|khỏi cần (?:uống |dùng )?thuốc',fix:null,why:'không kể/khuyên bỏ hay thay thuốc — ghi "vẫn dùng thuốc theo chỉ định bác sĩ"'},
+  {p:'(?:diệt|tiêu diệt|trị|chữa|đánh bay) (?:được )?(?:tế bào )?(?:ung thư|khối u)',fix:null,why:'không nói sản phẩm trị/diệt ung thư — chỉ ghi cảm nhận, chỉ số trước–sau'}
+];
+function _viBase(s){ // bỏ dấu, GIỮ NGUYÊN độ dài (1 ký tự ↔ 1 ký tự)
+  var o='';for(var i=0;i<s.length;i++){var c=s[i];o+=(c==='\u0111'||c==='\u0110')?'d':(c.normalize('NFD').replace(/[\u0300-\u036f]/g,'')||c).toLowerCase().charAt(0);}return o;
+}
+function _claimHits(text){
+  var t=String(text||'').normalize('NFC'),lo=t.toLowerCase(),b=_viBase(t),raw=[];
+  if(lo.length!==t.length)lo=t; // phòng hờ ký tự đổi độ dài khi hạ chữ thường
+  CLAIM_RULES.forEach(function(r){
+    var B='(?<![\p{L}\p{N}])',E='(?![\p{L}\p{N}])';
+    var reA=new RegExp(B+'(?:'+r.p+')'+E,'gu'),reB=new RegExp(B+'(?:'+(r.pb||_viBase(r.p))+')'+E,'gu'),m;
+    while((m=reA.exec(lo)))raw.push({s:m.index,e:m.index+m[0].length,r:r});
+    while((m=reB.exec(b))){var seg=t.slice(m.index,m.index+m[0].length);if(!/[^\x00-\x7F]/.test(seg))raw.push({s:m.index,e:m.index+m[0].length,r:r});}
+  });
+  raw.sort(function(x,y){return x.s-y.s||(y.e-y.s)-(x.e-x.s);});
+  var hits=[],end=-1;
+  raw.forEach(function(h){if(h.s>=end){hits.push({s:h.s,e:h.e,txt:t.slice(h.s,h.e),fix:h.r.fix,why:h.r.why});end=h.e;}}); // bỏ đoạn chồng lấn
+  return hits.sort(function(a,b){return b.s-a.s;}); // từ cuối lên để thay không lệch vị trí
+}
+// ids: các ô nhập cần soát. true = ổn/đã tự thay; false = phải sửa tay.
+function _claimGuard(ids){
+  var all=[],need=[];
+  ids.forEach(function(id){var el=document.getElementById(id);if(!el)return;var hs=_claimHits(el.value);if(hs.length){all.push({el:el,hs:hs});el.style.borderColor='#E53935';}});
+  if(!all.length)return true;
+  var list=[];all.forEach(function(x){x.hs.forEach(function(h){list.push(h);if(!h.fix)need.push(h);});});
+  var uniq={};list.forEach(function(h){var k=h.txt.toLowerCase();if(!uniq[k])uniq[k]=h;});
+  var lines=Object.keys(uniq).map(function(k){var h=uniq[k];return '• "'+h.txt+'" → '+(h.fix?('"'+h.fix+'"'):('PHẢI SỬA: '+h.why));}).join('\n');
+  var head='⚠️ Phát hiện cách nói quá công dụng (sản phẩm là TPCN/thiết bị hỗ trợ, KHÔNG phải thuốc chữa bệnh):\n\n'+lines+'\n\n';
+  if(need.length){alert(head+'Hãy sửa các chỗ "PHẢI SỬA" (ô viền đỏ) rồi bấm Lưu lại.');var f=all[0].el;try{f.focus();f.setSelectionRange(need[0].s,need[0].e);}catch(e){}return false;}
+  if(!confirm(head+'Bấm OK để TỰ THAY bằng cách nói an toàn và lưu. Bấm Huỷ để tự sửa.')){try{all[0].el.focus();}catch(e){}return false;}
+  all.forEach(function(x){var t=String(x.el.value).normalize('NFC');x.hs.forEach(function(h){t=t.slice(0,h.s)+h.fix+t.slice(h.e);});x.el.value=t;x.el.style.borderColor='';});
+  return true;
+}
 function skSaveEntry(){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
   var condName=_skSelName;
   if(!condName){showToast('⚠ Chưa chọn tình trạng');return;}
+  if(!_claimGuard(['sk-f-before','sk-f-during','sk-f-after']))return; // v7.24
   _skSyncMat();
   var g=function(id){var el=document.getElementById(id);return el?el.value:'';};
   var club=g('sk-f-club').trim(), branch=g('sk-f-branch'), person=g('sk-f-person').trim();
@@ -17991,6 +18077,7 @@ function supCancel(){_supFormOpen=false;_supEditId='';_supMatInit=false;renderSk
 function supSave(){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode){showToast('Đang ở chế độ XEM — không ghi được');return;}
   var condName=_skSelName;if(!condName){showToast('⚠ Chưa chọn tình trạng');return;}
+  if(!_claimGuard(['sup-f-text']))return; // v7.24
   _supSyncMat();
   var t=document.getElementById('sup-f-text'),text=t?t.value.trim():'';
   var mats=_supMatDraft.filter(function(mt){return mt.url&&mt.url.trim();});
