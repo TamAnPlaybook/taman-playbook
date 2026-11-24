@@ -1,4 +1,4 @@
-<!-- VERSION: v7.22-magnoseek-vung-bo-sung -->
+<!-- VERSION: v7.23-kynang-sync-viec-khac -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -4816,6 +4816,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v723-kynang-sync', ver:'7.23', icon:'⭐', title:'Kỹ năng tự cập nhật lên tuyến trên · Lịch 168 có “Việc khác”',
+    desc:'<b>⭐ Kỹ năng:</b> khi thành viên tuyến dưới tick hoàn thành 1 kỹ năng trên tài khoản của họ, kỹ năng đó <b>tự cập nhật lên đúng ID</b> (theo <b>Mã ID</b>, thiếu Mã ID thì theo tên) trên cây của <b>tất cả tuyến trên</b> — cả nhánh đặt cây lẫn nhánh bảo trợ. Tuyến dưới bỏ tick thì bên trên cũng tự gỡ. Mở tab Kỹ năng là được cập nhật mới nhất.<br><b>🗓️ Lịch 168:</b> thêm loại <b>🧩 Việc khác</b> để tô các khung giờ ngoài những đầu mục sẵn có.' },
   { id:'v722-magnoseek-vung-bo-sung', ver:'7.22', icon:'🧬', title:'Cẩm nang MagnoSeek v2.2: thêm vùng bạch mạch, từ điển quét sâu',
     desc:'Trong <b>📖 Cẩm nang</b>: thêm <b>23 vùng</b> có trên danh sách phiên quét mà sách còn thiếu (bạch mạch nách – cổ, tay, chân, hạch bẹn, gan, tụy, vùng chậu; dây thần kinh mặt; góc mắt; mạch – thần kinh thành ngực), bộ phận mới <b>Bạch mạch, hạch ngoại biên</b>. Mục <b>D3 Quét sâu</b> có thêm cách đọc cây quét sâu (ty thể, nhân, DNA, A–G–C–T–U), hơn 40 từ mới và 7 nhãn gen mới.' },
   { id:'v721-magnoseek-vd-gom', ver:'7.21', icon:'📋', title:'Cẩm nang MagnoSeek v2.1: gom chung “VĐ”, thêm chi tiết đầy đủ',
@@ -5149,7 +5151,7 @@ function enterAppFirebase(user){
   document.getElementById('setup-screen').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('tb-ns').textContent='\uD83D\uDC64 '+displayName;
-  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadDreamTreeCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();loadSupportCloud();
+  loadMembers();loadTree2();loadTasksCloud();loadActsCloud();loadLich168Cloud();loadWheelCloud();loadWheelGoalCloud();loadAnnCloud();loadIncomeCloud();loadGuestsCloud();loadProspects();loadPrefsCloud();loadBgImageCloud();loadVbIndexCloud();loadDreamListCloud();loadDreamTreeCloud();loadZoomAliasCloud();loadLocalMirrorCloud();loadNangDongCloud();loadDiscCloud();loadJarsCloud();loadJournalCloud();loadHealthCloud();loadSupportCloud();setTimeout(skSyncBoot,9000);
   syncTreeToMembers(false);
   var now=new Date();
   currentDay=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -5709,6 +5711,100 @@ function fmtDate(d){var days=['CN','T2','T3','T4','T5','T6','T7'];return days[d.
 function getColor(i){return COLORS[i%COLORS.length];}
 function getInit(n){var p=n.trim().split(' ');return p.length>=2?p[p.length-1][0].toUpperCase():n[0].toUpperCase();}
 function countSkills(id){return SKILLS.filter(function(s){return pGet(id,'sk_'+s.id)==='1';}).length;}
+// ================================================================
+// v7.23 — ĐỒNG BỘ KỸ NĂNG LÊN TUYẾN TRÊN THEO MÃ ID
+//   • Mỗi tài khoản đẩy kỹ năng đã tick (của chính mình + các ID trên cây mình) lên publicClubs/{uid}.skillPub
+//     (ai đăng nhập cũng đọc, chủ ghi — KHÔNG cần Rules mới). Chỉ đẩy tick TỰ TAY (bỏ bản nhận đồng bộ → không dội vòng).
+//   • Mọi tuyến trên (trực hệ = nhánh đặt cây parentId, phả hệ = bảo trợ f1of) đọc kênh chung, khớp node theo
+//     MÃ ID (thiếu Mã ID mới khớp tên không dấu) và tự tick vào đúng ID đó. Chỉ nhận khi tài khoản nguồn là CHÍNH ID đó
+//     hoặc nằm TRÊN ID đó trong cây của mình (dữ liệu đi từ dưới lên, không bị tuyến trên khác ghi đè xuống).
+//   • Tick nhận về đánh dấu p_<mid>_sksync_<id>='1'; khi tuyến dưới bỏ tick (không còn nguồn nào) → tự gỡ theo.
+// ================================================================
+function _skAllIds(){return SKILLS.concat(SKILLS_THANY).map(function(s){return s.id;});}
+function _skNodeOfMember(m){if(!m)return null;for(var i=0;i<treeNodes.length;i++)if(treeNodes[i].name===m.name)return treeNodes[i];return null;}
+function _skMemberOfNode(n){if(!n)return null;for(var i=0;i<members.length;i++)if(members[i].name===n.name)return members[i];return null;}
+function _skFindNode(code,name){
+  var c=noAccent(String(code||'').trim());
+  if(c){for(var i=0;i<treeNodes.length;i++)if(noAccent(String(treeNodes[i].idCode||'').trim())===c)return treeNodes[i];return null;} // có Mã ID → chỉ khớp Mã ID
+  var nm=noAccent(String(name||'').trim());if(!nm)return null;
+  var hit=treeNodes.filter(function(t){return noAccent(String(t.name||''))===nm;});
+  return hit.length===1?hit[0]:null; // trùng tên nhiều ID → không đoán
+}
+// src có phải CHÍNH tgt hoặc nằm phía trên tgt (theo nhánh đặt cây HOẶC theo bảo trợ) trong cây của tôi?
+function _skIsAtOrAbove(src,tgt){
+  if(!src||!tgt)return false;if(src.id===tgt.id)return true;
+  var byId={},byName={};treeNodes.forEach(function(t){byId[t.id]=t;if(!byName[t.name])byName[t.name]=t;});
+  var seen={},q=[tgt],g=0;
+  while(q.length&&g<5000){
+    var cur=q.shift();g++;if(!cur||seen[cur.id])continue;seen[cur.id]=1;
+    if(cur.id===src.id)return true;
+    if(cur.parentId&&byId[cur.parentId])q.push(byId[cur.parentId]);
+    if(cur.f1of&&byName[cur.f1of])q.push(byName[cur.f1of]);
+  }
+  return false;
+}
+function skBuildPub(){
+  var ids=_skAllIds(),list=[],root=null;
+  treeNodes.forEach(function(t){if(!root&&!t.parentId)root=t;});
+  members.forEach(function(m){
+    var n=_skNodeOfMember(m);if(!n)return;
+    var s=ids.filter(function(id){return pGet(m.id,'sk_'+id)==='1'&&!pGet(m.id,'sksync_'+id);});
+    if(s.length)list.push({c:String(n.idCode||'').trim(),n:n.name||'',s:s});
+  });
+  return {root:root?{c:String(root.idCode||'').trim(),n:root.name||''}:null,list:list,updatedAt:new Date().toISOString()};
+}
+var _skPubT=null;
+function skPubSchedule(){clearTimeout(_skPubT);_skPubT=setTimeout(skPublish,2500);}
+async function skPublish(){
+  if(!fbDb||!fbUser||(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)||dreamMode)return;
+  if(!treeNodes.length)return;
+  try{
+    var m=await import(FB_STORE);
+    var name=(fbUser.displayName)||((fbUser.email||'').split('@')[0])||'';
+    await m.setDoc(m.doc(fbDb,'publicClubs',fbUser.uid),{uid:fbUser.uid,name:name,skillPub:skBuildPub(),updatedAt:new Date().toISOString()},{merge:true}); // merge: giữ clubs/health/support
+  }catch(e){/* thiếu quyền → bỏ qua */}
+}
+var _skPullAt=0,_skPulling=false;
+async function skPullDownline(force){
+  if(!fbDb||!fbUser||(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)||dreamMode||_skPulling)return;
+  if(!treeNodes.length||!members.length)return;
+  if(!force&&Date.now()-_skPullAt<60000)return; // tối đa 1 lần/phút
+  _skPulling=true;_skPullAt=Date.now();
+  try{
+    var m=await import(FB_STORE);
+    var snap=await m.getDocs(m.collection(fbDb,'publicClubs'));
+    var want={}; // memberId → {skillId:1} nhận từ tuyến dưới
+    var myRoot=null;treeNodes.forEach(function(t){if(!myRoot&&!t.parentId)myRoot=t;});
+    snap.forEach(function(d){
+      if(d.id===fbUser.uid)return;
+      var sp=(d.data()||{}).skillPub;if(!sp||!sp.list||!sp.root)return;
+      var src=_skFindNode(sp.root.c,sp.root.n);
+      if(!src||(myRoot&&src.id===myRoot.id))return; // tài khoản nguồn không có trên cây tôi / trùng chính tôi
+      sp.list.forEach(function(e){
+        var tgt=_skFindNode(e.c,e.n);if(!tgt||(myRoot&&tgt.id===myRoot.id))return; // không nhận ghi đè cho chính tôi
+        if(!_skIsAtOrAbove(src,tgt))return; // chỉ nhận dữ liệu đi TỪ DƯỚI LÊN
+        var mem=_skMemberOfNode(tgt);if(!mem)return;
+        var w=want[mem.id]||(want[mem.id]={});(e.s||[]).forEach(function(id){w[id]=1;});
+      });
+    });
+    var ids=_skAllIds(),add=0,rem=0,who={};
+    members.forEach(function(mem){
+      var w=want[mem.id]||{};
+      ids.forEach(function(id){
+        var cur=pGet(mem.id,'sk_'+id)==='1',synced=!!pGet(mem.id,'sksync_'+id);
+        if(w[id]&&!cur){pSet(mem.id,'sk_'+id,'1');pSet(mem.id,'sksync_'+id,'1');add++;who[mem.name]=1;}
+        else if(!w[id]&&cur&&synced){pSet(mem.id,'sk_'+id,'');pSet(mem.id,'sksync_'+id,'');rem++;who[mem.name]=1;} // tuyến dưới đã bỏ tick
+      });
+    });
+    if(add||rem){
+      try{var pg=document.getElementById('page-kynang');if(pg&&pg.classList.contains('on'))renderList('kn','list-kn');if(modalMid&&modalType==='kn')refreshModalBody();}catch(e){}
+      var names=Object.keys(who);
+      showToast('⭐ Kỹ năng tuyến dưới vừa cập nhật: '+names.slice(0,3).join(', ')+(names.length>3?' +'+(names.length-3)+' người':'')+(add?' · +'+add:'')+(rem?' · −'+rem:''));
+    }
+  }catch(e){console.warn('Đồng bộ kỹ năng tuyến dưới lỗi:',e);}
+  _skPulling=false;
+}
+function skSyncBoot(){skPublish();skPullDownline(true);} // sau đăng nhập: đẩy của mình + nhận của tuyến dưới
 function parseJoinDate(jd){
   if(!jd)return null;
   var p=jd.split('.');
@@ -7267,7 +7363,8 @@ var L168_CATS=[
   {id:'fam',  lbl:'👨‍👩‍👧 Gia đình',      fill:'#B2DFDB',tx:'#004D40'},
   {id:'eat',  lbl:'🍚 Ăn / di chuyển', fill:'#FFE0B2',tx:'#E65100'},
   {id:'clb',  lbl:'🚀 Sự nghiệp CLB',  fill:'#FFB300',tx:'#3E2723',star:true},
-  {id:'grow', lbl:'📚 Học / phát triển',fill:'#E1BEE7',tx:'#4A148C'}
+  {id:'grow', lbl:'📚 Học / phát triển',fill:'#E1BEE7',tx:'#4A148C'},
+  {id:'other',lbl:'🧩 Việc khác',      fill:'#D7CCC8',tx:'#3E2723'} // v7.23 — việc ngoài các đầu mục trên
 ];
 var L168_ERASE={id:'',lbl:'🧽 Xoá (trống)',fill:'transparent',tx:'#999'};
 var l168Armed='clb';
@@ -13391,7 +13488,7 @@ document.addEventListener('click',function(e){
     if(pg==='tp')renderTpSub(currentSubTab.tp||'goals');
     if(pg==='admin')renderAdminPage();else stopPresenceWatch(); // v6.36 — rời tab Quản trị thì ngắt lắng nghe real-time
     if(pg==='map')renderMapPage();
-    if(pg==='kynang')renderList('kn','list-kn');
+    if(pg==='kynang'){renderList('kn','list-kn');skPullDownline(false);}
     if(pg==='prospect')renderProspectPage();
     if(pg==='disc')renderDiscPage();
     if(pg==='sk')renderSkPage();
@@ -14129,6 +14226,8 @@ document.addEventListener('click',function(e){
     var skid=t.getAttribute('data-sk-id');
     var curr=pGet(skmid,'sk_'+skid);
     pSet(skmid,'sk_'+skid,curr==='1'?'':'1');
+    if(pGet(skmid,'sksync_'+skid))pSet(skmid,'sksync_'+skid,''); // v7.23 — tự tick/bỏ tay → không còn là bản đồng bộ từ tuyến dưới
+    skPubSchedule(); // v7.23 — đẩy kỹ năng lên kênh chung để tuyến trên nhận theo Mã ID
     refreshModalBody();
     return;
   }
