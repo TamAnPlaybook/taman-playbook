@@ -1,4 +1,4 @@
-<!-- VERSION: v7.24-pokayoke-maid-tungu -->
+<!-- VERSION: v7.25-l168-thany-thantai -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -7379,18 +7379,18 @@ function renderActionCenter(){
 // v6.75 — LỊCH 168 (Khung thời gian tuần) cho mỗi thành viên
 //   • 168 giờ = 24h × 7 ngày. Lưới 30 phút → 48 khung/ngày × 7 = 336 ô (mỗi ô 0,5h).
 //   • KHUNG MẪU LẶP LẠI: thiết kế 1 lần, tuần nào cũng áp; ngày/tháng chỉ hiển thị cho tuần hiện tại.
-//   • Mỗi ô tô 1 LOẠI hoạt động (ngủ / việc chính / gia đình / ăn-di chuyển / ★ sự nghiệp CLB / học).
-//   • Ngân sách giờ theo loại + nhắc nếu giờ "★ Sự nghiệp CLB" dưới mục tiêu.
+//   • Mỗi ô tô 1 LOẠI hoạt động (ngủ / Thần Y / gia đình / ăn-di chuyển / ★ Thần Tài / học).
+//   • Ngân sách giờ theo loại + nhắc nếu giờ "★ Thần Tài" dưới mục tiêu.
 //   • TẦNG KHUNG (chiến lược); việc "Hôm nay" (đã ưu tiên Eisenhower) đổ vào khung này → không chồng chéo.
 //   • Lưu lich168_v1 (localStorage) + đồng bộ Firestore doc 'lich168' (đa thiết bị, debounce).
 // ================================================================
 var L168_DAYS=['T2','T3','T4','T5','T6','T7','CN'];
 var L168_CATS=[
   {id:'sleep',lbl:'😴 Ngủ',            fill:'#CFD8DC',tx:'#37474F'},
-  {id:'job',  lbl:'💼 Việc chính',     fill:'#BBDEFB',tx:'#0D47A1'},
+  {id:'job',  lbl:'🩺 Thần Y',          fill:'#BBDEFB',tx:'#0D47A1'},
   {id:'fam',  lbl:'👨‍👩‍👧 Gia đình',      fill:'#B2DFDB',tx:'#004D40'},
   {id:'eat',  lbl:'🍚 Ăn / di chuyển', fill:'#FFE0B2',tx:'#E65100'},
-  {id:'clb',  lbl:'🚀 Sự nghiệp CLB',  fill:'#FFB300',tx:'#3E2723',star:true},
+  {id:'clb',  lbl:'🪙 Thần Tài',        fill:'#FFB300',tx:'#3E2723',star:true},
   {id:'grow', lbl:'📚 Học / phát triển',fill:'#E1BEE7',tx:'#4A148C'},
   {id:'other',lbl:'🧩 Việc khác',      fill:'#D7CCC8',tx:'#3E2723'} // v7.23 — việc ngoài các đầu mục trên
 ];
@@ -7432,7 +7432,7 @@ function renderLich168(){
   function dstr(i){var dt=new Date(monday.getFullYear(),monday.getMonth(),monday.getDate()+i);return dt.getDate()+'/'+(dt.getMonth()+1);}
   var h='';
   h+='<div class="ac-head"><div class="ac-title">🗓️ Lịch tuần 168 giờ<span class="ac-date">khung mẫu lặp lại</span></div></div>';
-  h+='<div style="font-size:12.5px;color:#777;line-height:1.5;margin:2px 0 10px">168 giờ = 24h × 7 ngày. Đây là <b>khung thời gian tuần</b> — chốt trước bạn dành bao nhiêu giờ cho mỗi việc để <b>chủ động</b>, tránh chồng chéo. Chọn 1 loại rồi <b>bấm ô 30 phút</b> để tô. Việc từng ngày (tab <b>Hôm nay</b>) sẽ đổ vào các khung <b>★ Sự nghiệp CLB</b>.</div>';
+  h+='<div style="font-size:12.5px;color:#777;line-height:1.5;margin:2px 0 10px">168 giờ = 24h × 7 ngày. Đây là <b>khung thời gian tuần</b> — chốt trước bạn dành bao nhiêu giờ cho mỗi việc để <b>chủ động</b>, tránh chồng chéo. Chọn 1 loại rồi <b>bấm ô 30 phút</b> để tô. Việc từng ngày (tab <b>Hôm nay</b>) sẽ đổ vào các khung <b>★ Thần Tài</b>.</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
   L168_CATS.concat([L168_ERASE]).forEach(function(c){
     var on=(l168Armed===c.id),isE=(c.id===''),bg=isE?(on?'#333':'#fff'):c.fill,col=isE?(on?'#fff':'#999'):c.tx,bd=on?'2px solid #1A1A1A':'1px solid #E0E0E0';
@@ -7465,9 +7465,9 @@ function renderLich168(){
   });
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="width:132px;font-size:11.5px;color:#BBB">Trống / linh hoạt</span><div style="flex:1;height:11px;background:#F0F0F0;border-radius:7px;overflow:hidden"><div style="height:100%;width:'+Math.round(free/336*100)+'%;background:#CFCFCF;border-radius:7px"></div></div><span style="width:42px;text-align:right;font-size:11.5px;color:#BBB">'+l168Hs(free)+'</span></div></div>';
   var clbH=cnt['clb']*0.5;
-  h+='<div style="margin-top:6px;font-size:11.5px;color:#999">🎯 Mục tiêu giờ cho sự nghiệp CLB: <b style="color:#1A1A1A">'+l168Fh(target)+'/tuần</b> · <button data-l168-target="1" style="font-size:11px;color:#1A7A5E;background:none;border:none;cursor:pointer;text-decoration:underline">đổi</button></div>';
-  if(clbH<target)h+='<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:#FFF8E1;color:#8D6E00;font-size:12.5px;line-height:1.5">⚠️ Mới xếp <b>'+l168Hs(cnt['clb'])+'/tuần</b> cho ★ Sự nghiệp CLB — dưới mục tiêu '+l168Fh(target)+'. Bạn còn <b>'+l168Hs(free)+' trống</b>: tô thêm <b>'+l168Fh(target-clbH)+'</b> vào khung ★ để chủ động, đừng để thời gian trôi.</div>';
-  else h+='<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:#E8F5F0;color:#1A7A5E;font-size:12.5px;line-height:1.5">✅ <b>'+l168Hs(cnt['clb'])+'/tuần</b> cho ★ Sự nghiệp CLB — đạt mục tiêu '+l168Fh(target)+'. Đây là khung để việc <b>Hôm nay</b> (đã ưu tiên) đổ vào. Giữ vững nhịp này!</div>';
+  h+='<div style="margin-top:6px;font-size:11.5px;color:#999">🎯 Mục tiêu giờ cho việc Thần Tài: <b style="color:#1A1A1A">'+l168Fh(target)+'/tuần</b> · <button data-l168-target="1" style="font-size:11px;color:#1A7A5E;background:none;border:none;cursor:pointer;text-decoration:underline">đổi</button></div>';
+  if(clbH<target)h+='<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:#FFF8E1;color:#8D6E00;font-size:12.5px;line-height:1.5">⚠️ Mới xếp <b>'+l168Hs(cnt['clb'])+'/tuần</b> cho ★ Thần Tài — dưới mục tiêu '+l168Fh(target)+'. Bạn còn <b>'+l168Hs(free)+' trống</b>: tô thêm <b>'+l168Fh(target-clbH)+'</b> vào khung ★ để chủ động, đừng để thời gian trôi.</div>';
+  else h+='<div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:#E8F5F0;color:#1A7A5E;font-size:12.5px;line-height:1.5">✅ <b>'+l168Hs(cnt['clb'])+'/tuần</b> cho ★ Thần Tài — đạt mục tiêu '+l168Fh(target)+'. Đây là khung để việc <b>Hôm nay</b> (đã ưu tiên) đổ vào. Giữ vững nhịp này!</div>';
   h+='<div style="margin-top:10px"><button class="btn btn-d btn-sm" data-l168-goto="1">Xem việc hôm nay &rarr;</button></div>';
   el.innerHTML=h;
   var _now=document.getElementById('l168-scroll');if(_now)_now.scrollTop=_sp;
@@ -7503,7 +7503,7 @@ function _jrAutoObs(){ // gợi ý Quan sát tự động từ dữ liệu app
   var acts=dayActs(),done=acts.filter(function(x){return x.done;}).length,bits=[];
   bits.push('Việc: '+done+'/'+acts.length+' xong');
   try{var pg=loadParetoGoal();if(pg){bits.push('Trò chuyện: '+paretoDayGet()+'/'+paretoPerDay(pg)+' người');}}catch(e){}
-  try{var st=loadLich168(),c=0;Object.keys(st.blocks).forEach(function(k){if(st.blocks[k]==='clb')c++;});bits.push('Khung ★ CLB/tuần: '+l168Hs(c));}catch(e){}
+  try{var st=loadLich168(),c=0;Object.keys(st.blocks).forEach(function(k){if(st.blocks[k]==='clb')c++;});bits.push('Khung ★ Thần Tài/tuần: '+l168Hs(c));}catch(e){}
   return bits.join(' · ');
 }
 var JR_FIELDS=[
@@ -7638,7 +7638,7 @@ function _journeySteps(){
   var pg=0;try{pg=loadParetoGoal();}catch(e){}
   steps.push({ico:'⚙️',name:'20/80 — Việc cốt lõi mỗi ngày',why:'Từ mục tiêu tháng, app tính ra mỗi ngày cần trò chuyện/theo sát bao nhiêu người.',tip:'Nguyên lý 20/80: một ít việc cốt lõi tạo ra phần lớn kết quả. Ở CLB, đó là số người bạn trò chuyện mỗi ngày để có khách vào ID.',goto:'tp:goals',done:pg>0,status:pg?(pg+' khách/tháng → '+paretoPerDay(pg)+' người/ngày'):'Chưa nhập số khách'});
   var l168h=0,l168t=12;try{var st=loadLich168();l168t=(st.clbTarget!=null?st.clbTarget:12);var c=0;Object.keys(st.blocks).forEach(function(k){if(st.blocks[k]==='clb')c++;});l168h=c*0.5;}catch(e){}
-  steps.push({ico:'🗓️',name:'Lịch 168 — Giữ chỗ thời gian',why:'Một tuần có 168 giờ. Chốt trước giờ dành cho sự nghiệp CLB để chủ động, tránh bị cuốn theo việc vặt.',tip:'Lịch 168 là khung thời gian tuần. Bạn tô trước các khung ★ cho sự nghiệp để việc quan trọng luôn có chỗ — thay vì để thời gian trôi mất.',goto:'tp:actions>act:lich168',done:l168h>=l168t,status:(l168h>=l168t?('Đã giữ '+l168h+'h/tuần cho CLB'):('Mới '+l168h+'h / '+l168t+'h cho CLB'))});
+  steps.push({ico:'🗓️',name:'Lịch 168 — Giữ chỗ thời gian',why:'Một tuần có 168 giờ. Chốt trước giờ dành cho việc Thần Tài để chủ động, tránh bị cuốn theo việc vặt.',tip:'Lịch 168 là khung thời gian tuần. Bạn tô trước các khung ★ cho sự nghiệp để việc quan trọng luôn có chỗ — thay vì để thời gian trôi mất.',goto:'tp:actions>act:lich168',done:l168h>=l168t,status:(l168h>=l168t?('Đã giữ '+l168h+'h/tuần cho CLB'):('Mới '+l168h+'h / '+l168t+'h cho CLB'))});
   var acts=[];try{acts=dayActs();}catch(e){}
   var dn=acts.filter(function(x){return x.done;}).length;
   steps.push({ico:'✅',name:'Hôm nay — Làm đúng việc',why:'Danh sách việc hôm nay, sắp theo ưu tiên Eisenhower: làm việc quan trọng trước.',tip:'Ma trận Eisenhower xếp việc theo Quan trọng × Khẩn thành 4 ô, giúp bạn biết làm gì trước và bỏ bớt việc gì.',goto:'tp:actions>act:today',done:(acts.length>0&&dn===acts.length),status:acts.length?(dn+'/'+acts.length+' việc xong'):'Chưa có việc nào'});
@@ -13713,7 +13713,7 @@ document.addEventListener('click',function(e){
   t=e.target.closest('[data-l168-reset]');
   if(t){if(confirm('Đặt lại về khung mẫu mặc định? Các thay đổi của bạn sẽ mất.')){var _lo2=loadLich168();_lo2.blocks=l168DefaultBlocks();l168Store(_lo2);renderLich168();}return;}
   t=e.target.closest('[data-l168-target]');
-  if(t){var _lo3=loadLich168();var _nt=prompt('Mục tiêu số giờ cho sự nghiệp CLB mỗi tuần:',(_lo3.clbTarget!=null?_lo3.clbTarget:12));if(_nt!==null){var _ntv=parseFloat(String(_nt).replace(',','.'));if(!isNaN(_ntv)&&_ntv>=0){_lo3.clbTarget=_ntv;l168Store(_lo3);renderLich168();}}return;}
+  if(t){var _lo3=loadLich168();var _nt=prompt('Mục tiêu số giờ cho việc Thần Tài mỗi tuần:',(_lo3.clbTarget!=null?_lo3.clbTarget:12));if(_nt!==null){var _ntv=parseFloat(String(_nt).replace(',','.'));if(!isNaN(_ntv)&&_ntv>=0){_lo3.clbTarget=_ntv;l168Store(_lo3);renderLich168();}}return;}
   t=e.target.closest('[data-l168-goto]');
   if(t){var _gt=document.querySelector('.stab[data-sub="act:today"]');if(_gt)_gt.click();return;}
   // v5.3 — Đo lường mục tiêu (goal progress)
