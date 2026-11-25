@@ -1,4 +1,4 @@
-<!-- VERSION: v7.32-do-so-lieu -->
+<!-- VERSION: v7.33-nut-so-lieu -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -1359,6 +1359,14 @@ table.ina-t .ina-tag{font-size:10.5px;color:#C62828;font-weight:700;white-space:
 .an-wk-b{width:100%;background:var(--accent,#C8A84B);border-radius:3px}
 .an-wk-c:last-child .an-wk-b{background:#1A7A5E}
 .an-copy-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+/* v7.33 — nút lớn Số liệu & Báo cáo đầu trang Quản trị */
+.adm-quick{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:0 0 12px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--accent,#C8A84B);background:linear-gradient(135deg,var(--accent-soft,#F6EECF),#fff);box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;color:var(--ink,#1A1A1A)}
+.adm-quick:hover{box-shadow:var(--shadow-md)}
+.adm-quick-ico{font-size:30px;line-height:1}
+.adm-quick-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.adm-quick-t b{font-size:16px}
+.adm-quick-t small{font-size:12.5px;color:#666;line-height:1.4}
+.adm-quick-go{flex:0 0 auto;background:var(--accent,#C8A84B);color:var(--accent-ink,#fff);border-radius:999px;padding:7px 14px;font-weight:800;font-size:13px}
 .an-insights .an-ins.an-click:hover{background:#E6EFFC}
 .an-more{display:inline-block;margin-left:4px;font-size:11.5px;font-weight:800;color:#1565C0;white-space:nowrap}
 .anp-sum{font-size:13px;color:#555;background:#F7F5EE;border-radius:9px;padding:8px 10px;margin-bottom:10px;line-height:1.5}
@@ -12826,7 +12834,7 @@ function _anGrowthHtml(users,data){
   var new7=data.filter(function(u){return u.createdAt&&(now-new Date(u.createdAt).getTime())<=7*864e5;}).length;
   _anRep={total:total,wau:wau,wauPct:wauPct,coh:coh.length,act:act.length,actPct:actPct,s3:s3,s7:s7,avgS:avgS,
     top:streaks.slice(0,3).map(function(x){return (x.u.name||x.u.email||'?')+' ('+x.s+' ngày)';}),wk:wk,new7:new7,leaders:null,dup:null,branch:null,matched:null};
-  var h='<div class="an-sec an-growth"><div class="an-h">🎯 5 chỉ số giữ chân &amp; nhân bản</div>';
+  var h='<div class="an-sec an-growth"><div class="an-h" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;min-width:180px">🎯 5 chỉ số giữ chân &amp; nhân bản</span><button class="btn btn-g btn-sm" data-an-copy="1" style="flex:0 0 auto">📋 Copy báo cáo</button></div>';
   h+='<div class="an-frow-sub" style="margin:-4px 0 10px">App có thành <b>thói quen</b> của thành viên chưa, và có <b>lan xuống tuyến dưới</b> không? Xanh = đạt mục tiêu, đỏ = chưa đạt. Bấm ô để xem danh sách người.</div>';
   h+='<div class="an-kpis">';
   h+=_anKpi(wauPct+'%','① Dùng hằng tuần<small>'+wau+'/'+total+' người mở app trong 7 ngày qua</small>','≥ 60%',total?wauPct>=60:null,'','g:wau');
@@ -13349,7 +13357,25 @@ function compactAdminBoxes(){
     list.forEach(function(it){wrap.appendChild(toAcc(it.b,it.k));});
     frag.appendChild(wrap);
   });
+  // v7.33 — Nút lớn đầu trang: mở thẳng Số liệu & báo cáo (trước đây phải qua Theo dõi đội → Phân tích → Mở bảng)
+  if(byKey.analytics){
+    var qk=document.createElement('button');qk.className='adm-quick';qk.setAttribute('data-adm-report','1');
+    qk.innerHTML='<span class="adm-quick-ico">📊</span><span class="adm-quick-t"><b>Số liệu &amp; Báo cáo app</b><small>5 chỉ số giữ chân &amp; nhân bản · theo nhánh Leader · 📋 Copy báo cáo</small></span><span class="adm-quick-go">Mở ›</span>';
+    frag.insertBefore(qk,frag.firstChild);
+  }
   el.innerHTML='';el.appendChild(frag);
+}
+// v7.33 — mở mục Phân tích, tự tải số liệu, cuộn tới khối 5 chỉ số
+function openAdminReport(){
+  var d=document.querySelector('#admin-content details[data-acc="analytics"]');if(!d)return;
+  d.open=true;
+  var ac=document.getElementById('analytics-content');
+  function go(){var g=document.querySelector('#analytics-content .an-growth')||d;g.scrollIntoView({behavior:'smooth',block:'start'});}
+  if(ac&&ac.querySelector('.an-growth')){go();return;}
+  if(ac)ac.innerHTML='<div style="color:#999;font-size:13px;padding:10px 0">⏳ Đang tải số liệu phân tích…</div>';
+  d.scrollIntoView({behavior:'smooth',block:'start'});
+  loadAnalyticsData().then(function(dt){renderAnalytics(dt);setTimeout(go,60);})
+    .catch(function(){if(ac)ac.innerHTML='<div style="color:#C62828;font-size:13px">Không tải được số liệu (cần quyền QTV).</div>';});
 }
 function renderAdminPage(){
   var el=document.getElementById('admin-content');if(!el)return;
@@ -14497,6 +14523,8 @@ document.addEventListener('click',function(e){
   if(t){if(t.getAttribute('data-ina')==='rescan')mountInactiveRemind(true);else copyText(inactiveCopyText());return;}
   t=e.target.closest('[data-an-pick]');
   if(t){openAnPick(t.getAttribute('data-an-pick'));return;}
+  t=e.target.closest('[data-adm-report]'); // v7.33 — nút lớn đầu trang Quản trị
+  if(t){openAdminReport();return;}
   t=e.target.closest('[data-an-copy]'); // v7.32 — copy báo cáo số liệu
   if(t){var _rt=_anReportText();if(_rt)copyText(_rt);else showToast('Chưa có số liệu');return;}
   if(e.target.closest('#anpick-ov [data-view-uid]'))document.getElementById('anpick-ov').classList.remove('open'); // rồi xử lý xem tài khoản như cũ
