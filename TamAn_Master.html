@@ -1,4 +1,4 @@
-<!-- VERSION: v7.33-nut-so-lieu -->
+<!-- VERSION: v7.34-zoom-khop-ten-ben -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -15550,7 +15550,17 @@ var Z_CHROME=['audio','video','participants','participant','chat','react','react
   '2g','3g','4g','5g','lte','wifi','zalo']; // thanh trạng thái điện thoại (KHÔNG thêm 'huy'/'all' vì trùng tên thật)
 function loadZoomAliasLocal(){try{var s=nmGet('zoomalias');if(s){var o=JSON.parse(s)||{};_zAlias=o.alias||{};_zPending=Array.isArray(o.pending)?o.pending:[];}}catch(e){_zAlias={};_zPending=[];}}
 function saveZoomAlias(){var o={alias:_zAlias,pending:_zPending};try{nmSet('zoomalias',JSON.stringify(o));}catch(e){}if(fbDb&&fbUser)fsSet('zoomalias',o).catch(function(){});}
-function loadZoomAliasCloud(){if(!fbDb||!fbUser)return;fsGet('zoomalias').then(function(d){if(d){_zAlias=d.alias||_zAlias;_zPending=Array.isArray(d.pending)?d.pending:_zPending;try{nmSet('zoomalias',JSON.stringify({alias:_zAlias,pending:_zPending}));}catch(e){}if(document.getElementById('list-ngay'))renderDailyCombined();}}).catch(function(){});}
+// v7.34 — GỘP (không ghi đè) bảng nhớ máy + đám mây: chỉ định làm trên máy trước khi mây tải xong / trên máy khác
+//   không còn bị mất. Trùng khoá → lấy bản đám mây; máy có thêm khoá mới → đẩy bản gộp lên mây.
+function loadZoomAliasCloud(){if(!fbDb||!fbUser)return;loadZoomAliasLocal();fsGet('zoomalias').then(function(d){if(!d)d={};
+  var ca=d.alias||{},merged={},extra=0;
+  Object.keys(_zAlias).forEach(function(k){merged[k]=_zAlias[k];if(!(k in ca))extra++;});
+  Object.keys(ca).forEach(function(k){merged[k]=ca[k];});
+  var pend={};(Array.isArray(d.pending)?d.pending:[]).concat(_zPending).forEach(function(p){var n=_zNorm(p);if(n&&!merged[n]&&!pend[n])pend[n]=p;});
+  _zAlias=merged;_zPending=Object.keys(pend).map(function(k){return pend[k];});
+  if(extra)saveZoomAlias();else{try{nmSet('zoomalias',JSON.stringify({alias:_zAlias,pending:_zPending}));}catch(e){}}
+  if(document.getElementById('zatt-ov')&&document.getElementById('zatt-ov').classList.contains('open'))renderZoomAtt();
+  if(document.getElementById('list-ngay'))renderDailyCombined();}).catch(function(){});}
 // Người có thể điểm danh = thành viên (ID) + khách (chưa có ID)
 function _zPeople(){
   var g=loadGuests();
@@ -15563,19 +15573,75 @@ function _zNorm(s){
   s=s.replace(/\([^)]*\)/g,' ');
   return noAccent(s).replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
 }
-function _zResolve(norm){ // khớp tự động: alias hoặc trùng tên chuẩn hoá 100%
-  if(!norm)return null;
-  if(_zAlias[norm]){var p=_zPeople().filter(function(x){return x.id===_zAlias[norm];})[0];if(p)return p;}
-  var ex=_zPeople().filter(function(x){return _zNorm(x.name)===norm;});
-  return ex.length===1?ex[0]:null;
+// v7.34 — KHỚP TÊN BỀN QUA NGÀY: OCR mỗi ngày đọc lệch vài ký tự / Zoom cắt "…" khác nhau / thứ tự từ khác
+//   → trước đây chỉ khớp alias đúng 100% nên phải chỉ định lại. Nay khớp theo tầng:
+//   1) alias đúng  2) alias/tên bỏ khoảng trắng  3) tên trùng (bỏ tiền tố nhóm "HC/", "TT/")
+//   4) cùng bộ từ (khác thứ tự)  5) gần đúng (sai ≤ ~15% ký tự) hoặc tên bị cắt "…" (tiền tố ≥10 ký tự)
+//   Chỉ nhận khi người khớp tốt nhất RÕ RÀNG hơn người thứ 2 (tránh nhầm). Khớp gần đúng được đánh dấu "≈"
+//   và khi bấm Điểm danh, biến thể mới được LƯU thêm vào bảng nhớ → lần sau khớp đúng 100%.
+var Z_PREFIX=['hc','tt','hcc','ttt','clb','tvv','nv','kh','mr','ms','mrs']; // KHÔNG thêm "anh/chi/em…" vì trùng tên thật (Huy Chi, Anh Thư)
+function _zCompact(norm){return String(norm||'').replace(/\s+/g,'');}
+function _zCoreToks(norm){ // bỏ tiền tố nhóm/xưng hô ở ĐẦU (HC/, TT/, chị, anh…) — giữ ít nhất 1 từ
+  var t=String(norm||'').split(' ').filter(Boolean);
+  while(t.length>1&&Z_PREFIX.indexOf(t[0])>=0)t.shift();
+  return t;
 }
+function _zLev(a,b,max){ // khoảng cách Levenshtein (dừng sớm khi > max)
+  if(a===b)return 0;var la=a.length,lb=b.length;if(Math.abs(la-lb)>max)return max+1;
+  var prev=new Array(lb+1),cur=new Array(lb+1),i,j;for(j=0;j<=lb;j++)prev[j]=j;
+  for(i=1;i<=la;i++){cur[0]=i;var mn=cur[0];
+    for(j=1;j<=lb;j++){var c=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1;
+      cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c);if(cur[j]<mn)mn=cur[j];}
+    if(mn>max)return max+1;var tmp=prev;prev=cur;cur=tmp;}
+  return prev[lb];
+}
+function _zSim(a,b){ // 0..1 trên chuỗi đã bỏ khoảng trắng
+  if(!a||!b)return 0;if(a===b)return 1;
+  var L=Math.max(a.length,b.length),S=Math.min(a.length,b.length);
+  if(S>=10&&(a.indexOf(b)===0||b.indexOf(a)===0))return 0.9; // Zoom cắt tên dài bằng "…"
+  if(S<5)return 0;
+  var max=Math.floor(L*0.2),d=_zLev(a,b,max);if(d>max)return 0;
+  return 1-d/L;
+}
+function _zPeopleById(){var m={};_zPeople().forEach(function(p){m[p.id]=p;});return m;}
+// Trả về {p, how}: how = 'alias' | 'name' | 'fuzzy' (fuzzy = gần đúng, nên xem lại)
+function _zMatch(norm,pmap){
+  if(!norm)return null;pmap=pmap||_zPeopleById();
+  var a=_zAlias[norm];if(a&&pmap[a])return {p:pmap[a],how:'alias'};
+  var cmp=_zCompact(norm),core=_zCoreToks(norm),coreC=core.join(''),coreS=core.slice().sort().join(' ');
+  var people=Object.keys(pmap).map(function(k){return pmap[k];});
+  // 2) alias bỏ khoảng trắng ("TT/MINH TRUNG" ≡ "TT/ MINH TRUNG")
+  var ak=Object.keys(_zAlias),i,hit={};
+  for(i=0;i<ak.length;i++){if(pmap[_zAlias[ak[i]]]&&_zCompact(ak[i])===cmp)hit[_zAlias[ak[i]]]=1;}
+  var hk=Object.keys(hit);if(hk.length===1)return {p:pmap[hk[0]],how:'alias'};
+  // 3) tên trùng (kể cả khi bỏ tiền tố nhóm) — phải DUY NHẤT
+  var ex=people.filter(function(p){var n=_zNorm(p.name);return n===norm||_zCompact(n)===cmp||(coreC.length>=4&&_zCoreToks(n).join('')===coreC);});
+  if(ex.length===1)return {p:ex[0],how:'name'};
+  if(ex.length>1)return null; // trùng tên nhiều ID → để người dùng chọn
+  // 4)+5) chấm điểm từng ID (qua mọi alias đã nhớ + tên thật), lấy tốt nhất nếu rõ ràng
+  var best={},add=function(id,sc){if(sc>(best[id]||0))best[id]=sc;};
+  for(i=0;i<ak.length;i++){var id=_zAlias[ak[i]];if(!pmap[id])continue;
+    var kc=_zCoreToks(ak[i]);
+    add(id,Math.max(_zSim(cmp,_zCompact(ak[i])),_zSim(coreC,kc.join(''))));
+    if(core.length>=2&&kc.slice().sort().join(' ')===coreS)add(id,0.95);}
+  people.forEach(function(p){var n=_zNorm(p.name);if(!n)return;var pc=_zCoreToks(n);
+    add(p.id,Math.max(_zSim(cmp,_zCompact(n)),_zSim(coreC,pc.join(''))));
+    if(core.length>=2&&pc.slice().sort().join(' ')===coreS)add(p.id,0.95);});
+  var ids=Object.keys(best).sort(function(x,y){return best[y]-best[x];});
+  if(!ids.length)return null;
+  var b1=best[ids[0]],b2=ids[1]?best[ids[1]]:0;
+  var thr=coreC.length>=8?0.82:0.88;
+  if(b1>=thr&&b1-b2>=0.08)return {p:pmap[ids[0]],how:'fuzzy',score:b1};
+  return null;
+}
+function _zResolve(norm){var r=_zMatch(norm);return r?r.p:null;}
 function _zGuess(norm){ // gợi ý cho tên chưa gán: trùng token nhiều nhất
-  var toks=norm.split(' ').filter(Boolean);if(!toks.length)return null;
+  var toks=_zCoreToks(norm);if(!toks.length)return null;var tc=toks.join('');
   var best=null,bs=0;
   _zPeople().forEach(function(p){
-    var mt=_zNorm(p.name).split(' ').filter(Boolean);if(!mt.length)return;
+    var mt=_zCoreToks(_zNorm(p.name));if(!mt.length)return;
     var sh=toks.filter(function(t){return mt.indexOf(t)>=0;}).length;
-    var sc=sh/Math.max(toks.length,mt.length);
+    var sc=Math.max(sh/Math.max(toks.length,mt.length),_zSim(tc,mt.join('')));
     if(sc>bs){bs=sc;best=p;}
   });
   return bs>=0.5?best:null;
@@ -15735,6 +15801,8 @@ function renderZoomAtt(){
   var d=currentDay,dstr=d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
   var h='';
   h+='<div class="zatt-intro">💡 <b>Đọc chuẩn nhất:</b> bấm <b>Participants</b> trong Zoom để mở <b>danh sách tên</b>, rồi chụp bảng danh sách đó — nền phẳng, chữ rõ nên ít sai hơn hẳn so với chụp ô video (nền ảnh, chữ nhỏ rất dễ đọc sai). Cuộn chụp hết danh sách (nhiều ảnh cũng được). App <b>đọc tên → tự điểm danh</b> ai đã gán ID; trùng tên nhiều ảnh tính <b>1 lần</b>; tên lạ xuống <b>Chưa gán</b> để bạn chỉ định <b>1 lần</b>, lần sau tự nhận. Chữ giao diện Zoom (Audio, Chat, Share…) tự được bỏ. Ảnh <b>Danh sách</b> còn được đọc luôn <b>biểu tượng camera</b> (đỏ gạch chéo = <b>tắt cam</b>) → ghi 📷 ON/OFF cho buổi đó; đọc sai thì chạm nút cam để sửa.</div>';
+  var nMem=Object.keys(_zAlias).length;
+  h+='<div class="zatt-note" style="background:#EEF7EE">🧠 App đang <b>nhớ '+nMem+' tên Zoom</b> (lưu trên máy + đám mây, dùng mãi qua các ngày). Tên đọc lệch vài chữ / bị cắt "…" / đảo thứ tự vẫn tự nhận (dấu <b style="color:#E65100">≈ gần đúng</b> — xem lại cho chắc). Khớp sai người → bấm ✏️ để chỉ định lại.</div>';
   // Kiểu ảnh
   h+='<div class="zatt-buoi"><span class="zb-lbl">Kiểu ảnh:</span>'
    +'<button data-zmode="list" class="'+(_zatt.mode==='list'?'on':'')+'">📋 Danh sách</button>'
@@ -15763,7 +15831,7 @@ function renderZoomAtt(){
   // pending = dets chưa khớp (theo norm, unique) ∪ pending đã lưu
   var pendMap={};
   _zatt.dets.forEach(function(de){if(!de.mid&&de.norm&&!pendMap[de.norm])pendMap[de.norm]={raw:de.raw,norm:de.norm,det:de};});
-  _zPending.forEach(function(p){var nm=_zNorm(p);if(nm&&!pendMap[nm])pendMap[nm]={raw:p,norm:nm};});
+  _zPending.forEach(function(p){var nm=_zNorm(p);if(nm&&!pendMap[nm]&&(!_zAlias[nm]||_zatt.pick[nm]))pendMap[nm]={raw:p,norm:nm};});
   var pend=Object.keys(pendMap).map(function(k){return pendMap[k];});
   if(_zatt.dets.length||pend.length){
     // Đã khớp
@@ -15772,7 +15840,10 @@ function renderZoomAtt(){
     matched.forEach(function(de){
       var p=_zPeople().filter(function(x){return x.id===de.mid;})[0];if(!p)return;
       h+='<div class="zatt-row ok"><input type="checkbox" class="zatt-cbx" data-zchk="'+de.mid+'" '+(de.checked!==false?'checked':'')+'>'
-       +'<div class="zatt-nm">'+escHtml(p.name)+(p._guest?' <span style="font-size:11px;color:#8E24AA;font-weight:700">👤 Khách</span>':'')+'<span class="zsrc">'+(de.src==='guest'?'✍️ điền tay khách':'📷 nhận dạng: '+escHtml(de.raw))+'</span></div>'+(de.src==='guest'?'':camBtn(de))+'</div>';
+       +'<div class="zatt-nm">'+escHtml(p.name)+(p._guest?' <span style="font-size:11px;color:#8E24AA;font-weight:700">👤 Khách</span>':'')
+       +(de.how==='fuzzy'?' <span style="font-size:11px;color:#E65100;font-weight:700" title="Tên đọc từ ảnh gần giống (không trùng 100%) — kiểm tra lại; bấm Điểm danh sẽ nhớ luôn biến thể này">≈ gần đúng</span>':'')
+       +'<span class="zsrc">'+(de.src==='guest'?'✍️ điền tay khách':'📷 nhận dạng: '+escHtml(de.raw)+(de.how==='alias'?' · 🧠 đã nhớ':''))+'</span></div>'+(de.src==='guest'?'':camBtn(de))
+       +(de.src==='guest'?'':'<button class="zatt-del" data-zunmatch="'+encodeURIComponent(de.norm)+'" title="Khớp SAI người → bỏ khớp, chuyển xuống Chưa gán để chỉ định lại (xoá trí nhớ sai)">✏️</button>')+'</div>';
     });
     // Chưa gán — mỗi tên 1 ô TÌM TÊN tối ưu (gõ bỏ dấu, nhiều từ khoá, chuỗi con) như các vùng khác
     h+='<div class="zatt-sec" style="color:#B8860B">❓ Chưa gán — chỉ định ID ('+pend.length+')'+(pend.length?'<button data-zclearpend="1" style="margin-left:auto;border:none;background:#FDECEC;color:#C62828;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer">🗑 Xoá hết</button>':'')+'</div>';
@@ -15874,9 +15945,10 @@ async function _zRunScan(){
     if(!old||it.conf>old.conf)byNorm[norm]={raw:name,norm:norm,conf:it.conf,cam:cam};
     else old.cam=cam;
   });
+  var pmap=_zPeopleById();
   var dets=Object.keys(byNorm).map(function(k){
-    var it=byNorm[k];var p=_zResolve(it.norm);
-    return {raw:it.raw,norm:it.norm,mid:p?p.id:null,checked:true,cam:it.cam};
+    var it=byNorm[k];var r=_zMatch(it.norm,pmap);
+    return {raw:it.raw,norm:it.norm,mid:r?r.p.id:null,how:r?r.how:null,checked:true,cam:it.cam};
   });
   _zatt.dets=dets;_zatt.scanning=false;_zatt.prog=100;
   renderZoomAtt();
@@ -15884,18 +15956,18 @@ async function _zRunScan(){
   var con=dets.filter(function(x){return x.cam==='on';}).length,coff=dets.filter(function(x){return x.cam==='off';}).length;
   showToast('🔍 Đọc xong: '+dets.length+' tên · '+m+' khớp ID · '+u+' chưa gán'+(_zatt.mode==='list'?(' · 📷 '+con+' bật / 🚫 '+coff+' tắt cam'):''));
 }
-// Äiá»n tay KHÃCH (chÆ°a cÃ³ ID trÃªn cÃ¢y): dÃ¹ng láº¡i khÃ¡ch trÃ¹ng tÃªn/MÃ£ ID, náº¿u tÃªn trÃ¹ng Ä‘Ãºng 1 ID trÃªn cÃ¢y â†’ dÃ¹ng ID Ä‘Ã³
+// Điền tay KHÁCH (chưa có ID trên cây): dùng lại khách trùng tên/Mã ID, nếu tên trùng đúng 1 ID trên cây → dùng ID đó
 function _zAddGuest(name,code){
   name=String(name||'').trim();code=String(code||'').trim();if(!name)return null;
   var norm=_zNorm(name);if(!norm)return null;
   var mem=members.filter(function(m){return _zNorm(m.name)===norm||(code&&m.idCode&&String(m.idCode).trim()===code);});
-  if(mem.length===1){showToast('â„¹ï¸ "'+mem[0].name+'" Ä‘Ã£ cÃ³ ID trÃªn cÃ¢y â†’ Ä‘iá»ƒm danh theo ID');return {id:mem[0].id,norm:norm,guest:false};}
+  if(mem.length===1){showToast('ℹ️ "'+mem[0].name+'" đã có ID trên cây → điểm danh theo ID');return {id:mem[0].id,norm:norm,guest:false};}
   var gl=loadGuests();
   var g=gl.filter(function(x){return _zNorm(x.name)===norm||(code&&x.idCode&&String(x.idCode).trim()===code);})[0];
   if(g){if(code&&!g.idCode){g.idCode=code;saveGuests(gl);}}
   else{g={id:uid(),name:name,idCode:code};gl.push(g);saveGuests(gl);}
-  _zAlias[norm]=g.id;saveZoomAlias(); // láº§n sau áº£nh Zoom cÃ³ tÃªn nÃ y â†’ tá»± nháº­n
-  if(code)syncTreeToMembers(false); // MÃ£ ID trÃ¹ng ID trÃªn cÃ¢y â†’ thÄƒng cáº¥p
+  _zAlias[norm]=g.id;saveZoomAlias(); // lần sau ảnh Zoom có tên này → tự nhận
+  if(code)syncTreeToMembers(false); // Mã ID trùng ID trên cây → thăng cấp
   if(typeof renderDailyCombined==='function')renderDailyCombined();
   if(typeof updateStats==='function')updateStats();
   return {id:g.id,norm:norm,guest:true};
@@ -15903,7 +15975,9 @@ function _zAddGuest(name,code){
 function _zCommit(){
   var buoi=_zatt.buoi,marked={},aliasAdded=0;
   // 1) các dòng đã khớp + được tick
-  _zatt.dets.forEach(function(de){if(de.mid&&de.checked!==false)marked[de.mid]=1;});
+  _zatt.dets.forEach(function(de){if(de.mid&&de.checked!==false){marked[de.mid]=1;
+    // v7.34 — HỌC biến thể: tên đọc hôm nay (khớp gần đúng/khớp tên) cũng được nhớ → các ngày sau khớp 100%
+    if(de.norm&&_zAlias[de.norm]!==de.mid){_zAlias[de.norm]=de.mid;if(de.how==='fuzzy')aliasAdded++;}}});
   // 2) các dòng chưa gán được gán ID qua ô tìm tên → lưu alias + điểm danh
   var resolvedNorms={};
   Object.keys(_zatt.pick).forEach(function(norm){
@@ -15963,6 +16037,7 @@ function bindZoomAttEvents(){
     if(t){
       var pid=t.getAttribute('data-zpickid'),pn=decodeURIComponent(t.getAttribute('data-zpicknorm'));
       _zatt.pick[pn]=pid;
+      _zAlias[pn]=pid;saveZoomAlias(); // v7.34 — LƯU NGAY chỉ định (kể cả khi quên bấm Điểm danh) → ngày sau tự nhận
       var row=t.closest('.zatt-row'),per=_zPeople().filter(function(x){return x.id===pid;})[0];
       if(row){row.classList.add('assigned');var inp=row.querySelector('.zatt-pick-inp');if(inp)inp.value=per?per.name:'';var sg=row.querySelector('.zatt-pick-sug');if(sg){sg.style.display='none';sg.innerHTML='';}}
       return;
@@ -15981,38 +16056,44 @@ function bindZoomAttEvents(){
     t=e.target.closest('[data-zclearpend]');if(t){if(!confirm('Xoá hết các tên đang "Chưa gán"? (không ảnh hưởng ai đã điểm danh)'))return;_zPending=[];_zatt.dets=_zatt.dets.filter(function(de){return de.mid;});_zatt.pick={};saveZoomAlias();renderZoomAtt();return;}
     t=e.target.closest('[data-zmanual]');if(t){
       var mi=document.getElementById('zatt-manual');var v=(mi&&mi.value||'').trim();if(!v)return;
-      var mnorm=_zNorm(v);if(mnorm){var mp=_zResolve(mnorm);
-        if(!_zatt.dets.some(function(de){return de.norm===mnorm;}))_zatt.dets.push({raw:v,norm:mnorm,mid:mp?mp.id:null,checked:true});}
+      var mnorm=_zNorm(v);if(mnorm){var mr=_zMatch(mnorm);
+        if(!_zatt.dets.some(function(de){return de.norm===mnorm;}))_zatt.dets.push({raw:v,norm:mnorm,mid:mr?mr.p.id:null,how:mr?mr.how:null,checked:true});}
       renderZoomAtt();return;}
     t=e.target.closest('[data-zguestadd]');if(t){
       var gn=document.getElementById('zatt-gname'),gc=document.getElementById('zatt-gcode');
-      var gv=(gn&&gn.value||'').trim();if(!gv){showToast('Nháº­p tÃªn khÃ¡ch');if(gn)gn.focus();return;}
+      var gv=(gn&&gn.value||'').trim();if(!gv){showToast('Nhập tên khách');if(gn)gn.focus();return;}
       var r=_zAddGuest(gv,gc&&gc.value);if(!r)return;
       var ex=_zatt.dets.filter(function(de){return de.norm===r.norm;})[0];
       if(ex){ex.mid=r.id;ex.checked=true;}else _zatt.dets.push({raw:gv,norm:r.norm,mid:r.id,checked:true,src:'guest'});
       delete _zatt.pick[r.norm];_zPending=_zPending.filter(function(p){return _zNorm(p)!==r.norm;});saveZoomAlias();
-      renderZoomAtt();if(r.guest)showToast('âœ“ ÄÃ£ thÃªm khÃ¡ch: '+gv+' â€” báº¥m Äiá»ƒm danh Ä‘á»ƒ lÆ°u');
+      renderZoomAtt();if(r.guest)showToast('✓ Đã thêm khách: '+gv+' — bấm Điểm danh để lưu');
       var gn2=document.getElementById('zatt-gname');if(gn2)gn2.focus();
       return;}
     t=e.target.closest('[data-zpendguest]');if(t){
       var pn2=decodeURIComponent(t.getAttribute('data-zpendguest'));
       var row2=t.closest('.zatt-row'),nmEl=row2&&row2.querySelector('.zatt-nm');
       var raw2=nmEl?(nmEl.getAttribute('title')||''):'';
-      var gnm=prompt('LÆ°u lÃ m KHÃCH (chÆ°a cÃ³ ID trÃªn cÃ¢y) â€” sá»­a tÃªn náº¿u cáº§n:',raw2);if(gnm==null)return;gnm=gnm.trim();if(!gnm)return;
+      var gnm=prompt('Lưu làm KHÁCH (chưa có ID trên cây) — sửa tên nếu cần:',raw2);if(gnm==null)return;gnm=gnm.trim();if(!gnm)return;
       var r2=_zAddGuest(gnm,'');if(!r2)return;
-      _zAlias[pn2]=r2.id; // tÃªn Ä‘á»c tá»« áº£nh (cÃ³ thá»ƒ khÃ¡c tÃªn Ä‘Ã£ sá»­a) cÅ©ng nhá»› â†’ khÃ¡ch
+      _zAlias[pn2]=r2.id; // tên đọc từ ảnh (có thể khác tên đã sửa) cũng nhớ → khách
       var ex2=_zatt.dets.filter(function(de){return de.norm===pn2;})[0];
       if(ex2){ex2.mid=r2.id;ex2.checked=true;}else _zatt.dets.push({raw:raw2||gnm,norm:pn2,mid:r2.id,checked:true});
       delete _zatt.pick[pn2];_zPending=_zPending.filter(function(p){var n=_zNorm(p);return n!==pn2&&n!==r2.norm;});saveZoomAlias();
-      renderZoomAtt();if(r2.guest)showToast('âœ“ ÄÃ£ lÆ°u khÃ¡ch: '+gnm);
+      renderZoomAtt();if(r2.guest)showToast('✓ Đã lưu khách: '+gnm);
       return;}
+    t=e.target.closest('[data-zunmatch]');if(t){ // v7.34 — khớp sai → bỏ khớp + xoá trí nhớ sai → xuống Chưa gán
+      var un=decodeURIComponent(t.getAttribute('data-zunmatch')),ud=_zatt.dets.filter(function(x){return x.norm===un;})[0];if(!ud)return;
+      var uc=_zCompact(un),wrong=ud.mid;
+      Object.keys(_zAlias).forEach(function(k){if(_zAlias[k]===wrong&&_zCompact(k)===uc)delete _zAlias[k];});
+      _zatt.dets.forEach(function(x){if(x.mid===wrong&&_zCompact(x.norm)===uc){x.mid=null;x.how=null;}});
+      saveZoomAlias();renderZoomAtt();showToast('↩️ Đã bỏ khớp "'+ud.raw+'" — chỉ định lại ở mục Chưa gán');return;}
     t=e.target.closest('[data-zcommit]');if(t){_zCommit();return;}
   });
   body.addEventListener('input',function(e){
     if(e.target&&e.target.classList&&e.target.classList.contains('zatt-pick-inp')){
       var norm=decodeURIComponent(e.target.getAttribute('data-zpicknorm')),q=e.target.value;
       var row=e.target.closest('.zatt-row');if(row)row.classList.remove('assigned');
-      if(!q.trim())delete _zatt.pick[norm];
+      if(!q.trim()){if(_zatt.pick[norm]&&_zAlias[norm]===_zatt.pick[norm]){delete _zAlias[norm];saveZoomAlias();}delete _zatt.pick[norm];}
       _zRenderPickSug(e.target.parentNode.querySelector('.zatt-pick-sug'),norm,q);
     }
   });
