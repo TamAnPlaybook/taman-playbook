@@ -1,4 +1,4 @@
-<!-- VERSION: v7.30-kualalumpur -->
+<!-- VERSION: v7.31-clip-trang-chu -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -110,6 +110,27 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .home-lbl{font-size:15px;font-weight:800;line-height:1.25;overflow-wrap:anywhere;white-space:normal}
 .home-desc{font-size:12px;color:#777;line-height:1.35;overflow-wrap:anywhere}
 @media(max-width:359px){.home-wrap{padding:10px 8px 90px}.home-grid{gap:8px}.home-card{padding:12px 9px;min-height:108px}.home-ico{font-size:26px}.home-lbl{font-size:14px}.home-desc{font-size:11px}}
+/* v7.31 — 2 khung clip ở Trang chủ (QTV dán link; YouTube/Drive phát ngay trong khung) */
+.home-clips{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:0 0 14px}
+@media(min-width:700px){.home-clips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.home-clips:empty{display:none}
+.hc-card{display:flex;flex-direction:column;gap:8px;background:var(--surface,#fff);border:1px solid var(--line,#E7E3D9);border-top:4px solid var(--accent,#C8A84B);border-radius:16px;padding:12px;box-shadow:var(--shadow-sm);min-width:0;text-align:left;font-family:inherit;color:var(--ink,#1A1A1A)}
+.hc-hd{display:flex;align-items:center;gap:8px;min-width:0}
+.hc-no{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--accent,#C8A84B);color:var(--accent-ink,#fff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.hc-title{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-editbtn{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--line,#E7E3D9);background:var(--surface,#fff);cursor:pointer;font-size:15px}
+.hc-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
+.hc-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.hc-open{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;aspect-ratio:16/9;border-radius:12px;background:linear-gradient(135deg,var(--accent,#C8A84B),var(--accent-2,#A8842B));color:var(--accent-ink,#fff);text-decoration:none;font-weight:800;font-size:16px}
+.hc-open small{font-weight:400;font-size:11.5px;opacity:.85;max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-play{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px;padding-left:4px}
+.hc-empty{align-items:center;justify-content:center;min-height:150px;border:2px dashed var(--line,#D6D2C6);border-top:2px dashed var(--line,#D6D2C6);background:transparent;box-shadow:none;cursor:pointer;font-weight:700;font-size:14px;color:var(--accent,#C8A84B);gap:4px}
+.hc-empty small{font-weight:400;font-size:12px;color:#888}
+.hc-empty:hover{border-color:var(--accent,#C8A84B)}
+.hc-plus{font-size:30px;line-height:1}
+.hc-inp{margin-bottom:0!important}
+.hc-hint{font-size:12px;color:#777;line-height:1.5}
+.hc-acts{display:flex;gap:8px;flex-wrap:wrap}
 .content{padding:12px;max-width:900px;margin:0 auto;padding-bottom:80px}
 /* v6.22 — Khi có ảnh nền: phủ lớp mờ nhẹ sau nội dung để chữ/khoảng trống luôn dễ đọc, KHÔNG che ảnh nền ở rìa */
 body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:16px;margin-top:8px;margin-bottom:8px;box-shadow:0 6px 22px rgba(0,0,0,.10)}
@@ -2199,6 +2220,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
         <div class="home-title">&#127968; Chọn khu vực làm việc</div>
         <div class="home-sub">Bấm một ô để mở. Quay lại đây bất cứ lúc nào bằng tab <b>&#127968; Trang chủ</b>.</div>
       </div>
+      <div class="home-clips" id="home-clips"></div>
       <div class="home-grid" id="home-grid"></div>
     </div>
   </div>
@@ -5107,6 +5129,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v731-clip-home', ver:'7.31', icon:'🎬', title:'Trang chủ có 2 khung clip',
+    desc:'Ngay dưới tranh ở <b>Trang chủ</b> có <b>2 khung clip</b> do QTV chọn — bấm ▶ để xem ngay (YouTube, Google Drive phát trong khung; link khác mở tab mới). <b>QTV</b>: bấm <b>＋ Thêm clip</b> hoặc <b>✏️</b> trên khung, dán link + đặt tên, bấm Lưu → cả team thấy.' },
   { id:'v730-kualalumpur', ver:'7.30', icon:'🌆', title:'Thêm giao diện Kuala Lumpur + ô chọn có tranh',
     desc:'Chủ đề mới <b>Kuala Lumpur</b>: tháp đôi <b>Petronas</b> và tháp <b>KL</b> lúc hoàng hôn, đèn thành phố vàng, hàng cọ, hoa dâm bụt; tông <b>xanh ngọc + vàng</b>, màn đăng nhập có sao lấp lánh. Trong <b>🎨 Giao diện</b>, các chủ đề có tranh (Santorini, Bắc Kinh mùa đông, Kuala Lumpur) giờ hiện <b>ảnh xem trước</b>. Chủ đề <b>Than chì</b> đã được thay bằng <b>Bắc Kinh mùa đông</b> (ai đang dùng Than chì sẽ tự chuyển).' },
   { id:'v729-backinh', ver:'7.29', icon:'🏯', title:'Thêm giao diện: Bắc Kinh mùa đông',
@@ -5506,6 +5530,81 @@ function renderHomePage(){
     html+='<button class="home-card" data-main="'+id+'"><span class="home-ico">'+escHtml(ico)+'</span><span class="home-lbl">'+escHtml(lbl)+'</span>'+(HOME_DESC[id]?'<span class="home-desc">'+HOME_DESC[id]+'</span>':'')+'</button>';
   });
   g.innerHTML=html;
+  renderHomeClips();
+}
+// ================================================================
+// v7.31 — 2 KHUNG CLIP Ở TRANG CHỦ: QTV dán 2 link clip (YouTube / Google Drive → phát ngay
+// trong khung; link khác → nút mở). Lưu chung toàn team: appConfig/registration.homeClips
+// = [{title,url},{title,url}] (read mọi người · write QTV — KHÔNG cần Rules mới). Nạp trong loadSkillLinks.
+// ================================================================
+var HOME_CLIP_SLOTS=2;
+var homeClips=[];
+var _hcEdit=-1; // ô đang sửa (-1 = không)
+function _hcYoutubeId(u){
+  var m=String(u||'').match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/);
+  return m?m[1]:'';
+}
+function _hcDriveId(u){
+  var m=String(u||'').match(/drive\.google\.com\/(?:file\/d\/|open\?(?:.*&)?id=)([A-Za-z0-9_-]{20,})/);
+  return m?m[1]:'';
+}
+function _hcEmbed(u){
+  var y=_hcYoutubeId(u);if(y)return 'https://www.youtube-nocookie.com/embed/'+y+'?rel=0';
+  var d=_hcDriveId(u);if(d)return 'https://drive.google.com/file/d/'+d+'/preview';
+  return '';
+}
+function _hcValidUrl(u){return /^https?:\/\/\S+$/i.test(String(u||'').trim());}
+function renderHomeClips(){
+  var box=document.getElementById('home-clips');if(!box)return;
+  var admin=isBranchAdmin&&!viewOnlyMode;
+  var has=false,h='';
+  for(var i=0;i<HOME_CLIP_SLOTS;i++){
+    var c=homeClips[i]||{};var url=(c.url||'').trim(),title=(c.title||'').trim();
+    if(url)has=true;
+    if(_hcEdit===i&&admin){
+      h+='<div class="hc-card hc-edit"><div class="hc-hd"><span class="hc-no">'+(i+1)+'</span><b>Sửa khung clip '+(i+1)+'</b></div>';
+      h+='<input class="setup-input hc-inp" id="hc-title-'+i+'" maxlength="120" placeholder="Tên clip (vd: Giới thiệu CLB Tâm An)" value="'+escHtml(title)+'">';
+      h+='<input class="setup-input hc-inp" id="hc-url-'+i+'" placeholder="Dán link clip (YouTube, Google Drive, Facebook…)" value="'+escHtml(url)+'">';
+      h+='<div class="hc-hint">YouTube &amp; Google Drive (đã chia sẻ “Bất kỳ ai có liên kết”) sẽ phát ngay trong khung. Link khác hiện nút mở clip.</div>';
+      h+='<div class="hc-acts"><button class="btn btn-g btn-sm" data-hc="save" data-hc-i="'+i+'">💾 Lưu</button><button class="btn btn-o btn-sm" data-hc="cancel">Huỷ</button>'+(url?'<button class="btn btn-r btn-sm" data-hc="del" data-hc-i="'+i+'">🗑️ Xoá clip</button>':'')+'</div></div>';
+      continue;
+    }
+    if(!url){
+      if(admin)h+='<button class="hc-card hc-empty" data-hc="edit" data-hc-i="'+i+'"><span class="hc-plus">＋</span><span>Thêm clip '+(i+1)+'</span><small>Dán link YouTube / Google Drive / Facebook…</small></button>';
+      continue;
+    }
+    var emb=_hcEmbed(url);
+    h+='<div class="hc-card"><div class="hc-hd"><span class="hc-no">▶</span><b class="hc-title">'+escHtml(title||('Clip '+(i+1)))+'</b>'+(admin?'<button class="hc-editbtn" data-hc="edit" data-hc-i="'+i+'" title="Sửa">✏️</button>':'')+'</div>';
+    if(emb)h+='<div class="hc-frame"><iframe src="'+escHtml(emb)+'" title="'+escHtml(title||'Clip')+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>';
+    else h+='<a class="hc-open" href="'+escHtml(url)+'" target="_blank" rel="noopener"><span class="hc-play">▶</span><span>Mở clip</span><small>'+escHtml(url.replace(/^https?:\/\//,'').slice(0,60))+'</small></a>';
+    h+='</div>';
+  }
+  box.innerHTML=h;
+  box.style.display=(has||admin)?'':'none';
+  if(!box.__hcBound){
+    box.__hcBound=true;
+    box.addEventListener('click',function(e){
+      var b=e.target.closest('[data-hc]');if(!b)return;
+      var act=b.getAttribute('data-hc'),i=+b.getAttribute('data-hc-i');
+      if(act==='edit'){_hcEdit=i;renderHomeClips();var f=document.getElementById('hc-url-'+i);if(f)f.focus();}
+      else if(act==='cancel'){_hcEdit=-1;renderHomeClips();}
+      else if(act==='save'||act==='del')saveHomeClip(i,act==='del');
+    });
+  }
+}
+function saveHomeClip(i,del){
+  if(!(isBranchAdmin&&!viewOnlyMode)){showToast('Chỉ QTV được sửa clip');return;}
+  var title='',url='';
+  if(!del){
+    title=((document.getElementById('hc-title-'+i)||{}).value||'').trim();
+    url=((document.getElementById('hc-url-'+i)||{}).value||'').trim();
+    if(!_hcValidUrl(url)){showToast('⚠️ Link phải bắt đầu bằng https://');return;}
+  }else if(!confirm('Xoá clip '+(i+1)+' khỏi Trang chủ của cả team?'))return;
+  var arr=[];for(var k=0;k<HOME_CLIP_SLOTS;k++){var c=homeClips[k]||{};arr.push({title:c.title||'',url:c.url||''});}
+  arr[i]={title:title,url:url};
+  fsSetGlobal('registration',{homeClips:arr}).then(function(){
+    homeClips=arr;_hcEdit=-1;renderHomeClips();showToast(del?'🗑️ Đã xoá clip':'✅ Đã lưu clip — cả team thấy trên Trang chủ');
+  }).catch(function(err){showToast('❌ Lưu chưa được: '+((err&&err.message)||err));});
 }
 function showHomePage(){
   document.querySelectorAll('.mtab').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-main')==='home');});
@@ -7004,6 +7103,7 @@ function loadSkillLinks(){
   fsGetGlobal('registration').then(function(d){
     skillLinksMap=(d&&d.skillLinks)||{};
     skillMediaMap=(d&&d.skillMedia)||{};
+    homeClips=(d&&Array.isArray(d.homeClips))?d.homeClips:[];renderHomeClips(); // v7.31 — 2 clip Trang chủ
     guestProc=(d&&d.guestProcess&&typeof d.guestProcess==='object')?d.guestProcess:{desc:'',items:[]}; // v6.68 — quy trình gửi khách
     if(document.getElementById('guestproc-content'))renderGuestProc();
     applySkillCfg(d&&d.skillCfg); // QTV có thể tuỳ biến danh sách kỹ năng
