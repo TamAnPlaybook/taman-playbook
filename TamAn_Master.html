@@ -1,4 +1,4 @@
-<!-- VERSION: v7.28-santorini -->
+<!-- VERSION: v7.29-backinh-mua-dong -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -1742,6 +1742,95 @@ html.skin-santorini .nmod-title,html.skin-santorini .modal-name{color:var(--st-n
 @media(pointer:fine){
   html.skin-santorini ::-webkit-scrollbar-thumb{background:#B9CDE2;background-clip:content-box}
   html.skin-santorini ::-webkit-scrollbar-thumb:hover{background:#8FB0D2;background-clip:content-box}
+}
+</style>
+<style>
+/* ============================================================================
+   v7.29 — GIAO DIỆN BẮC KINH MÙA ĐÔNG (skin, bật bằng class html.skin-backinh)
+   Đỏ son tường cung · ngói lưu ly vàng phủ tuyết · Vạn Lý Trường Thành · Tử Cấm Thành
+   · trời đông xám lạnh · tuyết rơi. Chỉ đổi THỊ GIÁC, không đổi chức năng.
+   ============================================================================ */
+html.skin-backinh{
+  --accent:#B3261E; --accent-2:#8E1A12; --accent-soft:#F8E7E2; --accent-ink:#FFFFFF;
+  --bk-red:#B3261E; --bk-red-2:#8E1A12; --bk-deep:#5E0E0A; --bk-gold:#D9A93A; --bk-gold-soft:#F7EBCB;
+  --bk-snow:#FFFFFF; --bk-frost:#E8EEF3; --bk-jade:#2F6F5B; --bk-ink:#2E1A16; --bk-muted:#6E5A55;
+  --app-bg:#F5F6F7; --surface:#FFFFFF; --line:#E6DCD6; --ink:#2E1A16;
+  --shadow-sm:0 1px 2px rgba(60,20,15,.06),0 2px 6px rgba(60,20,15,.05);
+  --shadow-md:0 8px 22px rgba(60,20,15,.10),0 2px 6px rgba(60,20,15,.06);
+  --shadow-lg:0 20px 50px rgba(60,15,10,.22);
+  --bk-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23C9D5E0'/><stop offset='1' stop-color='%23EEF2F6'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='110' cy='46' r='18' fill='%23F6EEE2' opacity='.9'/><path d='M0 112 L40 82 L70 94 L120 60 L170 90 L220 72 L270 96 L320 84 L360 102 L360 160 L0 160Z' fill='%23B4C1CC'/><path d='M120 60 L106 70 L114 69 L120 74 L127 68 L134 71Z M40 82 L30 90 L38 89 L44 92 L50 88Z M220 72 L208 81 L216 80 L222 84 L230 79Z' fill='%23fff'/><path d='M0 136 L50 110 L100 122 L150 96 L200 114 L250 102 L300 124 L360 116 L360 160 L0 160Z' fill='%2396A6B3'/><polyline points='0,134 50,108 100,120 150,94 200,112 250,100 300,122 345,116' fill='none' stroke='%23B08E6E' stroke-width='6' stroke-linejoin='round'/><polyline points='0,130 50,104 100,116 150,90 200,108 250,96 300,118 345,112' fill='none' stroke='%23fff' stroke-width='3' stroke-dasharray='4 2' stroke-linejoin='round'/><g fill='%23A27F60'><rect x='43' y='94' width='14' height='14'/><rect x='143' y='80' width='14' height='14'/><rect x='243' y='86' width='14' height='14'/></g><g fill='%23fff'><rect x='41' y='91' width='18' height='4' rx='2'/><rect x='141' y='77' width='18' height='4' rx='2'/><rect x='241' y='83' width='18' height='4' rx='2'/></g><path d='M0 160 L0 146 Q150 138 330 144 L600 140 L600 160Z' fill='%23fff'/><rect x='330' y='116' width='270' height='14' fill='%239E2A20'/><rect x='328' y='111' width='274' height='6' rx='3' fill='%23fff'/><rect x='400' y='124' width='180' height='12' fill='%23F2F2F0'/><rect x='392' y='134' width='196' height='8' fill='%23E4E6E8'/><rect x='420' y='84' width='140' height='40' fill='%23B3261E'/><g fill='%237E1812'><rect x='432' y='94' width='12' height='30'/><rect x='456' y='94' width='12' height='30'/><rect x='480' y='94' width='20' height='30'/><rect x='512' y='94' width='12' height='30'/><rect x='536' y='94' width='12' height='30'/></g><path d='M398 90 Q420 86 430 74 L550 74 Q560 86 582 90 Q560 88 545 88 L435 88 Q420 88 398 90Z' fill='%23E3B341'/><path d='M412 86 Q424 82 432 74 L548 74 Q556 82 568 86 Q548 81 540 80 L440 80 Q430 81 412 86Z' fill='%23fff'/><rect x='446' y='60' width='88' height='16' fill='%23B3261E'/><path d='M420 64 Q440 60 450 46 L530 46 Q540 60 560 64 Q540 62 528 62 L452 62 Q440 62 420 64Z' fill='%23F0C04A'/><path d='M432 59 Q446 54 452 46 L528 46 Q534 54 548 59 Q532 53 524 52 L456 52 Q446 53 432 59Z' fill='%23fff'/><rect x='452' y='42' width='76' height='5' rx='2' fill='%23fff'/><g fill='%23D9302A'><circle cx='432' cy='96' r='3'/><circle cx='548' cy='96' r='3'/></g><g fill='%23fff' opacity='.95'><circle cx='30' cy='20' r='1.6'/><circle cx='70' cy='70' r='1.3'/><circle cx='160' cy='24' r='1.8'/><circle cx='200' cy='52' r='1.2'/><circle cx='260' cy='30' r='1.6'/><circle cx='300' cy='64' r='1.4'/><circle cx='350' cy='22' r='1.8'/><circle cx='390' cy='50' r='1.2'/><circle cx='580' cy='30' r='1.6'/><circle cx='590' cy='80' r='1.3'/><circle cx='380' cy='94' r='1.5'/><circle cx='120' cy='130' r='1.4'/><circle cx='230' cy='138' r='1.2'/></g></svg>");
+  --bk-flakes:radial-gradient(circle,rgba(255,255,255,.95) 0 1.6px,transparent 2.4px),radial-gradient(circle,rgba(255,255,255,.8) 0 1.1px,transparent 1.8px);
+}
+html.skin-backinh body{background:var(--app-bg) linear-gradient(180deg,#E3E9EF 0,#F5F6F7 260px,#F8F5F1 100%) no-repeat;color:var(--bk-ink)}
+
+/* ── Màn đăng nhập: Tử Cấm Thành + Trường Thành trong tuyết, tuyết rơi ── */
+html.skin-backinh #setup-screen{position:relative;overflow:hidden;background:var(--bk-scene) right bottom/100% 46% no-repeat,linear-gradient(180deg,#AFC0CF 0%,#C9D5E0 54%)}
+html.skin-backinh #setup-screen::before{content:"";position:absolute;inset:-200px 0 0 0;pointer-events:none;background-image:var(--bk-flakes);background-size:90px 90px,140px 140px;background-position:0 0,40px 60px;animation:bk-snow 14s linear infinite;opacity:.9}
+@keyframes bk-snow{to{background-position:30px 200px,10px 340px}}
+@media(prefers-reduced-motion:reduce){html.skin-backinh #setup-screen::before{animation:none}}
+html.skin-backinh .setup-box{position:relative;z-index:1;border-radius:14px;border-top:6px solid var(--bk-red);box-shadow:var(--shadow-lg),inset 0 0 0 1px var(--bk-gold-soft);background:rgba(255,255,255,.97)}
+html.skin-backinh .setup-logo{color:var(--bk-red)}
+html.skin-backinh .setup-logo::before{content:"";display:block;width:70px;height:16px;margin:0 0 10px;background:linear-gradient(180deg,#fff 0 35%,var(--bk-gold) 35%);clip-path:polygon(0 100%,14% 30%,22% 0,78% 0,86% 30%,100% 100%,82% 78%,18% 78%)}
+html.skin-backinh .setup-btn{background:linear-gradient(180deg,#C8382C,#8E1A12);color:#FFF3D6;border-radius:10px;box-shadow:0 6px 16px rgba(142,26,18,.28)}
+html.skin-backinh .setup-input{border-color:#E3D6CF;border-radius:8px}
+html.skin-backinh .flink{color:var(--bk-red)}
+
+/* ── Thanh trên cùng: đỏ son tường cung + chỉ vàng ── */
+html.skin-backinh .topbar{background:linear-gradient(180deg,#A3211A 0%,#6E0F0A 100%);border-bottom:2px solid var(--bk-gold);box-shadow:0 2px 14px rgba(90,15,8,.25)}
+html.skin-backinh .tb-logo{color:#FCE7B0;display:flex;align-items:center;gap:8px}
+html.skin-backinh .tb-logo::before{content:"";flex:0 0 auto;width:24px;height:10px;background:linear-gradient(180deg,#fff 0 40%,var(--bk-gold) 40%);clip-path:polygon(0 100%,14% 30%,22% 0,78% 0,86% 30%,100% 100%,82% 78%,18% 78%)}
+html.skin-backinh .tb-ns,html.skin-backinh .tb-date{color:rgba(255,240,220,.75)}
+html.skin-backinh .tb-ns{background:rgba(255,255,255,.12)}
+html.skin-backinh .tb-gear,html.skin-backinh .tb-out{border-color:rgba(252,231,176,.45);color:#FCE7B0}
+html.skin-backinh .tb-gear:hover{color:#fff;border-color:#fff}
+html.skin-backinh .main-tabs{background:#fff;border-top:0;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(60,20,15,.05)}
+html.skin-backinh .mtab{color:var(--bk-muted)}
+html.skin-backinh .mtab.on{color:var(--bk-red);border-bottom:3px solid var(--bk-red)}
+html.skin-backinh .date-bar,html.skin-backinh .stats-bar,html.skin-backinh .search-row{background:#fff;border-color:var(--line)}
+html.skin-backinh .sbox{border-color:var(--line)}
+html.skin-backinh .sn{color:var(--bk-red)}
+html.skin-backinh .db-btn{background:var(--bk-frost);border-color:#D8E0E7;color:var(--bk-deep);border-radius:8px}
+html.skin-backinh .db-today{background:var(--bk-red);border-radius:8px}
+html.skin-backinh .srch{border-color:#E3D6CF;border-radius:10px}
+
+/* ── Trang chủ: tranh Bắc Kinh mùa đông + ô kiểu cửa cung ── */
+html.skin-backinh .home-hd{background:var(--bk-scene) right bottom/cover no-repeat;border-radius:16px;padding:18px 18px 64px;margin:0 0 14px;box-shadow:var(--shadow-md);min-height:150px;border-bottom:4px solid var(--bk-red)}
+html.skin-backinh .home-title{color:var(--bk-deep);text-shadow:0 1px 0 rgba(255,255,255,.75)}
+html.skin-backinh .home-sub{color:#4A3A36;max-width:58%}
+@media(max-width:620px){html.skin-backinh .home-sub{max-width:100%}html.skin-backinh .home-hd{background:var(--bk-scene) right bottom/100% 112px no-repeat,linear-gradient(180deg,#B9C8D5,#C9D5E0);padding-bottom:124px;min-height:0}}
+html.skin-backinh .home-card{position:relative;border:1px solid var(--line);border-top:5px solid var(--bk-red);border-left:1px solid var(--line);border-radius:6px 6px 12px 12px;background:linear-gradient(180deg,#fff 0%,#fff 72%,#FBF6F2 100%);color:var(--bk-ink)}
+html.skin-backinh .home-card::before{content:"";position:absolute;left:10px;right:10px;top:-5px;height:5px;background:linear-gradient(90deg,transparent 0 6px,#fff 6px calc(100% - 6px),transparent calc(100% - 6px));opacity:.85;border-radius:0 0 3px 3px}
+html.skin-backinh .home-card:nth-child(3n+2){border-top-color:var(--bk-gold)}
+html.skin-backinh .home-card:nth-child(3n){border-top-color:var(--bk-jade)}
+html.skin-backinh .home-ico{width:50px;height:46px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:var(--bk-gold-soft);box-shadow:inset 0 0 0 1.5px #E9CF8A;font-size:26px}
+html.skin-backinh .home-lbl{color:var(--bk-deep)}
+html.skin-backinh .home-desc{color:var(--bk-muted)}
+
+/* ── Nội dung ── */
+html.skin-backinh .mc,html.skin-backinh .adm-box,html.skin-backinh .chart-wrap{border-radius:10px}
+html.skin-backinh .stabs{border-color:var(--line);border-radius:10px}
+html.skin-backinh .stab{color:var(--bk-muted)}
+html.skin-backinh .stab.on,html.skin-backinh #page-mg .mgk-tabs .stab.on{background:var(--bk-red);color:#FFF3D6}
+html.skin-backinh .fb-filter.on,html.skin-backinh .pf-filter.on,html.skin-backinh .mgk-chip.on{background:var(--bk-red);border-color:var(--bk-red);color:#fff}
+html.skin-backinh .msec-title{color:var(--bk-red);letter-spacing:.08em}
+html.skin-backinh .btn-g{background:linear-gradient(180deg,#C8382C,#A3211A);color:#fff}
+html.skin-backinh .btn-d{background:var(--bk-deep);color:#FCE7B0}
+html.skin-backinh .btn-o{border-color:#E3D6CF;color:var(--bk-deep)}
+html.skin-backinh .tbtn{background:var(--bk-frost);border-color:#D8E0E7;color:var(--bk-deep)}
+html.skin-backinh .tbtn.gold{background:linear-gradient(180deg,#F0C04A,#C9962E);color:#3A2408;border-color:#C9962E}
+html.skin-backinh .sel,html.skin-backinh .nmod-inp{border-color:#E3D6CF}
+html.skin-backinh .skc.done,html.skin-backinh .tg-y{background:var(--bk-red)!important;border-color:var(--bk-red)}
+html.skin-backinh .ovt th,html.skin-backinh #fs-head,html.skin-backinh .ids-matrix th.ids-cw-user,html.skin-backinh .ids-matrix th.ids-cw-tot{background:var(--bk-deep);color:#FCE7B0}
+html.skin-backinh .dd-ord-num,html.skin-backinh .mgk-av{background:var(--bk-red);color:#FCE7B0}
+html.skin-backinh .mgk-dtoday,html.skin-backinh .an-person-view button,html.skin-backinh .map-wrap.map-fs .map-fs-exit{background:var(--bk-red);border-color:var(--bk-red);color:#fff}
+html.skin-backinh .toast{background:var(--bk-deep);border-color:rgba(217,169,58,.6)}
+html.skin-backinh .modal,html.skin-backinh .nmod{border-top:4px solid var(--bk-red);box-shadow:0 -12px 44px rgba(60,15,10,.25)}
+html.skin-backinh .modal-ov,html.skin-backinh .nmod-ov{background:rgba(40,12,8,.55)}
+html.skin-backinh .modal-x,html.skin-backinh .nmod-x{background:var(--bk-frost);color:var(--bk-deep)}
+html.skin-backinh .nmod-title,html.skin-backinh .modal-name{color:var(--bk-deep)}
+@media(pointer:fine){
+  html.skin-backinh ::-webkit-scrollbar-thumb{background:#D3C2BB;background-clip:content-box}
+  html.skin-backinh ::-webkit-scrollbar-thumb:hover{background:#B79C92;background-clip:content-box}
 }
 </style>
 </head>
@@ -4926,6 +5015,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v729-backinh', ver:'7.29', icon:'🏯', title:'Thêm giao diện: Bắc Kinh mùa đông',
+    desc:'Chủ đề mới <b>Bắc Kinh mùa đông</b>: thanh trên cùng <b>đỏ son</b> viền vàng, Trang chủ có tranh <b>Tử Cấm Thành</b> mái ngói vàng phủ tuyết và <b>Vạn Lý Trường Thành</b> trên núi tuyết, màn đăng nhập có <b>tuyết rơi</b>. Bật: bấm <b>🎨</b> trên thanh trên cùng → chọn <b>Bắc Kinh mùa đông</b>. Muốn quay lại: chọn <b>Santorini</b> hoặc chủ đề khác.' },
   { id:'v728-santorini', ver:'7.28', icon:'🏛️', title:'Giao diện mới: phong cách Santorini',
     desc:'App khoác áo mới theo phong cách <b>Santorini</b> (Hy Lạp): nền trắng vôi, thanh trên cùng <b>xanh vòm Aegean</b>, Trang chủ có tranh biển – nhà trắng – mái vòm xanh – hoa giấy hồng, các ô bo hình <b>mái vòm</b>, nút bo tròn mềm mại. Mọi chức năng giữ nguyên. Muốn quay lại tông cũ: bấm <b>🎨</b> trên thanh trên cùng → chọn <b>Vàng kim cổ điển</b> (hoặc chủ đề khác).' },
   { id:'v727-diemdanh-gon', ver:'7.27', icon:'✅', title:'Điểm danh gọn hơn: thẻ 1 dòng, Zoom lên đầu, QTV bật/tắt chức năng',
@@ -15891,6 +15982,8 @@ function attachSelFilter(inputEl,selEl){
 var THEME_PRESETS={
   // v7.28 — Santorini: chủ đề "da" toàn app (skin) — trắng vôi, xanh vòm Aegean, hoa giấy hồng, nắng hoàng hôn. Mặc định.
   santorini:{name:'Santorini (Hy Lạp)',accent:'#1F64B0',a2:'#0E4C92',soft:'#E3EEFA',ink:'#FFFFFF',skin:'santorini'},
+  // v7.29 — Bắc Kinh mùa đông: đỏ son, ngói vàng phủ tuyết, Vạn Lý Trường Thành + Tử Cấm Thành, tuyết rơi.
+  backinh:{name:'Bắc Kinh mùa đông',accent:'#B3261E',a2:'#8E1A12',soft:'#F8E7E2',ink:'#FFFFFF',skin:'backinh'},
   gold:{name:'Vàng kim cổ điển',accent:'#C8A84B',a2:'#A8842B',soft:'#F6EECF',ink:'#1A1A1A'},
   emerald:{name:'Lục bảo',accent:'#1F7A5E',a2:'#155C46',soft:'#E2F1EB',ink:'#FFFFFF'},
   sapphire:{name:'Lam ngọc',accent:'#2D5DA8',a2:'#1F4279',soft:'#E5ECF8',ink:'#FFFFFF'},
@@ -15898,7 +15991,7 @@ var THEME_PRESETS={
   bronze:{name:'Đồng cổ',accent:'#B07D4B',a2:'#8B6038',soft:'#F3E9DD',ink:'#1A1A1A'},
   charcoal:{name:'Than chì',accent:'#4A4A4A',a2:'#2E2E2E',soft:'#E9E9E9',ink:'#FFFFFF'}
 };
-var THEME_ORDER=['santorini','gold','emerald','sapphire','bordeaux','bronze','charcoal'];
+var THEME_ORDER=['santorini','backinh','gold','emerald','sapphire','bordeaux','bronze','charcoal'];
 // v6.16 — Hình nền cao cấp (gradient châu Âu). Ảnh tự upload lưu riêng (_bgImage).
 var BG_PRESETS={
   cream:{name:'Lụa kem',css:'linear-gradient(135deg,#FBF3E6 0%,#F1E2C9 100%)'},
@@ -15924,7 +16017,7 @@ function _ensurePrefShape(){
 function applyTheme(key){
   var t=THEME_PRESETS[key]?key:'santorini';var p=THEME_PRESETS[t];
   var r=document.documentElement.style;
-  document.documentElement.classList.toggle('skin-santorini',p.skin==='santorini');
+  ['santorini','backinh'].forEach(function(s){document.documentElement.classList.toggle('skin-'+s,p.skin===s);});
   r.setProperty('--accent',p.accent);
   r.setProperty('--accent-2',p.a2);
   r.setProperty('--accent-soft',p.soft);
