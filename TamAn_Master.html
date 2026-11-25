@@ -1,4 +1,4 @@
-<!-- VERSION: v7.27-diemdanh-tinh-gon -->
+<!-- VERSION: v7.28-santorini -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -42,7 +42,7 @@
   ============================================================================
 -->
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="skin-santorini">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -1655,6 +1655,94 @@ textarea.mgk-inp{resize:vertical;min-height:52px}
 .mgk-quick{display:inline-flex;gap:4px;flex-wrap:wrap;margin-top:2px}
 .mgk-tpls{display:flex;flex-wrap:wrap;gap:6px}
 @media(max-width:400px){#page-mg .mgk-tabs .stab{padding:8px 4px;font-size:13px}.mgk-add{padding:0 12px}}
+</style>
+<style>
+/* ============================================================================
+   v7.28 — GIAO DIỆN SANTORINI (skin toàn app, bật bằng class html.skin-santorini)
+   Trắng vôi · xanh vòm Aegean · biển Địa Trung Hải · hoa giấy hồng · nắng hoàng hôn.
+   Chỉ đổi THỊ GIÁC, không đổi bố cục/chức năng. Tắt = chọn chủ đề khác ở 🎨 Giao diện.
+   ============================================================================ */
+html.skin-santorini{
+  --accent:#1F64B0; --accent-2:#0E4C92; --accent-soft:#E3EEFA; --accent-ink:#FFFFFF;
+  --st-navy:#0B3566; --st-blue:#1F64B0; --st-blue-2:#0E4C92; --st-sky:#E3EEFA; --st-sea:#2F7FC1;
+  --st-pink:#D6457E; --st-sun:#F2B45C; --st-ink:#14304F; --st-muted:#5E7189;
+  --app-bg:#F4F8FC; --surface:#FFFFFF; --line:#DCE6F0; --ink:#14304F;
+  --shadow-sm:0 1px 2px rgba(14,60,110,.06),0 2px 6px rgba(14,60,110,.05);
+  --shadow-md:0 8px 22px rgba(14,60,110,.10),0 2px 6px rgba(14,60,110,.06);
+  --shadow-lg:0 20px 50px rgba(11,53,102,.20);
+  --st-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23BCDCF6'/><stop offset='.75' stop-color='%23FBEBD6'/></linearGradient><linearGradient id='w' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%233C8FD0'/><stop offset='1' stop-color='%23124E8C'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='150' cy='104' r='24' fill='%23F6C46E' opacity='.9'/><rect y='112' width='600' height='48' fill='url(%23w)'/><path d='M0 122 Q75 118 150 122 T300 122 T450 122 T600 122' stroke='%23fff' stroke-opacity='.35' fill='none'/><path d='M60 140 Q120 136 180 140' stroke='%23fff' stroke-opacity='.25' fill='none'/><path d='M220 130 l18 0 l-3 5 l-12 0z' fill='%23fff'/><path d='M229 130 l0 -11 l7 11z' fill='%23fff' opacity='.9'/><path d='M330 160 L334 108 L380 96 L430 82 L476 68 L540 58 L600 50 L600 160Z' fill='%23B98A6B'/><path d='M330 160 L334 124 L400 114 L470 104 L540 98 L600 94 L600 160Z' fill='%23A0705A'/><g fill='%23fff' stroke='%23D5E1EC'><rect x='348' y='92' width='34' height='24'/><rect x='390' y='80' width='40' height='30'/><rect x='446' y='70' width='26' height='32'/><rect x='480' y='60' width='44' height='28'/><rect x='532' y='48' width='34' height='30'/><rect x='418' y='106' width='46' height='26'/><rect x='496' y='94' width='42' height='28'/><rect x='552' y='80' width='48' height='32'/><rect x='452' y='50' width='12' height='20'/></g><g fill='%231F5FA8'><path d='M394 80 A13 13 0 0 1 420 80Z'/><path d='M490 60 A12 12 0 0 1 514 60Z'/><path d='M564 80 A11 11 0 0 1 586 80Z'/><path d='M452 50 A6 6 0 0 1 464 50Z'/><rect x='360' y='104' width='5' height='12' rx='2.5'/><rect x='405' y='96' width='6' height='14' rx='3'/><rect x='436' y='118' width='6' height='14' rx='3'/><rect x='510' y='108' width='6' height='14' rx='3'/><rect x='540' y='60' width='5' height='10' rx='2.5'/><rect x='572' y='96' width='6' height='14' rx='3'/></g><g fill='%23D6457E'><circle cx='384' cy='114' r='5'/><circle cx='390' cy='110' r='4'/><circle cx='468' cy='130' r='5'/><circle cx='474' cy='126' r='4'/><circle cx='528' cy='86' r='4'/><circle cx='548' cy='120' r='5'/></g></svg>");
+}
+html.skin-santorini body{background:var(--app-bg) linear-gradient(180deg,#E6F0FA 0,#F4F8FC 260px,#FAF8F3 100%) no-repeat;color:var(--st-ink)}
+
+/* ── Màn đăng nhập: khung cảnh Santorini toàn màn hình ── */
+html.skin-santorini #setup-screen{background:var(--st-scene) right bottom/100% 46% no-repeat,linear-gradient(180deg,#8EC2EE 0%,#BCDCF6 54%)}
+html.skin-santorini .setup-box{border-radius:26px;border-top:5px solid var(--st-blue);box-shadow:var(--shadow-lg);background:rgba(255,255,255,.96)}
+html.skin-santorini .setup-logo{color:var(--st-navy)}
+html.skin-santorini .setup-logo::before{content:"";display:block;width:56px;height:28px;margin:0 0 10px;border-radius:56px 56px 0 0;background:linear-gradient(180deg,#2A74C4,#0E4C92);box-shadow:0 5px 0 -1px #fff,0 6px 0 0 #DCE6F0}
+html.skin-santorini .setup-btn{background:linear-gradient(180deg,#2A74C4,#0E4C92);color:#fff;border-radius:999px;box-shadow:0 6px 16px rgba(14,76,146,.28)}
+html.skin-santorini .setup-input{border-color:#D3E0EC;border-radius:12px}
+html.skin-santorini .flink{color:var(--st-blue)}
+html.skin-santorini .gbtn{border-radius:999px}
+
+/* ── Thanh trên cùng: xanh vòm Aegean + viền trắng gợn sóng ── */
+html.skin-santorini .topbar{background:linear-gradient(180deg,#14589F 0%,#0B3566 100%);border-bottom:0;box-shadow:0 2px 14px rgba(11,53,102,.25)}
+html.skin-santorini .tb-logo{color:#fff;display:flex;align-items:center;gap:8px}
+html.skin-santorini .tb-logo::before{content:"";flex:0 0 auto;width:20px;height:10px;border-radius:20px 20px 0 0;background:#fff;box-shadow:0 3px 0 0 var(--st-sun)}
+html.skin-santorini .tb-ns,html.skin-santorini .tb-date{color:rgba(255,255,255,.72)}
+html.skin-santorini .tb-ns{background:rgba(255,255,255,.12)}
+html.skin-santorini .tb-gear,html.skin-santorini .tb-out{border-color:rgba(255,255,255,.35);color:#fff}
+html.skin-santorini .tb-gear:hover{color:var(--st-sun);border-color:var(--st-sun)}
+html.skin-santorini .main-tabs{background:#fff;border-top:0;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(14,60,110,.05)}
+html.skin-santorini .mtab{color:var(--st-muted)}
+html.skin-santorini .mtab.on{color:var(--st-blue);border-bottom:3px solid var(--st-blue)}
+html.skin-santorini .date-bar,html.skin-santorini .stats-bar,html.skin-santorini .search-row{background:#fff;border-color:var(--line)}
+html.skin-santorini .sbox{border-color:var(--line)}
+html.skin-santorini .sn{color:var(--st-blue)}
+html.skin-santorini .db-btn{background:var(--st-sky);border-color:#CFE0F2;color:var(--st-navy);border-radius:999px}
+html.skin-santorini .db-today{background:var(--st-blue);border-radius:999px}
+html.skin-santorini .srch{border-color:#D3E0EC;border-radius:999px}
+
+/* ── Trang chủ: tranh Santorini + thẻ hình vòm ── */
+html.skin-santorini .home-hd{background:var(--st-scene) right bottom/cover no-repeat;border-radius:22px;padding:18px 18px 64px;margin:0 0 14px;box-shadow:var(--shadow-md);min-height:150px}
+html.skin-santorini .home-title{color:var(--st-navy);text-shadow:0 1px 0 rgba(255,255,255,.7)}
+html.skin-santorini .home-sub{color:#3B5470;max-width:60%}
+@media(max-width:620px){html.skin-santorini .home-sub{max-width:100%}html.skin-santorini .home-hd{background:var(--st-scene) right bottom/100% 112px no-repeat,linear-gradient(180deg,#A9D2F3,#BCDCF6);padding-bottom:124px;min-height:0}}
+html.skin-santorini .home-card{border:1px solid var(--line);border-top:4px solid var(--st-blue);border-left:1px solid var(--line);border-radius:26px 26px 14px 14px;background:linear-gradient(180deg,#fff 0%,#fff 70%,#F6FAFE 100%);color:var(--st-ink)}
+html.skin-santorini .home-card:nth-child(3n+2){border-top-color:var(--st-pink)}
+html.skin-santorini .home-card:nth-child(3n){border-top-color:var(--st-sun)}
+html.skin-santorini .home-ico{width:52px;height:46px;display:flex;align-items:center;justify-content:center;border-radius:26px 26px 8px 8px;background:var(--st-sky);font-size:26px}
+html.skin-santorini .home-lbl{color:var(--st-navy)}
+html.skin-santorini .home-desc{color:var(--st-muted)}
+
+/* ── Nội dung: thẻ trắng vôi, góc bo mềm, bóng xanh nhạt ── */
+html.skin-santorini .mc,html.skin-santorini .adm-box,html.skin-santorini .chart-wrap{border-radius:16px}
+html.skin-santorini .stabs{border-color:var(--line);border-radius:999px;padding:4px}
+html.skin-santorini .stab{color:var(--st-muted);border-radius:999px}
+html.skin-santorini .stab.on,html.skin-santorini #page-mg .mgk-tabs .stab.on{background:var(--st-blue);color:#fff}
+html.skin-santorini .fb-filter.on,html.skin-santorini .pf-filter.on,html.skin-santorini .mgk-chip.on{background:var(--st-blue);border-color:var(--st-blue);color:#fff}
+html.skin-santorini .msec-title{color:var(--st-blue);letter-spacing:.08em}
+html.skin-santorini .btn{border-radius:999px}
+html.skin-santorini .btn-g{background:linear-gradient(180deg,#2A74C4,#1F64B0);color:#fff}
+html.skin-santorini .btn-d{background:var(--st-navy);color:#fff}
+html.skin-santorini .btn-o{border-color:#CFDDEA;color:var(--st-navy)}
+html.skin-santorini .tbtn{background:var(--st-sky);border-color:#CFE0F2;color:var(--st-navy);border-radius:999px}
+html.skin-santorini .tbtn.gold{background:linear-gradient(180deg,#F6C46E,#E39B3B);color:#3A2408;border-color:#E39B3B}
+html.skin-santorini .sel,html.skin-santorini .nmod-inp{border-color:#D3E0EC}
+html.skin-santorini .skc.done,html.skin-santorini .tg-y{background:var(--st-blue)!important;border-color:var(--st-blue)}
+html.skin-santorini .ovt th,html.skin-santorini #fs-head,html.skin-santorini .ids-matrix th.ids-cw-user,html.skin-santorini .ids-matrix th.ids-cw-tot{background:var(--st-navy);color:#fff}
+html.skin-santorini .dd-ord-num,html.skin-santorini .mgk-av{background:var(--st-navy);color:#fff}
+html.skin-santorini .mgk-dtoday,html.skin-santorini .an-person-view button,html.skin-santorini .map-wrap.map-fs .map-fs-exit{background:var(--st-blue);border-color:var(--st-blue);color:#fff}
+html.skin-santorini .toast{background:var(--st-navy);border-color:rgba(242,180,92,.5)}
+
+/* ── Popup: đầu khung có vòm xanh mảnh ── */
+html.skin-santorini .modal,html.skin-santorini .nmod{border-top:4px solid var(--st-blue);box-shadow:0 -12px 44px rgba(11,53,102,.25)}
+html.skin-santorini .modal-ov,html.skin-santorini .nmod-ov{background:rgba(11,40,78,.55)}
+html.skin-santorini .modal-x,html.skin-santorini .nmod-x{background:var(--st-sky);color:var(--st-navy)}
+html.skin-santorini .nmod-title,html.skin-santorini .modal-name{color:var(--st-navy)}
+@media(pointer:fine){
+  html.skin-santorini ::-webkit-scrollbar-thumb{background:#B9CDE2;background-clip:content-box}
+  html.skin-santorini ::-webkit-scrollbar-thumb:hover{background:#8FB0D2;background-clip:content-box}
+}
 </style>
 </head>
 <body>
@@ -4838,6 +4926,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v728-santorini', ver:'7.28', icon:'🏛️', title:'Giao diện mới: phong cách Santorini',
+    desc:'App khoác áo mới theo phong cách <b>Santorini</b> (Hy Lạp): nền trắng vôi, thanh trên cùng <b>xanh vòm Aegean</b>, Trang chủ có tranh biển – nhà trắng – mái vòm xanh – hoa giấy hồng, các ô bo hình <b>mái vòm</b>, nút bo tròn mềm mại. Mọi chức năng giữ nguyên. Muốn quay lại tông cũ: bấm <b>🎨</b> trên thanh trên cùng → chọn <b>Vàng kim cổ điển</b> (hoặc chủ đề khác).' },
   { id:'v727-diemdanh-gon', ver:'7.27', icon:'✅', title:'Điểm danh gọn hơn: thẻ 1 dòng, Zoom lên đầu, QTV bật/tắt chức năng',
     desc:'Tab <b>Hành động → ✅ Điểm danh</b> (trước là “Kế hoạch ngày &amp; Điểm danh”): nút <b>📷 Điểm danh bằng ảnh Zoom</b> lên đầu; mỗi thẻ còn <b>1 dòng</b> (tên + nút ✓); hướng dẫn thu vào nút <b>ⓘ</b>; mục Khách tự thu gọn; <b>Bảng hiện diện</b> tự ẩn ngày không ai điểm danh (vd Chủ nhật). <b>QTV</b>: trong Quản trị → <b>✅ Cấu hình Điểm danh</b> chọn buổi dùng (Sáng/Trưa/Tối), bật/tắt Trễ–Vắng, nhãn Kế hoạch ngày, nút camera — áp dụng cả đội, không xoá dữ liệu.' },
   { id:'v724-pokayoke', ver:'7.24', icon:'🛡️', title:'Chống sai sót: Mã ID trùng/sai + từ ngữ quá công dụng',
@@ -15799,6 +15889,8 @@ function attachSelFilter(inputEl,selEl){
 // document nên luôn gửi toàn bộ _prefs).
 // ================================================================
 var THEME_PRESETS={
+  // v7.28 — Santorini: chủ đề "da" toàn app (skin) — trắng vôi, xanh vòm Aegean, hoa giấy hồng, nắng hoàng hôn. Mặc định.
+  santorini:{name:'Santorini (Hy Lạp)',accent:'#1F64B0',a2:'#0E4C92',soft:'#E3EEFA',ink:'#FFFFFF',skin:'santorini'},
   gold:{name:'Vàng kim cổ điển',accent:'#C8A84B',a2:'#A8842B',soft:'#F6EECF',ink:'#1A1A1A'},
   emerald:{name:'Lục bảo',accent:'#1F7A5E',a2:'#155C46',soft:'#E2F1EB',ink:'#FFFFFF'},
   sapphire:{name:'Lam ngọc',accent:'#2D5DA8',a2:'#1F4279',soft:'#E5ECF8',ink:'#FFFFFF'},
@@ -15806,7 +15898,7 @@ var THEME_PRESETS={
   bronze:{name:'Đồng cổ',accent:'#B07D4B',a2:'#8B6038',soft:'#F3E9DD',ink:'#1A1A1A'},
   charcoal:{name:'Than chì',accent:'#4A4A4A',a2:'#2E2E2E',soft:'#E9E9E9',ink:'#FFFFFF'}
 };
-var THEME_ORDER=['gold','emerald','sapphire','bordeaux','bronze','charcoal'];
+var THEME_ORDER=['santorini','gold','emerald','sapphire','bordeaux','bronze','charcoal'];
 // v6.16 — Hình nền cao cấp (gradient châu Âu). Ảnh tự upload lưu riêng (_bgImage).
 var BG_PRESETS={
   cream:{name:'Lụa kem',css:'linear-gradient(135deg,#FBF3E6 0%,#F1E2C9 100%)'},
@@ -15818,7 +15910,7 @@ var BG_PRESETS={
   midnight:{name:'Đêm châu Âu',css:'linear-gradient(135deg,#243B55 0%,#141E30 100%)'}
 };
 var BG_ORDER=['cream','marble','provence','lavender','mediterranean','forest','midnight'];
-var _prefs={theme:'gold',bg:{type:'none',preset:'',dim:0.3},notify:{enabled:false,time:'19:00',freq:'daily',fired:''}};
+var _prefs={theme:'santorini',bg:{type:'none',preset:'',dim:0.3},notify:{enabled:false,time:'19:00',freq:'daily',fired:''}};
 var _bgImage='';
 function _ensurePrefShape(){
   if(!_prefs.bg||typeof _prefs.bg!=='object')_prefs.bg={type:'none',preset:'',dim:0.3};
@@ -15830,8 +15922,9 @@ function _ensurePrefShape(){
   if(_prefs.myStart&&(_prefs.myStart.lat==null||_prefs.myStart.lng==null))_prefs.myStart=null; // điểm xuất phát mặc định
 }
 function applyTheme(key){
-  var t=THEME_PRESETS[key]?key:'gold';var p=THEME_PRESETS[t];
+  var t=THEME_PRESETS[key]?key:'santorini';var p=THEME_PRESETS[t];
   var r=document.documentElement.style;
+  document.documentElement.classList.toggle('skin-santorini',p.skin==='santorini');
   r.setProperty('--accent',p.accent);
   r.setProperty('--accent-2',p.a2);
   r.setProperty('--accent-soft',p.soft);
@@ -15861,7 +15954,9 @@ function applyBackground(bg){
 }
 function applyPrefs(){
   _ensurePrefShape();
-  applyTheme(_prefs.theme||'gold');
+  // v7.28 — chuyển MỘT LẦN mọi người sang giao diện Santorini (vẫn đổi lại được ở 🎨 Giao diện)
+  if(!_prefs.skinV728){_prefs.theme='santorini';_prefs.skinV728=true;}
+  applyTheme(_prefs.theme||'santorini');
   applyBackground(_prefs.bg);
   startReengage(); // (re)arm lịch nhắc việc (tự gating theo notify.enabled)
 }
@@ -16080,7 +16175,7 @@ function renderAppearance(){
   h+='<div class="msec-title">Chủ đề màu cao cấp</div>';
   h+='<div class="thm-grid">';
   THEME_ORDER.forEach(function(key){
-    var p=THEME_PRESETS[key];var on=(_prefs.theme||'gold')===key;
+    var p=THEME_PRESETS[key];var on=(_prefs.theme||'santorini')===key;
     h+='<div class="thm-card'+(on?' on':'')+'" data-theme="'+key+'" style="--tc:'+p.accent+'">';
     h+='<div class="thm-swatch" style="background:'+p.soft+'"><div class="thm-dot" style="background:'+p.accent+'"></div><div class="thm-bar"></div></div>';
     h+='<div class="thm-name">'+escHtml(p.name)+'</div>';
