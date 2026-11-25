@@ -1,4 +1,4 @@
-<!-- VERSION: v7.31-clip-trang-chu -->
+<!-- VERSION: v7.32-do-so-lieu -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -1344,6 +1344,21 @@ table.ina-t .ina-tag{font-size:10.5px;color:#C62828;font-weight:700;white-space:
 .an-click{cursor:pointer;border-radius:8px;transition:background .12s}
 .an-row.an-click{padding:3px 4px;margin-left:-4px;margin-right:-4px}
 .an-click:hover{background:#F2F6FB}
+/* v7.32 — 5 chỉ số giữ chân & nhân bản */
+.an-growth{border:1.5px solid var(--accent,#C8A84B);box-shadow:0 0 0 3px var(--accent-soft,#F6EECF)}
+.an-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,170px),1fr));gap:8px}
+.an-kpi{background:#F7F9F8;border:1px solid #ECEFEE;border-radius:11px;padding:10px 10px 9px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.an-kpi.an-click:hover{background:#EEF4FA;border-color:#D6E3F0}
+.an-kpi-v{font-size:26px;font-weight:800;line-height:1.1;font-family:Arial}
+.an-kpi-l{font-size:12.5px;font-weight:700;color:#333;line-height:1.35}
+.an-kpi-l small{display:block;font-weight:400;color:#777;font-size:11.5px;margin-top:2px}
+.an-kpi-t{font-size:11px;color:#8A8A8A}
+.an-kpi-s{font-size:11.5px;color:#555;line-height:1.35;overflow-wrap:anywhere}
+.an-wk{display:flex;align-items:flex-end;gap:3px;height:34px;margin:4px 0 2px}
+.an-wk-c{flex:1;height:100%;display:flex;align-items:flex-end;background:#ECEFEE;border-radius:3px;overflow:hidden}
+.an-wk-b{width:100%;background:var(--accent,#C8A84B);border-radius:3px}
+.an-wk-c:last-child .an-wk-b{background:#1A7A5E}
+.an-copy-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
 .an-insights .an-ins.an-click:hover{background:#E6EFFC}
 .an-more{display:inline-block;margin-left:4px;font-size:11.5px;font-weight:800;color:#1565C0;white-space:nowrap}
 .anp-sum{font-size:13px;color:#555;background:#F7F5EE;border-radius:9px;padding:8px 10px;margin-bottom:10px;line-height:1.5}
@@ -12617,9 +12632,12 @@ var ANALYTICS_FEATURES=[
   {id:'daily',lbl:'Kế hoạch ngày'},{id:'checkin',lbl:'Điểm danh'},
   {id:'prospect',lbl:'DS kim cương Tiềm năng'},{id:'map',lbl:'Vị trí các CLB'},
   {id:'results',lbl:'Báo cáo & Kết quả'},{id:'guide',lbl:'Hướng dẫn'},
-  {id:'skill',lbl:'Kỹ năng'},{id:'magnoseek',lbl:'MagnoSeek'}
+  {id:'skill',lbl:'Kỹ năng'},{id:'magnoseek',lbl:'MagnoSeek'},
+  // v7.32 — bổ sung các tính năng trước đây chưa được đo (isNew: chưa tính vào "ít dùng nhất"/"phủ tính năng" khi còn 0 lượt)
+  {id:'sk',lbl:'Kết quả SK',isNew:1},{id:'lich168',lbl:'Lịch tuần 168',isNew:1},{id:'journal',lbl:'Nhật ký',isNew:1},
+  {id:'disc',lbl:'Đo DISC',isNew:1},{id:'zoomocr',lbl:'Điểm danh ảnh Zoom',isNew:1}
 ];
-var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect',kynang:'skill',mg:'magnoseek'};
+var _MAIN_FEAT={tree:'tree',tp:'goals',map:'map',guide:'guide',admin:'admin',prospect:'prospect',kynang:'skill',mg:'magnoseek',sk:'sk',disc:'disc'};
 // v6.80 — MODULE MỞ ĐẦU KHI ĐĂNG NHẬP: QTV cấu hình chung (appConfig/registration.startModule), cả đội đọc.
 //   Không gồm 'admin' (thành viên không có tab này). Mặc định 'tree' (Sơ đồ).
 var START_MODULES=[
@@ -12704,7 +12722,7 @@ function trackEvent(feat){
 }
 function trackSub(grp,sub){
   if(grp==='tp'){if(sub==='goals'){trackEvent('goals');try{if(wheelStats())trackEvent('mirror');}catch(e){}}else if(sub==='results')trackEvent('results');else if(sub==='actions')trackEvent('daily');}
-  else if(grp==='act'){trackEvent(sub==='ngay'?'checkin':'daily');}
+  else if(grp==='act'){trackEvent(sub==='ngay'?'checkin':sub==='lich168'?'lich168':sub==='journal'?'journal':'daily');} // v7.32 — tách 168 & Nhật ký
   else if(grp==='res')trackEvent('results');
   else if(grp==='map')trackEvent('map');
 }
@@ -12772,6 +12790,133 @@ async function loadAnalyticsData(){
   var acts=await Promise.all(accts.map(function(a){return fsGetUser(a.uid,'activity').catch(function(){return null;});}));
   return accts.map(function(a,i){return {uid:a.uid,name:a.name,email:a.email,createdAt:a.createdAt,activity:acts[i]||null};});
 }
+// ================================================================
+// v7.32 — 🎯 5 CHỈ SỐ GIỮ CHÂN & NHÂN BẢN (đầu bảng Phân tích QTV) + theo nhánh + 📋 copy báo cáo
+//   ① Dùng hằng tuần (WAU/tổng) ② Kích hoạt người mới (≥3 ngày hoạt động trong 7 ngày đầu, nhóm vào 7–90 ngày trước)
+//   ③ Chuỗi ngày liên tục ④ Leader nhân bản (tài khoản có ≥3 tuyến dưới — cây Nhị phân của QTV — hoạt động 7 ngày)
+//   ⑤ Người dùng theo tuần (8 tuần). Khớp tài khoản ↔ node theo Mã ID ID Gốc (thiếu → tên không dấu), như scanInactive.
+// ================================================================
+var _anRep={},_anData=null,_anMatchCache=null,_anLeaders=null;
+function _anStreak(u){var n=0,i=u.daySet[_dayKeyAgo(0)]?0:1;while(u.daySet[_dayKeyAgo(i)]&&n<400){n++;i++;}return n;}
+function _anActivated(u){
+  if(!u.firstSeenT)return false;
+  var d0=new Date(u.firstSeenT);d0.setHours(0,0,0,0);var t0=d0.getTime(),c=0;
+  Object.keys(u.daySet).forEach(function(k){var t=_keyTime(k);if(t>=t0&&t<t0+7*864e5)c++;});
+  return c>=3;
+}
+function _anNewCohort(users){var now=Date.now();return users.filter(function(u){return u.firstSeenT&&(now-u.firstSeenT)>=7*864e5&&(now-u.firstSeenT)<=90*864e5;});}
+function _anWeekly(users,weeks){
+  var out=[];
+  for(var w=weeks-1;w>=0;w--){var keys=[];for(var d=0;d<7;d++)keys.push(_dayKeyAgo(w*7+d));
+    out.push(users.filter(function(u){return keys.some(function(k){return u.daySet[k];});}).length);}
+  return out;
+}
+function _anKpi(val,lbl,target,ok,sub,pick,extraId){
+  var c=ok===null?'#5A5A5A':ok?'#1A7A5E':'#C62828';
+  return '<div class="an-kpi'+(pick?' an-click':'')+'"'+(pick?' data-an-pick="'+pick+'"':'')+(extraId?' id="'+extraId+'"':'')+' title="'+(pick?'Bấm để xem DS người':'')+'"><div class="an-kpi-v" style="color:'+c+'">'+val+'</div><div class="an-kpi-l">'+lbl+'</div><div class="an-kpi-t">🎯 '+target+'</div>'+(sub?'<div class="an-kpi-s">'+sub+'</div>':'')+'</div>';
+}
+function _anGrowthHtml(users,data){
+  var total=users.length,now=Date.now();
+  var wau=users.filter(function(u){return u.act7>0;}).length,wauPct=total?Math.round(wau/total*100):0;
+  var coh=_anNewCohort(users),act=coh.filter(_anActivated),actPct=coh.length?Math.round(act.length/coh.length*100):null;
+  var streaks=users.map(function(u){return {u:u,s:_anStreak(u)};}).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;});
+  var s3=streaks.filter(function(x){return x.s>=3;}).length,s7=streaks.filter(function(x){return x.s>=7;}).length;
+  var avgS=streaks.length?Math.round(streaks.reduce(function(a,x){return a+x.s;},0)/streaks.length*10)/10:0;
+  var wk=_anWeekly(users,8);
+  var new7=data.filter(function(u){return u.createdAt&&(now-new Date(u.createdAt).getTime())<=7*864e5;}).length;
+  _anRep={total:total,wau:wau,wauPct:wauPct,coh:coh.length,act:act.length,actPct:actPct,s3:s3,s7:s7,avgS:avgS,
+    top:streaks.slice(0,3).map(function(x){return (x.u.name||x.u.email||'?')+' ('+x.s+' ngày)';}),wk:wk,new7:new7,leaders:null,dup:null,branch:null,matched:null};
+  var h='<div class="an-sec an-growth"><div class="an-h">🎯 5 chỉ số giữ chân &amp; nhân bản</div>';
+  h+='<div class="an-frow-sub" style="margin:-4px 0 10px">App có thành <b>thói quen</b> của thành viên chưa, và có <b>lan xuống tuyến dưới</b> không? Xanh = đạt mục tiêu, đỏ = chưa đạt. Bấm ô để xem danh sách người.</div>';
+  h+='<div class="an-kpis">';
+  h+=_anKpi(wauPct+'%','① Dùng hằng tuần<small>'+wau+'/'+total+' người mở app trong 7 ngày qua</small>','≥ 60%',total?wauPct>=60:null,'','g:wau');
+  h+=_anKpi(actPct===null?'—':actPct+'%','② Kích hoạt người mới<small>'+act.length+'/'+coh.length+' người mới dùng ≥3 ngày trong tuần đầu</small>','≥ 70%',actPct===null?null:actPct>=70,actPct===null?'Chưa có người mới đủ 7 ngày':'',coh.length?'g:notact':'');
+  h+=_anKpi(s3,'③ Giữ chuỗi ≥3 ngày liên tục<small>≥7 ngày: '+s7+' người · TB '+avgS+' ngày</small>','tăng dần mỗi tuần',null,streaks.length?'🔥 Dài nhất: '+escHtml(_anRep.top[0]):'',streaks.length?'g:streak':'');
+  h+=_anKpi('<span id="an-dup-v">…</span>','④ Leader nhân bản<small id="an-dup-s">đang khớp tài khoản với cây…</small>','có ≥3 tuyến dưới dùng app',null,'','','an-dup-kpi');
+  var mx=Math.max(1,Math.max.apply(null,wk)),up=wk[7]>=wk[6];
+  h+='<div class="an-kpi"><div class="an-kpi-v" style="color:'+(up?'#1A7A5E':'#C62828')+'">'+wk[7]+' '+(up?'↗':'↘')+'</div><div class="an-kpi-l">⑤ Người dùng tuần này<small>tuần trước '+wk[6]+' · đăng ký mới 7 ngày: '+new7+'</small></div><div class="an-wk">';
+  wk.forEach(function(v,i){h+='<div class="an-wk-c" title="'+(i===7?'Tuần này':(7-i)+' tuần trước')+': '+v+' người"><div class="an-wk-b" style="height:'+Math.max(4,Math.round(v/mx*100))+'%"></div></div>';});
+  h+='</div><div class="an-kpi-t">8 tuần gần nhất (cũ → mới)</div></div>';
+  h+='</div><div id="an-branch"><div class="an-frow-sub" style="margin-top:10px">⏳ Đang tính theo nhánh Leader…</div></div>';
+  h+='<div class="an-copy-row"><button class="btn btn-d btn-sm" data-an-copy="1">📋 Copy báo cáo số liệu</button><span class="an-frow-sub">Dán vào Zalo cho Leader, hoặc gửi Claude để phân tích.</span></div>';
+  h+='</div>';
+  return h;
+}
+async function _anMatchAccounts(users){
+  if(_anMatchCache)return _anMatchCache;
+  var nodes=_realTreeNodes()||[];
+  var trees=await Promise.all(users.map(function(u){return fsGetUser(u.uid,'tree').catch(function(){return null;});}));
+  var map={};
+  users.forEach(function(u,i){
+    var tn=(trees[i]&&trees[i].nodes)||[],root=null;
+    for(var k=0;k<tn.length;k++){if(tn[k]&&!tn[k].parentId){root=tn[k];break;}}
+    var code=noAccent(root?String(root.idCode||'').trim():''),my=null;
+    if(code)my=nodes.find(function(t){return noAccent(String(t.idCode||'').trim())===code;})||null;
+    if(!my){var nm=noAccent(String((root&&root.name)||u.name||'').trim());if(nm)my=nodes.find(function(t){return noAccent(String(t.name||'').trim())===nm;})||null;}
+    if(my)map[u.uid]=my;
+  });
+  _anMatchCache=map;return map;
+}
+async function _anLoadBranch(users){
+  var box=document.getElementById('an-branch');if(!box)return;
+  try{
+    var map=await _anMatchAccounts(users),nodes=_realTreeNodes()||[];
+    var kids={};nodes.forEach(function(n){if(n.parentId)(kids[n.parentId]=kids[n.parentId]||[]).push(n.id);});
+    var node2u={};users.forEach(function(u){var n=map[u.uid];if(n)node2u[n.id]=u;});
+    function desc(id){var out=[],st=(kids[id]||[]).slice(),g=0;while(st.length&&g<20000){var x=st.pop();g++;out.push(x);(kids[x]||[]).forEach(function(c){st.push(c);});}return out;}
+    var leaders=[];
+    users.forEach(function(u){var n=map[u.uid];if(!n)return;
+      var dl=desc(n.id).map(function(id){return node2u[id];}).filter(function(x){return x&&x.uid!==u.uid;});
+      if(!dl.length)return;
+      leaders.push({u:u,dl:dl.length,act:dl.filter(function(x){return x.act7>0;}).length});});
+    leaders.sort(function(a,b){return b.act-a.act||b.dl-a.dl;});
+    _anLeaders=leaders;
+    var dup=leaders.filter(function(l){return l.act>=3;}).length;
+    var br={};
+    users.forEach(function(u){var n=map[u.uid],k='(Chưa khớp cây)';
+      if(n){if(!n.parentId)k='(Gốc)';else{var hd=teamHeadOf(n);k=hd?hd.name:'(Không rõ nhánh)';}}
+      if(!br[k])br[k]={k:k,t:0,a:0};br[k].t++;if(u.act7>0)br[k].a++;});
+    var bl=Object.keys(br).map(function(k){return br[k];}).sort(function(a,b){return b.t-a.t;});
+    var matched=Object.keys(map).length;
+    _anRep.leaders=leaders.length;_anRep.dup=dup;_anRep.branch=bl;_anRep.matched=matched;
+    _anRep.leaderTop=leaders.slice(0,5).map(function(l){return (l.u.name||l.u.email||'?')+': '+l.act+'/'+l.dl+' tuyến dưới hoạt động';});
+    var v=document.getElementById('an-dup-v'),s=document.getElementById('an-dup-s'),kp=document.getElementById('an-dup-kpi');
+    if(v){v.textContent=leaders.length?(dup+'/'+leaders.length):'—';v.parentNode.style.color=leaders.length?(dup>0?'#1A7A5E':'#C62828'):'#5A5A5A';}
+    if(s)s.textContent=leaders.length?('trong '+leaders.length+' người có tuyến dưới dùng app, '+dup+' người có ≥3 tuyến dưới hoạt động 7 ngày'):'chưa có tài khoản nào có tuyến dưới cũng dùng app';
+    if(kp&&leaders.length){kp.classList.add('an-click');kp.setAttribute('data-an-pick','g:dup');}
+    var h='<div class="an-sub" style="margin-top:12px">🌿 Theo nhánh Leader — số người hoạt động 7 ngày / tổng tài khoản trong nhánh</div>';
+    bl.forEach(function(b){var pct=b.t?Math.round(b.a/b.t*100):0;var c=pct>=60?'#1A7A5E':pct>=30?'#E65100':'#C62828';
+      h+='<div class="an-row"><div class="an-row-lbl" style="color:#333">'+escHtml(b.k)+'</div>'+_anBar(pct,c)+'<div class="an-row-v">'+b.a+'/'+b.t+' ('+pct+'%)</div></div>';});
+    h+='<div class="an-frow-sub">Khớp được <b>'+matched+'/'+users.length+'</b> tài khoản với cây của bạn (theo Mã ID của ID Gốc). Tài khoản chưa khớp: nhắc họ nhập đúng Mã ID trên cây của họ.</div>';
+    box.innerHTML=h;
+  }catch(err){box.innerHTML='<div class="an-frow-sub" style="color:#C62828">Không tính được theo nhánh: '+escHtml((err&&err.message)||String(err))+'</div>';
+    var v2=document.getElementById('an-dup-v');if(v2)v2.textContent='—';}
+}
+function _anReportText(){
+  var r=_anRep,users=_anUsers||[];if(!users.length)return '';
+  var dau=users.filter(function(u){return u.activeToday;}).length,wau=r.wau,mau=users.filter(function(u){return u.act30>0;}).length;
+  var L=[];
+  L.push('📊 BÁO CÁO SỐ LIỆU APP TÂM AN — '+new Date().toLocaleDateString('vi-VN'));
+  L.push('Tổng tài khoản: '+r.total+' · Hôm nay: '+dau+' · 7 ngày: '+wau+' · 30 ngày: '+mau);
+  L.push('');
+  L.push('🎯 5 CHỈ SỐ');
+  L.push('① Dùng hằng tuần: '+r.wauPct+'% ('+r.wau+'/'+r.total+') — mục tiêu ≥60%');
+  L.push('② Kích hoạt người mới (≥3 ngày trong tuần đầu): '+(r.actPct===null?'chưa đủ dữ liệu':(r.actPct+'% ('+r.act+'/'+r.coh+')'))+' — mục tiêu ≥70%');
+  L.push('③ Chuỗi ngày: '+r.s3+' người ≥3 ngày, '+r.s7+' người ≥7 ngày, TB '+r.avgS+' ngày'+(r.top.length?' · Top: '+r.top.join(', '):''));
+  L.push('④ Leader nhân bản: '+(r.leaders===null?'đang tính':(r.dup+'/'+r.leaders+' người có ≥3 tuyến dưới hoạt động 7 ngày')));
+  if(r.leaderTop&&r.leaderTop.length)r.leaderTop.forEach(function(s){L.push('   • '+s);});
+  L.push('⑤ Người dùng theo tuần (8 tuần, cũ→mới): '+r.wk.join(' · ')+' · đăng ký mới 7 ngày: '+r.new7);
+  L.push('');
+  L.push('🔁 Giữ chân: '+[1,7,30,90].map(function(n){var x=retentionRate(users,n);return 'D'+n+' '+(x===null?'—':x+'%');}).join(' · '));
+  var segN={};users.forEach(function(u){segN[u.seg]=(segN[u.seg]||0)+1;});
+  L.push('👥 Phân khúc: '+Object.keys(AN_SEG_LBL).map(function(k){return AN_SEG_LBL[k]+' '+(segN[k]||0);}).join(' · '));
+  if(_anData){L.push('');L.push('🧩 Tính năng (người dùng · lượt):');
+    aggregateFeatures(_anData).sort(function(a,b){return b.uses-a.uses;}).forEach(function(f){L.push('   • '+f.lbl+': '+f.users+' người · '+f.uses+' lượt');});}
+  if(r.branch){L.push('');L.push('🌿 Theo nhánh (hoạt động 7 ngày / tổng):');
+    r.branch.forEach(function(b){L.push('   • '+b.k+': '+b.a+'/'+b.t);});
+    L.push('   (khớp cây '+r.matched+'/'+r.total+' tài khoản)');}
+  return L.join('\n');
+}
 function _anBar(pct,color){return '<div class="an-track"><div class="an-fill" style="width:'+Math.max(0,Math.min(100,pct))+'%;background:'+color+'"></div></div>';}
 function _anStat(num,lbl,color){return '<div class="an-stat"><div class="an-num" style="color:'+(color||'#1A1A1A')+'">'+num+'</div><div class="an-lbl">'+lbl+'</div></div>';}
 function renderAnalytics(data){
@@ -12790,6 +12935,7 @@ function renderAnalytics(data){
   var anyData=users.some(function(u){return u.last>0;});
   var h='';
   if(!anyData)h+='<div class="an-note">⏳ Lớp theo dõi vừa bật — số liệu sẽ tích luỹ &amp; có ý nghĩa dần sau vài ngày/tuần người dùng hoạt động. Hôm nay phần lớn chỉ số còn 0.</div>';
+  h+=_anGrowthHtml(users,data); // v7.32 — 5 chỉ số giữ chân & nhân bản lên đầu
   // 1) HOẠT ĐỘNG
   h+='<div class="an-sec"><div class="an-h">📊 Hoạt động người dùng</div><div class="an-grid">';
   h+=_anStat(total,'Tổng người dùng','#1A1A1A')+_anStat(dau,'Hoạt động hôm nay (DAU)','#1A7A5E')+
@@ -12819,7 +12965,9 @@ function renderAnalytics(data){
     h+='<div class="an-frow"><div class="an-frow-top"><span class="an-frow-lbl">'+escHtml(f.lbl)+'</span><span class="an-frow-n">'+f.users+' người · '+f.uses+' lượt</span></div>'+
        _anBar(Math.round(f.uses/maxUses*100),'#1565C0')+'<div class="an-frow-sub">Gần nhất: '+lastTxt+'</div></div>';
   });
-  var most=faSort[0],least=faSort[faSort.length-1];
+  var _isNewF={};ANALYTICS_FEATURES.forEach(function(f){if(f.isNew)_isNewF[f.id]=1;});
+  var faRated=faSort.filter(function(f){return f.uses>0||!_isNewF[f.id];}); // v7.32 — tính năng vừa bắt đầu đo, còn 0 lượt → chưa xếp hạng
+  var most=faSort[0],least=faRated[faRated.length-1];
   var grow=fa.slice().filter(function(f){return f.prior>0||f.recent>0;}).sort(function(a,b){return ((b.recent-b.prior)/(b.prior||1))-((a.recent-a.prior)/(a.prior||1));})[0];
   var abandon=fa.slice().filter(function(f){return f.uses>0&&f.last>0&&(now-f.last)>14*864e5;}).sort(function(a,b){return a.last-b.last;})[0];
   h+='<div class="an-callouts">';
@@ -12860,7 +13008,7 @@ function renderAnalytics(data){
   var d7=retentionRate(users,7),d30=retentionRate(users,30);
   var engPct=total?Math.round(users.filter(function(u){return u.cls==='high'||u.cls==='mod';}).length/total*100):0;
   var activeRatio=total?Math.round(mau/total*100):0;
-  var adopt=Math.round(fa.filter(function(f){return f.users>0;}).length/ANALYTICS_FEATURES.length*100);
+  var adopt=Math.round(fa.filter(function(f){return f.users>0;}).length/Math.max(1,faRated.length)*100);
   var growthC=Math.min(100,Math.round(new30/Math.max(1,total)*100));
   var comps=[];if(d7!==null)comps.push({w:0.30,v:d7});comps.push({w:0.25,v:engPct});comps.push({w:0.20,v:activeRatio});comps.push({w:0.15,v:adopt});comps.push({w:0.10,v:growthC});
   var wsum=comps.reduce(function(s,c){return s+c.w;},0);
@@ -12886,6 +13034,7 @@ function renderAnalytics(data){
     h+=k?'<div class="an-ins an-click" data-an-pick="'+k+'" title="Bấm để xem những người liên quan">💡 '+s+' <span class="an-more">👥 Xem người liên quan ›</span></div>':'<div class="an-ins">💡 '+s+'</div>';});
   h+='<div class="an-frow-sub" style="margin-top:8px">Cập nhật theo dữ liệu hành vi thật (ẩn danh hoá), không phải phỏng đoán.</div></div>';
   el.innerHTML=h;
+  _anData=data;_anMatchCache=null;_anLoadBranch(users); // v7.32 — tính theo nhánh (tải cây từng tài khoản)
 }
 // v6.97 — Bấm vào thống kê (Mức độ gắn kết · Phân khúc · Nhận định) → popup DS tên, Mã ID, những người liên quan
 var _anUsers=null;
@@ -12925,6 +13074,21 @@ function openAnPick(key){
   else if(typ==='ret7lost'){title='🔁 Không quay lại sau tuần đầu';note='Đã vào app từ ≥7 ngày trước nhưng không còn hoạt động sau ngày thứ 6.';
     groups.push({l:'',a:users.filter(function(u){return u.firstSeenT&&(now-u.firstSeenT)>=7*864e5&&!(u.last&&(u.last-u.firstSeenT)>=6*864e5);})});}
   else if(typ==='returning'){title='🔁 Quay lại ≥2 ngày';groups.push({l:'',a:users.filter(function(u){return u.activeDaysCount>=2;})});}
+  // v7.32 — 5 chỉ số giữ chân & nhân bản
+  else if(typ==='g'&&val==='wau'){title='① Dùng hằng tuần';note='Ai mở app trong 7 ngày qua và ai chưa — gọi nhắc những người chưa mở.';
+    groups.push({l:'✅ Đã mở app trong 7 ngày',a:users.filter(function(u){return u.act7>0;}),x:function(u){return u.act7+'/7 ngày';}});
+    groups.push({l:'— Chưa mở app 7 ngày',a:users.filter(function(u){return !(u.act7>0);})});}
+  else if(typ==='g'&&val==='notact'){var coh=_anNewCohort(users);title='② Kích hoạt người mới';note='Người vào app lần đầu cách đây 7–90 ngày. "Đã kích hoạt" = dùng ≥3 ngày trong tuần đầu.';
+    groups.push({l:'⚠️ Chưa kích hoạt — cần kèm cặp',a:coh.filter(function(u){return !_anActivated(u);})});
+    groups.push({l:'✅ Đã kích hoạt',a:coh.filter(_anActivated)});}
+  else if(typ==='g'&&val==='streak'){title='③ Chuỗi ngày liên tục';note='Số ngày liên tục mở app tính tới hôm nay (hoặc hôm qua). Nên khen ngợi người giữ chuỗi dài.';
+    var st=users.map(function(u){return {u:u,s:_anStreak(u)};}).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;});
+    var smap={};st.forEach(function(x){smap[x.u.uid]=x.s;});
+    groups.push({l:'🔥 Đang giữ chuỗi',a:st.map(function(x){return x.u;}),x:function(u){return '🔥 '+smap[u.uid]+' ngày';},keep:1});}
+  else if(typ==='g'&&val==='dup'){title='④ Leader nhân bản';note='Người có tuyến dưới (trên cây của bạn) cũng dùng app. ≥3 tuyến dưới hoạt động 7 ngày = đang nhân bản tốt.';
+    var ls=_anLeaders||[],lm={};ls.forEach(function(l){lm[l.u.uid]=l;});
+    groups.push({l:'🌟 Đang nhân bản (≥3 tuyến dưới hoạt động)',a:ls.filter(function(l){return l.act>=3;}).map(function(l){return l.u;}),x:function(u){return lm[u.uid].act+'/'+lm[u.uid].dl+' tuyến dưới hoạt động';},keep:1});
+    groups.push({l:'🌱 Cần hỗ trợ nhân bản',a:ls.filter(function(l){return l.act<3;}).map(function(l){return l.u;}),x:function(u){return lm[u.uid].act+'/'+lm[u.uid].dl+' tuyến dưới hoạt động';},keep:1});}
   var tot=groups.reduce(function(s,g){return s+g.a.length;},0);
   var h='<div class="anp-sum"><b>'+tot+'</b> người'+(note?' · '+note:'')+'</div>';
   groups.forEach(function(g){
@@ -14333,6 +14497,8 @@ document.addEventListener('click',function(e){
   if(t){if(t.getAttribute('data-ina')==='rescan')mountInactiveRemind(true);else copyText(inactiveCopyText());return;}
   t=e.target.closest('[data-an-pick]');
   if(t){openAnPick(t.getAttribute('data-an-pick'));return;}
+  t=e.target.closest('[data-an-copy]'); // v7.32 — copy báo cáo số liệu
+  if(t){var _rt=_anReportText();if(_rt)copyText(_rt);else showToast('Chưa có số liệu');return;}
   if(e.target.closest('#anpick-ov [data-view-uid]'))document.getElementById('anpick-ov').classList.remove('open'); // rồi xử lý xem tài khoản như cũ
   t=e.target.closest('[data-bdpop-open]');
   if(t){openBdayPopup(t.getAttribute('data-bdpop-open')==='preview');return;}
@@ -15400,6 +15566,7 @@ function _zLoadTess(){
   return _zTessLoading;
 }
 async function _zGetWorker(){
+  try{trackEvent('zoomocr');}catch(e){} // v7.32 — đo lượt dùng Điểm danh ảnh Zoom
   if(_zWorker)return _zWorker;
   _zWorker=await Tesseract.createWorker('vie+eng',1,{logger:function(mm){
     if(mm&&mm.status==='recognizing text'){
