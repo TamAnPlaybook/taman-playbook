@@ -1,4 +1,4 @@
-<!-- VERSION: v7.26-l168-thantai-tren-thany -->
+<!-- VERSION: v7.27-diemdanh-tinh-gon -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -534,6 +534,28 @@ body.fs-mode #tree-canvas-wrap,body.fs-mode #star-canvas-wrap{height:auto!import
 .dd-cols .mc-att{padding:6px 6px;gap:4px}
 .dd-cols .mc-att-btn{font-size:9px;padding:4px 1px}
 .dd-cols .mc-att-btn .mab-s{font-size:13px}
+/* v7.27 — Điểm danh tinh gọn: thẻ 1 dòng, nút Zoom nổi bật, ⓘ thu gọn, khách thu gọn, cấu hình QTV */
+.mc-1l{display:flex;align-items:stretch;flex-wrap:wrap}
+.mc-1l .mc-hd{flex:1 1 150px;min-width:0;padding:7px 9px;gap:8px}
+.mc-1l .mc-name{font-size:14px}
+.mc-1l .mc-badges{margin-top:2px}
+.mc-1l .mc-ship{display:flex;align-items:center;flex-shrink:0}
+.mc-1l .mc-att{border-top:none;padding:5px 7px 5px 0;flex:0 0 auto;margin-left:auto}
+.mc-1l .mc-att-btn{width:44px;flex:0 0 44px;padding:3px 1px}
+.dd-cols .mc-1l .mc-att{padding:4px 5px 4px 0}
+.dd-cols .mc-1l .mc-att-btn{width:40px;flex:0 0 40px}
+.att-topbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.att-zoom-btn{background:#1565C0;color:#fff;font-weight:800;font-size:15px;padding:11px 16px;border-radius:12px;border:none;flex:1 1 240px}
+.att-help{margin-bottom:10px}
+.att-help>summary{display:inline-block;cursor:pointer;font-size:12.5px;color:#777;font-weight:700;font-family:Arial;padding:3px 10px;border:1px solid #E5E5E5;border-radius:999px;background:#FAFAFA;list-style:none}
+.att-help>summary::-webkit-details-marker{display:none}
+.att-help[open]>summary{margin-bottom:6px}
+details.guest-sec>summary{list-style:none;display:flex}
+details.guest-sec>summary::-webkit-details-marker{display:none}
+table.adash-1s .ad-c i{width:14px;height:14px;border-radius:3px}
+.attcfg-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13.5px;color:#333;cursor:pointer}
+.attcfg-row input{width:17px;height:17px;margin-top:1px;flex-shrink:0}
+.attcfg-row small{display:block;font-size:11.5px;color:#888;font-weight:400;line-height:1.4}
 /* So sánh TV (v6.2) */
 .cmp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #E8E8E8;border-radius:12px;background:white}
 .cmpt{border-collapse:collapse;width:100%;font-family:Arial;font-size:12.5px;white-space:nowrap}
@@ -1830,7 +1852,7 @@ textarea.mgk-inp{resize:vertical;min-height:52px}
           <button class="stab on" data-sub="act:today">&#128203; Hôm nay</button>
           <button class="stab" data-sub="act:lich168">&#128467;&#65039; Lịch tuần 168</button>
           <button class="stab" data-sub="act:journal">&#128212; Nhật ký</button>
-          <button class="stab" data-sub="act:ngay">&#128197; Kế hoạch ngày &amp; Điểm danh</button>
+          <button class="stab" data-sub="act:ngay">&#9989; Điểm danh</button>
         </div>
         <div class="spg on" id="act-today">
           <div id="action-center"></div>
@@ -4816,6 +4838,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v727-diemdanh-gon', ver:'7.27', icon:'✅', title:'Điểm danh gọn hơn: thẻ 1 dòng, Zoom lên đầu, QTV bật/tắt chức năng',
+    desc:'Tab <b>Hành động → ✅ Điểm danh</b> (trước là “Kế hoạch ngày &amp; Điểm danh”): nút <b>📷 Điểm danh bằng ảnh Zoom</b> lên đầu; mỗi thẻ còn <b>1 dòng</b> (tên + nút ✓); hướng dẫn thu vào nút <b>ⓘ</b>; mục Khách tự thu gọn; <b>Bảng hiện diện</b> tự ẩn ngày không ai điểm danh (vd Chủ nhật). <b>QTV</b>: trong Quản trị → <b>✅ Cấu hình Điểm danh</b> chọn buổi dùng (Sáng/Trưa/Tối), bật/tắt Trễ–Vắng, nhãn Kế hoạch ngày, nút camera — áp dụng cả đội, không xoá dữ liệu.' },
   { id:'v724-pokayoke', ver:'7.24', icon:'🛡️', title:'Chống sai sót: Mã ID trùng/sai + từ ngữ quá công dụng',
     desc:'<b>🔑 Mã ID:</b> khi thêm/sửa ID, app kiểm tra ngay lúc gõ — <b>trùng</b> với ID khác trên cây hoặc <b>sai định dạng</b> (khoảng trắng, chữ có dấu, ký tự lạ) sẽ báo đỏ và <b>không cho lưu</b>. Vì Kỹ năng, DISC, Sinh nhật đều đồng bộ lên tuyến trên theo Mã ID.<br><b>🩺 Kết quả SK var WHATS_NEW=[amp; Cách hỗ trợ:</b> khi lưu, app soát các cách nói quá công dụng (vd “chữa khỏi”, “khỏi hẳn”, “thần dược”, “bỏ thuốc”, “diệt ung thư”) — có cách nói an toàn thì bấm OK để <b>tự thay</b>; chỗ bắt buộc phải sửa tay sẽ được chỉ rõ. Sản phẩm là TPCN/thiết bị hỗ trợ, không phải thuốc chữa bệnh.' },
   { id:'v723-kynang-sync', ver:'7.23', icon:'⭐', title:'Kỹ năng tự cập nhật lên tuyến trên · Lịch 168 có “Việc khác”',
@@ -4861,7 +4885,7 @@ var WHATS_NEW=[
   { id:'v697-bday-popup', ver:'6.97', icon:'🎂', title:'Popup chúc mừng sinh nhật tự động',
     desc:'Ai đã nhập <b>Sinh nhật</b> trong thông tin ID — đúng ngày đó, mở app sẽ tự hiện <b>popup chúc mừng</b> kèm 1 lời chúc về ước mơ, mục tiêu, cuộc đời đáng sống, ấm no, hạnh phúc, thịnh vượng. Đóng popup thì nút <b>🎂</b> ở góc màn hình vẫn còn để mở lại <b>suốt cả ngày</b>.' },
   { id:'v697-attdash-drill', ver:'6.97', icon:'🌳', title:'Bảng hiện diện tháng: bấm tên → DS từ ID đó trở xuống',
-    desc:'Trong <b>Kế hoạch ngày &amp; Điểm danh → 📊 Xem bảng hiện diện tháng</b>, bấm vào <b>tên 1 ID</b> để xem danh sách từ ID đó trở xuống theo <b>cây Nhị phân</b> (chia Nhánh Trái / Phải, có tầng F1, F2…). Cột <b>%</b> = số buổi có mặt ÷ số buổi đã được điểm danh trong tháng; ID hiện diện <b>≥80%</b> được <b>⭐ tô xanh</b>. QTV: trong <b>Phân tích</b>, bấm vào Mức độ gắn kết / Phân khúc / Nhận định để xem <b>tên, Mã ID, những người liên quan</b>.' },
+    desc:'Trong <b>✅ Điểm danh → 📊 Bảng hiện diện tháng</b>, bấm vào <b>tên 1 ID</b> để xem danh sách từ ID đó trở xuống theo <b>cây Nhị phân</b> (chia Nhánh Trái / Phải, có tầng F1, F2…). Cột <b>%</b> = số buổi có mặt ÷ số buổi đã được điểm danh trong tháng; ID hiện diện <b>≥80%</b> được <b>⭐ tô xanh</b>. QTV: trong <b>Phân tích</b>, bấm vào Mức độ gắn kết / Phân khúc / Nhận định để xem <b>tên, Mã ID, những người liên quan</b>.' },
   { id:'v696-ds-stt', ver:'6.96', icon:'🔢', title:'Kết quả SK: danh sách tình trạng đánh số + làm sáng mục đã có Cách hỗ trợ',
     desc:'Danh sách tình trạng giờ xếp <b>a–b–c</b> và đánh <b>số thứ tự 1, 2, 3…</b> từ trên xuống. Tình trạng nào đã có <b>💡 Cách hỗ trợ</b> sẽ <b>sáng vàng</b> kèm số chia sẻ; số ca kết quả hiện ở nhãn bên phải.' },
   { id:'v695-cach-ho-tro', ver:'6.95', icon:'💡', title:'Kết quả SK: thêm mục “Cách hỗ trợ” cho từng tình trạng',
@@ -6091,39 +6115,44 @@ function renderAttendanceTable(){
   el.innerHTML=h;
 }
 // ===== GỘP "Kế hoạch ngày & Điểm danh" (v6.4) — 1 thẻ/TV: layout Kế hoạch ngày + nút điểm danh Sáng/Trưa/Tối =====
+// v7.27 — CẤU HÌNH ĐIỂM DANH (QTV bật/tắt cho cả đội, lưu trong appConfig/banner.att — không cần Rules mới).
+//   Tắt chỉ ẨN giao diện, KHÔNG xoá dữ liệu. Mặc định = như cũ (bật hết).
+var ATT_SES_DEF=[{k:'sang',l:'🌅 Sáng',s:'Sáng'},{k:'trua',l:'☀️ Trưa',s:'Trưa'},{k:'toi',l:'🌙 Tối',s:'Tối'}];
+function attCfg(){
+  var a=(bannerCfg&&bannerCfg.att)||{};
+  var ses=Array.isArray(a.ses)&&a.ses.length?a.ses:['sang','trua','toi'];
+  return {ses:ses,late:a.late!==false,kh:a.kh!==false,cam:a.cam!==false};
+}
+function attSesList(){var c=attCfg();return ATT_SES_DEF.filter(function(x){return c.ses.indexOf(x.k)>=0;});}
+function attButtonsHtml(mid){
+  var c=attCfg(),h='';
+  attSesList().forEach(function(x){h+=comboAttBtn(mid,x.k,x.s);});
+  if(c.cam){
+    var camOn=c.ses.some(function(s){return dGet(mid,s+'_cam')==='on';});
+    h+='<span class="att-cam" data-open-mid="'+mid+'" data-open-type="'+c.ses[0]+'" title="Camera / chi tiết từng buổi">'+(camOn?'📷':'·')+'</span>';
+  }
+  return h;
+}
 function comboAttBtn(mid,ses,lbl){
   var st=ATT_STATE[dGet(mid,ses)||'']||ATT_STATE[''];
   return '<button class="mc-att-btn" data-att-cycle="'+mid+':'+ses+'" style="background:'+st.bg+';color:'+st.c+';border-color:'+st.c+'"><span class="mab-l">'+lbl+'</span><span class="mab-s">'+st.t+'</span></button>';
 }
+// v7.27 — thẻ 1 dòng: STT · cấp bậc · tên · (KH%) · tàu · nút điểm danh. Bỏ dòng vai trò/ngày vào và nhãn "Có hoạt động" (trùng màu nút).
 function dailyComboCard(m,ord){
   var tn=treeNodes.find(function(t){return t.name===m.name;});
   var rk=tn?nodeRank(tn.id):0;
-  var h='<div class="mc mc-combo">';
+  var cfg=attCfg();
+  var h='<div class="mc mc-combo mc-1l">';
   h+='<div class="mc-hd" data-open-mid="'+m.id+'" data-open-type="kh">';
   if(ord){var oc=ord==='👑'?'dd-ord-crown':(/^[A-Z]$/.test(ord)?'dd-ord-star':'dd-ord-num');h+='<div class="dd-ord '+oc+'">'+ord+'</div>';}
   h+='<div class="mc-info"><div class="mc-name">';
   if(rk>0)h+='<span class="badge" style="background:'+RANKS[rk-1].color+';color:white;vertical-align:middle">'+RANKS[rk-1].short+'</span> ';
   h+=escHtml(m.name)+'</div>';
-  var roleLine=escHtml(m.role||'Thành viên');
-  if(tn){var si=sponsorInfo(tn);if(tn.joinDate)roleLine+=' · vào '+escHtml(tn.joinDate);if(si.depth>0)roleLine+=' · F'+si.depth;}
-  h+='<div class="mc-role">'+roleLine+'</div>';
-  h+='<div class="mc-badges">';
-  var pct=dGet(m.id,'kh_pct');
-  if(pct)h+='<span class="badge '+(parseInt(pct)>=80?'bg':'ba')+'">🎯 KH '+pct+'%</span>';
-  else h+='<span class="badge bgr">— Chưa cập nhật KH</span>';
-  var act=memberActive(m);
-  h+='<span class="badge '+(act?'bg':'bgr')+'">'+(act?'✓ Có hoạt động':'— Chưa điểm danh')+'</span>';
-  h+='</div></div>';
-  // v6.63 — góc phải hiển thị CON TÀU (Vàng/Bạc) theo dữ liệu Sơ đồ (node.ship); TV chưa gán tàu → để trống. (Ghim lên đầu chuyển sang tab Kỹ năng.)
-  if(tn&&tn.ship)h+='<div class="sort-btns"><span class="mc-ship" title="'+shipLabel(tn.ship)+'">'+shipSVG(tn.ship,22)+'</span></div>';
-  h+='</div>'; // mc-hd
-  var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
-  h+='<div class="mc-att">';
-  h+=comboAttBtn(m.id,'sang','🌅 Sáng');
-  h+=comboAttBtn(m.id,'trua','☀️ Trưa');
-  h+=comboAttBtn(m.id,'toi','🌙 Tối');
-  h+='<span class="att-cam" data-open-mid="'+m.id+'" data-open-type="sang" title="Camera / chi tiết từng buổi">'+(camOn?'📷':'·')+'</span>';
+  if(cfg.kh){var pct=dGet(m.id,'kh_pct');if(pct)h+='<div class="mc-badges"><span class="badge '+(parseInt(pct)>=80?'bg':'ba')+'">🎯 KH '+pct+'%</span></div>';}
   h+='</div>';
+  if(tn&&tn.ship)h+='<span class="mc-ship" title="'+shipLabel(tn.ship)+'">'+shipSVG(tn.ship,20)+'</span>';
+  h+='</div>'; // mc-hd
+  h+='<div class="mc-att">'+attButtonsHtml(m.id)+'</div>';
   h+='</div>'; // mc
   return h;
 }
@@ -6135,12 +6164,30 @@ function _attDashBase(){
   if(_attDashM)return _attDashM;
   return {y:currentDay.getFullYear(),m:currentDay.getMonth()};
 }
+// v7.27 — Bảng hiện diện: ẨN ngày không có ai được điểm danh (vd Chủ nhật nghỉ) — vẫn giữ hôm nay + ngày đang chọn.
+//   Ô ngày chỉ vẽ các buổi QTV đang bật; bật 1 buổi → 1 ô màu đặc (bảng .adash-1s).
+var _attShowD=[];
+function _attComputeShowD(y,mo,nDays,todayD){
+  var pool=members.concat(loadGuests()),SES=['sang','trua','toi'],any=false;_attShowD=[];
+  for(var d=1;d<=nDays;d++){
+    var hd=(d===todayD)||(d===_attDashSelDay);
+    if(!hd){for(var i=0;i<pool.length&&!hd;i++){var p=pool[i];if(!p||!p.id)continue;for(var s=0;s<3;s++){if(dGetAt(p.id,y,mo+1,d,SES[s])){hd=true;break;}}}}
+    _attShowD.push(hd);if(hd)any=true;
+  }
+  if(!any)for(var k=0;k<nDays;k++)_attShowD[k]=true; // tháng chưa có điểm danh nào → hiện đủ
+}
+function _attCellsHtml(v,CLR){
+  var ses=attCfg().ses,idx={sang:0,trua:1,toi:2},h='';
+  ['sang','trua','toi'].forEach(function(k){if(ses.indexOf(k)<0)return;var x=v[idx[k]];h+='<i'+(CLR[x]?' style="background:'+CLR[x]+'"':'')+'></i>';});
+  return h;
+}
 function dGetAt(mid,y,m1,d,f){return nmGet('d_'+mid+'_'+y+'-'+m1+'-'+d+'_'+f);} // đọc điểm danh 1 ngày bất kỳ (m1: 1-12, không pad — đúng chuẩn dk())
 function attDashHtml(list){
   var b=_attDashBase(),y=b.y,mo=b.m;
   var nDays=new Date(y,mo+1,0).getDate();
   var tNow=new Date();
   var todayD=(tNow.getFullYear()===y&&tNow.getMonth()===mo)?tNow.getDate():0;
+_attComputeShowD(y,mo,nDays,todayD);
   function mkIt(mm,tn){
     if(!tn)tn=treeNodes.find(function(t){return t.name===mm.name;});
     var rk=tn?nodeRank(tn.id):0;
@@ -6179,11 +6226,11 @@ function attDashHtml(list){
     var hh='<tr><td class="'+nmCls+'"'+clk+'><b class="adash-ord">'+ord+'.</b> ';
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
     hh+='<span class="adash-nmtxt">'+escHtml(it.m.name)+'</span></td>';
-    for(var d=1;d<=nDays;d++){
+    for(var d=1;d<=nDays;d++){if(!_attShowD[d-1])continue;
       var v=it.days[d-1];
       var cls=[];if(new Date(y,mo,d).getDay()===0)cls.push('adash-sun');if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
       hh+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><div class="ad-c">';
-      for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
+      hh+=_attCellsHtml(v,CLR);
       hh+='</div></td>';
     }
     hh+='<td class="adash-tot">'+(it.tot||'')+'</td></tr>';
@@ -6192,10 +6239,11 @@ function attDashHtml(list){
   var cols=nDays+2;
   var h='<div class="adash-box">';
   h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
-  h+='<div class="att-legend">Mỗi ô = 1 ngày, 3 vạch từ trên xuống = <b>Sáng / Trưa / Tối</b>: <b style="color:#2E7D32">xanh ✓ có mặt</b> · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b> · xám — chưa điểm danh. Cột <b>∑</b> = số ngày hiện diện (≥1 buổi ✓). Hiện diện nhiều xếp trên. <b>Bấm tên</b> để xem DS từ ID đó trở xuống theo cây Nhị phân (tô sáng ID hiện diện ≥80% số buổi).<b>Bấm số ngày ở đầu cột</b> để xem ai có mặt hôm đó.</div>';
+  var _lsl=attSesList(),_lcf=attCfg();
+  h+='<div class="att-legend">'+(_lsl.length===1?'Mỗi ô = buổi <b>'+_lsl[0].s+'</b> của 1 ngày':'Mỗi ô = 1 ngày, '+_lsl.length+' vạch từ trên xuống = <b>'+_lsl.map(function(x){return x.s;}).join(' / ')+'</b>')+': <b style="color:#2E7D32">xanh ✓ có mặt</b>'+(_lcf.late?' · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b>':'')+' · xám — chưa điểm danh. <b>Ngày không ai được điểm danh (vd Chủ nhật nghỉ) tự ẩn.</b> Cột <b>∑</b> = số ngày hiện diện. <b>Bấm tên</b> → DS từ ID đó trở xuống theo cây Nhị phân (⭐ ≥80%). <b>Bấm số ngày</b> → ai có mặt hôm đó.</div>';
   if(selD)h+='<div class="adash-hint">📅 Đang xem ngày <b>'+selD+'/'+(mo+1)+'</b> — ID có mặt (≥1 buổi ✓) xếp lên đầu theo cấp bậc <b>3★ → 2★ → 1★ → FS</b>, tên sáng màu. Bấm lại số ngày <b>'+selD+'</b> để bỏ chọn.</div>';
-  h+='<div class="adash-wrap"><table class="adash"><tr><th class="adash-nm">Thành viên</th>';
-  for(var d2=1;d2<=nDays;d2++){
+  h+='<div class="adash-wrap"><table class="adash'+(attCfg().ses.length===1?' adash-1s':'')+'"><tr><th class="adash-nm">Thành viên</th>';
+  for(var d2=1;d2<=nDays;d2++){if(!_attShowD[d2-1])continue;
     var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
     h+='<th class="'+thc+'" data-attdash-selday="'+d2+'" title="Bấm để xem ai có mặt ngày '+d2+'">'+d2+'</th>';
   }
@@ -6263,11 +6311,11 @@ function attDashDrillHtml(root,o){
     if(!isRoot)hh+='<span class="adash-lv">F'+it.depth+(it.side==='L'?'⬅':it.side==='R'?'➡':'')+'</span> ';
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
     hh+='<span class="adash-nmtxt">'+(it.hi?'⭐ ':'')+escHtml(it.m.name)+'</span></td>';
-    for(var d=1;d<=nDays;d++){
+    for(var d=1;d<=nDays;d++){if(!_attShowD[d-1])continue;
       var v=it.days[d-1];
       var cls=[];if(new Date(y,mo,d).getDay()===0)cls.push('adash-sun');if(d===todayD)cls.push('adash-today');if(d===selD)cls.push('adash-selday');
       hh+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'><div class="ad-c">';
-      for(var s=0;s<3;s++)hh+='<i'+(CLR[v[s]]?' style="background:'+CLR[v[s]]+'"':'')+'></i>';
+      hh+=_attCellsHtml(v,CLR);
       hh+='</div></td>';
     }
     hh+='<td class="adash-tot">'+(it.tot||'')+'</td>';
@@ -6283,8 +6331,8 @@ function attDashDrillHtml(root,o){
   h+='<button class="btn btn-sm" style="background:#FCE4E4;color:#C62828;border:1px solid #F3B4B4" data-attdash-drill="">✕ Về bảng chung</button></div></div>';
   h+=attDashBranchStatsHtml(seq,{y:y,mo:mo,nDays:nDays,todayD:todayD,selD:selD,held:held,pool:pool});
   h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. Trong mỗi nhánh, <b>hiện diện càng cao xếp càng trên</b>. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
-  h+='<div class="adash-wrap"><table class="adash adash-drill"><tr><th class="adash-nm">Thành viên</th>';
-  for(var d2=1;d2<=nDays;d2++){
+  h+='<div class="adash-wrap"><table class="adash adash-drill'+(attCfg().ses.length===1?' adash-1s':'')+'"><tr><th class="adash-nm">Thành viên</th>';
+  for(var d2=1;d2<=nDays;d2++){if(!_attShowD[d2-1])continue;
     var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
     h+='<th class="'+thc+'" data-attdash-selday="'+d2+'">'+d2+'</th>';
   }
@@ -6442,12 +6490,15 @@ function renderDailyCombined(){
     arr.forEach(function(m,i){hh+=dailyComboCard(m,String(i+1));});
     return hh;
   }
-  var legend='<div class="att-legend">Mỗi thẻ = 1 thành viên: bấm <b>tên</b> để mở <b>Kế hoạch ngày</b> chi tiết; chạm nút <b>Sáng/Trưa/Tối</b> để điểm danh nhanh (— → ✓ → ⏰ → ✗); bấm 📷 để chỉnh camera từng buổi. Thứ tự thẻ: <b>người đã điểm danh (✓) gom liền nhau lên đầu</b>, không xen kẽ; trong nhóm đó xếp tiếp theo buổi <b>Sáng ✓ → Trưa ✓ → Tối ✓</b> → cấp bậc <b>3★→2★→1★→FS</b> → Tàu <b>Vàng→Bạc</b> → tên A-B-C.</div>';
+  // v7.27 — hướng dẫn thu vào nút ⓘ (bấm mới mở); nội dung theo cấu hình QTV
+  var _cf=attCfg(),_sl=attSesList();
+  var _cyc=_cf.late?'— → ✓ → ⏰ trễ → ✗ vắng':'— ↔ ✓';
+  var legend='<details class="att-help"'+(_attHelpOpen?' open':'')+' ontoggle="_attHelpOpen=this.open"><summary>ⓘ Cách dùng</summary><div class="att-legend">Chạm nút <b>'+_sl.map(function(x){return x.s;}).join(' / ')+'</b> trên mỗi thẻ để điểm danh ('+_cyc+'). Bấm <b>tên</b> để mở chi tiết'+(_cf.kh?' &amp; Kế hoạch ngày':'')+'.'+(_cf.cam?' Bấm 📷 để chỉnh camera.':'')+' Nhanh nhất: <b>📷 Điểm danh bằng ảnh Zoom</b> — chụp danh sách Participants, app tự chấm. Thứ tự thẻ: <b>người đã điểm danh lên đầu</b> → cấp bậc <b>3★→2★→1★→FS</b> → Tàu <b>Vàng→Bạc</b> → tên A-B-C.</div></details>';
   var centerMember=members.find(function(m){return m.name===center.name;});
   var h='';
-  // v6.40 — bảng hiện diện tháng (dashboard) — nút mở/đóng, nhớ trạng thái trong phiên
-  h+='<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px"><button class="btn btn-d btn-sm" data-attdash-toggle="1">'+(_attDashOpen?'📊 Ẩn bảng hiện diện tháng':'📊 Xem bảng hiện diện tháng')+'</button>'
-   +'<button class="btn btn-sm" style="background:#E3F2FD;color:#1565C0;border:1px solid #90CAF9;flex:0 1 auto" data-zatt-open="1">📷 Điểm danh bằng ảnh Zoom'+(_zPending&&_zPending.length?' <span style="background:#C62828;color:#fff;border-radius:999px;padding:1px 6px;font-size:11px">'+_zPending.length+'</span>':'')+'</button></div>';
+  // v7.27 — Zoom là cách điểm danh chính → lên đầu, nổi bật; bảng hiện diện đứng thứ 2
+  h+='<div class="att-topbar"><button class="btn att-zoom-btn" data-zatt-open="1">📷 Điểm danh bằng ảnh Zoom'+(_zPending&&_zPending.length?' <span style="background:#C62828;color:#fff;border-radius:999px;padding:1px 6px;font-size:11px">'+_zPending.length+'</span>':'')+'</button>'
+   +'<button class="btn btn-d btn-sm" data-attdash-toggle="1">'+(_attDashOpen?'📊 Ẩn bảng hiện diện':'📊 Bảng hiện diện tháng')+'</button></div>';
   if(_attDashOpen)h+=attDashHtml([centerMember].concat(leftArr,rightArr,guestArr));
   h+=legend;
   if(centerMember)h+='<div class="dd-center">'+dailyComboCard(centerMember,'👑')+'</div>';
@@ -6461,25 +6512,24 @@ function renderDailyCombined(){
 // v6.53 — KHÁCH (người ngoài chưa có ID): thẻ điểm danh + ô "Mã ID dự phòng" (điền sau). Khi tạo ID có Mã ID trùng
 //   (idCode), khách TỰ trở thành thành viên chính thức và GIỮ NGUYÊN lịch sử điểm danh (cùng member.id).
 function guestCard(m){
-  var camOn=['sang','trua','toi'].some(function(s){return dGet(m.id,s+'_cam')==='on';});
-  var act=memberActive(m);
   var h='<div class="mc mc-combo" id="gcard-'+m.id+'">';
   h+='<div class="mc-hd" style="cursor:default">';
   h+='<div class="dd-ord" style="background:#9C6ADE">👤</div>';
-  h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách · chưa có ID</span></div>';
+  h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách</span></div>';
   h+='<div class="gc-code-row"><span class="gc-code-lbl">🔑 Mã ID dự phòng:</span><input class="inc-inp gc-code-inp" data-guest-code="'+m.id+'" value="'+escHtml(m.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
-  h+='<div class="mc-badges"><span class="badge '+(act?'bg':'bgr')+'">'+(act?'✓ Có hoạt động':'— Chưa điểm danh')+'</span></div>';
   h+='</div>';
   h+='<div class="sort-btns"><button class="sb" data-del-guest="'+m.id+'" title="Xoá khách" style="color:#C62828">🗑</button></div>';
   h+='</div>';
-  h+='<div class="mc-att">'+comboAttBtn(m.id,'sang','🌅 Sáng')+comboAttBtn(m.id,'trua','☀️ Trưa')+comboAttBtn(m.id,'toi','🌙 Tối');
-  h+='<span class="att-cam" data-open-mid="'+m.id+'" data-open-type="sang" title="Camera / chi tiết từng buổi">'+(camOn?'📷':'·')+'</span>';
-  h+='</div></div>';
+  h+='<div class="mc-att">'+attButtonsHtml(m.id)+'</div></div>';
   return h;
 }
+// v7.27 — mục Khách mặc định THU GỌN (tự mở khi có khách đã điểm danh hôm nay hoặc người dùng đã mở trong phiên)
+var _guestOpen=null,_attHelpOpen=false;
 function guestSectionHtml(guestArr){
-  var h='<div class="guest-sec">';
-  h+='<div class="grp-hd dd-col-hd" style="background:#F3E5F5;color:#5E35B1"><span>👤 Khách / chưa có ID</span><span>'+guestArr.length+'</span></div>';
+  var _gAct=guestArr.filter(memberActive).length;
+  var _gOpen=_guestOpen===null?_gAct>0:_guestOpen;
+  var h='<details class="guest-sec"'+(_gOpen?' open':'')+' ontoggle="_guestOpen=this.open">';
+  h+='<summary class="grp-hd dd-col-hd" style="background:#F3E5F5;color:#5E35B1;cursor:pointer"><span>👤 Khách / chưa có ID <small style="font-weight:600">(bấm để '+(_gOpen?'thu gọn':'mở')+')</small></span><span>'+_gAct+'/'+guestArr.length+'</span></summary>';
   h+='<div class="att-legend" style="background:#FAF5FF;border-color:#E1BEE7">Thêm <b>người ngoài chưa có ID</b> để điểm danh cho hành trình. Điền <b>Mã ID dự phòng</b> — khi bạn tạo ID có Mã ID trùng, người này <b>tự trở thành thành viên chính thức</b> và <b>giữ nguyên lịch sử điểm danh</b> trước đó.</div>';
   // v6.63 — khách ĐÃ điểm danh ✓ tự đẩy lên trên (giống ID); còn lại xếp A,B,C
   var _garr=guestArr.slice().sort(function(a,b){
@@ -6487,7 +6537,7 @@ function guestSectionHtml(guestArr){
     return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true});});
   _garr.forEach(function(m){h+=guestCard(m);});
   h+='<div class="guest-add"><input id="guest-new-name" class="inc-inp" placeholder="Tên người ngoài"><input id="guest-new-code" class="inc-inp" placeholder="Mã ID dự phòng (tuỳ chọn)"><button class="btn btn-g" data-act="add-guest">➕ Thêm khách</button></div>';
-  h+='</div>';
+  h+='</details>';
   return h;
 }
 function renderLkActivity(){
@@ -7737,7 +7787,7 @@ function renderFlow3(){
     var att=[['sang','&#127749; Sáng'],['trua','&#9728;&#65039; Trưa'],['toi','&#127769; Tối']].map(function(s){return (dGet(mid,s[0])==='yes'?'&#9989;':'&#11036;')+' '+s[1];}).join(' &nbsp; ');
     b2+='<div style="font-size:13px;color:#333">&#128203; Kế hoạch ngày của <b>'+escHtml(mem.name)+'</b>: <b>'+khp+'%</b> hoàn thành</div>'+_f3Bar(khp,'#FB8C00');
     b2+='<div style="font-size:12.5px;color:#555;margin-top:6px">Điểm danh: '+att+'</div>';
-    b2+='<div style="font-size:11.5px;color:#999;margin-top:4px">Bấm tên trong "Kế hoạch ngày &amp; Điểm danh" để cập nhật việc cụ thể.</div>';
+    b2+='<div style="font-size:11.5px;color:#999;margin-top:4px">Bấm tên trong "✅ Điểm danh" để cập nhật việc cụ thể.</div>';
   }
   h+=_f3Card(2,'&#9889;','HÀNH ĐỘNG HÔM NAY','Hôm nay tôi cần làm gì?','#FB8C00',b2,'tp:actions','Xem việc hôm nay');
   h+=_f3Arrow();
@@ -8506,7 +8556,7 @@ var MOTIVATION=[
 var bannerCfg=null,_bannerTimer=null,_lastCelebId='',_bannerSig='',_motShuffled=null,_fxActive=false,_fxToken=0,_lastBdayFx='';
 function _shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=(Math.random()*(i+1))|0,t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function loadBannerCloud(){
-  fsGetGlobal('banner').then(function(d){bannerCfg=d||{};renderBanner();}).catch(function(){if(!bannerCfg)bannerCfg={};renderBanner();});
+  fsGetGlobal('banner').then(function(d){bannerCfg=d||{};renderBanner();if(document.getElementById('list-ngay'))renderDailyCombined();}).catch(function(){if(!bannerCfg)bannerCfg={};renderBanner();});
 }
 function _bnActive(item){
   if(!item||item.enabled===false)return false;
@@ -12627,6 +12677,21 @@ function announceBoxHtml(banner){
   h+='</div>';
   return h;
 }
+// v7.27 — ✅ Cấu hình Điểm danh (QTV bật/tắt cho cả đội) — lưu appConfig/banner.att
+function attCfgBoxHtml(){
+  var c=attCfg();
+  function ck(k,on,lbl,sub){return '<label class="attcfg-row"><input type="checkbox" data-attcfg="'+k+'"'+(on?' checked':'')+'><span><b>'+lbl+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span></label>';}
+  var h='<div class="adm-box" style="border:2px solid #A5D6A7;background:linear-gradient(135deg,#fff,#F1FAF2)"><div class="adm-title">✅ Cấu hình Điểm danh (cả đội)</div>';
+  h+='<div style="font-size:12.5px;color:#666;line-height:1.6;margin-bottom:8px">Bật/tắt để tab <b>✅ Điểm danh</b> gọn hơn cho mọi thành viên. Tắt chỉ <b>ẩn</b> trên giao diện — <b>không xoá dữ liệu</b> đã chấm; bật lại là hiện đủ như cũ.</div>';
+  h+='<div style="font-weight:800;font-size:13px;color:#1A7A5E;margin:6px 0 4px">Buổi điểm danh (giữ ít nhất 1)</div>';
+  ATT_SES_DEF.forEach(function(x){h+=ck('ses:'+x.k,c.ses.indexOf(x.k)>=0,x.l,'');});
+  h+='<div style="font-weight:800;font-size:13px;color:#1A7A5E;margin:10px 0 4px">Chức năng</div>';
+  h+=ck('late',c.late,'⏰ Trễ / ✗ Vắng','Tắt → chạm 1 lần là ✓, chạm lại là bỏ (không phải bấm qua 4 trạng thái).');
+  h+=ck('kh',c.kh,'🎯 Kế hoạch ngày trên thẻ','Tắt → ẩn nhãn KH % trên thẻ.');
+  h+=ck('cam',c.cam,'📷 Nút camera trên thẻ','Tắt → ẩn nút 📷. Điểm danh bằng ảnh Zoom vẫn tự đọc camera.');
+  h+='</div>';
+  return h;
+}
 function celebrateBoxHtml(banner){
   var c=(banner&&banner.celebration)||{};
   var on=_bnActive(c)&&!!c.text;
@@ -12840,6 +12905,7 @@ function renderAdminPage(){
       // v6.5 — Bảng thông báo + Chúc mừng đội nhóm (mọi QTV dùng được)
       h+=announceBoxHtml(banner);
       h+=celebrateBoxHtml(banner);
+      h+=attCfgBoxHtml();
       // BAT/TAT chuc nang Xuat nhanh - chi QTV CHINH (email dau danh sach) duoc chinh
       var isMainAdmin=(admins.emails[0]===myEmail);
       var branchOn=!(reg&&reg.branchEnabled===false);
@@ -13454,14 +13520,14 @@ document.addEventListener('click',function(e){
   // v6.63 — chọn KHÁCH từ ô tìm "đưa ra giữa": mở Kế hoạch ngày & Điểm danh và cuộn tới thẻ khách
   t=e.target.closest('[data-ddsearch-guest]');
   if(t){
-    var _gid=t.getAttribute('data-ddsearch-guest');
+    var _gid=t.getAttribute('data-ddsearch-guest');_guestOpen=true; // v7.27 mục Khách đang thu gọn → mở ra
     var _si0=document.getElementById('srch');if(_si0)_si0.value='';
     var _ss0=document.getElementById('srch-sug');if(_ss0)_ss0.style.display='none';
     var _mt=document.querySelector('.mtab[data-main="tp"]');if(_mt)_mt.click();
     var _st1=document.querySelector('.stab[data-sub="tp:actions"]');if(_st1)_st1.click();
     var _st2=document.querySelector('.stab[data-sub="act:ngay"]');if(_st2)_st2.click();
     setTimeout(function(){
-      var card=document.getElementById('gcard-'+_gid);
+      var card=document.getElementById('gcard-'+_gid);if(card&&card.closest('details'))card.closest('details').open=true;
       if(card){card.scrollIntoView({behavior:'smooth',block:'center'});
         var _o=card.style.boxShadow;card.style.boxShadow='0 0 0 3px #F07B30';
         setTimeout(function(){card.style.boxShadow=_o;},1500);}
@@ -13864,7 +13930,7 @@ document.addEventListener('click',function(e){
   if(t){
     var _ac=t.getAttribute('data-att-cycle').split(':'),_amid=_ac[0],_ases=_ac[1];
     var _cv=dGet(_amid,_ases)||'';
-    var _nv=_cv===''?'yes':_cv==='yes'?'late':_cv==='late'?'no':'';
+    var _nv=attCfg().late?(_cv===''?'yes':_cv==='yes'?'late':_cv==='late'?'no':''):(_cv===''?'yes':''); // v7.27 tắt Trễ/Vắng → 1 chạm ✓ ↔ —
     dSet(_amid,_ases,_nv);
     renderDailyCombined();updateStats();
     return;
@@ -13895,6 +13961,17 @@ document.addEventListener('click',function(e){
   if(e.target.closest('#anpick-ov [data-view-uid]'))document.getElementById('anpick-ov').classList.remove('open'); // rồi xử lý xem tài khoản như cũ
   t=e.target.closest('[data-bdpop-open]');
   if(t){openBdayPopup(t.getAttribute('data-bdpop-open')==='preview');return;}
+  // v7.27 — QTV bật/tắt Cấu hình Điểm danh
+  t=e.target.closest('[data-attcfg]');
+  if(t){
+    var _box=t.closest('.adm-box'),_ses=[],_o={};
+    _box.querySelectorAll('[data-attcfg]').forEach(function(cb){var k=cb.getAttribute('data-attcfg');if(k.indexOf('ses:')===0){if(cb.checked)_ses.push(k.slice(4));}else _o[k]=!!cb.checked;});
+    if(!_ses.length){t.checked=true;showToast('Cần giữ ít nhất 1 buổi điểm danh');return;}
+    _o.ses=_ses;
+    fsSetGlobal('banner',{att:_o}).then(function(){if(!bannerCfg)bannerCfg={};bannerCfg.att=_o;showToast('✅ Đã lưu cấu hình Điểm danh cho cả đội');if(document.getElementById('list-ngay'))renderDailyCombined();})
+      .catch(function(err){t.checked=!t.checked;showToast('Lỗi: '+err.message);});
+    return;
+  }
   t=e.target.closest('[data-act="bdpop-toggle"]');
   if(t){
     var _bdOn=!!t.checked;
