@@ -1,4 +1,4 @@
-<!-- VERSION: v7.29-backinh-mua-dong -->
+<!-- VERSION: v7.30-kualalumpur -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -1670,8 +1670,9 @@ html.skin-santorini{
   --shadow-sm:0 1px 2px rgba(14,60,110,.06),0 2px 6px rgba(14,60,110,.05);
   --shadow-md:0 8px 22px rgba(14,60,110,.10),0 2px 6px rgba(14,60,110,.06);
   --shadow-lg:0 20px 50px rgba(11,53,102,.20);
-  --st-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23BCDCF6'/><stop offset='.75' stop-color='%23FBEBD6'/></linearGradient><linearGradient id='w' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%233C8FD0'/><stop offset='1' stop-color='%23124E8C'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='150' cy='104' r='24' fill='%23F6C46E' opacity='.9'/><rect y='112' width='600' height='48' fill='url(%23w)'/><path d='M0 122 Q75 118 150 122 T300 122 T450 122 T600 122' stroke='%23fff' stroke-opacity='.35' fill='none'/><path d='M60 140 Q120 136 180 140' stroke='%23fff' stroke-opacity='.25' fill='none'/><path d='M220 130 l18 0 l-3 5 l-12 0z' fill='%23fff'/><path d='M229 130 l0 -11 l7 11z' fill='%23fff' opacity='.9'/><path d='M330 160 L334 108 L380 96 L430 82 L476 68 L540 58 L600 50 L600 160Z' fill='%23B98A6B'/><path d='M330 160 L334 124 L400 114 L470 104 L540 98 L600 94 L600 160Z' fill='%23A0705A'/><g fill='%23fff' stroke='%23D5E1EC'><rect x='348' y='92' width='34' height='24'/><rect x='390' y='80' width='40' height='30'/><rect x='446' y='70' width='26' height='32'/><rect x='480' y='60' width='44' height='28'/><rect x='532' y='48' width='34' height='30'/><rect x='418' y='106' width='46' height='26'/><rect x='496' y='94' width='42' height='28'/><rect x='552' y='80' width='48' height='32'/><rect x='452' y='50' width='12' height='20'/></g><g fill='%231F5FA8'><path d='M394 80 A13 13 0 0 1 420 80Z'/><path d='M490 60 A12 12 0 0 1 514 60Z'/><path d='M564 80 A11 11 0 0 1 586 80Z'/><path d='M452 50 A6 6 0 0 1 464 50Z'/><rect x='360' y='104' width='5' height='12' rx='2.5'/><rect x='405' y='96' width='6' height='14' rx='3'/><rect x='436' y='118' width='6' height='14' rx='3'/><rect x='510' y='108' width='6' height='14' rx='3'/><rect x='540' y='60' width='5' height='10' rx='2.5'/><rect x='572' y='96' width='6' height='14' rx='3'/></g><g fill='%23D6457E'><circle cx='384' cy='114' r='5'/><circle cx='390' cy='110' r='4'/><circle cx='468' cy='130' r='5'/><circle cx='474' cy='126' r='4'/><circle cx='528' cy='86' r='4'/><circle cx='548' cy='120' r='5'/></g></svg>");
 }
+/* tranh dùng chung (cả ô chọn chủ đề) */
+html{--st-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23BCDCF6'/><stop offset='.75' stop-color='%23FBEBD6'/></linearGradient><linearGradient id='w' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%233C8FD0'/><stop offset='1' stop-color='%23124E8C'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='150' cy='104' r='24' fill='%23F6C46E' opacity='.9'/><rect y='112' width='600' height='48' fill='url(%23w)'/><path d='M0 122 Q75 118 150 122 T300 122 T450 122 T600 122' stroke='%23fff' stroke-opacity='.35' fill='none'/><path d='M60 140 Q120 136 180 140' stroke='%23fff' stroke-opacity='.25' fill='none'/><path d='M220 130 l18 0 l-3 5 l-12 0z' fill='%23fff'/><path d='M229 130 l0 -11 l7 11z' fill='%23fff' opacity='.9'/><path d='M330 160 L334 108 L380 96 L430 82 L476 68 L540 58 L600 50 L600 160Z' fill='%23B98A6B'/><path d='M330 160 L334 124 L400 114 L470 104 L540 98 L600 94 L600 160Z' fill='%23A0705A'/><g fill='%23fff' stroke='%23D5E1EC'><rect x='348' y='92' width='34' height='24'/><rect x='390' y='80' width='40' height='30'/><rect x='446' y='70' width='26' height='32'/><rect x='480' y='60' width='44' height='28'/><rect x='532' y='48' width='34' height='30'/><rect x='418' y='106' width='46' height='26'/><rect x='496' y='94' width='42' height='28'/><rect x='552' y='80' width='48' height='32'/><rect x='452' y='50' width='12' height='20'/></g><g fill='%231F5FA8'><path d='M394 80 A13 13 0 0 1 420 80Z'/><path d='M490 60 A12 12 0 0 1 514 60Z'/><path d='M564 80 A11 11 0 0 1 586 80Z'/><path d='M452 50 A6 6 0 0 1 464 50Z'/><rect x='360' y='104' width='5' height='12' rx='2.5'/><rect x='405' y='96' width='6' height='14' rx='3'/><rect x='436' y='118' width='6' height='14' rx='3'/><rect x='510' y='108' width='6' height='14' rx='3'/><rect x='540' y='60' width='5' height='10' rx='2.5'/><rect x='572' y='96' width='6' height='14' rx='3'/></g><g fill='%23D6457E'><circle cx='384' cy='114' r='5'/><circle cx='390' cy='110' r='4'/><circle cx='468' cy='130' r='5'/><circle cx='474' cy='126' r='4'/><circle cx='528' cy='86' r='4'/><circle cx='548' cy='120' r='5'/></g></svg>");}
 html.skin-santorini body{background:var(--app-bg) linear-gradient(180deg,#E6F0FA 0,#F4F8FC 260px,#FAF8F3 100%) no-repeat;color:var(--st-ink)}
 
 /* ── Màn đăng nhập: khung cảnh Santorini toàn màn hình ── */
@@ -1758,9 +1759,9 @@ html.skin-backinh{
   --shadow-sm:0 1px 2px rgba(60,20,15,.06),0 2px 6px rgba(60,20,15,.05);
   --shadow-md:0 8px 22px rgba(60,20,15,.10),0 2px 6px rgba(60,20,15,.06);
   --shadow-lg:0 20px 50px rgba(60,15,10,.22);
-  --bk-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23C9D5E0'/><stop offset='1' stop-color='%23EEF2F6'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='110' cy='46' r='18' fill='%23F6EEE2' opacity='.9'/><path d='M0 112 L40 82 L70 94 L120 60 L170 90 L220 72 L270 96 L320 84 L360 102 L360 160 L0 160Z' fill='%23B4C1CC'/><path d='M120 60 L106 70 L114 69 L120 74 L127 68 L134 71Z M40 82 L30 90 L38 89 L44 92 L50 88Z M220 72 L208 81 L216 80 L222 84 L230 79Z' fill='%23fff'/><path d='M0 136 L50 110 L100 122 L150 96 L200 114 L250 102 L300 124 L360 116 L360 160 L0 160Z' fill='%2396A6B3'/><polyline points='0,134 50,108 100,120 150,94 200,112 250,100 300,122 345,116' fill='none' stroke='%23B08E6E' stroke-width='6' stroke-linejoin='round'/><polyline points='0,130 50,104 100,116 150,90 200,108 250,96 300,118 345,112' fill='none' stroke='%23fff' stroke-width='3' stroke-dasharray='4 2' stroke-linejoin='round'/><g fill='%23A27F60'><rect x='43' y='94' width='14' height='14'/><rect x='143' y='80' width='14' height='14'/><rect x='243' y='86' width='14' height='14'/></g><g fill='%23fff'><rect x='41' y='91' width='18' height='4' rx='2'/><rect x='141' y='77' width='18' height='4' rx='2'/><rect x='241' y='83' width='18' height='4' rx='2'/></g><path d='M0 160 L0 146 Q150 138 330 144 L600 140 L600 160Z' fill='%23fff'/><rect x='330' y='116' width='270' height='14' fill='%239E2A20'/><rect x='328' y='111' width='274' height='6' rx='3' fill='%23fff'/><rect x='400' y='124' width='180' height='12' fill='%23F2F2F0'/><rect x='392' y='134' width='196' height='8' fill='%23E4E6E8'/><rect x='420' y='84' width='140' height='40' fill='%23B3261E'/><g fill='%237E1812'><rect x='432' y='94' width='12' height='30'/><rect x='456' y='94' width='12' height='30'/><rect x='480' y='94' width='20' height='30'/><rect x='512' y='94' width='12' height='30'/><rect x='536' y='94' width='12' height='30'/></g><path d='M398 90 Q420 86 430 74 L550 74 Q560 86 582 90 Q560 88 545 88 L435 88 Q420 88 398 90Z' fill='%23E3B341'/><path d='M412 86 Q424 82 432 74 L548 74 Q556 82 568 86 Q548 81 540 80 L440 80 Q430 81 412 86Z' fill='%23fff'/><rect x='446' y='60' width='88' height='16' fill='%23B3261E'/><path d='M420 64 Q440 60 450 46 L530 46 Q540 60 560 64 Q540 62 528 62 L452 62 Q440 62 420 64Z' fill='%23F0C04A'/><path d='M432 59 Q446 54 452 46 L528 46 Q534 54 548 59 Q532 53 524 52 L456 52 Q446 53 432 59Z' fill='%23fff'/><rect x='452' y='42' width='76' height='5' rx='2' fill='%23fff'/><g fill='%23D9302A'><circle cx='432' cy='96' r='3'/><circle cx='548' cy='96' r='3'/></g><g fill='%23fff' opacity='.95'><circle cx='30' cy='20' r='1.6'/><circle cx='70' cy='70' r='1.3'/><circle cx='160' cy='24' r='1.8'/><circle cx='200' cy='52' r='1.2'/><circle cx='260' cy='30' r='1.6'/><circle cx='300' cy='64' r='1.4'/><circle cx='350' cy='22' r='1.8'/><circle cx='390' cy='50' r='1.2'/><circle cx='580' cy='30' r='1.6'/><circle cx='590' cy='80' r='1.3'/><circle cx='380' cy='94' r='1.5'/><circle cx='120' cy='130' r='1.4'/><circle cx='230' cy='138' r='1.2'/></g></svg>");
   --bk-flakes:radial-gradient(circle,rgba(255,255,255,.95) 0 1.6px,transparent 2.4px),radial-gradient(circle,rgba(255,255,255,.8) 0 1.1px,transparent 1.8px);
 }
+html{--bk-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23C9D5E0'/><stop offset='1' stop-color='%23EEF2F6'/></linearGradient></defs><rect width='600' height='160' fill='url(%23s)'/><circle cx='110' cy='46' r='18' fill='%23F6EEE2' opacity='.9'/><path d='M0 112 L40 82 L70 94 L120 60 L170 90 L220 72 L270 96 L320 84 L360 102 L360 160 L0 160Z' fill='%23B4C1CC'/><path d='M120 60 L106 70 L114 69 L120 74 L127 68 L134 71Z M40 82 L30 90 L38 89 L44 92 L50 88Z M220 72 L208 81 L216 80 L222 84 L230 79Z' fill='%23fff'/><path d='M0 136 L50 110 L100 122 L150 96 L200 114 L250 102 L300 124 L360 116 L360 160 L0 160Z' fill='%2396A6B3'/><polyline points='0,134 50,108 100,120 150,94 200,112 250,100 300,122 345,116' fill='none' stroke='%23B08E6E' stroke-width='6' stroke-linejoin='round'/><polyline points='0,130 50,104 100,116 150,90 200,108 250,96 300,118 345,112' fill='none' stroke='%23fff' stroke-width='3' stroke-dasharray='4 2' stroke-linejoin='round'/><g fill='%23A27F60'><rect x='43' y='94' width='14' height='14'/><rect x='143' y='80' width='14' height='14'/><rect x='243' y='86' width='14' height='14'/></g><g fill='%23fff'><rect x='41' y='91' width='18' height='4' rx='2'/><rect x='141' y='77' width='18' height='4' rx='2'/><rect x='241' y='83' width='18' height='4' rx='2'/></g><path d='M0 160 L0 146 Q150 138 330 144 L600 140 L600 160Z' fill='%23fff'/><rect x='330' y='116' width='270' height='14' fill='%239E2A20'/><rect x='328' y='111' width='274' height='6' rx='3' fill='%23fff'/><rect x='400' y='124' width='180' height='12' fill='%23F2F2F0'/><rect x='392' y='134' width='196' height='8' fill='%23E4E6E8'/><rect x='420' y='84' width='140' height='40' fill='%23B3261E'/><g fill='%237E1812'><rect x='432' y='94' width='12' height='30'/><rect x='456' y='94' width='12' height='30'/><rect x='480' y='94' width='20' height='30'/><rect x='512' y='94' width='12' height='30'/><rect x='536' y='94' width='12' height='30'/></g><path d='M398 90 Q420 86 430 74 L550 74 Q560 86 582 90 Q560 88 545 88 L435 88 Q420 88 398 90Z' fill='%23E3B341'/><path d='M412 86 Q424 82 432 74 L548 74 Q556 82 568 86 Q548 81 540 80 L440 80 Q430 81 412 86Z' fill='%23fff'/><rect x='446' y='60' width='88' height='16' fill='%23B3261E'/><path d='M420 64 Q440 60 450 46 L530 46 Q540 60 560 64 Q540 62 528 62 L452 62 Q440 62 420 64Z' fill='%23F0C04A'/><path d='M432 59 Q446 54 452 46 L528 46 Q534 54 548 59 Q532 53 524 52 L456 52 Q446 53 432 59Z' fill='%23fff'/><rect x='452' y='42' width='76' height='5' rx='2' fill='%23fff'/><g fill='%23D9302A'><circle cx='432' cy='96' r='3'/><circle cx='548' cy='96' r='3'/></g><g fill='%23fff' opacity='.95'><circle cx='30' cy='20' r='1.6'/><circle cx='70' cy='70' r='1.3'/><circle cx='160' cy='24' r='1.8'/><circle cx='200' cy='52' r='1.2'/><circle cx='260' cy='30' r='1.6'/><circle cx='300' cy='64' r='1.4'/><circle cx='350' cy='22' r='1.8'/><circle cx='390' cy='50' r='1.2'/><circle cx='580' cy='30' r='1.6'/><circle cx='590' cy='80' r='1.3'/><circle cx='380' cy='94' r='1.5'/><circle cx='120' cy='130' r='1.4'/><circle cx='230' cy='138' r='1.2'/></g></svg>");}
 html.skin-backinh body{background:var(--app-bg) linear-gradient(180deg,#E3E9EF 0,#F5F6F7 260px,#F8F5F1 100%) no-repeat;color:var(--bk-ink)}
 
 /* ── Màn đăng nhập: Tử Cấm Thành + Trường Thành trong tuyết, tuyết rơi ── */
@@ -1831,6 +1832,97 @@ html.skin-backinh .nmod-title,html.skin-backinh .modal-name{color:var(--bk-deep)
 @media(pointer:fine){
   html.skin-backinh ::-webkit-scrollbar-thumb{background:#D3C2BB;background-clip:content-box}
   html.skin-backinh ::-webkit-scrollbar-thumb:hover{background:#B79C92;background-clip:content-box}
+}
+</style>
+<style>
+/* ============================================================================
+   v7.30 — GIAO DIỆN KUALA LUMPUR (skin, bật bằng class html.skin-kualalumpur)
+   Tháp đôi Petronas + tháp KL lúc hoàng hôn · đèn thành phố vàng · hàng cọ ·
+   hoa dâm bụt (bunga raya) · xanh ngọc + vàng. Chỉ đổi THỊ GIÁC.
+   ============================================================================ */
+/* ô chọn chủ đề có tranh (dùng chung cho mọi chủ đề có scene) */
+.thm-swatch.thm-scene{height:66px}
+html{--kl-scene:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' preserveAspectRatio='xMaxYMax slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23233466'/><stop offset='.55' stop-color='%236A5794'/><stop offset='1' stop-color='%23F2A65A'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23F4F6FA'/><stop offset='.5' stop-color='%23C4CEDB'/><stop offset='1' stop-color='%23848FA3'/></linearGradient><pattern id='w' width='8' height='9' patternUnits='userSpaceOnUse'><rect x='2' y='2' width='3' height='4' fill='%23F6C86A' opacity='.75'/></pattern><pattern id='v' width='4' height='160' patternUnits='userSpaceOnUse'><rect width='1' height='160' fill='%23677288' opacity='.35'/></pattern></defs><rect width='600' height='160' fill='url(%23s)'/><g fill='%23fff'><circle cx='40' cy='18' r='1'/><circle cx='120' cy='30' r='1.2'/><circle cx='210' cy='14' r='1'/><circle cx='280' cy='36' r='.9'/><circle cx='560' cy='16' r='1.1'/><circle cx='380' cy='12' r='1'/></g><circle cx='90' cy='40' r='11' fill='%23FCE9C0'/><circle cx='95' cy='37' r='10' fill='%23293A6C'/><g fill='%232A3352'><rect x='0' y='108' width='40' height='52'/><rect x='44' y='96' width='30' height='64'/><rect x='80' y='116' width='46' height='44'/><rect x='130' y='88' width='26' height='72'/><rect x='160' y='104' width='40' height='56'/><rect x='204' y='94' width='30' height='66'/><rect x='240' y='112' width='54' height='48'/><rect x='300' y='100' width='22' height='60'/><rect x='360' y='96' width='40' height='64'/><rect x='540' y='92' width='30' height='68'/><rect x='574' y='108' width='26' height='52'/></g><g fill='url(%23w)'><rect x='0' y='108' width='40' height='52'/><rect x='44' y='96' width='30' height='64'/><rect x='80' y='116' width='46' height='44'/><rect x='130' y='88' width='26' height='72'/><rect x='160' y='104' width='40' height='56'/><rect x='204' y='94' width='30' height='66'/><rect x='240' y='112' width='54' height='48'/><rect x='360' y='96' width='40' height='64'/><rect x='540' y='92' width='30' height='68'/><rect x='574' y='108' width='26' height='52'/></g><g fill='%23D9DEE8'><rect x='328' y='58' width='7' height='102'/><ellipse cx='331.5' cy='56' rx='13' ry='6'/><rect x='324' y='47' width='15' height='6' rx='3'/><rect x='331' y='18' width='1.5' height='30'/></g><circle cx='331.5' cy='56' r='1.6' fill='%23F6C86A'/><g id='p'><path d='M422 160 L422 64 L426 60 L426 46 L430 42 L430 32 L434 28 L434 22 L440 22 L440 28 L444 32 L444 42 L448 46 L448 60 L452 64 L452 160Z' fill='url(%23t)'/><path d='M422 160 L422 64 L426 60 L426 46 L430 42 L430 32 L434 28 L434 22 L440 22 L440 28 L444 32 L444 42 L448 46 L448 60 L452 64 L452 160Z' fill='url(%23v)'/><rect x='436.5' y='2' width='1.4' height='21' fill='%23E9EEF5'/></g><use href='%23p' x='68'/><path d='M452 92 L490 92 L490 96 L452 96Z' fill='%23C9D2DE'/><path d='M458 96 L471 110 L484 96' stroke='%23C9D2DE' stroke-width='1.5' fill='none'/><g fill='%23F6C86A'><circle cx='437' cy='22' r='1.3'/><circle cx='505' cy='22' r='1.3'/></g><rect y='146' width='600' height='14' fill='%23163228'/><g stroke='%231C3D30' stroke-width='3' fill='none' stroke-linecap='round'><path d='M170 160 Q166 136 176 118'/><path d='M560 160 Q566 138 556 120'/><path d='M30 160 Q26 140 34 126'/></g><g fill='%23214A39'><path d='M176 118 q-18 -2 -26 10 q12 -8 26 -6z'/><path d='M176 118 q18 -4 26 8 q-12 -6 -26 -4z'/><path d='M176 118 q-6 -14 -20 -16 q12 6 18 18z'/><path d='M176 118 q8 -14 22 -14 q-12 6 -20 16z'/><path d='M556 120 q-18 -2 -26 10 q12 -8 26 -6z'/><path d='M556 120 q18 -4 26 8 q-12 -6 -26 -4z'/><path d='M556 120 q-6 -14 -20 -16 q12 6 18 18z'/><path d='M556 120 q8 -14 22 -14 q-12 6 -20 16z'/><path d='M34 126 q-14 -2 -22 8 q10 -6 22 -5z'/><path d='M34 126 q14 -3 22 7 q-10 -5 -22 -4z'/><path d='M34 126 q6 -12 18 -12 q-10 5 -17 14z'/></g><g fill='%23E0314B'><circle cx='196' cy='150' r='3'/><circle cx='204' cy='153' r='2.4'/><circle cx='530' cy='151' r='3'/><circle cx='64' cy='152' r='2.6'/></g></svg>")}
+html.skin-kualalumpur{
+  --accent:#0F6E7A; --accent-2:#0A4F5A; --accent-soft:#E0F1F2; --accent-ink:#FFFFFF;
+  --kl-teal:#0F6E7A; --kl-teal-2:#0A4F5A; --kl-night:#1D2B53; --kl-gold:#D9A441; --kl-gold-soft:#FBF1DA;
+  --kl-hib:#D7263D; --kl-palm:#2E8B57; --kl-ink:#18273A; --kl-muted:#5B6B7A;
+  --app-bg:#F3F6F7; --surface:#FFFFFF; --line:#D9E3E6; --ink:#18273A;
+  --shadow-sm:0 1px 2px rgba(15,50,70,.06),0 2px 6px rgba(15,50,70,.05);
+  --shadow-md:0 8px 22px rgba(15,50,70,.10),0 2px 6px rgba(15,50,70,.06);
+  --shadow-lg:0 20px 50px rgba(20,30,70,.25);
+  --kl-stars:radial-gradient(circle,rgba(255,255,255,.95) 0 1.2px,transparent 1.8px),radial-gradient(circle,rgba(255,236,190,.85) 0 1px,transparent 1.6px);
+}
+html.skin-kualalumpur body{background:var(--app-bg) linear-gradient(180deg,#E3EEF0 0,#F3F6F7 260px,#F8F6F1 100%) no-repeat;color:var(--kl-ink)}
+
+/* ── Màn đăng nhập: KL lúc hoàng hôn, sao lấp lánh ── */
+html.skin-kualalumpur #setup-screen{position:relative;overflow:hidden;background:var(--kl-scene) right bottom/100% 46% no-repeat,linear-gradient(180deg,#121C3E 0%,#233466 54%)}
+html.skin-kualalumpur #setup-screen::before{content:"";position:absolute;inset:0 0 46% 0;pointer-events:none;background-image:var(--kl-stars);background-size:110px 90px,170px 130px;background-position:10px 10px,60px 40px;animation:kl-twinkle 4s ease-in-out infinite alternate}
+@keyframes kl-twinkle{from{opacity:.45}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){html.skin-kualalumpur #setup-screen::before{animation:none}}
+html.skin-kualalumpur .setup-box{position:relative;z-index:1;border-radius:20px;border-top:5px solid var(--kl-gold);box-shadow:var(--shadow-lg);background:rgba(255,255,255,.97)}
+html.skin-kualalumpur .setup-logo{color:var(--kl-teal-2)}
+html.skin-kualalumpur .setup-logo::before{content:"";display:block;width:34px;height:34px;margin:0 0 10px;background:linear-gradient(90deg,#9AA7B8 0 11px,transparent 11px 23px,#9AA7B8 23px) ,linear-gradient(180deg,transparent 0 58%,#9AA7B8 58% 66%,transparent 66%);clip-path:polygon(0 100%,0 30%,8% 22%,12% 0,20% 22%,32% 30%,32% 100%,68% 100%,68% 30%,80% 22%,88% 0,92% 22%,100% 30%,100% 100%)}
+html.skin-kualalumpur .setup-btn{background:linear-gradient(180deg,#138494,#0A4F5A);color:#FFF6E0;border-radius:12px;box-shadow:0 6px 16px rgba(10,79,90,.3)}
+html.skin-kualalumpur .setup-input{border-color:#D2DFE3;border-radius:10px}
+html.skin-kualalumpur .flink{color:var(--kl-teal)}
+
+/* ── Thanh trên cùng: trời đêm KL → xanh ngọc, chỉ vàng ── */
+html.skin-kualalumpur .topbar{background:linear-gradient(100deg,#1D2B53 0%,#0A4F5A 100%);border-bottom:2px solid var(--kl-gold);box-shadow:0 2px 14px rgba(20,30,70,.28)}
+html.skin-kualalumpur .tb-logo{color:#F6D58A;display:flex;align-items:center;gap:8px}
+html.skin-kualalumpur .tb-logo::before{content:"";flex:0 0 auto;width:16px;height:20px;background:linear-gradient(90deg,#E6EBF2 0 5px,transparent 5px 11px,#E6EBF2 11px),linear-gradient(180deg,transparent 0 58%,#E6EBF2 58% 66%,transparent 66%);clip-path:polygon(0 100%,0 30%,8% 22%,15% 0,22% 22%,32% 30%,32% 100%,68% 100%,68% 30%,78% 22%,85% 0,92% 22%,100% 30%,100% 100%)}
+html.skin-kualalumpur .tb-ns,html.skin-kualalumpur .tb-date{color:rgba(240,248,250,.75)}
+html.skin-kualalumpur .tb-ns{background:rgba(255,255,255,.12)}
+html.skin-kualalumpur .tb-gear,html.skin-kualalumpur .tb-out{border-color:rgba(246,213,138,.45);color:#F6D58A}
+html.skin-kualalumpur .tb-gear:hover{color:#fff;border-color:#fff}
+html.skin-kualalumpur .main-tabs{background:#fff;border-top:0;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(15,50,70,.05)}
+html.skin-kualalumpur .mtab{color:var(--kl-muted)}
+html.skin-kualalumpur .mtab.on{color:var(--kl-teal);border-bottom:3px solid var(--kl-teal)}
+html.skin-kualalumpur .date-bar,html.skin-kualalumpur .stats-bar,html.skin-kualalumpur .search-row{background:#fff;border-color:var(--line)}
+html.skin-kualalumpur .sbox{border-color:var(--line)}
+html.skin-kualalumpur .sn{color:var(--kl-teal)}
+html.skin-kualalumpur .db-btn{background:#E6F2F3;border-color:#CFE3E6;color:var(--kl-teal-2);border-radius:10px}
+html.skin-kualalumpur .db-today{background:var(--kl-teal);border-radius:10px}
+html.skin-kualalumpur .srch{border-color:#D2DFE3;border-radius:12px}
+
+/* ── Trang chủ: tranh KL hoàng hôn + ô vòm kiểu Hồi giáo ── */
+html.skin-kualalumpur .home-hd{background:var(--kl-scene) right bottom/cover no-repeat;border-radius:18px;padding:18px 18px 64px;margin:0 0 14px;box-shadow:var(--shadow-md);min-height:150px;border-bottom:4px solid var(--kl-gold)}
+html.skin-kualalumpur .home-title{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+html.skin-kualalumpur .home-sub{color:rgba(255,255,255,.88);max-width:58%;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+html.skin-kualalumpur .home-sub b{color:#F6D58A}
+@media(max-width:620px){html.skin-kualalumpur .home-sub{max-width:100%}html.skin-kualalumpur .home-hd{background:var(--kl-scene) right bottom/100% 112px no-repeat,linear-gradient(180deg,#1A2850,#2A3B6E);padding-bottom:124px;min-height:0}}
+html.skin-kualalumpur .home-card{border:1px solid var(--line);border-top:4px solid var(--kl-teal);border-left:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff 0%,#fff 72%,#F4FAFA 100%);color:var(--kl-ink)}
+html.skin-kualalumpur .home-card:nth-child(3n+2){border-top-color:var(--kl-gold)}
+html.skin-kualalumpur .home-card:nth-child(3n){border-top-color:var(--kl-hib)}
+html.skin-kualalumpur .home-ico{width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:50% 50% 8px 8px / 62% 62% 8px 8px;background:#E0F1F2;box-shadow:inset 0 -3px 0 var(--kl-gold-soft);font-size:26px}
+html.skin-kualalumpur .home-lbl{color:var(--kl-teal-2)}
+html.skin-kualalumpur .home-desc{color:var(--kl-muted)}
+
+/* ── Nội dung ── */
+html.skin-kualalumpur .mc,html.skin-kualalumpur .adm-box,html.skin-kualalumpur .chart-wrap{border-radius:14px}
+html.skin-kualalumpur .stabs{border-color:var(--line);border-radius:12px}
+html.skin-kualalumpur .stab{color:var(--kl-muted);border-radius:9px}
+html.skin-kualalumpur .stab.on,html.skin-kualalumpur #page-mg .mgk-tabs .stab.on{background:var(--kl-teal);color:#fff}
+html.skin-kualalumpur .fb-filter.on,html.skin-kualalumpur .pf-filter.on,html.skin-kualalumpur .mgk-chip.on{background:var(--kl-teal);border-color:var(--kl-teal);color:#fff}
+html.skin-kualalumpur .msec-title{color:var(--kl-teal);letter-spacing:.08em}
+html.skin-kualalumpur .btn-g{background:linear-gradient(180deg,#138494,#0F6E7A);color:#fff}
+html.skin-kualalumpur .btn-d{background:var(--kl-night);color:#F6D58A}
+html.skin-kualalumpur .btn-o{border-color:#D2DFE3;color:var(--kl-teal-2)}
+html.skin-kualalumpur .tbtn{background:#E6F2F3;border-color:#CFE3E6;color:var(--kl-teal-2)}
+html.skin-kualalumpur .tbtn.gold{background:linear-gradient(180deg,#F0C66A,#D9A441);color:#3A2408;border-color:#D9A441}
+html.skin-kualalumpur .sel,html.skin-kualalumpur .nmod-inp{border-color:#D2DFE3}
+html.skin-kualalumpur .skc.done,html.skin-kualalumpur .tg-y{background:var(--kl-teal)!important;border-color:var(--kl-teal)}
+html.skin-kualalumpur .ovt th,html.skin-kualalumpur #fs-head,html.skin-kualalumpur .ids-matrix th.ids-cw-user,html.skin-kualalumpur .ids-matrix th.ids-cw-tot{background:var(--kl-night);color:#F6D58A}
+html.skin-kualalumpur .dd-ord-num,html.skin-kualalumpur .mgk-av{background:var(--kl-night);color:#F6D58A}
+html.skin-kualalumpur .mgk-dtoday,html.skin-kualalumpur .an-person-view button,html.skin-kualalumpur .map-wrap.map-fs .map-fs-exit{background:var(--kl-teal);border-color:var(--kl-teal);color:#fff}
+html.skin-kualalumpur .toast{background:var(--kl-night);border-color:rgba(217,164,65,.6)}
+html.skin-kualalumpur .modal,html.skin-kualalumpur .nmod{border-top:4px solid var(--kl-teal);box-shadow:0 -12px 44px rgba(20,30,70,.25)}
+html.skin-kualalumpur .modal-ov,html.skin-kualalumpur .nmod-ov{background:rgba(15,22,48,.55)}
+html.skin-kualalumpur .modal-x,html.skin-kualalumpur .nmod-x{background:#E6F2F3;color:var(--kl-teal-2)}
+html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--kl-teal-2)}
+@media(pointer:fine){
+  html.skin-kualalumpur ::-webkit-scrollbar-thumb{background:#B7CDD2;background-clip:content-box}
+  html.skin-kualalumpur ::-webkit-scrollbar-thumb:hover{background:#8FB3BA;background-clip:content-box}
 }
 </style>
 </head>
@@ -5015,6 +5107,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v730-kualalumpur', ver:'7.30', icon:'🌆', title:'Thêm giao diện Kuala Lumpur + ô chọn có tranh',
+    desc:'Chủ đề mới <b>Kuala Lumpur</b>: tháp đôi <b>Petronas</b> và tháp <b>KL</b> lúc hoàng hôn, đèn thành phố vàng, hàng cọ, hoa dâm bụt; tông <b>xanh ngọc + vàng</b>, màn đăng nhập có sao lấp lánh. Trong <b>🎨 Giao diện</b>, các chủ đề có tranh (Santorini, Bắc Kinh mùa đông, Kuala Lumpur) giờ hiện <b>ảnh xem trước</b>. Chủ đề <b>Than chì</b> đã được thay bằng <b>Bắc Kinh mùa đông</b> (ai đang dùng Than chì sẽ tự chuyển).' },
   { id:'v729-backinh', ver:'7.29', icon:'🏯', title:'Thêm giao diện: Bắc Kinh mùa đông',
     desc:'Chủ đề mới <b>Bắc Kinh mùa đông</b>: thanh trên cùng <b>đỏ son</b> viền vàng, Trang chủ có tranh <b>Tử Cấm Thành</b> mái ngói vàng phủ tuyết và <b>Vạn Lý Trường Thành</b> trên núi tuyết, màn đăng nhập có <b>tuyết rơi</b>. Bật: bấm <b>🎨</b> trên thanh trên cùng → chọn <b>Bắc Kinh mùa đông</b>. Muốn quay lại: chọn <b>Santorini</b> hoặc chủ đề khác.' },
   { id:'v728-santorini', ver:'7.28', icon:'🏛️', title:'Giao diện mới: phong cách Santorini',
@@ -15981,17 +16075,18 @@ function attachSelFilter(inputEl,selEl){
 // ================================================================
 var THEME_PRESETS={
   // v7.28 — Santorini: chủ đề "da" toàn app (skin) — trắng vôi, xanh vòm Aegean, hoa giấy hồng, nắng hoàng hôn. Mặc định.
-  santorini:{name:'Santorini (Hy Lạp)',accent:'#1F64B0',a2:'#0E4C92',soft:'#E3EEFA',ink:'#FFFFFF',skin:'santorini'},
+  santorini:{name:'Santorini (Hy Lạp)',accent:'#1F64B0',a2:'#0E4C92',soft:'#E3EEFA',ink:'#FFFFFF',skin:'santorini',scene:'--st-scene'},
   // v7.29 — Bắc Kinh mùa đông: đỏ son, ngói vàng phủ tuyết, Vạn Lý Trường Thành + Tử Cấm Thành, tuyết rơi.
-  backinh:{name:'Bắc Kinh mùa đông',accent:'#B3261E',a2:'#8E1A12',soft:'#F8E7E2',ink:'#FFFFFF',skin:'backinh'},
+  backinh:{name:'Bắc Kinh mùa đông',accent:'#B3261E',a2:'#8E1A12',soft:'#F8E7E2',ink:'#FFFFFF',skin:'backinh',scene:'--bk-scene'},
+  // v7.30 — Kuala Lumpur: tháp đôi Petronas + tháp KL lúc hoàng hôn, hàng cọ, hoa dâm bụt; xanh ngọc + vàng.
+  kualalumpur:{name:'Kuala Lumpur',accent:'#0F6E7A',a2:'#0A4F5A',soft:'#E0F1F2',ink:'#FFFFFF',skin:'kualalumpur',scene:'--kl-scene'},
   gold:{name:'Vàng kim cổ điển',accent:'#C8A84B',a2:'#A8842B',soft:'#F6EECF',ink:'#1A1A1A'},
   emerald:{name:'Lục bảo',accent:'#1F7A5E',a2:'#155C46',soft:'#E2F1EB',ink:'#FFFFFF'},
   sapphire:{name:'Lam ngọc',accent:'#2D5DA8',a2:'#1F4279',soft:'#E5ECF8',ink:'#FFFFFF'},
   bordeaux:{name:'Rượu vang',accent:'#8E2D43',a2:'#6C2032',soft:'#F6E5EA',ink:'#FFFFFF'},
-  bronze:{name:'Đồng cổ',accent:'#B07D4B',a2:'#8B6038',soft:'#F3E9DD',ink:'#1A1A1A'},
-  charcoal:{name:'Than chì',accent:'#4A4A4A',a2:'#2E2E2E',soft:'#E9E9E9',ink:'#FFFFFF'}
+  bronze:{name:'Đồng cổ',accent:'#B07D4B',a2:'#8B6038',soft:'#F3E9DD',ink:'#1A1A1A'}
 };
-var THEME_ORDER=['santorini','backinh','gold','emerald','sapphire','bordeaux','bronze','charcoal'];
+var THEME_ORDER=['santorini','backinh','kualalumpur','gold','emerald','sapphire','bordeaux','bronze']; // v7.30 — bỏ Than chì (thay bằng Bắc Kinh mùa đông)
 // v6.16 — Hình nền cao cấp (gradient châu Âu). Ảnh tự upload lưu riêng (_bgImage).
 var BG_PRESETS={
   cream:{name:'Lụa kem',css:'linear-gradient(135deg,#FBF3E6 0%,#F1E2C9 100%)'},
@@ -16015,9 +16110,10 @@ function _ensurePrefShape(){
   if(_prefs.myStart&&(_prefs.myStart.lat==null||_prefs.myStart.lng==null))_prefs.myStart=null; // điểm xuất phát mặc định
 }
 function applyTheme(key){
+  if(key==='charcoal')key='backinh'; // v7.30 — Than chì đã được thay bằng Bắc Kinh mùa đông
   var t=THEME_PRESETS[key]?key:'santorini';var p=THEME_PRESETS[t];
   var r=document.documentElement.style;
-  ['santorini','backinh'].forEach(function(s){document.documentElement.classList.toggle('skin-'+s,p.skin===s);});
+  Object.keys(THEME_PRESETS).forEach(function(k){var s=THEME_PRESETS[k].skin;if(s)document.documentElement.classList.toggle('skin-'+s,p.skin===s);});
   r.setProperty('--accent',p.accent);
   r.setProperty('--accent-2',p.a2);
   r.setProperty('--accent-soft',p.soft);
@@ -16270,7 +16366,8 @@ function renderAppearance(){
   THEME_ORDER.forEach(function(key){
     var p=THEME_PRESETS[key];var on=(_prefs.theme||'santorini')===key;
     h+='<div class="thm-card'+(on?' on':'')+'" data-theme="'+key+'" style="--tc:'+p.accent+'">';
-    h+='<div class="thm-swatch" style="background:'+p.soft+'"><div class="thm-dot" style="background:'+p.accent+'"></div><div class="thm-bar"></div></div>';
+    if(p.scene)h+='<div class="thm-swatch thm-scene" style="background:var('+p.scene+') right bottom/cover no-repeat;border-bottom:4px solid '+p.accent+'"></div>'; // v7.30 — chủ đề có tranh: xem trước bức tranh
+    else h+='<div class="thm-swatch" style="background:'+p.soft+'"><div class="thm-dot" style="background:'+p.accent+'"></div><div class="thm-bar"></div></div>';
     h+='<div class="thm-name">'+escHtml(p.name)+'</div>';
     h+='<div class="thm-tick">'+(on?'✓ Đang dùng':'')+'</div>';
     h+='</div>';
