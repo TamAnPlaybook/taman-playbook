@@ -1,4 +1,4 @@
-<!-- VERSION: v7.52-zoom-khong-sot-ten -->
+<!-- VERSION: v7.53-zoom-dien-thoai -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -16240,6 +16240,13 @@ function _zLineName(text){
   var s0=noAccent(t).replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
   if(!s0)return {kind:'bad',name:''};
   for(var i=0;i<Z_UI_LINE.length;i++){if(Z_UI_LINE[i].test(s0))return {kind:'ui',name:t};}
+  // v7.53 — Zoom điện thoại tiếng Việt: tiêu đề nhóm ("Người chủ trì", "Đồng chủ trì (9)", "Trong cuộc họp (42)"),
+  //   tiêu đề bị đọc méo ("Nguditham gia (51)") và thông báo nổi ("… đã rời đi / đã tham gia")
+  var ta=t.normalize('NFC').toLowerCase().trim();
+  if(/(^|\s)chủ trì[\s(]*\d{0,3}[)\s.]*$/.test(ta)&&ta.length<=24)return {kind:'ui',name:t};
+  if(/cuộc h[oọ]p[\s(]*\d{0,3}[)\s.]*$/.test(ta)&&ta.length<=28)return {kind:'ui',name:t};
+  if(/^ng[a-z]{0,6}thamgia\d{0,4}$/.test(s0.replace(/ /g,'')))return {kind:'ui',name:t};
+  if(/(đã rời đi|đã rời khỏi cuộc họp|đã tham gia)[\s.]*$/.test(ta))return {kind:'ui',name:t};
   // xoá ký tự rác OCR (giữ / - . , ( ) và số)
   var s=t.replace(/[|=^~«»®©#<>*+\\\[\]{}:;!`"@$?%_¦§¶•·]+/g,' ');
   s=s.split(/\s+/).filter(function(tk){return /[A-Za-zÀ-ỹĐđ0-9]/.test(tk);}).join(' ');
@@ -16261,7 +16268,7 @@ function _zSamePerson(a,b){
   var m=Math.min(A.length,B.length);if(m<12)return false;
   var mx=Math.max(1,Math.floor(m*0.06));return _zLev(A,B,mx)<=mx;
 }
-function openZoomAtt(){_zatt.buoi='sang';_zatt.dets=[];_zatt.done=0;_zatt.pick={};_zatt.unread=[];_zatt.zoomTotal=0;renderZoomAtt();document.getElementById('zatt-ov').classList.add('open');}
+function openZoomAtt(){_zatt.buoi='sang';_zatt.dets=[];_zatt.done=0;_zatt.pick={};_zatt.unread=[];_zatt.zoomTotal=0;_zatt.imgStats=[];renderZoomAtt();document.getElementById('zatt-ov').classList.add('open');}
 function closeZoomAtt(){document.getElementById('zatt-ov').classList.remove('open');}
 function _zBuoiLbl(b){return b==='sang'?'Sáng':b==='trua'?'Trưa':'Tối';}
 // v7.51 — số người SẼ điểm danh = ID đã khớp (được tick) ∪ ID vừa chỉ định ở "Chưa gán" (không đếm trùng 1 ID)
@@ -16280,10 +16287,15 @@ function _zCountHtml(){
   if(zt){
     var got=n+un;
     if(got===zt)chk='<div class="zc-ok">✅ Khớp số Zoom báo: <b>'+zt+'</b> người — không sót dòng nào'+(un?' (còn '+un+' dòng chưa đọc rõ, gõ tay ở dưới)':'')+'.</div>';
-    else if(got<zt)chk='<div class="zc-bad">⚠️ Zoom báo <b>'+zt+'</b> người, app mới thấy <b>'+got+'</b> dòng → <b>thiếu '+(zt-got)+'</b>. Hãy chụp thêm phần danh sách còn thiếu (cuộn tới cuối, chụp chồng lên nhau 1–2 dòng) rồi chọn thêm ảnh, hoặc gõ tay ở mục "Thêm tên thủ công".</div>';
+    else if(got<zt)chk='<div class="zc-bad">⚠️ Zoom báo <b>'+zt+'</b> người, app mới thấy <b>'+got+'</b> dòng → <b>thiếu '+(zt-got)+'</b>. <b>Kiểm tra đã chọn đủ ảnh, nhất là ảnh CUỐI danh sách.</b> Nếu chưa, chụp thêm phần danh sách còn thiếu (cuộn tới cuối, chụp chồng lên nhau 1–2 dòng) rồi chọn thêm ảnh, hoặc gõ tay ở mục "Thêm tên thủ công".</div>';
     else chk='<div class="zc-warn">ℹ️ Zoom báo <b>'+zt+'</b> người, app thấy <b>'+got+'</b> dòng (nhiều hơn '+(got-zt)+') — '+(un?'có thể vài dòng ở mục "Dòng chưa đọc rõ" không phải tên người (hàng nút, hình) → bấm 🗑 bỏ; hoặc ':'')+'1 người bị đọc thành 2 dòng ở 2 ảnh khác nhau (xem các tên gần giống ở mục Chưa gán).</div>';
   }else if(_zatt.mode==='list'&&n)chk='<div class="zc-warn">ℹ️ Không thấy tiêu đề "Participants (N)" trong ảnh — nên chụp cả dòng tiêu đề này để app đối chiếu số người, tránh sót.</div>';
-  return '<div class="zatt-count">'+chk+'📊 Đọc được <b>'+n+'</b> tên Zoom'+(un?' + <b style="color:#C62828">'+un+'</b> dòng chưa đọc rõ':'')+': <b>'+mt+'</b> tự khớp ('+nId+' ID'+(dup>0?' — <b style="color:#E65100">'+dup+' tên trùng vào cùng 1 ID</b>, xem dòng "cũng nhận dạng"':'')+') · <b>'+(n-mt)+'</b> chưa gán'+(pk?' (đã chỉ định '+pk+')':'')+' → sẽ điểm danh <b>'+_zWillMark()+'</b> người.</div>';
+  var st=_zatt.imgStats||[],per='';
+  if(st.length){
+    per='<div style="margin-top:3px">🖼 Đã quét <b>'+st.length+'</b> ảnh — '+st.map(function(x,i){return 'ảnh '+(i+1)+': '+((x.err||!x.n)?'<b style="color:#C62828">'+(x.err?'LỖI':'0 tên')+'</b>':'<b>'+x.n+'</b>');}).join(' · ')+' (gồm cả tên chụp lặp giữa 2 ảnh).</div>';
+    if(st.some(function(x){return x.err||!x.n;}))chk='<div class="zc-bad">⚠️ Có ảnh không đọc được — hãy chụp/chọn lại ảnh đó rồi quét lại.</div>'+chk;
+  }
+  return '<div class="zatt-count">'+chk+'📊 Đọc được <b>'+n+'</b> tên Zoom'+(un?' + <b style="color:#C62828">'+un+'</b> dòng chưa đọc rõ':'')+': <b>'+mt+'</b> tự khớp ('+nId+' ID'+(dup>0?' — <b style="color:#E65100">'+dup+' tên trùng vào cùng 1 ID</b>, xem dòng "cũng nhận dạng"':'')+') · <b>'+(n-mt)+'</b> chưa gán'+(pk?' (đã chỉ định '+pk+')':'')+' → sẽ điểm danh <b>'+_zWillMark()+'</b> người.'+per+'</div>';
 }
 function _zUpdateCommitLbl(){
   var b=document.querySelector('#zatt-content [data-zcommit]'),w=_zWillMark();
@@ -16478,7 +16490,7 @@ async function _zListLines(url,worker,onProg){
     var gapMax=mh*kk*1.6;
     for(var wi=1;wi<ws.length;wi++){var gx=(ws[wi].bbox&&ws[wi-1].bbox)?ws[wi].bbox.x0-ws[wi-1].bbox.x1:0;if(gx>gapMax){ws=ws.slice(0,wi);break;}}
     // mảnh avatar sót đầu dòng: 1–2 ký tự rồi cách xa
-    if(ws.length>1&&ws[0].text.trim().length<=2&&ws[1].bbox&&ws[0].bbox&&ws[1].bbox.x0-ws[0].bbox.x1>mh*kk*1.1)ws=ws.slice(1);
+    if(ws.length>1&&ws[0].text.trim().length<=2&&!/^(hc|tt)$/i.test(ws[0].text.trim())&&ws[1].bbox&&ws[0].bbox&&ws[1].bbox.x0-ws[0].bbox.x1>mh*kk*1.1)ws=ws.slice(1);
     return {text:ws.map(function(wd){return wd.text.trim();}).join(' '),conf:ws.length?ws.reduce(function(s,wd){return s+(wd.confidence==null?70:wd.confidence);},0)/ws.length:0};
   }
   for(var bi=0;bi<mg.length;bi++){
@@ -16494,8 +16506,9 @@ async function _zListLines(url,worker,onProg){
   }
   // Số người Zoom báo ở tiêu đề "Participants (58)" / "Người tham gia (58)" → để đối chiếu, phát hiện sót
   out.zoomTotal=0;
-  var reHead=/(participants?|ng[uư][oờơ]i\s*tham\s*gia|th[aà]nh\s*vi[eê]n)\D{0,4}(\d{1,4})/i;
-  out.forEach(function(o){var m=reHead.exec(o.text||'');if(m)out.zoomTotal=Math.max(out.zoomTotal,parseInt(m[2],10));});
+  var reHeadN=/(participants?|ng[a-z]{0,5}\s*tham\s*gia|thanh\s*vien)\D{0,4}(\d{1,4})/;
+  var reHead={exec:function(t){return reHeadN.exec(noAccent(t||''));}};
+  out.forEach(function(o){var m=reHead.exec(o.text);if(m)out.zoomTotal=Math.max(out.zoomTotal,parseInt(m[2],10));});
   // hàng NÚT cuối danh sách ("Invite   Mute me" / "Mời   Tắt tiếng tôi") có thể bị cắt cột → đọc lại 2 dòng cuối trên toàn chiều ngang
   for(var bj=Math.max(0,out.length-2);bj<out.length;bj++){
     var tb=noAccent(out[bj].text||'');if(/\b(invite|mute|unmute|moi|tat tieng|bat tieng)\b/.test(tb))continue;
@@ -16511,6 +16524,10 @@ async function _zListLines(url,worker,onProg){
       if(mH){out.zoomTotal=parseInt(mH[2],10);out[hi].text=RH.text;}
       break;
     }
+  }
+  // v7.53 — mọi thứ NẰM TRÊN tiêu đề danh sách (thanh trạng thái, tay kéo, thông báo nổi) không phải người
+  for(var ti=1;ti<Math.min(5,out.length);ti++){
+    if(out[ti].y0<H*0.3&&/^\W*(participants?|ng[a-z]{0,5}\s*tham\s*gia)/.test(noAccent(out[ti].text||''))){out.splice(0,ti);break;}
   }
   // dòng ngay dưới tiêu đề là Ô TÌM KIẾM — CHỈ bỏ khi chắc chắn: chữ gợi ý ("Find a participant"/"Tìm…")
   //   hoặc là chữ đang gõ để lọc (1–2 từ, có mặt trong ≥2 dòng khác). Điện thoại không có ô tìm → giữ nguyên.
@@ -16554,7 +16571,7 @@ function _zPreprocess(url,cropL,cropR){ // cắt bỏ cột avatar (trái) + bi�
 }
 async function _zRunScan(){
   if(_zatt.scanning||!_zatt.imgs.length)return;
-  _zatt.scanning=true;_zatt.prog=1;_zatt.done=0;_zatt.zoomTotal=0;_zatt.unread=[];renderZoomAtt();
+  _zatt.scanning=true;_zatt.prog=1;_zatt.done=0;_zatt.zoomTotal=0;_zatt.unread=[];_zatt.imgStats=[];renderZoomAtt();
   var worker;
   try{await _zLoadTess();worker=await _zGetWorker();}catch(e){_zatt.scanning=false;renderZoomAtt();showToast('⚠️ '+(e.message||'Không tải được bộ nhận dạng chữ.'));return;}
   _zatt._n=_zatt.imgs.length;
@@ -16579,7 +16596,7 @@ async function _zRunScan(){
       var proc=await _zPreprocess(_zatt.imgs[i].url, 0, 0);
       var res=await worker.recognize(proc.url);
       _zNamesFromData(res.data).forEach(function(n){n.cam=null;n.img=i;raws.push(n);});
-    }catch(err){console.warn('Zoom OCR lỗi ảnh '+(i+1)+':',err);}
+    }catch(err){console.warn('Zoom OCR lỗi ảnh '+(i+1)+':',err);_zatt.imgStats[i]={err:1,n:0};}
   }
   _zatt._lineMode=false;
   // Chuẩn hoá + lọc (giao diện Zoom + rác OCR) + gom trùng theo norm (giữ bản tự tin nhất)
@@ -16606,6 +16623,9 @@ async function _zRunScan(){
     if(!norm){if(it.line)_zatt.unread.push({text:it.text||'',crop:it.crop||'',img:it.img});return;}
     reads.push({raw:name,norm:norm,acc:_zAcc(name),conf:it.conf,cam:it.cam||null,img:it.img==null?-1:it.img,crop:it.crop||'',line:!!it.line});
   });
+  // v7.53 — mỗi ảnh đọc được mấy tên (để thấy ngay ảnh nào bị lỗi / thiếu)
+  for(var si=0;si<_zatt.imgs.length;si++){if(!_zatt.imgStats[si])_zatt.imgStats[si]={err:0,n:0};}
+  reads.forEach(function(r){if(_zatt.imgStats[r.img])_zatt.imgStats[r.img].n++;});
   reads.sort(function(a,b){return b.conf-a.conf;});
   var groups=[]; // mỗi nhóm = 1 người
   function sameish(g,r){
