@@ -1,4 +1,4 @@
-<!-- VERSION: v7.40-an-nhanh-ky-tu-chon -->
+<!-- VERSION: v7.41-nang-luong-khong-gioi-han -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11469,9 +11469,9 @@ function enBadgeSVG(lv){
 }
 function enDays(){ // danh sách ngày trong kỳ (tới HÔM NAY)
   var t=new Date();t.setHours(0,0,0,0);var out=[],d,n;
-  if(enPeriod==='custom'){ // Từ … Đến … (tối đa 366 ngày, không quá hôm nay)
+  if(enPeriod==='custom'){ // Từ … Đến … (KHÔNG giới hạn độ dài — v7.41; không quá hôm nay)
     var a=_enParse(enFrom)||t,b=_enParse(enTo)||t;if(b>t)b=t;if(a>b)a=b;
-    for(var x0=new Date(a);x0<=b&&out.length<366;x0.setDate(x0.getDate()+1))out.push(new Date(x0));
+    for(var x0=new Date(a);x0<=b;x0.setDate(x0.getDate()+1))out.push(new Date(x0));
   }
   else if(enPeriod==='month'){for(d=1;d<=t.getDate();d++)out.push(new Date(t.getFullYear(),t.getMonth(),d));}
   else{n=parseInt(enPeriod,10)||30;for(d=n-1;d>=0;d--){var x=new Date(t);x.setDate(t.getDate()-d);out.push(x);}}
