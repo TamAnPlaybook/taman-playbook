@@ -1,4 +1,4 @@
-<!-- VERSION: v7.43-disc-noi-bat-buoc-ma-id -->
+<!-- VERSION: v7.44-nang-luong-id-moi -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11454,9 +11454,9 @@ function rootShipCrownSVG(kind,w,sfx){
 var EN_LV={
   1:{c:'#FFF176',t:'#3A3000',bd:'#C9A800',shape:'hex',nm:'Tối ưu',rg:'80–100%'},
   2:{c:'#FFC400',t:'#2A1E00',bd:'#9A7400',shape:'hex',nm:'Hoạt động tốt',rg:'60–79%'},
-  3:{c:'#FF7A1A',t:'#fff',bd:'#C0510A',shape:'tri',nm:'Giảm nhẹ',rg:'45–59%'},
-  4:{c:'#E0242B',t:'#fff',bd:'#9E1015',shape:'tri-d',nm:'Giảm vừa',rg:'30–44%'},
-  5:{c:'#7A1414',t:'#fff',bd:'#4A0808',shape:'dia',nm:'Thấp',rg:'5–29%'},
+  3:{c:'#FF7A1A',t:'#fff',bd:'#C0510A',shape:'tri',nm:'Giảm nhẹ',rg:'40–59%'},
+  4:{c:'#E0242B',t:'#fff',bd:'#9E1015',shape:'tri-d',nm:'Giảm vừa',rg:'20–39%'},
+  5:{c:'#7A1414',t:'#fff',bd:'#4A0808',shape:'dia',nm:'Thấp',rg:'5–19%'},
   6:{c:'#111111',t:'#fff',bd:'#000',shape:'sq',nm:'Mất cân bằng',rg:'0–4%'}
 };
 var EN_ORDER=[1,2,3,4,5,6]; // 1 tốt nhất (vàng nhạt) → 6 kém nhất (đen)
@@ -11479,7 +11479,7 @@ document.addEventListener('change',function(e){
   enPeriod='custom';try{localStorage.setItem('ta_enPeriod','custom');}catch(_e){}
   if(typeof renderCurrentTree==='function')renderCurrentTree();
 });
-function enLevelOf(pct){if(pct==null)return null;return pct>=80?1:pct>=60?2:pct>=45?3:pct>=30?4:pct>=5?5:6;} // v7.40 — ngưỡng anh Huy chốt: 1 80–100 · 2 60–79 · 3 45–59 · 4 30–44 · 5 5–29 · 6 0–4
+function enLevelOf(pct){if(pct==null)return null;return pct>=80?1:pct>=60?2:pct>=40?3:pct>=20?4:pct>=5?5:6;} // v7.44 — anh Huy chốt: 1 80–100 · 2 60–79 · 3 40–59 · 4 20–39 · 5 5–19 · 6 0–4
 function enBadgeSVG(lv){
   var L=EN_LV[lv],s='';
   if(L.shape==='hex')s='<polygon points="16,1.5 29,8.8 29,23.2 16,30.5 3,23.2 3,8.8" fill="'+L.c+'" stroke="#1A1A1A" stroke-width="2.4"/>';
@@ -11505,16 +11505,31 @@ function enCompute(){
   days.forEach(function(dt){
     var y=dt.getFullYear(),m1=dt.getMonth()+1,dd=dt.getDate();
     ses.forEach(function(s){
-      for(var i=0;i<pool.length;i++){var p=pool[i];if(p&&p.id&&dGetAt(p.id,y,m1,dd,s)){held.push([y,m1,dd,s]);nHeld++;break;}}
+      for(var i=0;i<pool.length;i++){var p=pool[i];if(p&&p.id&&dGetAt(p.id,y,m1,dd,s)){held.push([y,m1,dd,s,y*10000+m1*100+dd]);nHeld++;break;}}
     });
   });
   var mBy={};members.forEach(function(m){if(m&&m.name&&!mBy[m.name])mBy[m.name]=m;});
   var by={};
+  // v7.44 — ID MỚI: chỉ tính trên các buổi KỂ TỪ NGÀY CÓ MẶT TRONG HỆ THỐNG (không tính từ đầu kỳ/đầu tháng)
+  //   Ngày bắt đầu = addedAt (ngày gắn lên cây, chính xác tới ngày — ID thêm từ v7.44)
+  //   ID cũ chỉ có "Vào ID tháng.năm": vào tháng này/tháng trước → ngày ĐẦU TIÊN được điểm danh (✓/⏰/✗) kể từ đầu tháng vào;
+  //   chưa từng được điểm danh → ngày 1 của tháng vào. Vào lâu hơn → ngày 1 tháng vào (không ảnh hưởng kỳ gần đây).
+  var now=new Date(),curAbs=now.getFullYear()*12+now.getMonth()+1;
+  function startKeyOf(n,m){
+    if(n.addedAt){var a=new Date(n.addedAt);if(!isNaN(a))return a.getFullYear()*10000+(a.getMonth()+1)*100+a.getDate();}
+    var jd=parseJoinDate(n.joinDate);if(!jd)return 0;
+    var k0=jd.y*10000+jd.m*100+1;
+    if(jd.abs>=curAbs-1&&m&&m.id){
+      for(var i=0;i<held.length;i++){var h=held[i];if(h[4]<k0)continue;if(dGetAt(m.id,h[0],h[1],h[2],h[3]))return h[4];}
+    }
+    return k0;
+  }
   treeNodes.forEach(function(n){
-    var m=mBy[n.name];var pres=0;
-    if(m&&m.id)held.forEach(function(h){var v=dGetAt(m.id,h[0],h[1],h[2],h[3]);if(v==='yes'||v==='late')pres++;});
-    var pct=nHeld?Math.round(pres/nHeld*100):null;
-    by[n.id]={pres:pres,pct:pct,lv:enLevelOf(pct)};
+    var m=mBy[n.name],pres=0,den=0,sk=startKeyOf(n,m);
+    held.forEach(function(h){if(h[4]<sk)return;den++;
+      if(m&&m.id){var v=dGetAt(m.id,h[0],h[1],h[2],h[3]);if(v==='yes'||v==='late')pres++;}});
+    var pct=den?Math.round(pres/den*100):null;
+    by[n.id]={pres:pres,den:den,pct:pct,lv:enLevelOf(pct),fresh:den<nHeld};
   });
   return {by:by,nHeld:nHeld,nDays:days.length};
 }
@@ -11544,7 +11559,7 @@ function renderEnergyBar(pos){
       +'<span><b>'+cnt[lv]+'</b> '+L.nm+'<small>'+L.rg+'</small></span></button>';});
   if(enFilter)h+='<button class="en-per" data-en-filter="0">✕ Bỏ lọc</button>';
   h+='</div>';
-  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh. Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
+  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
     :'Kỳ <b>'+enPerLbl(enPeriod)+'</b> chưa có buổi nào được điểm danh → chưa tô màu. Hãy điểm danh (hoặc dùng 📷 ảnh Zoom) rồi quay lại.')+'</div>';
   el.innerHTML=h;
 }
@@ -11762,7 +11777,7 @@ function renderTree(){
     h+='</div>';
     if(_enL&&!(enFilter&&enFilter!==_en.lv)){ // v7.35 — huy hiệu mức năng lượng + % hiện diện
       h+=enBadgeSVG(_en.lv);
-      h+='<div class="en-pct" style="background:'+_enL.c+';color:'+_enL.t+'" title="'+_en.pres+'/'+_enData.nHeld+' buổi có mặt ('+enPerLbl(enPeriod)+')">'+_en.pct+'% · '+_en.pres+'/'+_enData.nHeld+'</div>';
+      h+='<div class="en-pct" style="background:'+_enL.c+';color:'+_enL.t+'" title="'+_en.pres+'/'+_en.den+' buổi có mặt ('+enPerLbl(enPeriod)+')'+(_en.fresh?' — ID mới: tính từ ngày vào hệ thống':'')+'">'+(_en.fresh?'🆕 ':'')+_en.pct+'% · '+_en.pres+'/'+_en.den+'</div>';
     }
     if(dreamMode){if(n.realized)h+='<div class="dream-pill done">✅ Hiện thực</div>';else if(!n.fromReal)h+='<div class="dream-pill plan">🎯 Kế hoạch</div>';}
     else if(_drMap&&_drMap[n.id])h+='<div class="dream-pill real" title="Đã có kế hoạch đúng như Cây mơ ước">🌠 Đúng kế hoạch</div>';
@@ -12411,6 +12426,7 @@ function saveNodeModal(){
     data.parentId=activeNodeModal.parentId||null;
     data.side=activeNodeModal.side||null;
     if(dreamMode)data.planAt=new Date().toISOString(); // v6.93 — ngày lập kế hoạch
+    else data.addedAt=new Date().toISOString(); // v7.44 — ngày gắn ID lên cây (chính xác tới ngày) → Năng lượng tính từ ngày này
     // v6.73 — Phả hệ đặt được CẢ 2 bên (bỏ quy tắc "phả hệ chỉ bên Phải").
     // Vị trí Trái/Phải giữ nguyên theo lựa chọn; mỗi bên vẫn tối đa 1 ID (nút thêm chỉ hiện ở ô trống).
     treeNodes.push(data);
