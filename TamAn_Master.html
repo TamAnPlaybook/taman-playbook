@@ -1,4 +1,4 @@
-<!-- VERSION: v7.38-nut-noi-nang-luong -->
+<!-- VERSION: v7.39-nut-noi-bieu-tuong -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -193,12 +193,12 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 /* v4.8: bộ đếm DISC ngoài sơ đồ */
 #disc-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:2px}
 /* v7.35 — Năng lượng hiện diện (kiểu bảng Magnoseek 1–6) trên cây Nhị phân */
-#tree-fabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:950;display:flex;gap:8px;pointer-events:none}
-.tfab{pointer-events:auto;border:2px solid #fff;border-radius:999px;padding:7px 13px;font:800 13px Arial;line-height:1.2;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+#tree-fabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:950;display:flex;gap:12px;pointer-events:none}
+.tfab{pointer-events:auto;border:2px solid #fff;border-radius:50%;width:46px;height:46px;padding:0;display:flex;align-items:center;justify-content:center;font:22px Arial;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
 #fab-att{color:#fff;background:linear-gradient(135deg,#2E7D32,#43A047);animation:fabPulse 2.4s ease-in-out infinite}
 #fab-en{color:#5D4000;background:#FFF8D6;border-color:#E6C200}
 #fab-en.on{color:#2A1E00;background:#FFD600;border-color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(255,214,0,.45)}
-@media(max-width:480px){.tfab{padding:6px 11px;font-size:12px}#tree-fabs{bottom:10px;gap:6px}}
+@media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}}
 #fab-att:hover{filter:brightness(1.08)}
 @keyframes fabPulse{0%,100%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 2px rgba(67,160,71,.3)}50%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 7px rgba(67,160,71,0)}}
 #btn-energy.on{background:#FFD600!important;border-color:#B8960C!important;color:#3A2A00!important;box-shadow:0 0 0 3px rgba(255,214,0,.35)}
@@ -2301,7 +2301,6 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
       <button class="tbtn" id="btn-thangtien" style="background:#FFF3E0;border-color:#FFB74D;color:#E65100">&#9889; Thăng tiến<span class="tt-badge" id="tt-badge"></span></button>
       <button class="tbtn" id="btn-nangdong" style="background:#E8F5E9;border-color:#A5D6A7;color:#2E7D32">&#128197; Năng động<span class="tt-badge" id="nd-badge"></span></button>
       <button class="tbtn" id="btn-idstats" style="background:#E3F2FD;border-color:#90CAF9;color:#1565C0">&#128202; Đếm ID vào</button>
-      <button class="tbtn" id="btn-energy" data-en-toggle="1" style="background:#FFF8D6;border-color:#E6C200;color:#7A5A00">&#9889; Năng lượng hiện diện</button>
       <div id="disc-bar"></div>
       <div id="tree-search-sug"></div>
     </div>
@@ -2311,7 +2310,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
-      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem">&#9989; Điểm danh</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)">&#9889; Năng lượng</button></div>
+      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button></div>
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
@@ -11484,7 +11483,6 @@ function renderEnergyBar(pos){
   var h='<div class="en-row"><span class="en-ttl">⚡ Năng lượng hiện diện'+(foc?' — cây của <b>'+escHtml(foc.name)+'</b>':'')+'</span>';
   ['7','30','month'].forEach(function(p){h+='<button class="en-per'+(enPeriod===p?' on':'')+'" data-en-period="'+p+'">'+enPerLbl(p)+'</button>';});
   h+='<button class="en-act" data-zatt-open="1" style="background:#1565C0">📷 Điểm danh ảnh Zoom</button>';
-  h+='<button class="en-act" data-en-att="1" style="background:#2E7D32">✅ Điểm danh & bảng hiện diện'+(foc?' nhánh này':'')+'</button>';
   h+='</div><div class="en-row" style="margin-top:6px">';
   EN_ORDER.forEach(function(lv){var L=EN_LV[lv];
     h+='<button class="en-lv'+(enFilter===lv?' on':'')+'" data-en-filter="'+lv+'" title="Bấm để chỉ làm nổi các ID mức '+lv+'">'
