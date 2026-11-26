@@ -1,4 +1,4 @@
-<!-- VERSION: v7.45-id-thu-2-theo-id-chinh -->
+<!-- VERSION: v7.46-id-thu-2-theo-id-dau -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11532,10 +11532,11 @@ function enCompute(){
     by[n.id]={pres:pres,den:den,pct:pct,lv:enLevelOf(pct),fresh:den<nHeld};
   });
   // v7.45 — ID thứ 2+ của cùng 1 người chấm THEO ID CHÍNH (người đó chỉ điểm danh 1 lần):
-  //   • Các ID trong "👤 Các ID của tôi" → theo ID Gốc (chính chủ tài khoản)
+  //   • Các ID trong "👤 Các ID của tôi" → theo ID đứng cao nhất trong nhóm đó
   //   • ID có "🔗 Là ID thứ 2+ của" (mainId) → theo ID chính (đi theo chuỗi, tối đa 6 bậc)
-  var root=treeNodes.find(function(x){return !x.parentId;}),mine=[];
-  try{mine=myIdsGet()||[];}catch(e){}
+  var mine=[];try{mine=(myIdsGet()||[]).filter(function(id){return treeNodes.some(function(x){return x.id===id;});});}catch(e){}
+  // v7.46 — ID chính của nhóm "Các ID của tôi" = ID ĐỨNG CAO NHẤT trên cây trong nhóm (ID đầu tiên của người đó), KHÔNG phải gốc tài khoản
+  var root=null,_rl=1e9;mine.forEach(function(id){var l=computeLevel2(id);if(l<_rl){_rl=l;root=treeNodes.find(function(x){return x.id===id;});}});
   function ownerOf(n){
     var cur=n,seen={};
     for(var k=0;k<6;k++){
@@ -11579,7 +11580,7 @@ function renderEnergyBar(pos){
       +'<span><b>'+cnt[lv]+'</b> '+L.nm+'<small>'+L.rg+'</small></span></button>';});
   if(enFilter)h+='<button class="en-per" data-en-filter="0">✕ Bỏ lọc</button>';
   h+='</div>';
-  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống; 🔗 ID thứ 2+ — trong Các ID của tôi hoặc đã chọn "Là ID thứ 2+ của" — chấm theo ID chính). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
+  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống; 🔗 ID thứ 2+ — trong Các ID của tôi (theo ID cao nhất của nhóm) hoặc đã chọn "Là ID thứ 2+ của" — chấm theo ID chính). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
     :'Kỳ <b>'+enPerLbl(enPeriod)+'</b> chưa có buổi nào được điểm danh → chưa tô màu. Hãy điểm danh (hoặc dùng 📷 ảnh Zoom) rồi quay lại.')+'</div>';
   el.innerHTML=h;
 }
