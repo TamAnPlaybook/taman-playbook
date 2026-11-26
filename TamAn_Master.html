@@ -1,4 +1,4 @@
-<!-- VERSION: v7.37-sao-nen-sang-nut-diemdanh -->
+<!-- VERSION: v7.38-nut-noi-nang-luong -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -193,9 +193,14 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 /* v4.8: bộ đếm DISC ngoài sơ đồ */
 #disc-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:2px}
 /* v7.35 — Năng lượng hiện diện (kiểu bảng Magnoseek 1–6) trên cây Nhị phân */
-#fab-att{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:900;border:3px solid #fff;border-radius:999px;padding:12px 26px;font:800 16px Arial;color:#fff;background:linear-gradient(135deg,#2E7D32,#43A047);box-shadow:0 6px 18px rgba(46,125,50,.45),0 0 0 4px rgba(67,160,71,.25);cursor:pointer;animation:fabPulse 2.4s ease-in-out infinite}
+#tree-fabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:950;display:flex;gap:8px;pointer-events:none}
+.tfab{pointer-events:auto;border:2px solid #fff;border-radius:999px;padding:7px 13px;font:800 13px Arial;line-height:1.2;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+#fab-att{color:#fff;background:linear-gradient(135deg,#2E7D32,#43A047);animation:fabPulse 2.4s ease-in-out infinite}
+#fab-en{color:#5D4000;background:#FFF8D6;border-color:#E6C200}
+#fab-en.on{color:#2A1E00;background:#FFD600;border-color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(255,214,0,.45)}
+@media(max-width:480px){.tfab{padding:6px 11px;font-size:12px}#tree-fabs{bottom:10px;gap:6px}}
 #fab-att:hover{filter:brightness(1.08)}
-@keyframes fabPulse{0%,100%{box-shadow:0 6px 18px rgba(46,125,50,.45),0 0 0 4px rgba(67,160,71,.25)}50%{box-shadow:0 6px 18px rgba(46,125,50,.45),0 0 0 11px rgba(67,160,71,0)}}
+@keyframes fabPulse{0%,100%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 2px rgba(67,160,71,.3)}50%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 7px rgba(67,160,71,0)}}
 #btn-energy.on{background:#FFD600!important;border-color:#B8960C!important;color:#3A2A00!important;box-shadow:0 0 0 3px rgba(255,214,0,.35)}
 #energy-bar{background:#FFFDF3;border-bottom:1px solid #F0E6B8;padding:8px 10px;font-size:12px}
 .en-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -2306,7 +2311,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
-      <button id="fab-att" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem">&#9989; Điểm danh</button>
+      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem">&#9989; Điểm danh</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)">&#9889; Năng lượng</button></div>
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
@@ -11468,6 +11473,7 @@ function enPerLbl(p){return p==='7'?'7 ngày':p==='month'?'Tháng này':'30 ngà
 function renderEnergyBar(pos){
   var el=document.getElementById('energy-bar'),btn=document.getElementById('btn-energy');
   if(btn)btn.classList.toggle('on',!!enMode);
+  var _fe=document.getElementById('fab-en');if(_fe)_fe.classList.toggle('on',!!enMode);
   if(!el)return;
   if(!enMode||currentTreeMode!=='binary'||dreamMode||!_enData){el.style.display='none';el.innerHTML='';return;}
   el.style.display='block';
@@ -11491,6 +11497,7 @@ function renderEnergyBar(pos){
   el.innerHTML=h;
 }
 function enGoAttendance(){
+  if(document.body.classList.contains('fs-mode'))closeFullscreen(); // v7.38 — đang toàn màn hình → thoát trước
   var root=focusNodeId||((treeNodes.filter(function(x){return !x.parentId;})[0]||{}).id)||null;
   _attDashDrill=root;_attDashOpen=true;_attDashM=null;
   var _mt=document.querySelector('.mtab[data-main="tp"]');if(_mt)_mt.click();
