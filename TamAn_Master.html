@@ -1,4 +1,4 @@
-<!-- VERSION: v7.35-nang-luong-hien-dien -->
+<!-- VERSION: v7.36-nang-luong-1-tot-nhat -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11410,22 +11410,22 @@ function rootShipCrownSVG(kind,w,sfx){
 // ================================================================
 // v7.35 — NĂNG LƯỢNG HIỆN DIỆN trên cây Nhị phân (kiểu Bảng tham chiếu Magnoseek 1–6)
 //   % = buổi có mặt (✓ hoặc ⏰) ÷ số buổi ĐÃ ĐƯỢC ĐIỂM DANH trong kỳ (buổi đang bật, có ≥1 người được chấm)
-//   — cùng định nghĩa với cột % của bảng hiện diện. Mức: 2 Tối ưu ≥90% · 1 Hoạt động 70–89% ·
+//   — cùng định nghĩa với cột % của bảng hiện diện. Mức: 1 Tối ưu ≥90% (vàng nhạt) · 2 Hoạt động tốt 70–89% ·
 //   3 Giảm nhẹ 50–69% · 4 Giảm vừa 30–49% · 5 Thấp 10–29% · 6 Mất cân bằng <10%. Vàng → đen.
 //   Áp dụng cho mọi khung cây đang xem (kể cả khi bấm "xem cây nhỏ" của 1 ID bất kỳ).
 // ================================================================
 var EN_LV={
-  1:{c:'#FFF176',t:'#3A3000',bd:'#C9A800',shape:'hex',nm:'Hoạt động',rg:'70–89%'},
-  2:{c:'#FFC400',t:'#2A1E00',bd:'#9A7400',shape:'hex',nm:'Tối ưu',rg:'≥90%'},
+  1:{c:'#FFF176',t:'#3A3000',bd:'#C9A800',shape:'hex',nm:'Tối ưu',rg:'≥90%'},
+  2:{c:'#FFC400',t:'#2A1E00',bd:'#9A7400',shape:'hex',nm:'Hoạt động tốt',rg:'70–89%'},
   3:{c:'#FF7A1A',t:'#fff',bd:'#C0510A',shape:'tri',nm:'Giảm nhẹ',rg:'50–69%'},
   4:{c:'#E0242B',t:'#fff',bd:'#9E1015',shape:'tri-d',nm:'Giảm vừa',rg:'30–49%'},
   5:{c:'#7A1414',t:'#fff',bd:'#4A0808',shape:'dia',nm:'Thấp',rg:'10–29%'},
   6:{c:'#111111',t:'#fff',bd:'#000',shape:'sq',nm:'Mất cân bằng',rg:'<10%'}
 };
-var EN_ORDER=[2,1,3,4,5,6]; // từ năng lượng cao → thấp
+var EN_ORDER=[1,2,3,4,5,6]; // 1 tốt nhất (vàng nhạt) → 6 kém nhất (đen)
 var enMode=false,enPeriod='30',enFilter=null,_enData=null;
 try{enMode=localStorage.getItem('ta_enMode')==='1';enPeriod=localStorage.getItem('ta_enPeriod')||'30';}catch(e){}
-function enLevelOf(pct){if(pct==null)return null;return pct>=90?2:pct>=70?1:pct>=50?3:pct>=30?4:pct>=10?5:6;}
+function enLevelOf(pct){if(pct==null)return null;return pct>=90?1:pct>=70?2:pct>=50?3:pct>=30?4:pct>=10?5:6;}
 function enBadgeSVG(lv){
   var L=EN_LV[lv],s='';
   if(L.shape==='hex')s='<polygon points="16,1.5 29,8.8 29,23.2 16,30.5 3,23.2 3,8.8" fill="'+L.c+'" stroke="#1A1A1A" stroke-width="2.4"/>';
@@ -11668,11 +11668,11 @@ function renderTree(){
     var _discDim=(discFilter&&!_discMatch)?'opacity:.28;':'';
     var _discRing=_discMatch?'box-shadow:0 0 0 4px '+DISC_COLORS[discFilter]+',0 2px 10px rgba(0,0,0,.3);':'';
     var _drCls=dreamMode?(n.realized?' dream-done':(n.fromReal?'':' dream-plan')):'';
-    // v7.35 — Năng lượng hiện diện: nền theo mức 1–6 (vàng → đen), mức 2 Tối ưu nhấp nháy vàng
+    // v7.36 — Năng lượng hiện diện: nền theo mức 1–6 (vàng nhạt → đen), mức 1 Tối ưu nhấp nháy vàng
     var _en=_enOn&&_enData?_enData.by[n.id]:null,_enL=(_en&&_en.lv)?EN_LV[_en.lv]:null,_enCls='',_enBd=null;
     if(_enL){
       _bg=_enL.c;_onColor=true;_tMain=_enL.t;_tSub=_en.lv<=2?'rgba(40,30,0,.85)':'rgba(255,255,255,.9)';_tRole=_enL.t;_enBd=_enL.bd;
-      if(_en.lv===2)_enCls=' en-glow';
+      if(_en.lv===1)_enCls=' en-glow';
       if(enFilter&&enFilter!==_en.lv)_enCls+=' en-dim';
     }
     h+='<div class="tnode-box'+(near?' near-rank':'')+(_isRoot?' root-box':'')+_blink+_drCls+_enCls+'" data-node-id="'+n.id+'" data-lvl="'+lvl+'" style="width:100%;height:100%;background:'+_bg+';border:'+(_enBd?'3px solid '+_enBd:'2.5px solid '+(rk>0?RANKS[rk-1].color:col))+';border-radius:12px;padding:6px 9px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative;overflow:hidden;'+_discDim+_discRing+'">';
