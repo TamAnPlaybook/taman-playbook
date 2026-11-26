@@ -1,4 +1,4 @@
-<!-- VERSION: v7.41-nang-luong-khong-gioi-han -->
+<!-- VERSION: v7.42-nen-moi-cua-so-tuong-phan -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -133,8 +133,16 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;color:#1A1A1A;fon
 .hc-acts{display:flex;gap:8px;flex-wrap:wrap}
 .content{padding:12px;max-width:900px;margin:0 auto;padding-bottom:80px}
 /* v6.22 — Khi có ảnh nền: phủ lớp mờ nhẹ sau nội dung để chữ/khoảng trống luôn dễ đọc, KHÔNG che ảnh nền ở rìa */
-body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:16px;margin-top:8px;margin-bottom:8px;box-shadow:0 6px 22px rgba(0,0,0,.10)}
-@supports not ((backdrop-filter:blur(3px)) or (-webkit-backdrop-filter:blur(3px))){body.has-appbg .content{background:rgba(250,249,246,.94)}}
+
+/* v7.42 — nền đã chọn phủ MỌI cửa sổ: thân trang, popup, khung cây Nhị phân/Mặt trời, Toàn màn hình.
+   Lớp lót sáng --win-veil có độ đậm TỰ TÍNH theo điểm tối nhất của nền (applyBackground → _bgVeil)
+   → chữ nội dung, tên ID, chi tiết màu tối luôn đủ tương phản, dù nền sáng/tối/ảnh rối. */
+body.has-appbg .page,body.has-appbg .nmod,body.has-appbg .modal,body.has-appbg #fs-overlay{
+  background:linear-gradient(var(--win-veil,rgba(250,249,246,.88)),var(--win-veil,rgba(250,249,246,.88))),var(--win-img,none) center/cover no-repeat fixed!important}
+/* chữ đặt thẳng trên nền (không nằm trong thẻ trắng) → màu đậm tối đa */
+body.has-appbg .page{color:#141414;min-height:calc(100vh - 110px)}
+/* lớp bên trong trang: trong suốt để thấy nền của trang (tránh lót 2 lần làm mất nền) */
+body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #star-canvas-wrap,body.has-appbg .page .tb-row,body.has-appbg #tree-search-bar,body.has-appbg #branch-stats{background:transparent!important}
 .stabs{display:flex;gap:3px;margin-bottom:12px;background:white;border-radius:10px;padding:4px;border:1px solid #E8E8E8;overflow-x:auto;scrollbar-width:none}
 .stabs::-webkit-scrollbar{display:none}
 .stab{flex-shrink:0;padding:7px 10px;border-radius:7px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer;border:none;background:none;color:#999;white-space:nowrap}
@@ -16694,10 +16702,53 @@ function applyBackground(bg){
     b.classList.add('has-appbg'); // v6.22 — bật lớp nền giúp nội dung luôn dễ đọc trên ảnh nền
     var dim=(bg.dim==null?0.3:bg.dim);
     if(dim>0){s.style.display='block';s.style.background='rgba(18,16,13,'+dim+')';}else s.style.display='none';
+    // v7.42 — nền phủ MỌI cửa sổ (thân trang, popup, cây, toàn màn hình) qua lớp lót sáng có độ đậm
+    //   TỰ TÍNH theo độ sáng + độ "rối" của nền → chữ/ID/chi tiết (màu tối) luôn đủ tương phản, nền gì cũng vậy.
+    var de=document.documentElement;de.style.setProperty('--win-img',img);
+    _bgVeil(img,bg.type==='preset'?BG_PRESETS[bg.preset].css:null);
   }else{
     b.style.backgroundImage='';b.style.backgroundAttachment='';s.style.display='none';
     b.classList.remove('has-appbg');
+    document.documentElement.style.removeProperty('--win-img');
   }
+}
+// Độ sáng tương đối (WCAG) của 1 màu sRGB 0–255
+function _relLum(r,g,b){function c(v){v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);}return 0.2126*c(r)+0.7152*c(g)+0.0722*c(b);}
+// Độ đậm lớp lót trắng cần để chữ tối (#1A1A1A, kể cả chữ phụ #666) đạt tương phản ≥ 7:1 trên nền XẤU NHẤT
+//   (điểm tối nhất của nền) — nền sáng & đều → lót mỏng (thấy rõ nền), nền tối / ảnh rối → lót dày.
+function _veilFor(minLum){
+  // Trình duyệt trộn màu trong không gian sRGB → quy độ sáng về mức xám sRGB rồi tính độ đậm lót.
+  // Cần độ sáng sau lót ≥ 0.62 (≈ xám 206) → #1A1A1A ≈ 12:1, chữ phụ #666 ≈ 4.6:1.
+  function toS(L){var v=L<=0.0031308?L*12.92:1.055*Math.pow(L,1/2.4)-0.055;return v*255;}
+  var g0=toS(Math.max(0,Math.min(1,minLum))),gt=toS(0.62),top=250;
+  var a=g0>=gt?0:(gt-g0)/(top-g0);
+  return Math.max(0.55,Math.min(0.94,a+0.05));
+}
+function _setVeil(a){
+  var de=document.documentElement;a=Math.round(a*100)/100;
+  de.style.setProperty('--win-veil','rgba(250,249,246,'+a+')');
+  de.style.setProperty('--win-veil-strong','rgba(250,249,246,'+Math.min(0.96,a+0.06)+')');
+}
+function _bgVeil(img,css){
+  _setVeil(0.86); // tạm (an toàn) trong lúc tính
+  if(css){ // gradient có sẵn: lấy điểm màu TỐI NHẤT
+    var hx=css.match(/#[0-9a-fA-F]{6}/g)||[],mn=1;
+    hx.forEach(function(h){mn=Math.min(mn,_relLum(parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)));});
+    _setVeil(_veilFor(mn));return;
+  }
+  var m=/^url\("(.*)"\)$/.exec(img||'');if(!m)return;
+  var im=new Image();
+  im.onload=function(){
+    try{
+      var c=document.createElement('canvas'),W=40,H=40;c.width=W;c.height=H;var x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+      var d=x.getImageData(0,0,W,H).data,ls=[];
+      for(var i=0;i<d.length;i+=4)ls.push(_relLum(d[i],d[i+1],d[i+2]));
+      ls.sort(function(p,q){return p-q;});
+      _setVeil(_veilFor(ls[Math.floor(ls.length*0.08)])); // phân vị 8% tối nhất (bỏ vài điểm nhiễu)
+    }catch(e){_setVeil(0.88);}
+  };
+  im.onerror=function(){_setVeil(0.88);};
+  im.src=m[1];
 }
 function applyPrefs(){
   _ensurePrefShape();
