@@ -1,4 +1,4 @@
-<!-- VERSION: v7.44-nang-luong-id-moi -->
+<!-- VERSION: v7.45-id-thu-2-theo-id-chinh -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11531,6 +11531,26 @@ function enCompute(){
     var pct=den?Math.round(pres/den*100):null;
     by[n.id]={pres:pres,den:den,pct:pct,lv:enLevelOf(pct),fresh:den<nHeld};
   });
+  // v7.45 — ID thứ 2+ của cùng 1 người chấm THEO ID CHÍNH (người đó chỉ điểm danh 1 lần):
+  //   • Các ID trong "👤 Các ID của tôi" → theo ID Gốc (chính chủ tài khoản)
+  //   • ID có "🔗 Là ID thứ 2+ của" (mainId) → theo ID chính (đi theo chuỗi, tối đa 6 bậc)
+  var root=treeNodes.find(function(x){return !x.parentId;}),mine=[];
+  try{mine=myIdsGet()||[];}catch(e){}
+  function ownerOf(n){
+    var cur=n,seen={};
+    for(var k=0;k<6;k++){
+      if(seen[cur.id])break;seen[cur.id]=1;
+      var nx=null;
+      if(cur.mainId)nx=treeNodes.find(function(x){return x.id===cur.mainId;});
+      else if(root&&cur.id!==root.id&&mine.indexOf(cur.id)>=0)nx=root;
+      if(!nx)break;cur=nx;
+    }
+    return cur;
+  }
+  treeNodes.forEach(function(n){
+    var o=ownerOf(n);if(o.id===n.id||!by[o.id])return;
+    var b=by[o.id];by[n.id]={pres:b.pres,den:b.den,pct:b.pct,lv:b.lv,fresh:b.fresh,via:o.name};
+  });
   return {by:by,nHeld:nHeld,nDays:days.length};
 }
 function enPerLbl(p){
@@ -11559,7 +11579,7 @@ function renderEnergyBar(pos){
       +'<span><b>'+cnt[lv]+'</b> '+L.nm+'<small>'+L.rg+'</small></span></button>';});
   if(enFilter)h+='<button class="en-per" data-en-filter="0">✕ Bỏ lọc</button>';
   h+='</div>';
-  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
+  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống; 🔗 ID thứ 2+ — trong Các ID của tôi hoặc đã chọn "Là ID thứ 2+ của" — chấm theo ID chính). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
     :'Kỳ <b>'+enPerLbl(enPeriod)+'</b> chưa có buổi nào được điểm danh → chưa tô màu. Hãy điểm danh (hoặc dùng 📷 ảnh Zoom) rồi quay lại.')+'</div>';
   el.innerHTML=h;
 }
@@ -11777,7 +11797,7 @@ function renderTree(){
     h+='</div>';
     if(_enL&&!(enFilter&&enFilter!==_en.lv)){ // v7.35 — huy hiệu mức năng lượng + % hiện diện
       h+=enBadgeSVG(_en.lv);
-      h+='<div class="en-pct" style="background:'+_enL.c+';color:'+_enL.t+'" title="'+_en.pres+'/'+_en.den+' buổi có mặt ('+enPerLbl(enPeriod)+')'+(_en.fresh?' — ID mới: tính từ ngày vào hệ thống':'')+'">'+(_en.fresh?'🆕 ':'')+_en.pct+'% · '+_en.pres+'/'+_en.den+'</div>';
+      h+='<div class="en-pct" style="background:'+_enL.c+';color:'+_enL.t+'" title="'+_en.pres+'/'+_en.den+' buổi có mặt ('+enPerLbl(enPeriod)+')'+(_en.fresh?' — ID mới: tính từ ngày vào hệ thống':'')+(_en.via?' — ID thứ 2+: chấm theo ID chính '+escHtml(_en.via):'')+'">'+(_en.via?'🔗 ':'')+(_en.fresh?'🆕 ':'')+_en.pct+'% · '+_en.pres+'/'+_en.den+'</div>';
     }
     if(dreamMode){if(n.realized)h+='<div class="dream-pill done">✅ Hiện thực</div>';else if(!n.fromReal)h+='<div class="dream-pill plan">🎯 Kế hoạch</div>';}
     else if(_drMap&&_drMap[n.id])h+='<div class="dream-pill real" title="Đã có kế hoạch đúng như Cây mơ ước">🌠 Đúng kế hoạch</div>';
@@ -12236,6 +12256,13 @@ function buildNodeForm(node,addOpts){
     h+='<select id="nf-nd-y" class="nmod-inp" style="width:96px">'+_dpNangYearOpts(_ndY)+'</select>';
     h+='</div></div>';
   }
+  // v7.45 — ID thứ 2+ của 1 người (cùng chủ) → Năng lượng hiện diện chấm theo ID chính
+  if(!_isRoot&&!dreamMode){
+    var _mainN=v.mainId?treeNodes.find(function(x){return x.id===v.mainId;}):null;
+    h+='<div class="nmod-row"><div class="nmod-lbl">🔗 Là ID thứ 2+ của<div style="font-size:11px;color:#AAA">Cùng 1 người đứng tên nhiều ID → điểm danh & Năng lượng tính theo ID chính. Để trống nếu là ID riêng.</div></div>';
+    h+='<input id="nf-main" class="nmod-inp" list="nf-main-dl" autocomplete="off" placeholder="Gõ tên ID chính…" value="'+escHtml(_mainN?_mainN.name:'')+'" style="width:190px">';
+    h+='<datalist id="nf-main-dl">'+treeNodes.filter(function(x){return !node||x.id!==node.id;}).map(function(x){return '<option value="'+escHtml(x.name)+'">';}).join('')+'</datalist></div>';
+  }
   var _shipSel=v.ship||'';
   h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
   h+='<div style="display:flex;align-items:center;gap:6px">';
@@ -12350,7 +12377,8 @@ function saveNodeModal(){
     phone:((document.getElementById('nf-phone')||{}).value||'').trim(),
     disc:((document.getElementById('nf-disc')||{}).value||'').trim().toUpperCase().replace(/[^DISC]/g,''),
     note:(document.getElementById('nf-note')||{}).value||'',
-    ship:((document.getElementById('nf-ship')||{}).value||'')
+    ship:((document.getElementById('nf-ship')||{}).value||''),
+    mainName:((document.getElementById('nf-main')||{}).value||'').trim()
   };
   var _saveMsg='✓ Đã lưu';
   // v6.63 — BẮT BUỘC Mã ID: mọi thông tin đồng bộ tuyến dưới → tuyến trên đều căn cứ Mã ID chuẩn (PRIFE)
@@ -12421,12 +12449,23 @@ function saveNodeModal(){
       }
     }
   }
+  // v7.45 — "Là ID thứ 2+ của": tên → id ID chính
+  var _mainName=data.mainName||'';delete data.mainName;var _mainId='';
+  if(_mainName&&!dreamMode){
+    var _mc=treeNodes.filter(function(x){return x.name===_mainName;});
+    if(!_mc.length)_mc=treeNodes.filter(function(x){return noAccent(x.name)===noAccent(_mainName);});
+    if(!_mc.length){showToast('⛔ Không tìm thấy ID chính "'+_mainName+'" trên cây — chọn đúng tên trong danh sách gợi ý');return;}
+    if(_mc.length>1){showToast('⛔ Có '+_mc.length+' ID trùng tên "'+_mainName+'" — hãy đổi tên cho khác nhau trước');return;}
+    _mainId=_mc[0].id;
+    if(activeNodeModal.mode==='edit'&&_mainId===activeNodeModal.nodeId){showToast('⛔ ID không thể là ID thứ 2+ của chính nó');return;}
+  }
   if(activeNodeModal.mode==='add'){
     data.id=uid();
     data.parentId=activeNodeModal.parentId||null;
     data.side=activeNodeModal.side||null;
     if(dreamMode)data.planAt=new Date().toISOString(); // v6.93 — ngày lập kế hoạch
-    else data.addedAt=new Date().toISOString(); // v7.44 — ngày gắn ID lên cây (chính xác tới ngày) → Năng lượng tính từ ngày này
+    if(_mainId)data.mainId=_mainId;
+    if(!dreamMode)data.addedAt=new Date().toISOString(); // v7.44 — ngày gắn ID lên cây (chính xác tới ngày) → Năng lượng tính từ ngày này
     // v6.73 — Phả hệ đặt được CẢ 2 bên (bỏ quy tắc "phả hệ chỉ bên Phải").
     // Vị trí Trái/Phải giữ nguyên theo lựa chọn; mỗi bên vẫn tối đa 1 ID (nút thêm chỉ hiện ở ô trống).
     treeNodes.push(data);
@@ -12437,6 +12476,7 @@ function saveNodeModal(){
       var oldName=n.name;
       n.name=data.name;n.joinDate=data.joinDate;n.idCode=data.idCode;
       n.f1of=data.f1of;n.phone=data.phone;n.note=data.note;n.disc=data.disc;n.birthday=data.birthday;n.ship=data.ship;
+      if(_mainId)n.mainId=_mainId;else delete n.mainId; // v7.45
       if(oldName&&data.name&&oldName!==data.name){
         // \u0110\u1ed4I T\u00caN D\u00c2Y CHUY\u1ec0N: m\u1ecdi ID \u0111ang l\u1ea5y t\u00ean c\u0169 l\u00e0m ng\u01b0\u1eddi b\u1ea3o tr\u1ee3 (F1 + nh\u00e1nh tr\u1ef1c h\u1ec7 d\u01b0\u1edbi)
         // \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt sang t\u00ean m\u1edbi \u2192 xo\u00e1 s\u1ea1ch t\u00ean c\u0169, kh\u00f4ng \u0111\u1ec3 node con m\u1ed3 c\u00f4i.
