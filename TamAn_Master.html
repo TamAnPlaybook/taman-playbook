@@ -1,4 +1,4 @@
-<!-- VERSION: v7.46-id-thu-2-theo-id-dau -->
+<!-- VERSION: v7.47-tron-diem-danh-id-phu -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -11524,35 +11524,70 @@ function enCompute(){
     }
     return k0;
   }
-  treeNodes.forEach(function(n){
-    var m=mBy[n.name],pres=0,den=0,sk=startKeyOf(n,m);
+  // v7.47 — GỘP điểm danh theo NGƯỜI: ID chính + mọi ID thứ 2+ của người đó (enOwnerOf) là 1 người.
+  //   1 buổi tính CÓ MẶT nếu BẤT KỲ ID nào trong nhóm được chấm ✓/⏰ (điểm danh nhầm sang ID phụ vẫn được tính);
+  //   ngày bắt đầu = ngày sớm nhất trong nhóm. Mọi ID trong nhóm nhận CÙNG 1 kết quả (cùng màu/mức).
+  var grp={};
+  var _mt=_enMineTop();
+  treeNodes.forEach(function(n){var o=enOwnerOf(n,_mt);(grp[o.id]=grp[o.id]||{o:o,list:[]}).list.push(n);});
+  Object.keys(grp).forEach(function(oid){
+    var g=grp[oid],mids=[],sk=99999999;
+    g.list.forEach(function(n){var m=mBy[n.name];if(m&&m.id&&mids.indexOf(m.id)<0)mids.push(m.id);sk=Math.min(sk,startKeyOf(n,m));});
+    var pres=0,den=0;
     held.forEach(function(h){if(h[4]<sk)return;den++;
-      if(m&&m.id){var v=dGetAt(m.id,h[0],h[1],h[2],h[3]);if(v==='yes'||v==='late')pres++;}});
+      for(var i=0;i<mids.length;i++){var v=dGetAt(mids[i],h[0],h[1],h[2],h[3]);if(v==='yes'||v==='late'){pres++;break;}}});
     var pct=den?Math.round(pres/den*100):null;
-    by[n.id]={pres:pres,den:den,pct:pct,lv:enLevelOf(pct),fresh:den<nHeld};
-  });
-  // v7.45 — ID thứ 2+ của cùng 1 người chấm THEO ID CHÍNH (người đó chỉ điểm danh 1 lần):
-  //   • Các ID trong "👤 Các ID của tôi" → theo ID đứng cao nhất trong nhóm đó
-  //   • ID có "🔗 Là ID thứ 2+ của" (mainId) → theo ID chính (đi theo chuỗi, tối đa 6 bậc)
-  var mine=[];try{mine=(myIdsGet()||[]).filter(function(id){return treeNodes.some(function(x){return x.id===id;});});}catch(e){}
-  // v7.46 — ID chính của nhóm "Các ID của tôi" = ID ĐỨNG CAO NHẤT trên cây trong nhóm (ID đầu tiên của người đó), KHÔNG phải gốc tài khoản
-  var root=null,_rl=1e9;mine.forEach(function(id){var l=computeLevel2(id);if(l<_rl){_rl=l;root=treeNodes.find(function(x){return x.id===id;});}});
-  function ownerOf(n){
-    var cur=n,seen={};
-    for(var k=0;k<6;k++){
-      if(seen[cur.id])break;seen[cur.id]=1;
-      var nx=null;
-      if(cur.mainId)nx=treeNodes.find(function(x){return x.id===cur.mainId;});
-      else if(root&&cur.id!==root.id&&mine.indexOf(cur.id)>=0)nx=root;
-      if(!nx)break;cur=nx;
-    }
-    return cur;
-  }
-  treeNodes.forEach(function(n){
-    var o=ownerOf(n);if(o.id===n.id||!by[o.id])return;
-    var b=by[o.id];by[n.id]={pres:b.pres,den:b.den,pct:b.pct,lv:b.lv,fresh:b.fresh,via:o.name};
+    var r={pres:pres,den:den,pct:pct,lv:enLevelOf(pct),fresh:den<nHeld,grpN:g.list.length};
+    g.list.forEach(function(n){var x={};for(var k in r)x[k]=r[k];if(n.id!==oid)x.via=g.o.name;by[n.id]=x;});
   });
   return {by:by,nHeld:nHeld,nDays:days.length};
+}
+// v7.45–7.47 — ID CHÍNH của 1 ID (người đứng tên): ID có "🔗 Là ID thứ 2+ của" (mainId, theo chuỗi ≤6 bậc);
+//   ID trong "👤 Các ID của tôi" → ID ĐỨNG CAO NHẤT trên cây trong nhóm đó. Không thuộc nhóm nào → chính nó.
+function _enMineTop(){
+  var mine=[];try{mine=(myIdsGet()||[]).filter(function(id){return treeNodes.some(function(x){return x.id===id;});});}catch(e){}
+  var top=null,_rl=1e9;mine.forEach(function(id){var l=computeLevel2(id);if(l<_rl){_rl=l;top=treeNodes.find(function(x){return x.id===id;});}});
+  return {mine:mine,top:top};
+}
+function enOwnerOf(n,mt){
+  mt=mt||_enMineTop();
+  var cur=n,seen={};
+  for(var k=0;k<6;k++){
+    if(!cur||seen[cur.id])break;seen[cur.id]=1;
+    var nx=null;
+    if(cur.mainId)nx=treeNodes.find(function(x){return x.id===cur.mainId;});
+    else if(mt.top&&cur.id!==mt.top.id&&mt.mine.indexOf(cur.id)>=0)nx=mt.top;
+    if(!nx)break;cur=nx;
+  }
+  return cur||n;
+}
+// v7.47 — nhóm cùng 1 người của 1 ID: {o: ID chính, list: [ID chính + mọi ID thứ 2+]}
+function enGroupOf(n){
+  var mt=_enMineTop(),o=enOwnerOf(n,mt);
+  return {o:o,list:treeNodes.filter(function(x){return enOwnerOf(x,mt).id===o.id;})};
+}
+// v7.47 — TRỘN điểm danh: mọi buổi của ID thứ 2+ → ID chính (✓ > ⏰ > ✗; chỉ nâng, không hạ; cam ghi khi ID chính chưa có).
+//   KHÔNG xoá dữ liệu ở ID phụ. Áp mọi ngày đã lưu. Trả về số ô đã cập nhật.
+function enMergeAttendance(nodeId){
+  var n=treeNodes.find(function(x){return x.id===nodeId;});if(!n)return -1;
+  var g=enGroupOf(n),mBy={};members.forEach(function(m){if(m&&m.name&&!mBy[m.name])mBy[m.name]=m;});
+  var main=mBy[g.o.name];if(!main||!main.id)return -1;
+  var RK={yes:3,late:2,no:1},SES=/^(sang|trua|toi)(_cam)?$/,cnt=0,pfxAll=nmKey('d_');
+  var subs=g.list.filter(function(x){return x.id!==g.o.id;}).map(function(x){return mBy[x.name];}).filter(function(m){return m&&m.id&&m.id!==main.id;});
+  var keys=[];try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf(pfxAll)===0)keys.push(k);}}catch(e){return -1;}
+  subs.forEach(function(s){
+    var pfx=nmKey('d_'+s.id+'_');
+    keys.forEach(function(k){
+      if(k.indexOf(pfx)!==0)return;
+      var rest=k.slice(pfx.length),us=rest.indexOf('_');if(us<0)return;
+      var day=rest.slice(0,us),fld=rest.slice(us+1);if(!SES.test(fld))return;
+      var sv=localStorage.getItem(k);if(!sv)return;
+      var mk='d_'+main.id+'_'+day+'_'+fld,mv=nmGet(mk);
+      if(/_cam$/.test(fld)){if(!mv){nmSet(mk,sv);cnt++;}return;}
+      if((RK[sv]||0)>(RK[mv]||0)){nmSet(mk,sv);cnt++;}
+    });
+  });
+  return cnt;
 }
 function enPerLbl(p){
   if(p==='custom'){var a=_enParse(enFrom),b=_enParse(enTo);return a&&b?(a.getDate()+'/'+(a.getMonth()+1)+' → '+b.getDate()+'/'+(b.getMonth()+1)+'/'+b.getFullYear()):'Tự chọn';}
@@ -12263,6 +12298,14 @@ function buildNodeForm(node,addOpts){
     h+='<div class="nmod-row"><div class="nmod-lbl">🔗 Là ID thứ 2+ của<div style="font-size:11px;color:#AAA">Cùng 1 người đứng tên nhiều ID → điểm danh & Năng lượng tính theo ID chính. Để trống nếu là ID riêng.</div></div>';
     h+='<input id="nf-main" class="nmod-inp" list="nf-main-dl" autocomplete="off" placeholder="Gõ tên ID chính…" value="'+escHtml(_mainN?_mainN.name:'')+'" style="width:190px">';
     h+='<datalist id="nf-main-dl">'+treeNodes.filter(function(x){return !node||x.id!==node.id;}).map(function(x){return '<option value="'+escHtml(x.name)+'">';}).join('')+'</datalist></div>';
+  }
+  // v7.47 — nút TRỘN điểm danh của cả nhóm (ID chính + ID thứ 2+) vào ID chính (dùng được cả ở ID Gốc)
+  if(node&&!dreamMode){
+    var _grpN=enGroupOf(node);
+    if(_grpN.list.length>1){
+      h+='<div class="nmod-row" style="flex-direction:column;align-items:stretch;gap:6px"><div style="font-size:12px;color:#555;line-height:1.5">👥 Nhóm cùng 1 người: <b>'+_grpN.list.map(function(x){return escHtml(x.name)+(x.id===_grpN.o.id?' (chính)':'');}).join(' · ')+'</b></div>'
+        +'<button type="button" class="tbtn" data-att-merge="'+node.id+'" style="background:#E8F5E9;border-color:#81C784;color:#1B5E20;font-weight:800">🔀 Trộn điểm danh cả nhóm vào ID chính: '+escHtml(_grpN.o.name)+'</button></div>';
+    }
   }
   var _shipSel=v.ship||'';
   h+='<div class="nmod-row"><div class="nmod-lbl">Con tàu<div style="font-size:11px;color:#AAA">Phân loại đối tác — bấm ? xem ma trận</div></div>';
@@ -14754,6 +14797,13 @@ document.addEventListener('click',function(e){
   if(t){enPeriod=t.getAttribute('data-en-period');try{localStorage.setItem('ta_enPeriod',enPeriod);}catch(_e){}renderCurrentTree();return;}
   t=e.target.closest('[data-en-filter]');
   if(t){var _ef=parseInt(t.getAttribute('data-en-filter'),10)||null;enFilter=(enFilter===_ef)?null:_ef;renderCurrentTree();return;}
+  t=e.target.closest('[data-att-merge]'); // v7.47 — trộn điểm danh nhóm ID vào ID chính
+  if(t){var _mg=enGroupOf(treeNodes.find(function(x){return x.id===t.getAttribute('data-att-merge');})||{});
+    if(!_mg.o||!confirm('Trộn điểm danh của '+(_mg.list.length-1)+' ID thứ 2+ vào ID chính "'+_mg.o.name+'"?\n\n• Buổi nào ID phụ có mặt (✓/⏰) mà ID chính chưa có → ghi sang ID chính.\n• Không xoá dữ liệu ở ID phụ.'))return;
+    var _mc=enMergeAttendance(t.getAttribute('data-att-merge'));
+    if(_mc<0){showToast('⚠️ Không trộn được (ID chính chưa có trong danh sách điểm danh)');return;}
+    showToast(_mc?('✅ Đã trộn '+_mc+' ô điểm danh vào "'+_mg.o.name+'"'):'Không có buổi nào cần trộn — ID chính đã đủ');
+    try{renderDailyCombined();updateStats();}catch(_e){}try{renderCurrentTree();}catch(_e){}return;}
   t=e.target.closest('[data-en-att]');
   if(t){enGoAttendance();return;}
   // Điểm danh bằng ảnh Zoom
