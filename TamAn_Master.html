@@ -1,4 +1,4 @@
-<!-- VERSION: v7.48-ty-le-nang-luong-duoi-cay -->
+<!-- VERSION: v7.49-ty-le-nang-luong-nut-noi -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -238,20 +238,21 @@ body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #s
 .tnode-box.en-glow{animation:enGlow 1.8s ease-in-out infinite}
 @keyframes enGlow{0%,100%{box-shadow:0 0 0 3px rgba(255,214,0,.55),0 0 14px 4px rgba(255,200,0,.55)}50%{box-shadow:0 0 0 6px rgba(255,214,0,.25),0 0 26px 10px rgba(255,200,0,.75)}}
 .tnode-box.en-dim{opacity:.22}
-#energy-stats{padding:10px 10px 78px;background:#FFFDF3;border-top:1px solid #F0E6B8}
-.es-box{max-width:760px;margin:0 auto}
-.es-ttl{font-weight:800;color:#5D4000;font-size:14px;margin-bottom:8px}.es-ttl span{font-weight:600;color:#8A7A4A;font-size:12px}
-.es-stack{display:flex;height:16px;border-radius:9px;overflow:hidden;border:1.5px solid #1A1A1A;margin-bottom:10px;background:#eee}.es-stack i{display:block;height:100%}
-.es-tbl{width:100%;border-collapse:separate;border-spacing:0 5px;font-size:12px}
-.es-tbl th{text-align:left;color:#7A6A3A;font-size:11px;padding:0 6px}
-.es-tbl td{background:#fff;padding:6px;border-top:1px solid #EEE6C8;border-bottom:1px solid #EEE6C8;vertical-align:middle}
-.es-tbl td:first-child{border-left:1px solid #EEE6C8;border-radius:10px 0 0 10px}.es-tbl td:last-child{border-right:1px solid #EEE6C8;border-radius:0 10px 10px 0}
-.es-tbl tr[data-en-filter]{cursor:pointer}.es-tbl tr.on td{background:#FFF6C4;border-color:#1A1A1A}
-.es-lv{display:flex;align-items:center;gap:7px;min-width:120px}.es-lv b{display:block;font-size:12px;color:#222}.es-lv small{color:#777;font-size:10.5px}
-.es-cell{display:flex;align-items:center;gap:6px}.es-cell b{min-width:34px;text-align:right;color:#222}.es-cell small{color:#888;min-width:18px}
-.es-bar{flex:1;min-width:40px;height:12px;background:#F1EEE4;border-radius:6px;overflow:hidden}.es-bar i{display:block;height:100%;border-radius:6px}
-.es-sum td{font-weight:800;color:#5D4000;background:#FBF4D6!important}
-@media(max-width:480px){.es-tbl{font-size:11px}.es-lv{min-width:96px}.es-bar{min-width:24px}.es-cell{gap:3px}}
+/* v7.49 — bảng tỷ lệ năng lượng thu gọn: nổi phía trên các nút tròn, chỉ hiện khi bấm #fab-es */
+#energy-stats{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:955;background:#FFFDF6;border:1.5px solid #E6D9A6;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:6px 8px 7px;min-width:168px}
+.es-hd{display:flex;align-items:center;gap:6px;font:800 11px Arial;color:#5D4000;margin-bottom:3px}
+.es-x{margin-left:auto;border:none;background:#F1E9C9;color:#5D4000;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;line-height:1}
+.es-empty{font-size:11px;color:#7A6A3A;max-width:180px}
+.es-tbl{border-collapse:collapse;font:12px Arial;width:100%}
+.es-tbl th{font-size:11px;color:#7A6A3A;font-weight:700;padding:1px 6px;text-align:center}
+.es-tbl td{padding:2px 6px;text-align:center;color:#222;border-top:1px solid #F1EAD0}
+.es-tbl td:first-child{padding-left:2px}
+.es-tbl tr[data-en-filter]{cursor:pointer}.es-tbl tr.on td{background:#FFF1A8}
+.es-sum td{font-weight:800;color:#5D4000;background:#FBF4D6}
+#fab-es{pointer-events:auto;width:50px;height:50px;border-radius:50%;border:2px solid #fff;padding:0;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#fab-es svg{width:100%;height:100%;display:block}
+#fab-es.on{box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(93,64,0,.55)}
+@media(max-width:480px){#fab-es{width:46px;height:46px}#energy-stats{bottom:70px}}
 .disc-btn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #E0E0E0;background:#fff;border-radius:9px;padding:4px 9px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer;color:#333}
 .disc-btn .disc-dot{width:13px;height:13px;border-radius:50%;display:inline-block}
 .disc-btn.on{color:#fff}
@@ -2344,7 +2345,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
-      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button><div id="fab-disc" title="Lọc nhóm DISC — chạm 1 góc để làm nổi nhóm đó, chạm lại để bỏ lọc"><button class="fd-q fd-D" data-disc-letter="D">D</button><button class="fd-q fd-I" data-disc-letter="I">I</button><button class="fd-q fd-C" data-disc-letter="C">C</button><button class="fd-q fd-S" data-disc-letter="S">S</button></div></div>
+      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button><button id="fab-es" data-es-toggle="1" title="Tỷ lệ ID theo 6 mức năng lượng (Trái · Phải · Tổng)" aria-label="Tỷ lệ năng lượng"></button><div id="fab-disc" title="Lọc nhóm DISC — chạm 1 góc để làm nổi nhóm đó, chạm lại để bỏ lọc"><button class="fd-q fd-D" data-disc-letter="D">D</button><button class="fd-q fd-I" data-disc-letter="I">I</button><button class="fd-q fd-C" data-disc-letter="C">C</button><button class="fd-q fd-S" data-disc-letter="S">S</button></div></div>
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
@@ -11643,42 +11644,44 @@ function enGoAttendance(){
   var _st2=document.querySelector('.stab[data-sub="act:ngay"]');if(_st2)_st2.click();
   setTimeout(function(){var b=document.querySelector('#list-ngay .adash-box');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},250);
 }
-// v7.48 — DƯỚI CÂY NHỊ PHÂN: tỷ lệ ID thuộc từng mức năng lượng 1–6 của khung cây đang xem
-//   (Tổng · Nhánh Trái · Nhánh Phải), mỗi mức hiện đúng HÌNH + MÀU như bảng Magnoseek + thanh màu tỷ lệ.
+// v7.48–7.49 — TỶ LỆ NĂNG LƯỢNG 1–6 của khung cây đang xem: thu vào NÚT TRÒN NỔI 6 màu (#fab-es),
+//   bấm mới mở bảng nhỏ gọn (hình + màu + số Trái / Phải / Tổng) → nhường chỗ nhìn trọn cây Nhị phân.
+var _esOpen=false;
+function enPieSVG(sz){ // nút tròn 6 lát màu, mỗi lát 1 số mức
+  var r=sz/2,h='<svg viewBox="0 0 '+sz+' '+sz+'" width="'+sz+'" height="'+sz+'">',a0=-Math.PI/2;
+  EN_ORDER.forEach(function(l,i){
+    var a1=a0+i*Math.PI/3,a2=a1+Math.PI/3,x1=r+r*Math.cos(a1),y1=r+r*Math.sin(a1),x2=r+r*Math.cos(a2),y2=r+r*Math.sin(a2);
+    var am=(a1+a2)/2,tx=r+r*0.64*Math.cos(am),ty=r+r*0.64*Math.sin(am)+4;
+    h+='<path d="M'+r+' '+r+' L'+x1.toFixed(2)+' '+y1.toFixed(2)+' A'+r+' '+r+' 0 0 1 '+x2.toFixed(2)+' '+y2.toFixed(2)+' Z" fill="'+EN_LV[l].c+'" stroke="#fff" stroke-width="1"/>';
+    h+='<text x="'+tx.toFixed(1)+'" y="'+ty.toFixed(1)+'" text-anchor="middle" font-family="Arial" font-weight="900" font-size="11" fill="'+(l<=2?'#111':'#fff')+'">'+l+'</text>';
+  });
+  return h+'</svg>';
+}
 function renderEnergyStats(pos,rb){
-  var el=document.getElementById('energy-stats');if(!el)return;
-  if(currentTreeMode!=='binary'||dreamMode||!treeNodes.length){el.style.display='none';el.innerHTML='';return;}
+  var el=document.getElementById('energy-stats'),fb=document.getElementById('fab-es');
+  if(fb&&!fb.innerHTML)fb.innerHTML=enPieSVG(46);
+  if(fb)fb.classList.toggle('on',_esOpen);
+  if(!el)return;
+  if(!_esOpen||currentTreeMode!=='binary'||dreamMode||!treeNodes.length){el.style.display='none';el.innerHTML='';return;}
   var data=_enData;
   if(!data){try{data=enCompute();}catch(e){data=null;}}
   el.style.display='block';
-  if(!data||!data.nHeld){el.innerHTML='<div class="es-box"><div class="es-ttl">⚡ Tỷ lệ năng lượng hiện diện</div><div class="en-note">Kỳ <b>'+enPerLbl(enPeriod)+'</b> chưa có buổi nào được điểm danh → chưa có tỷ lệ.</div></div>';return;}
-  var C={T:{},L:{},R:{}},N={T:0,L:0,R:0},nNo=0;
+  var hd='<div class="es-hd">⚡ '+enPerLbl(enPeriod)+'<button class="es-x" data-es-toggle="1" aria-label="Đóng">✕</button></div>';
+  if(!data||!data.nHeld){el.innerHTML=hd+'<div class="es-empty">Chưa có buổi nào được điểm danh trong kỳ này.</div>';return;}
+  var C={T:{},L:{},R:{}},N={T:0,L:0,R:0};
   [1,2,3,4,5,6].forEach(function(l){C.T[l]=C.L[l]=C.R[l]=0;});
   treeNodes.forEach(function(n){
-    if(pos&&!pos[n.id])return;var e=data.by[n.id];if(!e||!e.lv){nNo++;return;}
+    if(pos&&!pos[n.id])return;var e=data.by[n.id];if(!e||!e.lv)return;
     C.T[e.lv]++;N.T++;
     var sd=(rb&&n.id!==rb)?rootSideOf(n.id,rb):'';
     if(sd==='L'){C.L[e.lv]++;N.L++;}else if(sd==='R'){C.R[e.lv]++;N.R++;}
   });
-  function pc(a,b){return b?Math.round(a/b*100):0;}
-  var foc=rb?treeNodes.find(function(x){return x.id===rb;}):null;
-  var h='<div class="es-box"><div class="es-ttl">⚡ Tỷ lệ năng lượng hiện diện'+(foc?' — cây của <b>'+escHtml(foc.name)+'</b>':'')+' <span>· '+enPerLbl(enPeriod)+' · '+N.T+' ID</span></div>';
-  // thanh tổng xếp chồng theo màu mức
-  h+='<div class="es-stack">';
-  EN_ORDER.forEach(function(l){var p=pc(C.T[l],N.T);if(p>0)h+='<i style="width:'+p+'%;background:'+EN_LV[l].c+'" title="Mức '+l+': '+C.T[l]+' ID ('+p+'%)"></i>';});
-  h+='</div>';
-  h+='<table class="es-tbl"><tr><th>Mức</th><th>Tổng</th><th>⬅️ Trái</th><th>➡️ Phải</th></tr>';
+  var h=hd+'<table class="es-tbl"><tr><th></th><th>⬅️</th><th>➡️</th><th>∑</th></tr>';
   EN_ORDER.forEach(function(l){
-    var L=EN_LV[l],on=enFilter===l;
-    h+='<tr class="'+(on?'on':'')+'" data-en-filter="'+l+'" title="Bấm để làm nổi các ID mức '+l+' trên cây"><td class="es-lv">'
-      +enBadgeSVG(l).replace('class="en-badge"','style="width:26px;height:26px;flex:0 0 26px"')
-      +'<span><b>'+L.nm+'</b><small>'+L.rg+'</small></span></td>';
-    ['T','L','R'].forEach(function(k){var p=pc(C[k][l],N[k]);
-      h+='<td><div class="es-cell"><div class="es-bar">'+(p>0?'<i style="width:'+p+'%;background:'+L.c+';box-shadow:inset 0 0 0 1.5px '+L.bd+'"></i>':'')+'</div><b>'+p+'%</b><small>'+C[k][l]+'</small></div></td>';});
-    h+='</tr>';
+    h+='<tr class="'+(enFilter===l?'on':'')+'" data-en-filter="'+l+'"><td>'+enBadgeSVG(l).replace('class="en-badge"','style="width:22px;height:22px;display:block"')+'</td>'
+      +'<td>'+C.L[l]+'</td><td>'+C.R[l]+'</td><td><b>'+C.T[l]+'</b></td></tr>';
   });
-  h+='<tr class="es-sum"><td>Cộng</td><td>'+N.T+' ID</td><td>'+N.L+' ID</td><td>'+N.R+' ID</td></tr></table>';
-  h+='<div class="en-note">% = số ID ở mức đó ÷ số ID có dữ liệu trong khung cây đang xem'+(nNo?(' ('+nNo+' ID chưa có dữ liệu không tính)'):'')+'. Bấm 1 mức để làm nổi các ID đó trên cây'+(enMode?'':' (bật ⚡ để tô màu trên cây)')+'.</div></div>';
+  h+='<tr class="es-sum"><td>∑</td><td>'+N.L+'</td><td>'+N.R+'</td><td>'+N.T+'</td></tr></table>';
   el.innerHTML=h;
 }
 function renderDiscBar(){
@@ -14851,6 +14854,8 @@ document.addEventListener('click',function(e){
   if(t){enPeriod=t.getAttribute('data-en-period');try{localStorage.setItem('ta_enPeriod',enPeriod);}catch(_e){}renderCurrentTree();return;}
   t=e.target.closest('[data-en-filter]');
   if(t){var _ef=parseInt(t.getAttribute('data-en-filter'),10)||null;enFilter=(enFilter===_ef)?null:_ef;renderCurrentTree();return;}
+  t=e.target.closest('[data-es-toggle]'); // v7.49 — mở/đóng bảng tỷ lệ năng lượng thu gọn
+  if(t){_esOpen=!_esOpen;renderCurrentTree();return;}
   t=e.target.closest('[data-att-merge]'); // v7.47 — trộn điểm danh nhóm ID vào ID chính
   if(t){var _mg=enGroupOf(treeNodes.find(function(x){return x.id===t.getAttribute('data-att-merge');})||{});
     if(!_mg.o||!confirm('Trộn điểm danh của '+(_mg.list.length-1)+' ID thứ 2+ vào ID chính "'+_mg.o.name+'"?\n\n• Buổi nào ID phụ có mặt (✓/⏰) mà ID chính chưa có → ghi sang ID chính.\n• Không xoá dữ liệu ở ID phụ.'))return;
