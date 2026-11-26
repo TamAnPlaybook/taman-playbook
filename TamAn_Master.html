@@ -1,4 +1,4 @@
-<!-- VERSION: v7.42-nen-moi-cua-so-tuong-phan -->
+<!-- VERSION: v7.43-disc-noi-bat-buoc-ma-id -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -206,7 +206,17 @@ body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #s
 #fab-att{color:#fff;background:linear-gradient(135deg,#2E7D32,#43A047);animation:fabPulse 2.4s ease-in-out infinite}
 #fab-en{color:#5D4000;background:#FFF8D6;border-color:#E6C200}
 #fab-en.on{color:#2A1E00;background:#FFD600;border-color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(255,214,0,.45)}
-@media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}}
+#tree-fabs{align-items:center}
+/* v7.43 — DISC nổi: hình tròn chia 4 góc (D đỏ · I cam · C xanh dương · S xanh lá — đúng vị trí bánh xe DISC) */
+#fab-disc{pointer-events:auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:58px;height:58px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);background:#fff}
+.fd-q{border:none;padding:0;margin:0;cursor:pointer;color:#fff;font:900 13px Arial;line-height:1;display:flex;transition:opacity .15s,filter .15s}
+.fd-D{background:#E53935;align-items:flex-end;justify-content:flex-end;padding:0 5px 5px 0}
+.fd-I{background:#FB8C00;align-items:flex-end;justify-content:flex-start;padding:0 0 5px 5px}
+.fd-C{background:#1E88E5;align-items:flex-start;justify-content:flex-end;padding:5px 5px 0 0}
+.fd-S{background:#43A047;align-items:flex-start;justify-content:flex-start;padding:5px 0 0 5px}
+#fab-disc.has-on .fd-q{opacity:.3}
+#fab-disc.has-on .fd-q.on{opacity:1;filter:brightness(1.1)}
+@media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}#fab-disc{width:54px;height:54px}}
 #fab-att:hover{filter:brightness(1.08)}
 @keyframes fabPulse{0%,100%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 2px rgba(67,160,71,.3)}50%{box-shadow:0 3px 10px rgba(46,125,50,.4),0 0 0 7px rgba(67,160,71,0)}}
 #btn-energy.on{background:#FFD600!important;border-color:#B8960C!important;color:#3A2A00!important;box-shadow:0 0 0 3px rgba(255,214,0,.35)}
@@ -2320,7 +2330,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
-      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button></div>
+      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button><div id="fab-disc" title="Lọc nhóm DISC — chạm 1 góc để làm nổi nhóm đó, chạm lại để bỏ lọc"><button class="fd-q fd-D" data-disc-letter="D">D</button><button class="fd-q fd-I" data-disc-letter="I">I</button><button class="fd-q fd-C" data-disc-letter="C">C</button><button class="fd-q fd-S" data-disc-letter="S">S</button></div></div>
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
@@ -5388,7 +5398,10 @@ function _rootDeadlinePassed(){return _loginCount()>ROOT_GRACE_LOGINS;} // đã 
 function _findRootNode(){return treeNodes.find(function(n){return !n.parentId;})||null;}
 function _rootNangDone(){var nd=(typeof loadNangDong==='function')?loadNangDong():null;return !!(nd&&nd.m);}
 function _rootDiscDone(){var r=_findRootNode();return !!(r&&String(r.disc||'').trim());}
-function _rootGateComplete(){return !!_findRootNode()&&_rootDiscDone()&&_rootNangDone();}
+function _rootCodeDone(){var r=_findRootNode();return !!(r&&String(r.idCode||'').trim());} // v7.43 — Mã ID của ID Gốc: BẮT BUỘC ngay
+var _rootGateFull=false; // true = bắt buộc ĐỦ (DISC+Năng động); false = chỉ bắt buộc Mã ID/ID Gốc
+function _rootGateComplete(){return !!_findRootNode()&&_rootCodeDone()&&_rootDiscDone()&&_rootNangDone();}
+function _rootGateSatisfied(){return _rootGateFull?_rootGateComplete():(!!_findRootNode()&&_rootCodeDone());}
 async function startOnboarding(){
   if(!fbUser||viewOnlyMode){return;}
   try{var d=await fsGet('prefs');if(d){delete d.updatedAt;for(var k in d)_prefs[k]=d[k];}}catch(e){}
@@ -5417,13 +5430,15 @@ function checkRootGate(next){
   next=next||function(){};
   if(!fbUser||viewOnlyMode){next();return;}
   var root=_findRootNode();
-  var incomplete = !root || !_rootDiscDone() || !_rootNangDone();
+  var incomplete = !root || !_rootCodeDone() || !_rootDiscDone() || !_rootNangDone();
   if(!incomplete){next();return;} // đã đủ ID Gốc + DISC + Năng động → bỏ qua
   _rootGateActive=true;
-  _rootGateEnforce = (!root) || _rootDeadlinePassed(); // chưa có gốc: luôn bắt buộc; đã qua 3 lần đầu: bắt buộc
+  _rootGateFull = _rootDeadlinePassed(); // qua 3 lần đầu: bắt buộc ĐỦ DISC + Năng động
+  _rootGateEnforce = (!root) || _rootGateFull || !_rootCodeDone(); // v7.43 — thiếu Mã ID: bắt buộc NGAY
   _rootGateNext=next;
   _openRootGateForm();
   if(!root)showToast('👉 Vui lòng nhập thông tin ID Gốc (chính bạn) để bắt đầu — bắt buộc.');
+  else if(!_rootCodeDone())showToast('⛔ Bắt buộc: nhập MÃ ID (lấy trên web PRIFE) cho ID Gốc của bạn để tiếp tục dùng app.');
   else if(_rootGateEnforce)showToast('⛔ Đã tới hạn: hãy hoàn thành ĐO DISC và NĂNG ĐỘNG cho ID Gốc.');
   else showToast('👉 Hãy hoàn thành Đo DISC và Năng động cho ID Gốc (bắt buộc trong '+Math.max(1,ROOT_GRACE_LOGINS-_loginCount()+1)+' lần đăng nhập tới).');
 }
@@ -11559,6 +11574,8 @@ function renderDiscBar(){
     h+='<span class="disc-dot" style="background:'+DISC_COLORS[L]+'"></span>'+L+' <b style="margin-left:2px">'+counts[L]+'</b></button>';
   });
   if(discFilter)h+='<button class="disc-btn" data-disc-letter="__clear__">✕ Bỏ lọc</button>';
+  // v7.43 — đồng bộ trạng thái nút DISC nổi (4 góc)
+  var _fd=document.getElementById('fab-disc');if(_fd){_fd.classList.toggle('has-on',!!discFilter);_fd.querySelectorAll('.fd-q').forEach(function(q){var L=q.getAttribute('data-disc-letter');q.classList.toggle('on',discFilter===L);q.title=DISC_NAMES[L]+': '+counts[L]+' ID';});}
   el.innerHTML=h;
 }
 // v6.46 — Nút "+ ID Gốc": đã có ID gốc → làm mờ + khoá bấm; ID gốc bị xoá → mở lại
@@ -12421,7 +12438,7 @@ function saveNodeModal(){
   // v7 — cổng ID Gốc bắt buộc: vừa tạo ID Gốc trong lúc gate mở → hoàn tất gate, chuyển sang tutorial
   var _wasRootSave=_isRootSave; // vừa lưu ID Gốc (add hoặc edit)
   saveTree2();
-  if(_wasRootSave&&_rootGateActive&&(!_rootGateEnforce||_rootGateComplete())){
+  if(_wasRootSave&&_rootGateActive&&(!_rootGateEnforce||_rootGateSatisfied())){
     _rootGateActive=false;_rootGateEnforce=false;var _cb=_rootGateNext;_rootGateNext=null;
     if(_cb)setTimeout(_cb,300);
   }
@@ -12583,7 +12600,7 @@ function closeNodeModal(){
   document.getElementById('nmod-ov').classList.remove('open');
   activeNodeModal=null;
   // v7 — cổng ID Gốc: chỉ chặn đóng khi BẮT BUỘC mà chưa hoàn thành (chưa có gốc, hoặc quá hạn mà thiếu DISC/Năng động)
-  if(_rootGateActive&&_rootGateEnforce&&!_rootGateComplete()){
+  if(_rootGateActive&&_rootGateEnforce&&!_rootGateSatisfied()){
     setTimeout(function(){try{_openRootGateForm();}catch(e){}},160);
   }
 }
