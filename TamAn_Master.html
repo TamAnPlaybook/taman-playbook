@@ -1,4 +1,4 @@
-<!-- VERSION: v7.39-nut-noi-bieu-tuong -->
+<!-- VERSION: v7.40-an-nhanh-ky-tu-chon -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -206,6 +206,8 @@ body.has-appbg .content{background:rgba(250,249,246,.82);-webkit-backdrop-filter
 .en-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .en-ttl{font-weight:800;color:#5D4000;margin-right:4px}
 .en-per{border:1.5px solid #E0D7A8;background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;cursor:pointer;color:#5D4000}
+.en-range{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:#5D4000;flex-wrap:wrap}
+.en-range input{border:1.5px solid #E0D7A8;border-radius:8px;padding:3px 6px;font-size:12px;background:#fff}
 .en-per.on{background:#5D4000;border-color:#5D4000;color:#fff}
 .en-lv{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #E6E6E6;background:#fff;border-radius:10px;padding:3px 9px 3px 4px;cursor:pointer;font-size:11.5px;color:#333;line-height:1.25;text-align:left}
 .en-lv.on{border-color:#1A1A1A;box-shadow:0 0 0 2px #1A1A1A}
@@ -5812,7 +5814,7 @@ function pSet(mid,f,v){nmSet('p_'+mid+'_'+f,v);}
 // ================================================================
 var LOCAL_SYNC_PREFIXES=['d_','mo_','p_','goals_','pareto_'];
 function _isLocalSyncKey(k){
-  if(k==='custom_lks'||k==='myids')return true;
+  if(k==='custom_lks'||k==='hidden_lks'||k==='myids')return true;
   for(var i=0;i<LOCAL_SYNC_PREFIXES.length;i++){if(k.indexOf(LOCAL_SYNC_PREFIXES[i])===0)return true;}
   return false;
 }
@@ -10556,6 +10558,9 @@ function getCustomLks(){
   try{return JSON.parse(nmGet('custom_lks')||'[]');}catch(e){return [];}
 }
 function setCustomLks(arr){nmSet('custom_lks',JSON.stringify(arr));}
+// v7.40 — ẨN bớt nhánh F1 khỏi hàng "Nhánh F1 & Leader Key" (bấm ✕); thêm lại qua "+ Leader Key"
+function getHiddenLks(){try{var a=JSON.parse(nmGet('hidden_lks')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function setHiddenLks(arr){nmSet('hidden_lks',JSON.stringify(arr));}
 // ================================================================
 // v6.27 — NĂNG ĐỘNG: tháng đóng Năng động gần nhất (gắn ID gốc của mỗi user)
 //   • Tháng đóng = "tháng thứ 1". T1–5 an toàn · T6 cảnh báo vàng (nên đóng) ·
@@ -10779,7 +10784,8 @@ function renderBranchStats(){
   }
   var el=document.getElementById('branch-stats');if(!el)return;
   if(!treeNodes.length){el.innerHTML='';renderFocusBar();return;}
-  var heads=teamHeads();
+  var _hidLk=getHiddenLks();
+  var heads=teamHeads().filter(function(x){return _hidLk.indexOf(x.id)<0;}); // v7.40 — bỏ nhánh F1 đã ẩn (✕)
   var customs=getCustomLks().map(function(id){
     return treeNodes.find(function(x){return x.id===id;});
   }).filter(function(x){return x&&!heads.some(function(h){return h.id===x.id;});});
@@ -10794,7 +10800,7 @@ function renderBranchStats(){
     var cnt=headCount(f);
     var col=branchColor(f.id);
     var on=focusNodeId===f.id;
-    h+='<span class="lk-pill'+(on?' on':'')+'" data-focus-nid="'+f.id+'" style="border-color:'+col+';'+(on?'background:'+col:'color:#333')+'">'+escHtml(f.name)+': <b>'+cnt+'</b></span>';
+    h+='<span class="lk-pill'+(on?' on':'')+'" data-focus-nid="'+f.id+'" style="border-color:'+col+';'+(on?'background:'+col:'color:#333')+'">'+escHtml(f.name)+': <b>'+cnt+'</b> <span class="lk-x" data-hidelk="'+f.id+'" title="Ẩn khỏi hàng này (thêm lại bằng + Leader Key)">✕</span></span>';
   });
   customs.forEach(function(f){
     var cnt=headCount(f);
@@ -11423,17 +11429,34 @@ function rootShipCrownSVG(kind,w,sfx){
 //   Áp dụng cho mọi khung cây đang xem (kể cả khi bấm "xem cây nhỏ" của 1 ID bất kỳ).
 // ================================================================
 var EN_LV={
-  1:{c:'#FFF176',t:'#3A3000',bd:'#C9A800',shape:'hex',nm:'Tối ưu',rg:'≥90%'},
-  2:{c:'#FFC400',t:'#2A1E00',bd:'#9A7400',shape:'hex',nm:'Hoạt động tốt',rg:'70–89%'},
-  3:{c:'#FF7A1A',t:'#fff',bd:'#C0510A',shape:'tri',nm:'Giảm nhẹ',rg:'50–69%'},
-  4:{c:'#E0242B',t:'#fff',bd:'#9E1015',shape:'tri-d',nm:'Giảm vừa',rg:'30–49%'},
-  5:{c:'#7A1414',t:'#fff',bd:'#4A0808',shape:'dia',nm:'Thấp',rg:'10–29%'},
-  6:{c:'#111111',t:'#fff',bd:'#000',shape:'sq',nm:'Mất cân bằng',rg:'<10%'}
+  1:{c:'#FFF176',t:'#3A3000',bd:'#C9A800',shape:'hex',nm:'Tối ưu',rg:'80–100%'},
+  2:{c:'#FFC400',t:'#2A1E00',bd:'#9A7400',shape:'hex',nm:'Hoạt động tốt',rg:'60–79%'},
+  3:{c:'#FF7A1A',t:'#fff',bd:'#C0510A',shape:'tri',nm:'Giảm nhẹ',rg:'45–59%'},
+  4:{c:'#E0242B',t:'#fff',bd:'#9E1015',shape:'tri-d',nm:'Giảm vừa',rg:'30–44%'},
+  5:{c:'#7A1414',t:'#fff',bd:'#4A0808',shape:'dia',nm:'Thấp',rg:'5–29%'},
+  6:{c:'#111111',t:'#fff',bd:'#000',shape:'sq',nm:'Mất cân bằng',rg:'0–4%'}
 };
 var EN_ORDER=[1,2,3,4,5,6]; // 1 tốt nhất (vàng nhạt) → 6 kém nhất (đen)
 var enMode=false,enPeriod='30',enFilter=null,_enData=null;
 try{enMode=localStorage.getItem('ta_enMode')==='1';enPeriod=localStorage.getItem('ta_enPeriod')||'30';}catch(e){}
-function enLevelOf(pct){if(pct==null)return null;return pct>=90?1:pct>=70?2:pct>=50?3:pct>=30?4:pct>=10?5:6;}
+// v7.40 — kỳ TỰ CHỌN (Từ … Đến …), lưu theo máy; mặc định 30 ngày gần nhất
+function _enIso(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function _enParse(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):null;}
+var enFrom='',enTo='';
+try{enFrom=localStorage.getItem('ta_enFrom')||'';enTo=localStorage.getItem('ta_enTo')||'';}catch(e){}
+if(!_enParse(enTo))enTo=_enIso(new Date());
+if(!_enParse(enFrom)){var _e0=new Date();_e0.setDate(_e0.getDate()-29);enFrom=_enIso(_e0);}
+document.addEventListener('change',function(e){
+  var t=e.target;if(!t||!t.getAttribute)return;
+  var k=t.getAttribute('data-en-date');if(!k)return;
+  if(!_enParse(t.value))return;
+  if(k==='from')enFrom=t.value;else enTo=t.value;
+  if(_enParse(enFrom)>_enParse(enTo)){var sw=enFrom;enFrom=enTo;enTo=sw;}
+  try{localStorage.setItem('ta_enFrom',enFrom);localStorage.setItem('ta_enTo',enTo);}catch(_e){}
+  enPeriod='custom';try{localStorage.setItem('ta_enPeriod','custom');}catch(_e){}
+  if(typeof renderCurrentTree==='function')renderCurrentTree();
+});
+function enLevelOf(pct){if(pct==null)return null;return pct>=80?1:pct>=60?2:pct>=45?3:pct>=30?4:pct>=5?5:6;} // v7.40 — ngưỡng anh Huy chốt: 1 80–100 · 2 60–79 · 3 45–59 · 4 30–44 · 5 5–29 · 6 0–4
 function enBadgeSVG(lv){
   var L=EN_LV[lv],s='';
   if(L.shape==='hex')s='<polygon points="16,1.5 29,8.8 29,23.2 16,30.5 3,23.2 3,8.8" fill="'+L.c+'" stroke="#1A1A1A" stroke-width="2.4"/>';
@@ -11446,7 +11469,11 @@ function enBadgeSVG(lv){
 }
 function enDays(){ // danh sách ngày trong kỳ (tới HÔM NAY)
   var t=new Date();t.setHours(0,0,0,0);var out=[],d,n;
-  if(enPeriod==='month'){for(d=1;d<=t.getDate();d++)out.push(new Date(t.getFullYear(),t.getMonth(),d));}
+  if(enPeriod==='custom'){ // Từ … Đến … (tối đa 366 ngày, không quá hôm nay)
+    var a=_enParse(enFrom)||t,b=_enParse(enTo)||t;if(b>t)b=t;if(a>b)a=b;
+    for(var x0=new Date(a);x0<=b&&out.length<366;x0.setDate(x0.getDate()+1))out.push(new Date(x0));
+  }
+  else if(enPeriod==='month'){for(d=1;d<=t.getDate();d++)out.push(new Date(t.getFullYear(),t.getMonth(),d));}
   else{n=parseInt(enPeriod,10)||30;for(d=n-1;d>=0;d--){var x=new Date(t);x.setDate(t.getDate()-d);out.push(x);}}
   return out;
 }
@@ -11468,7 +11495,9 @@ function enCompute(){
   });
   return {by:by,nHeld:nHeld,nDays:days.length};
 }
-function enPerLbl(p){return p==='7'?'7 ngày':p==='month'?'Tháng này':'30 ngày';}
+function enPerLbl(p){
+  if(p==='custom'){var a=_enParse(enFrom),b=_enParse(enTo);return a&&b?(a.getDate()+'/'+(a.getMonth()+1)+' → '+b.getDate()+'/'+(b.getMonth()+1)+'/'+b.getFullYear()):'Tự chọn';}
+  return p==='7'?'7 ngày':p==='month'?'Tháng này':'30 ngày';}
 function renderEnergyBar(pos){
   var el=document.getElementById('energy-bar'),btn=document.getElementById('btn-energy');
   if(btn)btn.classList.toggle('on',!!enMode);
@@ -11482,6 +11511,8 @@ function renderEnergyBar(pos){
   var foc=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
   var h='<div class="en-row"><span class="en-ttl">⚡ Năng lượng hiện diện'+(foc?' — cây của <b>'+escHtml(foc.name)+'</b>':'')+'</span>';
   ['7','30','month'].forEach(function(p){h+='<button class="en-per'+(enPeriod===p?' on':'')+'" data-en-period="'+p+'">'+enPerLbl(p)+'</button>';});
+  h+='<button class="en-per'+(enPeriod==='custom'?' on':'')+'" data-en-period="custom">📅 Tự chọn</button>';
+  if(enPeriod==='custom')h+='<span class="en-range">Từ <input type="date" data-en-date="from" value="'+enFrom+'" max="'+_enIso(new Date())+'"> đến <input type="date" data-en-date="to" value="'+enTo+'" max="'+_enIso(new Date())+'"></span>';
   h+='<button class="en-act" data-zatt-open="1" style="background:#1565C0">📷 Điểm danh ảnh Zoom</button>';
   h+='</div><div class="en-row" style="margin-top:6px">';
   EN_ORDER.forEach(function(lv){var L=EN_LV[lv];
@@ -11923,7 +11954,7 @@ function renderDdSearchSug(q){
 function lkAddCandidates(){
   // ID đủ điều kiện làm Leader Key thêm: có trong sơ đồ (có parentId) & chưa là đầu nhánh/LK sẵn
   var existing={};
-  teamHeads().forEach(function(x){existing[x.id]=1;});
+  var _hidL=getHiddenLks();teamHeads().forEach(function(x){if(_hidL.indexOf(x.id)<0)existing[x.id]=1;}); // v7.40 nhánh F1 đã ẩn → chọn lại được
   getCustomLks().forEach(function(x){existing[x]=1;});
   return treeNodes.filter(function(x){return x.parentId&&!existing[x.id];});
 }
@@ -12214,8 +12245,9 @@ function saveNodeModal(){
   if(activeNodeModal.mode==='lk-add'){
     var lkid=activeNodeModal.lkChosenId||(document.getElementById('lk-add-sel')||{}).value||'';
     if(!lkid){showToast('Gõ tên rồi bấm chọn 1 ID');return;}
-    var lks=getCustomLks();
-    if(lks.indexOf(lkid)<0){lks.push(lkid);setCustomLks(lks);}
+    var _hl=getHiddenLks();
+    if(_hl.indexOf(lkid)>=0){setHiddenLks(_hl.filter(function(x){return x!==lkid;}));} // nhánh F1 đã ẩn → hiện lại đúng màu nhánh
+    else{var lks=getCustomLks();if(lks.indexOf(lkid)<0){lks.push(lkid);setCustomLks(lks);}}
     closeNodeModal();renderBranchStats();
     showToast('\u2713 Đã thêm Leader Key');
     return;
@@ -15188,6 +15220,14 @@ document.addEventListener('click',function(e){
   if(e.target.id==='btn-copy-rules'){copyText(FIRESTORE_RULES);return;}
 
   // Focus nhánh (pill)
+  t=e.target.closest('[data-hidelk]'); // v7.40 — ẩn nhánh F1 khỏi hàng tiếp cận nhanh
+  if(t){
+    var hdid=t.getAttribute('data-hidelk'),hl0=getHiddenLks();
+    if(hl0.indexOf(hdid)<0){hl0.push(hdid);setHiddenLks(hl0);}
+    if(focusNodeId===hdid){focusNodeId=null;renderCurrentTree();}else renderBranchStats();
+    showToast('Đã ẩn — muốn hiện lại bấm "+ Leader Key" và chọn tên này');
+    return;
+  }
   t=e.target.closest('[data-rmlk]');
   if(t){
     var rmid=t.getAttribute('data-rmlk');
@@ -15208,7 +15248,7 @@ document.addEventListener('click',function(e){
     activeNodeModal={mode:'lk-add',lkChosenId:null};
     var optsLk='';
     var existing={};
-    teamHeads().forEach(function(x){existing[x.id]=1;});
+    var _hidL2=getHiddenLks();teamHeads().forEach(function(x){if(_hidL2.indexOf(x.id)<0)existing[x.id]=1;});
     getCustomLks().forEach(function(x){existing[x]=1;});
     treeNodes.forEach(function(x){
       if(!existing[x.id]&&x.parentId)optsLk+='<option value="'+x.id+'">'+escHtml(x.name)+' (Tầng '+computeLevel2(x.id)+')</option>';
