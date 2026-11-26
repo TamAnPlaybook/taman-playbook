@@ -1,4 +1,4 @@
-<!-- VERSION: v7.49-ty-le-nang-luong-nut-noi -->
+<!-- VERSION: v7.50-zoom-doc-tung-dong -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -15952,7 +15952,7 @@ function _zNorm(s){
 //   4) cùng bộ từ (khác thứ tự)  5) gần đúng (sai ≤ ~15% ký tự) hoặc tên bị cắt "…" (tiền tố ≥10 ký tự)
 //   Chỉ nhận khi người khớp tốt nhất RÕ RÀNG hơn người thứ 2 (tránh nhầm). Khớp gần đúng được đánh dấu "≈"
 //   và khi bấm Điểm danh, biến thể mới được LƯU thêm vào bảng nhớ → lần sau khớp đúng 100%.
-var Z_PREFIX=['hc','tt','hcc','ttt','clb','tvv','nv','kh','mr','ms','mrs']; // KHÔNG thêm "anh/chi/em…" vì trùng tên thật (Huy Chi, Anh Thư)
+var Z_PREFIX=['hc','tt','hcc','ttt','clb','tvv','nv','kh','mr','ms','mrs','a','c','e','h']; // v7.50 + chữ cái xưng hô đứng đầu (a/c/e: anh/chị/em) // KHÔNG thêm "anh/chi/em…" vì trùng tên thật (Huy Chi, Anh Thư)
 function _zCompact(norm){return String(norm||'').replace(/\s+/g,'');}
 function _zCoreToks(norm){ // bỏ tiền tố nhóm/xưng hô ở ĐẦU (HC/, TT/, chị, anh…) — giữ ít nhất 1 từ
   var t=String(norm||'').split(' ').filter(Boolean);
@@ -16001,10 +16001,34 @@ function _zMatch(norm,pmap){
     add(p.id,Math.max(_zSim(cmp,_zCompact(n)),_zSim(coreC,pc.join(''))));
     if(core.length>=2&&pc.slice().sort().join(' ')===coreS)add(p.id,0.95);});
   var ids=Object.keys(best).sort(function(x,y){return best[y]-best[x];});
-  if(!ids.length)return null;
-  var b1=best[ids[0]],b2=ids[1]?best[ids[1]]:0;
+  var b1=ids.length?best[ids[0]]:0,b2=ids[1]?best[ids[1]]:0;
   var thr=coreC.length>=8?0.82:0.88;
-  if(b1>=thr&&b1-b2>=0.08)return {p:pmap[ids[0]],how:'fuzzy',score:b1};
+  if(ids.length&&b1>=thr&&b1-b2>=0.08)return {p:pmap[ids[0]],how:'fuzzy',score:b1};
+  // 6) v7.50 — KHỚP THEO TỪ cho tên Zoom kiểu "HC/Tên/Bảo trợ/Tuyến trên" (dài hơn tên trên cây "Tên Nơi . Bảo trợ"):
+  //    • NEO: từ ĐẦU của tên trên cây (tên người, sau khi bỏ HC/TT/a/c/e) phải trùng TỪ ĐẦU của tên Zoom
+  //      → chặn nhầm kiểu "Đang"/"Đông", "Thao"/"Thoa" (tên Việt chỉ khác 1 chữ cái là người khác)
+  //    • Từ trùng: giống hệt; hoặc khác số đuôi ("thuy3"≈"thuy"); hoặc OCR sai 1 chữ ở từ ≥6 ký tự
+  //    • Điểm = số từ trùng ÷ số từ của bên ÍT hơn (nơi ở "HN/HCM/QNinh" trên cây không làm hụt điểm); cần ≥2 từ trùng,
+  //      điểm ≥0.66 và hơn người thứ 2 ≥0.1 — không rõ ràng thì để người dùng chọn.
+  var zt=core.slice();
+  if(zt.length>=2){
+    var tokEq=function(a,b){if(a===b)return true;
+      var s1=a.length<=b.length?a:b,s2=s1===a?b:a;
+      if(s1.length>=3&&s2.indexOf(s1)===0&&/^[0-9]+$/.test(s2.slice(s1.length)))return true;
+      return s1.length>=6&&s2.length-s1.length<=1&&_zLev(a,b,1)<=1;};
+    var anchors=zt.slice(0,1),ov={};
+    var scoreToks=function(id,tt){if(tt.length<1)return;
+      if(!anchors.some(function(a){return tokEq(a,tt[0]);}))return;
+      var used={},m=0;
+      zt.forEach(function(a){for(var j=0;j<tt.length;j++){if(!used[j]&&tokEq(a,tt[j])){used[j]=1;m++;break;}}});
+      if(m<2&&!(tt.length===1&&m===1))return;
+      var sc=m/Math.min(zt.length,tt.length);if(sc>(ov[id]||0))ov[id]=sc;};
+    people.forEach(function(p){scoreToks(p.id,_zCoreToks(_zNorm(p.name)));});
+    for(i=0;i<ak.length;i++){if(pmap[_zAlias[ak[i]]])scoreToks(_zAlias[ak[i]],_zCoreToks(ak[i]));}
+    var oi=Object.keys(ov).sort(function(x,y){return ov[y]-ov[x];});
+    if(oi.length){var o1=ov[oi[0]],o2=oi[1]?ov[oi[1]]:0;
+      if(o1>=0.66&&o1-o2>=0.1)return {p:pmap[oi[0]],how:'fuzzy',score:o1};}
+  }
   return null;
 }
 function _zResolve(norm){var r=_zMatch(norm);return r?r.p:null;}
@@ -16036,7 +16060,7 @@ async function _zGetWorker(){
   try{trackEvent('zoomocr');}catch(e){} // v7.32 — đo lượt dùng Điểm danh ảnh Zoom
   if(_zWorker)return _zWorker;
   _zWorker=await Tesseract.createWorker('vie+eng',1,{logger:function(mm){
-    if(mm&&mm.status==='recognizing text'){
+    if(mm&&mm.status==='recognizing text'&&!_zatt._lineMode){
       var base=(_zatt._i||0)/Math.max(1,_zatt._n||1)*100;
       _zatt.prog=Math.min(99,Math.round(base+(mm.progress||0)/Math.max(1,_zatt._n||1)*100));
       var b=document.querySelector('.zatt-prog>div');if(b)b.style.width=_zatt.prog+'%';
@@ -16097,7 +16121,7 @@ function _zCamAt(col,y0,y1){ // y0,y1 theo toạ độ ảnh GỐC
   var d=col.d,W=col.w,H=col.h;
   var th=Math.max(8,(y1-y0)*col.s),yc=(y0+y1)/2*col.s;
   var ya=Math.max(0,Math.floor(yc-th*1.15)),yb=Math.min(H-1,Math.ceil(yc+th*1.15));
-  var xa=Math.floor(W*0.68),xb=W-1;if(yb<=ya||xb<=xa)return null;
+  var xa=Math.floor(W*0.6),xb=W-1;if(yb<=ya||xb<=xa)return null;
   // nền = màu (lượng tử 16 mức) xuất hiện nhiều nhất trong dải
   var hist={},bk=null,bn=0,x,y,i;
   for(y=ya;y<=yb;y+=2)for(x=xa;x<=xb;x+=2){i=(y*W+x)*4;var k=(d[i]>>4)+'_'+(d[i+1]>>4)+'_'+(d[i+2]>>4);hist[k]=(hist[k]||0)+1;if(hist[k]>bn){bn=hist[k];bk=k;}}
@@ -16108,7 +16132,7 @@ function _zCamAt(col,y0,y1){ // y0,y1 theo toạ độ ảnh GỐC
     var cnt=0,red=0,mn=1e9,mx=-1;
     for(y=ya;y<=yb;y++){i=(y*W+x)*4;var r=d[i],g=d[i+1],b=d[i+2];
       if(Math.abs(r-bp[0])+Math.abs(g-bp[1])+Math.abs(b-bp[2])>90){cnt++;if(y<mn)mn=y;if(y>mx)mx=y;
-        if(r>140&&r-g>55&&r-b>45)red++;}}
+        if(r>90&&r-g>30&&r-b>20)red++;}} // v7.50 — nới tiêu chí đỏ (ảnh JPEG nhạt màu): tắt cam 69–91% đỏ, bật cam 0%
     cols.push({cnt:cnt,red:red,mn:mn,mx:mx});
   }
   // gom cụm theo cột (cho phép hở nhỏ trong cùng 1 biểu tượng)
@@ -16120,7 +16144,8 @@ function _zCamAt(col,y0,y1){ // y0,y1 theo toạ độ ảnh GỐC
       gap=0;
     }else gap++;
   });
-  blobs=blobs.filter(function(b){return b.cnt>=6;});
+  // v7.50 — bỏ THANH CUỘN (dải mảnh chạm cả mép trên lẫn mép dưới dải dòng) — trước đây bị tưởng là biểu tượng cao nhất
+  blobs=blobs.filter(function(b){return b.cnt>=6&&!(b.mn<=ya+1&&b.mx>=yb-1&&(b.x1-b.x0)<=Math.max(6,W*0.04));});
   if(!blobs.length)return null;
   var maxH=Math.max.apply(null,blobs.map(function(b){return b.mx-b.mn+1;}));
   var icons=blobs.filter(function(b){return (b.mx-b.mn+1)>=maxH*0.55;});
@@ -16257,6 +16282,94 @@ function _zAddImages(files){
   });
 }
 // Tiền xử lý ảnh: cân chỉnh kích thước (không quá to kẻo canvas lỗi) + chuyển xám + tương phản nhẹ.
+// ================================================================
+// v7.50 — ĐỌC ẢNH DANH SÁCH PARTICIPANTS TỪNG DÒNG (chính xác hơn hẳn, chậm hơn — chấp nhận):
+//   1) Đưa về xám + TỰ ĐẢO MÀU khi nền tối (Zoom chế độ tối: chữ trắng nền đen → chữ đen nền trắng) + giãn tương phản
+//   2) TÁCH DÒNG theo hình chiếu ngang (gộp dấu thanh tiếng Việt tách rời) → mỗi dòng = 1 người
+//   3) TỰ DÒ cột avatar (khối tròn đặc bên trái) và cột biểu tượng mic/cam/… (bên phải) theo điểm ảnh
+//      → không còn cắt cứng 13% (trước đây làm mất chữ đầu: "Sản/…" → "an/…", "Nguyen Bien" → "guyen Bien")
+//   4) PHÓNG TO mỗi dòng để chữ cao ~36px (cỡ chữ Tesseract đọc tốt nhất) → OCR chế độ 1 dòng (PSM 7)
+// ================================================================
+function _zLoadImg(url){return new Promise(function(res){var im=new Image();im.onload=function(){res(im);};im.onerror=function(){res(null);};im.src=url;});}
+async function _zListLines(url,worker,onProg){
+  var im=await _zLoadImg(url);if(!im)return [];
+  var W=im.width,H=im.height;
+  // giới hạn kích thước làm việc (ảnh quá lớn) — tỷ lệ r so với ảnh gốc
+  var r=Math.min(1,2400/Math.max(W,H));var w=Math.max(1,Math.round(W*r)),h=Math.max(1,Math.round(H*r));
+  var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(im,0,0,w,h);
+  var d=x.getImageData(0,0,w,h).data,g=new Uint8ClampedArray(w*h),i,p,sum=0;
+  for(i=0,p=0;p<g.length;i+=4,p++){g[p]=(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2])|0;sum+=g[p];}
+  var dark=sum/g.length<128;if(dark)for(p=0;p<g.length;p++)g[p]=255-g[p];
+  // nền = mức xám phổ biến nhất; giãn tương phản theo phân vị 2%–nền
+  var hist=new Array(256).fill(0);for(p=0;p<g.length;p++)hist[g[p]]++;
+  var bg=0,bn=0;for(i=0;i<256;i++)if(hist[i]>bn){bn=hist[i];bg=i;}
+  var lo=0,acc=0;for(i=0;i<256;i++){acc+=hist[i];if(acc>=g.length*0.02){lo=i;break;}}
+  var span=Math.max(30,bg-lo);
+  for(p=0;p<g.length;p++){var v=(g[p]-lo)*255/span;g[p]=v<0?0:v>255?255:v;}
+  function ink(px){return g[px]<150;}          // chữ (tối)
+  function nonbg(px){return g[px]<215;}        // khác nền (chữ, avatar, biểu tượng)
+  // 2) TÁCH DÒNG — hình chiếu ngang trên vùng giữa (né avatar & biểu tượng)
+  var xa=Math.round(w*0.14),xb=Math.round(w*0.66),rowInk=new Array(h);
+  for(var y=0;y<h;y++){var n=0;for(var xx=xa;xx<xb;xx++)if(ink(y*w+xx))n++;rowInk[y]=n;}
+  var thrR=Math.max(2,Math.round((xb-xa)*0.004)),bands=[],cur=null;
+  for(y=0;y<h;y++){if(rowInk[y]>=thrR){if(!cur)cur={y0:y,y1:y};else cur.y1=y;}else if(cur&&y-cur.y1>2){bands.push(cur);cur=null;}}
+  if(cur)bands.push(cur);
+  bands=bands.filter(function(b){return b.y1-b.y0>=3;});
+  if(!bands.length)return [];
+  var hs=bands.map(function(b){return b.y1-b.y0+1;}).sort(function(a,b){return a-b;}),mh=hs[Math.floor(hs.length/2)];
+  // gộp dấu thanh / dấu mũ tách rời khỏi dòng chữ (khoảng hở nhỏ)
+  var mg=[];bands.forEach(function(b){var L=mg[mg.length-1];if(L&&b.y0-L.y1<=Math.max(3,mh*0.45)&&(b.y1-L.y0)<=mh*2.2){L.y1=b.y1;}else mg.push({y0:b.y0,y1:b.y1});});
+  hs=mg.map(function(b){return b.y1-b.y0+1;}).sort(function(a,b){return a-b;});mh=hs[Math.floor(hs.length/2)];
+  mg=mg.filter(function(b){var hh=b.y1-b.y0+1;return hh>=mh*0.45&&hh<=mh*2.6;});
+  // 3) DÒ CỘT avatar (trái) & biểu tượng (phải): tỷ lệ "khác nền" theo cột trên các dòng
+  var tot=0;mg.forEach(function(b){tot+=b.y1-b.y0+1;});
+  var colF=new Array(w);
+  for(xx=0;xx<w;xx++){var n2=0;mg.forEach(function(b){var y0=Math.max(0,b.y0-Math.round(mh*0.4)),y1=Math.min(h-1,b.y1+Math.round(mh*0.4));for(var yy=y0;yy<=y1;yy++)if(nonbg(yy*w+xx))n2++;});colF[xx]=n2/Math.max(1,tot*1.8);}
+  var avEnd=0,xMaxAv=Math.round(w*0.24),run=0,gapNeed=Math.max(3,Math.round(w*0.008)),seen=false;
+  for(xx=0;xx<xMaxAv;xx++){
+    if(colF[xx]>0.30)seen=true;
+    if(seen){if(colF[xx]<0.06){run++;if(run>=gapNeed){avEnd=xx-run+1;break;}}else run=0;}
+  }
+  if(!seen)avEnd=0;
+  // cột biểu tượng: lấy KHOẢNG TRỐNG RỘNG NHẤT ở nửa phải (giữa chữ dài nhất và biểu tượng mic) → bắt đầu cụm biểu tượng
+  var icStart=Math.round(w*0.82),bestGap=0,gs=-1;
+  for(xx=Math.round(w*0.45);xx<=w;xx++){
+    var lowc=xx<w&&colF[xx]<0.03;
+    if(lowc){if(gs<0)gs=xx;}
+    else if(gs>=0){var gw=xx-gs;if(gw>bestGap&&xx<w){bestGap=gw;icStart=xx;}gs=-1;}
+  }
+  if(bestGap<Math.max(6,mh*0.8))icStart=Math.round(w*0.82); // không thấy khoảng trống rõ → giữ tới 82%
+  var left=Math.min(Math.round(w*0.3),avEnd>0?avEnd+3:0),right=Math.min(w,icStart);
+  // 4) OCR TỪNG DÒNG — phóng để chữ cao ~36px
+  var k=Math.max(1,Math.min(4,36/mh));
+  var out=[];
+  for(var bi=0;bi<mg.length;bi++){
+    var b=mg[bi],pad=Math.round(mh*0.45),ry0=Math.max(0,b.y0-pad),ry1=Math.min(h-1,b.y1+pad),rw=right-left,rh=ry1-ry0+1;
+    var lc=document.createElement('canvas');lc.width=Math.round(rw*k)+24;lc.height=Math.round(rh*k)+24;
+    var lx=lc.getContext('2d');lx.fillStyle='#fff';lx.fillRect(0,0,lc.width,lc.height);
+    var id=lx.createImageData(rw,rh);
+    for(var yy=0;yy<rh;yy++)for(var x2=0;x2<rw;x2++){var gv=g[(ry0+yy)*w+left+x2],o=(yy*rw+x2)*4;id.data[o]=id.data[o+1]=id.data[o+2]=gv;id.data[o+3]=255;}
+    var tc=document.createElement('canvas');tc.width=rw;tc.height=rh;tc.getContext('2d').putImageData(id,0,0);
+    lx.imageSmoothingEnabled=true;lx.imageSmoothingQuality='high';lx.drawImage(tc,12,12,Math.round(rw*k),Math.round(rh*k));
+    try{
+      var res=await worker.recognize(lc);
+      var ws=(res.data.words||[]).filter(function(wd){return wd.text&&wd.text.trim()&&/[A-Za-zÀ-ỹ0-9]/.test(wd.text);})
+        .sort(function(p1,p2){return (p1.bbox?p1.bbox.x0:0)-(p2.bbox?p2.bbox.x0:0);});
+      // bỏ mảnh biểu tượng: cắt từ chỗ có KHOẢNG TRỐNG lớn (> 1.6 × chiều cao chữ) — tên người không giãn xa như vậy
+      var gapMax=mh*k*1.6;
+      for(var wi=1;wi<ws.length;wi++){var gx=(ws[wi].bbox&&ws[wi-1].bbox)?ws[wi].bbox.x0-ws[wi-1].bbox.x1:0;if(gx>gapMax){ws=ws.slice(0,wi);break;}}
+      // mảnh avatar sót đầu dòng: 1–2 ký tự rồi cách xa
+      if(ws.length>1&&ws[0].text.trim().length<=2&&ws[1].bbox&&ws[0].bbox&&ws[1].bbox.x0-ws[0].bbox.x1>mh*k*1.1)ws=ws.slice(1);
+      var txt=ws.map(function(wd){return wd.text.trim();}).join(' ');
+      var conf=ws.length?ws.reduce(function(s,wd){return s+(wd.confidence==null?70:wd.confidence);},0)/ws.length:0;
+      if(txt)out.push({text:txt,conf:conf,y0:b.y0/r,y1:b.y1/r,line:true});
+    }catch(e){}
+    if(onProg)onProg((bi+1)/mg.length);
+  }
+  // dòng ngay dưới tiêu đề "Participants (N)" là Ô TÌM KIẾM (placeholder hoặc chữ đang gõ) → bỏ
+  for(var oi=0;oi<out.length-1;oi++){if(/^\W*participants?\b/i.test(out[oi].text)){out.splice(oi+1,1);break;}}
+  return out;
+}
 var Z_MAX_DIM=2600, Z_MAX_AREA=5000000; // giới hạn an toàn (điện thoại chụp dọc rất cao)
 function _zPreprocess(url,cropL,cropR){ // cắt bỏ cột avatar (trái) + biểu tượng mic/cam (phải) khi chụp danh sách
   return new Promise(function(res){
@@ -16292,32 +16405,45 @@ async function _zRunScan(){
   try{await _zLoadTess();worker=await _zGetWorker();}catch(e){_zatt.scanning=false;renderZoomAtt();showToast('⚠️ '+(e.message||'Không tải được bộ nhận dạng chữ.'));return;}
   _zatt._n=_zatt.imgs.length;
   var raws=[];
+  // v7.50 — chọn chế độ đọc của Tesseract theo kiểu ảnh: Danh sách = từng dòng (PSM 7); Lưới video = rời rạc (PSM 11)
+  _zatt._lineMode=_zatt.mode==='list';
+  try{await worker.setParameters({tessedit_pageseg_mode:_zatt._lineMode?'7':'11',preserve_interword_spaces:'1'});}catch(e){}
   for(var i=0;i<_zatt.imgs.length;i++){
     _zatt._i=i;
     try{
-      var proc=_zatt.mode==='list'
-        ? await _zPreprocess(_zatt.imgs[i].url, 0.13, 0.15) // danh sách: bỏ avatar (trái 13%) + mic/cam (phải 15%)
-        : await _zPreprocess(_zatt.imgs[i].url, 0, 0);
+      if(_zatt._lineMode){
+        var lines=await _zListLines(_zatt.imgs[i].url,worker,function(fr){
+          _zatt.prog=Math.min(99,Math.round((i+fr)/_zatt._n*100));
+          var b=document.querySelector('.zatt-prog>div');if(b)b.style.width=_zatt.prog+'%';
+          var sb=document.querySelector('[data-zscan]');if(sb)sb.textContent='⏳ Đang đọc từng dòng… '+_zatt.prog+'%';
+        });
+        var col=await _zColorData(_zatt.imgs[i].url); // đọc luôn biểu tượng camera cùng dòng tên (ảnh gốc, có màu)
+        lines.forEach(function(n){n.cam=col?_zCamAt(col,n.y0,n.y1):null;raws.push(n);});
+        continue;
+      }
+      var proc=await _zPreprocess(_zatt.imgs[i].url, 0, 0);
       var res=await worker.recognize(proc.url);
-      // chế độ Danh sách: đọc luôn biểu tượng camera cùng dòng tên (ảnh gốc, có màu)
-      var col=_zatt.mode==='list'?await _zColorData(_zatt.imgs[i].url):null;
-      _zNamesFromData(res.data).forEach(function(n){
-        n.cam=col?_zCamAt(col,n.y0/proc.s,n.y1/proc.s):null;
-        raws.push(n);
-      });
-    }catch(err){}
+      _zNamesFromData(res.data).forEach(function(n){n.cam=null;raws.push(n);});
+    }catch(err){console.warn('Zoom OCR lỗi ảnh '+(i+1)+':',err);}
   }
+  _zatt._lineMode=false;
   // Chuẩn hoá + lọc (giao diện Zoom + rác OCR) + gom trùng theo norm (giữ bản tự tin nhất)
   //   cam: nhiều ảnh cùng tên → có 1 ảnh BẬT là tính bật; không đọc được thì giữ kết quả ảnh khác
   var byNorm={};
   raws.forEach(function(it){
-    if(!_zPlausibleName(it.text,it.conf))return;
+    if(!_zPlausibleName(it.text,it.line?(it.conf>=35?60:it.conf):it.conf))return; // v7.50 — đọc từng dòng: mỗi dòng là 1 người, nới ngưỡng tự tin
     var name=_zCleanName(it.text);var norm=_zNorm(name);if(!norm)return;
     var old=byNorm[norm];
     var cam=(old&&old.cam==='on')||it.cam==='on'?'on':(it.cam||(old&&old.cam)||null);
     if(!old||it.conf>old.conf)byNorm[norm]={raw:name,norm:norm,conf:it.conf,cam:cam};
     else old.cam=cam;
   });
+  // v7.50 — gộp các bản đọc GẦN GIỐNG NHAU của cùng 1 tên (nhiều ảnh chụp chồng lên nhau, OCR lệch 1–2 chữ)
+  (function(){var ks=Object.keys(byNorm).sort(function(a,b){return byNorm[b].conf-byNorm[a].conf;});
+    for(var a=0;a<ks.length;a++){var A=byNorm[ks[a]];if(!A)continue;
+      for(var b=a+1;b<ks.length;b++){var B=byNorm[ks[b]];if(!B)continue;
+        var ca=_zCompact(A.norm),cb=_zCompact(B.norm),mx=Math.max(1,Math.floor(Math.min(ca.length,cb.length)*0.08));
+        if(Math.min(ca.length,cb.length)>=6&&_zLev(ca,cb,mx)<=mx){if(B.cam==='on')A.cam='on';else if(!A.cam)A.cam=B.cam;delete byNorm[ks[b]];}}}})();
   var pmap=_zPeopleById();
   var dets=Object.keys(byNorm).map(function(k){
     var it=byNorm[k];var r=_zMatch(it.norm,pmap);
