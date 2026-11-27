@@ -1,4 +1,4 @@
-<!-- VERSION: v7.55-ty-le-theo-nguoi -->
+<!-- VERSION: v7.56-du-lieu-theo-tai-khoan -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -5580,6 +5580,7 @@ function showVerifyGate(user){
 }
 function enterAppFirebase(user){
   NS=user.uid.slice(0,16);
+  _acctNs=NS;try{_reloadAcctLocal();}catch(e){} // v7.56 — nạp lại cài đặt/ước mơ/Vision Board/ảnh nền của ĐÚNG tài khoản này
   var displayName=user.displayName||user.email.split('@')[0];
   _meName=displayName; // v6.16 — tên hiển thị cho lời nhắc cá nhân hoá
   try{localStorage.setItem('ta_last_ns',NS);}catch(e){}
@@ -5818,6 +5819,16 @@ async function doSaveAccPwd(){
 // STORAGE (namespace theo user)
 // ================================================================
 function nmKey(k){return 'ta_'+NS+'_'+k;}
+// v7.56 — DỮ LIỆU CÁ NHÂN TRÊN MÁY TÁCH THEO TÀI KHOẢN: cài đặt (prefs), danh sách ước mơ, Vision Board, ảnh nền
+//   trước đây dùng chung khoá 'ta_prefs'/'ta_dreamlist'/'ta_vbindex'/'ta_vboard_*'/'ta_bgimage' cho MỌI tài khoản cùng trình duyệt
+//   → tài khoản đăng nhập sau thấy ước mơ/bảng tầm nhìn/số lần đăng nhập của tài khoản trước. Nay: 'ta_<NS>_acct_<khoá>'.
+//   Khoá cũ dùng chung chỉ chuyển cho người đăng nhập gần nhất trên máy này (ta_last_ns lúc mở trang), rồi xoá.
+var _LEGACY_NS=(function(){try{return localStorage.getItem('ta_last_ns')||'';}catch(e){return '';}})();
+var _acctNs='';
+function acctKey(k){return 'ta_'+(_acctNs||_LEGACY_NS||'guest')+'_acct_'+k;}
+function acctGet(k){try{var v=localStorage.getItem(acctKey(k));if(v!==null)return v;var own=_acctNs||_LEGACY_NS;var old=localStorage.getItem('ta_'+k);if(old!==null&&own&&own===_LEGACY_NS){localStorage.setItem(acctKey(k),old);localStorage.removeItem('ta_'+k);return old;}}catch(e){}return null;}
+function acctSet(k,v){try{localStorage.setItem(acctKey(k),v);}catch(e){}}
+function acctDel(k){try{localStorage.removeItem(acctKey(k));}catch(e){}}
 function nmGet(k,def){try{var v=localStorage.getItem(nmKey(k));return v!==null?v:(def||'');}catch(e){return def||'';}}
 function nmSet(k,v){if(viewOnlyMode)return;try{localStorage.setItem(nmKey(k),v);}catch(e){}if(_isLocalSyncKey(k))scheduleLocalMirrorPush();} // chặn ghi khi đang XEM tài khoản khác; v6.26 đồng bộ đa thiết bị các key chỉ-lưu-máy
 function dk(){var d=currentDay;return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
@@ -14062,7 +14073,7 @@ async function exportBackup(){
   if(viewOnlyMode){showToast('Đang ở chế độ Xem — không sao lưu');return;}
   showToast('⏳ Đang gom dữ liệu sao lưu...');
   var ls={};
-  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('ta_')===0)ls[k]=localStorage.getItem(k);}}catch(e){}
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!k||k.indexOf('ta_')!==0)continue;var _m=/^ta_([A-Za-z0-9]{16})_/.exec(k);if(_m&&_m[1]!==NS)continue;ls[k]=localStorage.getItem(k);}}catch(e){} // v7.56 — chỉ gom dữ liệu của tài khoản đang đăng nhập (bỏ tài khoản khác từng dùng máy này)
   var fs={};
   if(fbDb&&fbUser){
     try{
@@ -17124,7 +17135,7 @@ function enterFullAccountView(){
   _fvSaved={NS:NS,members:members,treeNodes:treeNodes,
     prospects:(typeof _prospectsAll!=='undefined')?_prospectsAll:null,
     vbIndex:(typeof _vbIndex!=='undefined')?_vbIndex:null,vbDefault:(typeof _vbDefault!=='undefined')?_vbDefault:null,
-    vbindexLS:(function(){try{return localStorage.getItem('ta_vbindex');}catch(e){return null;}})(),
+    vbindexLS:(function(){try{return acctGet('vbindex');}catch(e){return null;}})(),
     focusNodeId:focusNodeId,mode:currentTreeMode,disc:discFilter,
     page:((document.querySelector('.page.on')||{}).id)||'page-admin',
     mainTab:((document.querySelector('.mtab.on')&&document.querySelector('.mtab.on').getAttribute('data-main'))||'admin')};
@@ -17153,8 +17164,8 @@ function enterFullAccountView(){
   treeNodes=(d.tree&&d.tree.nodes)||[];
   if(typeof _prospectsAll!=='undefined')_prospectsAll=(d.prospects&&d.prospects.list)||[];
   if(typeof _vbIndex!=='undefined'){_vbIndex=(d.vbindex&&d.vbindex.boards)||[];_vbDefault=(d.vbindex&&d.vbindex.def)||'';
-    try{localStorage.setItem('ta_vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));}catch(e){}
-    if(d.vboardRaw)Object.keys(d.vboardRaw).forEach(function(id){try{localStorage.setItem('ta_vboard_'+id,JSON.stringify(d.vboardRaw[id]));}catch(e){}});}
+    acctSet('vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));
+    if(d.vboardRaw)Object.keys(d.vboardRaw).forEach(function(id){acctSet('vboard_'+id,JSON.stringify(d.vboardRaw[id]));});}
   focusNodeId=null;discFilter=null;
   // 4) Bật chế độ chỉ-đọc toàn app
   viewOnlyMode=true;fullViewMode=true;viewOnlyName=name||'';
@@ -17178,7 +17189,7 @@ function exitFullAccountView(){
   members=s.members;treeNodes=s.treeNodes;
   if(typeof _prospectsAll!=='undefined'&&s.prospects!=null)_prospectsAll=s.prospects;
   if(typeof _vbIndex!=='undefined'){if(s.vbIndex!=null)_vbIndex=s.vbIndex;if(s.vbDefault!=null)_vbDefault=s.vbDefault;}
-  try{if(s.vbindexLS!=null)localStorage.setItem('ta_vbindex',s.vbindexLS);else localStorage.removeItem('ta_vbindex');}catch(e){}
+  if(s.vbindexLS!=null)acctSet('vbindex',s.vbindexLS);else acctDel('vbindex');
   focusNodeId=s.focusNodeId;currentTreeMode=s.mode;discFilter=s.disc;
   fullViewMode=false;viewOnlyMode=false;viewOnlyName='';
   var sp=s.page,st=s.mainTab;_fvSaved=null;
@@ -17302,6 +17313,13 @@ var BG_PRESETS={
 var BG_ORDER=['cream','marble','provence','lavender','mediterranean','forest','midnight'];
 var _prefs={theme:'santorini',bg:{type:'none',preset:'',dim:0.3},notify:{enabled:false,time:'19:00',freq:'daily',fired:''}};
 var _bgImage='';
+var _PREFS_DEFAULT=JSON.stringify(_prefs); // v7.56 — mặc định để làm sạch khi đổi tài khoản
+function _reloadAcctLocal(){ // v7.56 — đổi tài khoản trên cùng máy: bỏ dữ liệu cá nhân của người trước, nạp của người này
+  try{var d=JSON.parse(_PREFS_DEFAULT),k;for(k in _prefs)delete _prefs[k];for(k in d)_prefs[k]=d[k];}catch(e){}
+  _bgImage='';loadPrefsLocal();loadBgImageLocal();try{applyPrefs();}catch(e){}
+  _dreamList=[];loadDreamListLocal();
+  _vbIndex=[];_vbDefault='';loadVbIndexLocal();
+}
 function _ensurePrefShape(){
   if(!_prefs.bg||typeof _prefs.bg!=='object')_prefs.bg={type:'none',preset:'',dim:0.3};
   if(_prefs.bg.dim==null)_prefs.bg.dim=0.3;
@@ -17395,12 +17413,12 @@ function applyPrefs(){
   startReengage(); // (re)arm lịch nhắc việc (tự gating theo notify.enabled)
 }
 function loadPrefsLocal(){
-  try{var s=localStorage.getItem('ta_prefs');if(s){var o=JSON.parse(s)||{};for(var k in o)_prefs[k]=o[k];}}catch(e){}
+  try{var s=acctGet('prefs');if(s){var o=JSON.parse(s)||{};for(var k in o)_prefs[k]=o[k];}}catch(e){}
   _ensurePrefShape();
 }
 function savePrefs(){
   _ensurePrefShape();
-  try{localStorage.setItem('ta_prefs',JSON.stringify(_prefs));}catch(e){}
+  acctSet('prefs',JSON.stringify(_prefs));
   if(fbDb&&fbUser){var copy={};for(var k in _prefs)copy[k]=_prefs[k];fsSet('prefs',copy).catch(function(){});}
 }
 function loadPrefsCloud(){
@@ -17413,16 +17431,16 @@ function loadPrefsCloud(){
   }).catch(function(){});
 }
 // ── Ảnh nền tự upload: lưu RIÊNG (data/bgimage) để không phình document prefs ──
-function loadBgImageLocal(){try{_bgImage=localStorage.getItem('ta_bgimage')||'';}catch(e){_bgImage='';}}
+function loadBgImageLocal(){try{_bgImage=acctGet('bgimage')||'';}catch(e){_bgImage='';}}
 function saveBgImage(dataURL){
   _bgImage=dataURL||'';
-  try{if(_bgImage)localStorage.setItem('ta_bgimage',_bgImage);else localStorage.removeItem('ta_bgimage');}catch(e){}
+  if(_bgImage)acctSet('bgimage',_bgImage);else acctDel('bgimage');
   if(fbDb&&fbUser)fsSet('bgimage',{image:_bgImage}).catch(function(){});
 }
 function loadBgImageCloud(){
   if(!fbDb||!fbUser)return;
   fsGet('bgimage').then(function(d){
-    if(d&&typeof d.image==='string'){_bgImage=d.image;try{if(_bgImage)localStorage.setItem('ta_bgimage',_bgImage);}catch(e){}
+    if(d&&typeof d.image==='string'){_bgImage=d.image;if(_bgImage)acctSet('bgimage',_bgImage);
       if(_prefs.bg&&_prefs.bg.type==='image')applyBackground(_prefs.bg);}
   }).catch(function(){});
 }
@@ -17730,18 +17748,18 @@ function _hex(c){c=(c||'').trim();if(/^#[0-9a-fA-F]{6}$/.test(c))return c;var m=
 function _vbFind(id){return _vbCur&&_vbCur.els.filter(function(x){return x.id===id;})[0];}
 function _vbMaxZ(){return _vbCur&&_vbCur.els.length?Math.max.apply(null,_vbCur.els.map(function(x){return x.z||0;})):0;}
 // ── Lưu/đọc index + từng bảng ──
-function loadVbIndexLocal(){try{var s=localStorage.getItem('ta_vbindex');if(s){var o=JSON.parse(s)||{};_vbIndex=o.boards||[];_vbDefault=o.def||'';}}catch(e){_vbIndex=[];_vbDefault='';}}
-function saveVbIndex(){var o={boards:_vbIndex,def:_vbDefault};try{localStorage.setItem('ta_vbindex',JSON.stringify(o));}catch(e){}if(fbDb&&fbUser)fsSet('vbindex',o).catch(function(){});}
-function loadVbIndexCloud(){if(!fbDb||!fbUser)return;fsGet('vbindex').then(function(d){if(d){_vbIndex=d.boards||_vbIndex;_vbDefault=(d.def!=null?d.def:_vbDefault);try{localStorage.setItem('ta_vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));}catch(e){}_vbPrefetchBoards();renderVisionBoards();}}).catch(function(){});}
+function loadVbIndexLocal(){try{var s=acctGet('vbindex');if(s){var o=JSON.parse(s)||{};_vbIndex=o.boards||[];_vbDefault=o.def||'';}}catch(e){_vbIndex=[];_vbDefault='';}}
+function saveVbIndex(){var o={boards:_vbIndex,def:_vbDefault};acctSet('vbindex',JSON.stringify(o));if(fbDb&&fbUser)fsSet('vbindex',o).catch(function(){});}
+function loadVbIndexCloud(){if(!fbDb||!fbUser)return;fsGet('vbindex').then(function(d){if(d){_vbIndex=d.boards||_vbIndex;_vbDefault=(d.def!=null?d.def:_vbDefault);acctSet('vbindex',JSON.stringify({boards:_vbIndex,def:_vbDefault}));_vbPrefetchBoards();renderVisionBoards();}}).catch(function(){});}
 function _vbPrefetchBoards(){ // kéo từng bảng về local để xem trước/đa thiết bị
   if(!fbDb||!fbUser)return;
   _vbIndex.forEach(function(it){
     if(loadVbBoardLocal(it.id))return;
-    fsGet('vboard_'+it.id).then(function(d){if(d&&d.board){try{localStorage.setItem('ta_vboard_'+it.id,JSON.stringify(d.board));}catch(e){}renderVisionBoards();}}).catch(function(){});
+    fsGet('vboard_'+it.id).then(function(d){if(d&&d.board){acctSet('vboard_'+it.id,JSON.stringify(d.board));renderVisionBoards();}}).catch(function(){});
   });
 }
-function loadVbBoardLocal(id){try{var s=localStorage.getItem('ta_vboard_'+id);return s?JSON.parse(s):null;}catch(e){return null;}}
-function saveVbBoard(b){try{localStorage.setItem('ta_vboard_'+b.id,JSON.stringify(b));}catch(e){}if(fbDb&&fbUser)fsSet('vboard_'+b.id,{board:b}).catch(function(){});}
+function loadVbBoardLocal(id){try{var s=acctGet('vboard_'+id);return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveVbBoard(b){acctSet('vboard_'+b.id,JSON.stringify(b));if(fbDb&&fbUser)fsSet('vboard_'+b.id,{board:b}).catch(function(){});}
 function _newVbBoardObj(id){return {id:id,name:'Bảng tầm nhìn mới',cat:'Tổng quát',bg:'#FBF7EE',els:[]};}
 function vbCreateBoard(){
   var id='vb'+Date.now().toString(36);var b=_newVbBoardObj(id);
@@ -17758,7 +17776,7 @@ function vbDeleteBoard(id){
   if(!confirm('Xoá bảng tầm nhìn này? Không hoàn tác.'))return;
   _vbIndex=_vbIndex.filter(function(x){return x.id!==id;});
   if(_vbDefault===id)_vbDefault='';
-  try{localStorage.removeItem('ta_vboard_'+id);}catch(e){}
+  acctDel('vboard_'+id);
   if(fbDb&&fbUser){import(FB_STORE).then(function(m){m.deleteDoc(m.doc(fbDb,'users',fbUser.uid,'data','vboard_'+id)).catch(function(){});}).catch(function(){});}
   saveVbIndex();renderVisionBoards();showToast('Đã xoá bảng');
 }
@@ -18027,9 +18045,9 @@ function _dlBand(rank){ // rank: thứ hạng 1-based
   if(rank<=50) return {key:'c',label:'Nhóm 31–50 · Ưu tiên vừa',range:'31–50',col:'#3B7DD8',bg:'#EAF1FB',ink:'#2E63AC'};
   return {key:'d',label:'Nhóm 51–100 · Ước mơ dài hạn',range:'51–100',col:'#8A8F98',bg:'#F1F2F4',ink:'#6C727A'};
 }
-function loadDreamListLocal(){try{var s=localStorage.getItem('ta_dreamlist');if(s){var o=JSON.parse(s)||{};_dreamList=Array.isArray(o.items)?o.items:[];}}catch(e){_dreamList=[];}}
-function loadDreamListCloud(){if(!fbDb||!fbUser)return;fsGet('dreamlist').then(function(d){if(d&&Array.isArray(d.items)){_dreamList=d.items;try{localStorage.setItem('ta_dreamlist',JSON.stringify({items:_dreamList}));}catch(e){}renderDreamList();}}).catch(function(){});}
-function saveDreamList(){try{localStorage.setItem('ta_dreamlist',JSON.stringify({items:_dreamList}));}catch(e){}if(fbDb&&fbUser)fsSet('dreamlist',{items:_dreamList}).catch(function(){});}
+function loadDreamListLocal(){try{var s=acctGet('dreamlist');if(s){var o=JSON.parse(s)||{};_dreamList=Array.isArray(o.items)?o.items:[];}}catch(e){_dreamList=[];}}
+function loadDreamListCloud(){if(!fbDb||!fbUser)return;fsGet('dreamlist').then(function(d){if(d&&Array.isArray(d.items)){_dreamList=d.items;acctSet('dreamlist',JSON.stringify({items:_dreamList}));renderDreamList();}}).catch(function(){});}
+function saveDreamList(){acctSet('dreamlist',JSON.stringify({items:_dreamList}));if(fbDb&&fbUser)fsSet('dreamlist',{items:_dreamList}).catch(function(){});}
 function dlAddFromInput(){
   var inp=document.getElementById('dl-new');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt)return;
