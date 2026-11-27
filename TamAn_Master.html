@@ -1,4 +1,4 @@
-<!-- VERSION: v7.53-zoom-dien-thoai -->
+<!-- VERSION: v7.54-chi-bao-vang-lien-tiep -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -218,6 +218,14 @@ body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #s
 #fab-disc.has-on .fd-q.on{opacity:1;filter:brightness(1.1)}
 @media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}#fab-disc{width:54px;height:54px}}
 #fab-att:hover{filter:brightness(1.08)}
+/* v7.54 — chỉ báo vắng liên tiếp */
+.abs-b{display:inline-block;vertical-align:middle;line-height:0}
+.abs-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;margin:0 0 6px;background:#FFFDF3;border:1px solid #F0E6B8;border-radius:10px}
+.abs-ttl{font-size:12.5px;font-weight:800;color:#5D4000;margin-right:2px}
+.abs-f{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #E6E6E6;background:#fff;border-radius:10px;padding:3px 8px 3px 4px;font-size:13px;color:#222;cursor:pointer}
+.abs-f.on{border-color:#1A1A1A;box-shadow:0 0 0 2px #1A1A1A}
+.abs-clr{padding:5px 9px;font-size:12px;font-weight:700}
+.abs-note{flex:1 1 100%;font-size:11px;color:#7A6A3A}
 .zatt-row.pend{flex-wrap:wrap}
 .zatt-cropline{flex:1 1 100%;order:9;margin-top:2px}
 .zatt-unr .zatt-cropline{order:0;margin:0 0 2px}
@@ -6613,6 +6621,56 @@ function comboAttBtn(mid,ses,lbl){
   var st=ATT_STATE[dGet(mid,ses)||'']||ATT_STATE[''];
   return '<button class="mc-att-btn" data-att-cycle="'+mid+':'+ses+'" style="background:'+st.bg+';color:'+st.c+';border-color:'+st.c+'"><span class="mab-l">'+lbl+'</span><span class="mab-s">'+st.t+'</span></button>';
 }
+// v7.54 — CHỈ BÁO VẮNG LIÊN TIẾP: người TRƯỚC ĐÓ có mặt nay vắng. Số 1–6 = số NGÀY ĐÃ ĐIỂM DANH vắng liên tiếp
+//   tính tới ngày đang xem (1 = hôm điểm danh trước có, nay vắng; 6 = từ 6 ngày trở lên), hình + màu theo thang 1–6.
+//   Có mặt bằng BẤT KỲ ID nào của cùng 1 người (ID chính / ID 2+) đều tính là có mặt. Nhìn lại tối đa 60 ngày;
+//   ngày không ai được chấm (nghỉ) không tính; người chưa từng có mặt trong 60 ngày → không gắn dấu.
+var _absFilter=null,_absCache={};
+function attAbsFor(ref){
+  var key=ref.getFullYear()+'-'+ref.getMonth()+'-'+ref.getDate();
+  if(_absCache[key])return _absCache[key];
+  var ses=attCfg().ses,pool=members.concat(loadGuests()).filter(function(p){return p&&p.id;});
+  var mt=_enMineTop(),idByName={},own={},grp={};
+  members.forEach(function(m){if(m&&m.name&&!idByName[m.name])idByName[m.name]=m.id;});
+  treeNodes.forEach(function(n){var id=idByName[n.name];if(!id)return;var o=enOwnerOf(n,mt).id;own[id]=o;(grp[o]=grp[o]||[]).push(id);});
+  var days=[],t=new Date(ref.getFullYear(),ref.getMonth(),ref.getDate());
+  for(var i=0;i<60;i++){
+    var held=false,pres={},y=t.getFullYear(),m1=t.getMonth()+1,dd=t.getDate();
+    for(var j=0;j<pool.length;j++){
+      for(var k=0;k<ses.length;k++){var v=dGetAt(pool[j].id,y,m1,dd,ses[k]);if(v){held=true;if(v==='yes'||v==='late')pres[pool[j].id]=1;}}
+    }
+    if(held)days.push({d:new Date(t),pres:pres});
+    t.setDate(t.getDate()-1);
+  }
+  var map={};
+  pool.forEach(function(p){
+    var ids=own[p.id]?grp[own[p.id]]:[p.id];
+    for(var n=0;n<days.length;n++){
+      var dp=days[n].pres;
+      if(ids.some(function(id){return dp[id];})){if(n>0)map[p.id]={lv:Math.min(n,6),n:n,last:days[n].d};return;}
+    }
+  });
+  var res={map:map,ref:days.length?days[0].d:null};
+  _absCache[key]=res;setTimeout(function(){_absCache={};},0); // chỉ nhớ trong 1 lượt vẽ
+  return res;
+}
+function _absBadgeSvg(lv,sz){return enBadgeSVG(lv).replace('class="en-badge"','style="width:'+sz+'px;height:'+sz+'px;display:block"');}
+function attAbsBadge(a){
+  if(!a)return '';
+  return '<span class="abs-b" title="Vắng '+a.n+' ngày điểm danh liên tiếp · có mặt gần nhất '+a.last.getDate()+'/'+(a.last.getMonth()+1)+'">'+_absBadgeSvg(a.lv,20)+'</span> ';
+}
+function attAbsStripHtml(abs,ids){
+  if(!abs.ref)return '';
+  var c={1:0,2:0,3:0,4:0,5:0,6:0},tot=0;
+  ids.forEach(function(id){var a=abs.map[id];if(a){c[a.lv]++;tot++;}});
+  var h='<div class="abs-bar"><span class="abs-ttl">🔔 Trước có mặt, nay vắng (tính tới '+abs.ref.getDate()+'/'+(abs.ref.getMonth()+1)+'): <b>'+tot+'</b></span>';
+  [1,2,3,4,5,6].forEach(function(l){
+    h+='<button class="abs-f'+(_absFilter===l?' on':'')+'" data-abs-filter="'+l+'" title="'+(l===6?'Vắng từ 6 ngày':'Vắng '+l+' ngày')+' liên tiếp — bấm để lọc">'+_absBadgeSvg(l,22)+'<b>'+c[l]+'</b></button>';
+  });
+  if(_absFilter)h+='<button class="abs-f abs-clr" data-abs-filter="0">✕ Bỏ lọc</button>';
+  h+='<div class="abs-note">Số trong hình = số ngày điểm danh vắng liên tiếp (6 = từ 6 ngày trở lên). Bấm 1 hình để chỉ xem nhóm đó.</div></div>';
+  return h;
+}
 // v7.27 — thẻ 1 dòng: STT · cấp bậc · tên · (KH%) · tàu · nút điểm danh. Bỏ dòng vai trò/ngày vào và nhãn "Có hoạt động" (trùng màu nút).
 function dailyComboCard(m,ord){
   var tn=treeNodes.find(function(t){return t.name===m.name;});
@@ -6623,7 +6681,7 @@ function dailyComboCard(m,ord){
   if(ord){var oc=ord==='👑'?'dd-ord-crown':(/^[A-Z]$/.test(ord)?'dd-ord-star':'dd-ord-num');h+='<div class="dd-ord '+oc+'">'+ord+'</div>';}
   h+='<div class="mc-info"><div class="mc-name">';
   if(rk>0)h+='<span class="badge" style="background:'+RANKS[rk-1].color+';color:white;vertical-align:middle">'+RANKS[rk-1].short+'</span> ';
-  h+=escHtml(m.name)+'</div>';
+  h+=attAbsBadge(attAbsFor(currentDay).map[m.id])+escHtml(m.name)+'</div>';
   if(cfg.kh){var pct=dGet(m.id,'kh_pct');if(pct)h+='<div class="mc-badges"><span class="badge '+(parseInt(pct)>=80?'bg':'ba')+'">🎯 KH '+pct+'%</span></div>';}
   h+='</div>';
   if(tn&&tn.ship)h+='<span class="mc-ship" title="'+shipLabel(tn.ship)+'">'+shipSVG(tn.ship,20)+'</span>';
@@ -6694,12 +6752,14 @@ _attComputeShowD(y,mo,nDays,todayD);
   // Có mặt lên đầu, theo cấp bậc giảm dần (3★→2★→1★→FS→…), rồi tổng ngày, rồi tên
   function srtRank(a,b){if(a.rk!==b.rk)return b.rk-a.rk;if(a.tot!==b.tot)return b.tot-a.tot;return noAccent(a.m.name).localeCompare(noAccent(b.m.name),undefined,{numeric:true});}
   var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
+  var abs=attAbsFor(new Date(y,mo,selD||todayD||nDays)); // v7.54
+  function absLv(it){var a=abs.map[it.m.id];return a?a.lv:0;}
   function rowHtml(it,ord,mark){
     // mark: 1 = có mặt (sáng màu) · 0 = vắng (mờ) · null = bình thường
     var nmCls='adash-nm'+(mark===1?' adash-on':mark===0?' adash-off':'');
     // v6.97 — ID có trên cây → bấm tên mở DS tuyến dưới; khách (chưa có trên cây) → mở chi tiết như cũ
     var clk=it.tn?' data-attdash-drill="'+it.tn.id+'" title="Xem DS từ '+escHtml(it.m.name)+' trở xuống"':' data-open-mid="'+it.m.id+'" data-open-type="kh"';
-    var hh='<tr><td class="'+nmCls+'"'+clk+'><b class="adash-ord">'+ord+'.</b> ';
+    var hh='<tr><td class="'+nmCls+'"'+clk+'><b class="adash-ord">'+ord+'.</b> '+attAbsBadge(abs.map[it.m.id]);
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
     hh+='<span class="adash-nmtxt">'+escHtml(it.m.name)+'</span></td>';
     for(var d=1;d<=nDays;d++){if(!_attShowD[d-1])continue;
@@ -6718,17 +6778,26 @@ _attComputeShowD(y,mo,nDays,todayD);
   var _lsl=attSesList(),_lcf=attCfg();
   h+='<div class="att-legend">'+(_lsl.length===1?'Mỗi ô = buổi <b>'+_lsl[0].s+'</b> của 1 ngày':'Mỗi ô = 1 ngày, '+_lsl.length+' vạch từ trên xuống = <b>'+_lsl.map(function(x){return x.s;}).join(' / ')+'</b>')+': <b style="color:#2E7D32">xanh ✓ có mặt</b>'+(_lcf.late?' · <b style="color:#B8860B">vàng ⏰ trễ</b> · <b style="color:#C62828">đỏ ✗ vắng</b>':'')+' · xám — chưa điểm danh. <b>Ngày không ai được điểm danh (vd Chủ nhật nghỉ) tự ẩn.</b> Cột <b>∑</b> = số ngày hiện diện. <b>Bấm tên</b> → DS từ ID đó trở xuống theo cây Nhị phân (⭐ ≥80%). <b>Bấm số ngày</b> → ai có mặt hôm đó.</div>';
   if(selD)h+='<div class="adash-hint">📅 Đang xem ngày <b>'+selD+'/'+(mo+1)+'</b> — ID có mặt (≥1 buổi ✓) xếp lên đầu theo cấp bậc <b>3★ → 2★ → 1★ → FS</b>, tên sáng màu. Bấm lại số ngày <b>'+selD+'</b> để bỏ chọn.</div>';
+  h+=attAbsStripHtml(abs,stars.concat(others).map(function(it){return it.m.id;}));
   h+='<div class="adash-wrap"><table class="adash'+(attCfg().ses.length===1?' adash-1s':'')+'"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){if(!_attShowD[d2-1])continue;
     var thc='adash-dayh';if(new Date(y,mo,d2).getDay()===0)thc+=' adash-sun';if(d2===todayD)thc+=' adash-today';if(d2===selD)thc+=' adash-selday';
     h+='<th class="'+thc+'" data-attdash-selday="'+d2+'" title="Bấm để xem ai có mặt ngày '+d2+'">'+d2+'</th>';
   }
   h+='<th>&sum;</th></tr>';
-  if(selD){
+  if(_absFilter){
+    // v7.54 — lọc 1 mức vắng liên tiếp
+    var fl=stars.concat(others).filter(function(it){return absLv(it)===_absFilter;});fl.sort(srtRank);
+    h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">🔔 Vắng '+(_absFilter===6?'từ 6':_absFilter)+' ngày liên tiếp ('+fl.length+')</td></tr>';
+    if(fl.length)fl.forEach(function(it,i){h+=rowHtml(it,i+1,0);});
+    else h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">Không có ai ở mức này</td></tr>';
+  }else if(selD){
     // Chế độ chọn ngày: gộp toàn bộ ID, có mặt lên đầu theo cấp bậc
     var all=stars.concat(others),present=[],absent=[];
     all.forEach(function(it){(presentOn(it,selD)?present:absent).push(it);});
-    present.sort(srtRank);absent.sort(srtRank);
+    present.sort(srtRank);
+    // v7.54 — nhóm vắng: ai vừa mới vắng (số nhỏ) lên trước để chăm sóc kịp; người không có dấu xuống cuối
+    absent.sort(function(a,b){var A=absLv(a)||9,B=absLv(b)||9;return A!==B?A-B:srtRank(a,b);});
     h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">✅ Có mặt ngày '+selD+'/'+(mo+1)+' ('+present.length+')</td></tr>';
     if(present.length)present.forEach(function(it,i){h+=rowHtml(it,i+1,1);});
     else h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">Chưa có ID nào có mặt ngày này</td></tr>';
@@ -6778,12 +6847,13 @@ function attDashDrillHtml(root,o){
   var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
   var cols=nDays+3;
   var rootMem=mBy[root.name];
+  var abs=attAbsFor(new Date(y,mo,selD||todayD||nDays)); // v7.54
   var parent=root.parentId?treeNodes.find(function(t){return t.id===root.parentId;}):null;
   function rowHtml(it,ord){
     var isRoot=it.depth===0;
     var clk=isRoot?(it.m.id?' data-open-mid="'+it.m.id+'" data-open-type="kh" title="Mở chi tiết"':''):' data-attdash-drill="'+it.tn.id+'" title="Xem DS từ '+escHtml(it.m.name)+' trở xuống"';
     var hh='<tr'+(it.hi?' class="adash-hirow"':'')+'><td class="adash-nm'+(it.hi?' adash-hi':'')+'"'+clk+'>';
-    hh+='<b class="adash-ord">'+ord+'.</b> ';
+    hh+='<b class="adash-ord">'+ord+'.</b> '+attAbsBadge(abs.map[it.m.id]);
     if(!isRoot)hh+='<span class="adash-lv">F'+it.depth+(it.side==='L'?'⬅':it.side==='R'?'➡':'')+'</span> ';
     if(it.rk>0)hh+='<span class="badge" style="background:'+RANKS[it.rk-1].color+';color:#fff">'+RANKS[it.rk-1].short+'</span> ';
     hh+='<span class="adash-nmtxt">'+(it.hi?'⭐ ':'')+escHtml(it.m.name)+'</span></td>';
@@ -6806,6 +6876,7 @@ function attDashDrillHtml(root,o){
   if(rootMem)h+='<button class="btn btn-d btn-sm" data-open-mid="'+rootMem.id+'" data-open-type="kh">📋 Chi tiết '+escHtml(root.name)+'</button>';
   h+='<button class="btn btn-sm" style="background:#FCE4E4;color:#C62828;border:1px solid #F3B4B4" data-attdash-drill="">✕ Về bảng chung</button></div></div>';
   h+=attDashBranchStatsHtml(seq,{y:y,mo:mo,nDays:nDays,todayD:todayD,selD:selD,held:held,pool:pool});
+  h+=attAbsStripHtml(abs,seq.map(function(it){return it.m.id;}));
   h+='<div class="att-legend">Cột <b>%</b> = số buổi có mặt (✓ hoặc ⏰) ÷ số buổi <b>đã được điểm danh</b> trong tháng (Sáng/Trưa/Tối có ít nhất 1 người được chấm). Dòng <b style="color:#14663F;background:#D7F2E0;padding:0 4px;border-radius:4px">⭐ tô xanh</b> = hiện diện ≥80%. Trong mỗi nhánh, <b>hiện diện càng cao xếp càng trên</b>. <b>F1⬅/F1➡</b> = tầng &amp; vị trí Trái/Phải. Bấm tên để xem tiếp từ ID đó trở xuống.</div>';
   h+='<div class="adash-wrap"><table class="adash adash-drill'+(attCfg().ses.length===1?' adash-1s':'')+'"><tr><th class="adash-nm">Thành viên</th>';
   for(var d2=1;d2<=nDays;d2++){if(!_attShowD[d2-1])continue;
@@ -6827,6 +6898,7 @@ function attDashDrillHtml(root,o){
   var lastBr=null,ord=0;
   seq.forEach(function(it){
     if(it.depth===0){h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">👑 '+escHtml(root.name)+'</td></tr>';h+=rowHtml(it,'★');return;}
+    if(_absFilter){var _a=abs.map[it.m.id];if(!_a||_a.lv!==_absFilter)return;} // v7.54
     if(it.br!==lastBr){
       lastBr=it.br;ord=0;
       var cnt=seq.filter(function(x){return x.br===it.br;}),hiC=cnt.filter(function(x){return x.hi;}).length;
@@ -6991,7 +7063,7 @@ function guestCard(m){
   var h='<div class="mc mc-combo" id="gcard-'+m.id+'">';
   h+='<div class="mc-hd" style="cursor:default">';
   h+='<div class="dd-ord" style="background:#9C6ADE">👤</div>';
-  h+='<div class="mc-info"><div class="mc-name">'+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách</span></div>';
+  h+='<div class="mc-info"><div class="mc-name">'+attAbsBadge(attAbsFor(currentDay).map[m.id])+escHtml(m.name)+' <span class="badge" style="background:#EDE7F6;color:#5E35B1">Khách</span></div>';
   h+='<div class="gc-code-row"><span class="gc-code-lbl">🔑 Mã ID dự phòng:</span><input class="inc-inp gc-code-inp" data-guest-code="'+m.id+'" value="'+escHtml(m.idCode||'')+'" placeholder="vd: lanchi88hptv"></div>';
   h+='</div>';
   h+='<div class="sort-btns"><button class="sb" data-del-guest="'+m.id+'" title="Xoá khách" style="color:#C62828">🗑</button></div>';
@@ -14931,6 +15003,9 @@ document.addEventListener('click',function(e){
     var _abx=document.querySelector('#list-ngay .adash-box');if(_abx)_abx.scrollIntoView({behavior:'smooth',block:'start'});
     return;
   }
+  // v7.54 — lọc theo số ngày vắng liên tiếp (bấm lại để bỏ)
+  t=e.target.closest('[data-abs-filter]');
+  if(t){var _af=parseInt(t.getAttribute('data-abs-filter'),10)||null;_absFilter=(_absFilter===_af)?null:_af;renderDailyCombined();return;}
   // v6.81 — chọn ngày: ID có mặt xếp lên đầu (3★→FS) + tên sáng màu; bấm lại để bỏ chọn
   t=e.target.closest('[data-attdash-selday]');
   if(t){
