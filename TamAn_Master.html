@@ -1,4 +1,4 @@
-<!-- VERSION: v7.54-chi-bao-vang-lien-tiep -->
+<!-- VERSION: v7.55-ty-le-theo-nguoi -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -2178,7 +2178,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <button class="db-btn" id="btn-day-next">&rsaquo;</button>
   </div>
   <div class="stats-bar">
-    <div class="sbox"><div class="sn" id="s-total">0</div><div class="sl">Tổng TV</div></div>
+    <div class="sbox"><div class="sn" id="s-total">0</div><div class="sl">Tổng người</div></div>
     <div class="sbox"><div class="sn" id="s-sang">0</div><div class="sl">Có mặt sáng</div></div>
     <div class="sbox"><div class="sn" id="s-left">0</div><div class="sl">&#11013;&#65039; Trái hoạt động</div></div>
     <div class="sbox"><div class="sn" id="s-right">0</div><div class="sl">&#10145;&#65039; Phải hoạt động</div></div>
@@ -6621,6 +6621,24 @@ function comboAttBtn(mid,ses,lbl){
   var st=ATT_STATE[dGet(mid,ses)||'']||ATT_STATE[''];
   return '<button class="mc-att-btn" data-att-cycle="'+mid+':'+ses+'" style="background:'+st.bg+';color:'+st.c+';border-color:'+st.c+'"><span class="mab-l">'+lbl+'</span><span class="mab-s">'+st.t+'</span></button>';
 }
+// v7.55 — TỶ LỆ ĐIỂM DANH TÍNH THEO NGƯỜI (anh Huy chốt): ID chính + ID 2+ (kể cả "Các ID của tôi") = 1 người,
+//   đếm 1 lần trong khung đang xem — đại diện là ID CHÍNH nếu nằm trong khung, không thì ID cao nhất của người đó
+//   trong khung. Có mặt bằng bất kỳ ID nào = người đó có mặt. Màu/dòng của các ID phụ vẫn hiện như cũ.
+function attPersonMap(){
+  var mt=_enMineTop(),idByName={},own={},grp={};
+  members.forEach(function(m){if(m&&m.name&&!idByName[m.name])idByName[m.name]=m.id;});
+  treeNodes.forEach(function(n){var id=idByName[n.name];if(!id)return;var o=enOwnerOf(n,mt).id;own[id]=o;(grp[o]=grp[o]||[]).push(id);});
+  return {own:own,grp:grp,idByName:idByName,
+    ids:function(mid){return own[mid]?grp[own[mid]]:[mid];},
+    key:function(mid){return own[mid]||mid;}};
+}
+function enPersonReps(list){ // danh sách node trong khung → {idNodeĐạiDiện: idNgười}
+  var mt=_enMineTop(),by={};
+  list.forEach(function(n){if(!n)return;var o=enOwnerOf(n,mt).id,c=by[o];
+    if(!c||n.id===o||(c.id!==o&&computeLevel2(n.id)<computeLevel2(c.id)))by[o]=n;});
+  var set={};Object.keys(by).forEach(function(o){set[by[o].id]=o;});
+  return set;
+}
 // v7.54 — CHỈ BÁO VẮNG LIÊN TIẾP: người TRƯỚC ĐÓ có mặt nay vắng. Số 1–6 = số NGÀY ĐÃ ĐIỂM DANH vắng liên tiếp
 //   tính tới ngày đang xem (1 = hôm điểm danh trước có, nay vắng; 6 = từ 6 ngày trở lên), hình + màu theo thang 1–6.
 //   Có mặt bằng BẤT KỲ ID nào của cùng 1 người (ID chính / ID 2+) đều tính là có mặt. Nhìn lại tối đa 60 ngày;
@@ -6630,9 +6648,7 @@ function attAbsFor(ref){
   var key=ref.getFullYear()+'-'+ref.getMonth()+'-'+ref.getDate();
   if(_absCache[key])return _absCache[key];
   var ses=attCfg().ses,pool=members.concat(loadGuests()).filter(function(p){return p&&p.id;});
-  var mt=_enMineTop(),idByName={},own={},grp={};
-  members.forEach(function(m){if(m&&m.name&&!idByName[m.name])idByName[m.name]=m.id;});
-  treeNodes.forEach(function(n){var id=idByName[n.name];if(!id)return;var o=enOwnerOf(n,mt).id;own[id]=o;(grp[o]=grp[o]||[]).push(id);});
+  var pm=attPersonMap();
   var days=[],t=new Date(ref.getFullYear(),ref.getMonth(),ref.getDate());
   for(var i=0;i<60;i++){
     var held=false,pres={},y=t.getFullYear(),m1=t.getMonth()+1,dd=t.getDate();
@@ -6644,13 +6660,13 @@ function attAbsFor(ref){
   }
   var map={};
   pool.forEach(function(p){
-    var ids=own[p.id]?grp[own[p.id]]:[p.id];
+    var ids=pm.ids(p.id);
     for(var n=0;n<days.length;n++){
       var dp=days[n].pres;
       if(ids.some(function(id){return dp[id];})){if(n>0)map[p.id]={lv:Math.min(n,6),n:n,last:days[n].d};return;}
     }
   });
-  var res={map:map,ref:days.length?days[0].d:null};
+  var res={map:map,pm:pm,ref:days.length?days[0].d:null};
   _absCache[key]=res;setTimeout(function(){_absCache={};},0); // chỉ nhớ trong 1 lượt vẽ
   return res;
 }
@@ -6662,8 +6678,9 @@ function attAbsBadge(a){
 function attAbsStripHtml(abs,ids){
   if(!abs.ref)return '';
   var c={1:0,2:0,3:0,4:0,5:0,6:0},tot=0;
-  ids.forEach(function(id){var a=abs.map[id];if(a){c[a.lv]++;tot++;}});
-  var h='<div class="abs-bar"><span class="abs-ttl">🔔 Trước có mặt, nay vắng (tính tới '+abs.ref.getDate()+'/'+(abs.ref.getMonth()+1)+'): <b>'+tot+'</b></span>';
+  var seen={};
+  ids.forEach(function(id){var a=abs.map[id],k=abs.pm.key(id);if(a&&!seen[k]){seen[k]=1;c[a.lv]++;tot++;}}); // v7.55 đếm theo người
+  var h='<div class="abs-bar"><span class="abs-ttl">🔔 Trước có mặt, nay vắng (tính tới '+abs.ref.getDate()+'/'+(abs.ref.getMonth()+1)+'): <b>'+tot+'</b> người</span>';
   [1,2,3,4,5,6].forEach(function(l){
     h+='<button class="abs-f'+(_absFilter===l?' on':'')+'" data-abs-filter="'+l+'" title="'+(l===6?'Vắng từ 6 ngày':'Vắng '+l+' ngày')+' liên tiếp — bấm để lọc">'+_absBadgeSvg(l,22)+'<b>'+c[l]+'</b></button>';
   });
@@ -6798,7 +6815,7 @@ _attComputeShowD(y,mo,nDays,todayD);
     present.sort(srtRank);
     // v7.54 — nhóm vắng: ai vừa mới vắng (số nhỏ) lên trước để chăm sóc kịp; người không có dấu xuống cuối
     absent.sort(function(a,b){var A=absLv(a)||9,B=absLv(b)||9;return A!==B?A-B:srtRank(a,b);});
-    h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">✅ Có mặt ngày '+selD+'/'+(mo+1)+' ('+present.length+')</td></tr>';
+    h+='<tr class="adash-sec adash-secOn"><td colspan="'+cols+'">✅ Có mặt ngày '+selD+'/'+(mo+1)+' ('+present.length+(function(){var k={},n=0;present.forEach(function(it){var x=abs.pm.key(it.m.id);if(!k[x]){k[x]=1;n++;}});return n<present.length?(' ID · '+n+' người'):'';})()+')</td></tr>';
     if(present.length)present.forEach(function(it,i){h+=rowHtml(it,i+1,1);});
     else h+='<tr><td colspan="'+cols+'" style="color:#999;padding:8px;text-align:left">Chưa có ID nào có mặt ngày này</td></tr>';
     h+='<tr class="adash-sec adash-sec2"><td colspan="'+cols+'">— Chưa/không có mặt ('+absent.length+')</td></tr>';
@@ -6832,18 +6849,21 @@ function attDashDrillHtml(root,o){
     held.push(hd);
   }
   var mBy={};members.forEach(function(m){mBy[m.name]=m;});
-  var seq=[];
+  var seq=[],_pm=attPersonMap(); // v7.55 — % của mỗi ID = % của NGƯỜI đó (gộp mọi ID)
   (function walk(n,depth,br){
     var it=o.mkIt(mBy[n.name]||{id:'',name:n.name},n);
     it.depth=depth;it.br=br;it.side=n.side||'';
     var pres=0;
-    for(var d=0;d<nDays;d++)for(var s=0;s<3;s++){var v=it.days[d][s];if(held[d][s]&&(v==='yes'||v==='late'))pres++;}
+    var _ids=it.m.id?_pm.ids(it.m.id):[];it.merged=_ids.length>1;
+    for(var d=0;d<nDays;d++)for(var s=0;s<3;s++){if(!held[d][s])continue;
+      for(var q=0;q<_ids.length;q++){var v=dGetAt(_ids[q],y,mo+1,d+1,SES[s]);if(v==='yes'||v==='late'){pres++;break;}}}
     it.pres=pres;it.pct=nHeld?Math.round(pres/nHeld*100):null;it.hi=it.pct!==null&&it.pct>=80;
     seq.push(it);
     placementChildren(n.id).slice().sort(function(a,b){return (a.side==='L'?0:1)-(b.side==='L'?0:1);})
       .forEach(function(c){walk(c,depth+1,depth===0?(c.side==='L'?'L':'R'):br);});
   })(root,0,'');
-  var nHi=seq.filter(function(it){return it.hi;}).length;
+  var _reps=enPersonReps(seq.map(function(it){return it.tn;}));
+  var nPeople=Object.keys(_reps).length,nHi=seq.filter(function(it){return it.hi&&it.tn&&_reps[it.tn.id];}).length;
   var CLR={'yes':'#2E7D32','late':'#F9A825','no':'#E53935'};
   var cols=nDays+3;
   var rootMem=mBy[root.name];
@@ -6865,12 +6885,12 @@ function attDashDrillHtml(root,o){
       hh+='</div></td>';
     }
     hh+='<td class="adash-tot">'+(it.tot||'')+'</td>';
-    hh+='<td class="adash-pct'+(it.hi?' adash-pct-hi':'')+'" title="'+it.pres+'/'+nHeld+' buổi">'+(it.pct===null?'—':it.pct+'%')+'</td></tr>';
+    hh+='<td class="adash-pct'+(it.hi?' adash-pct-hi':'')+'" title="'+it.pres+'/'+nHeld+' buổi'+(it.merged?' — gộp mọi ID của người này':'')+'">'+(it.merged?'🔗 ':'')+(it.pct===null?'—':it.pct+'%')+'</td></tr>';
     return hh;
   }
   var h='<div class="adash-box">';
   h+='<div class="adash-ctl"><button class="db-btn" data-attdash-nav="-1">&lsaquo;</button><div class="adash-ttl">📊 Hiện diện tháng '+(mo+1)+'/'+y+'</div><button class="db-btn" data-attdash-nav="1">&rsaquo;</button></div>';
-  h+='<div class="adash-drillbar"><div>🌳 Từ <b>'+escHtml(root.name)+'</b> trở xuống theo cây Nhị phân: <b>'+seq.length+'</b> ID · tháng này đã điểm danh <b>'+nHeld+'</b> buổi · <span class="adash-hichip">⭐ ≥80%: '+nHi+' ID</span></div>';
+  h+='<div class="adash-drillbar"><div>🌳 Từ <b>'+escHtml(root.name)+'</b> trở xuống theo cây Nhị phân: <b>'+seq.length+'</b> ID (<b>'+nPeople+'</b> người) · tháng này đã điểm danh <b>'+nHeld+'</b> buổi · <span class="adash-hichip">⭐ ≥80%: '+nHi+' người</span></div>';
   h+='<div class="adash-drillbtns">';
   if(parent)h+='<button class="btn btn-d btn-sm" data-attdash-drill="'+parent.id+'">⬆️ Lên '+escHtml(parent.name)+'</button>';
   if(rootMem)h+='<button class="btn btn-d btn-sm" data-open-mid="'+rootMem.id+'" data-open-type="kh">📋 Chi tiết '+escHtml(root.name)+'</button>';
@@ -6901,8 +6921,8 @@ function attDashDrillHtml(root,o){
     if(_absFilter){var _a=abs.map[it.m.id];if(!_a||_a.lv!==_absFilter)return;} // v7.54
     if(it.br!==lastBr){
       lastBr=it.br;ord=0;
-      var cnt=seq.filter(function(x){return x.br===it.br;}),hiC=cnt.filter(function(x){return x.hi;}).length;
-      h+='<tr class="adash-sec"><td colspan="'+cols+'">'+(it.br==='L'?'⬅️ Nhánh Trái':'➡️ Nhánh Phải')+' ('+cnt.length+' ID · ⭐ ≥80%: '+hiC+')</td></tr>';
+      var cnt=seq.filter(function(x){return x.br===it.br;}),ppl=cnt.filter(function(x){return x.tn&&_reps[x.tn.id];}),hiC=ppl.filter(function(x){return x.hi;}).length;
+      h+='<tr class="adash-sec"><td colspan="'+cols+'">'+(it.br==='L'?'⬅️ Nhánh Trái':'➡️ Nhánh Phải')+' ('+cnt.length+' ID · '+ppl.length+' người · ⭐ ≥80%: '+hiC+' người)</td></tr>';
     }
     h+=rowHtml(it,++ord);
   });
@@ -6933,12 +6953,16 @@ function attDashBranchStatsHtml(seq,o){
     else{for(var i=0;i<o.pool.length&&!res;i++){var p=o.pool[i];if(!p||!p.id)continue;for(var s=0;s<3;s++)if(dGetAt(p.id,dt.getFullYear(),dt.getMonth()+1,dt.getDate(),SES[s])){res=true;break;}}}
     return heldCache[key]=res;
   }
-  function presOn(it,dt){
+  var pm=attPersonMap();
+  function presOn(it,dt){ // v7.55 — người đó có mặt bằng bất kỳ ID nào
     if(!it.m.id)return false;
-    for(var s=0;s<3;s++){var v=dGetAt(it.m.id,dt.getFullYear(),dt.getMonth()+1,dt.getDate(),SES[s]);if(v==='yes'||v==='late')return true;}
+    var ids=pm.ids(it.m.id);
+    for(var q=0;q<ids.length;q++)for(var s=0;s<3;s++){var v=dGetAt(ids[q],dt.getFullYear(),dt.getMonth()+1,dt.getDate(),SES[s]);if(v==='yes'||v==='late')return true;}
     return false;
   }
-  var L=seq.filter(function(it){return it.br==='L';}),R=seq.filter(function(it){return it.br==='R';}),T=L.concat(R);
+  var reps=enPersonReps(seq.map(function(it){return it.tn;}));
+  var U=seq.filter(function(it){return it.tn&&reps[it.tn.id];}); // mỗi người 1 lần
+  var L=U.filter(function(it){return it.br==='L';}),R=U.filter(function(it){return it.br==='R';}),T=L.concat(R);
   var periods=[
     {lb:'📅 Ngày '+d0+'/'+(mo+1),dates:[ref]},
     {lb:'🗓️ Tuần '+wS.getDate()+'/'+(wS.getMonth()+1)+'–'+wE.getDate()+'/'+(wE.getMonth()+1),dates:rangeDates(wS,wE)},
@@ -6961,19 +6985,19 @@ function attDashBranchStatsHtml(seq,o){
     hd.forEach(function(dt){var c=0;grp.forEach(function(it){if(presOn(it,dt))c++;});sumPct+=c/tot*100;});
     var pct=Math.round(n/tot*100),avg=Math.round(sumPct/hd.length);
     var cls=pct>=80?' adst-hi':pct>=50?' adst-mid':'';
-    var sub='<small><b>'+n+'</b>/'+tot+' TV'+(p.dates.length>1?' · TB/ngày '+avg+'%':'')+'</small>';
-    return '<td class="adst-c'+cls+'" title="'+n+'/'+tot+' TV có mặt ≥1 buổi'+(p.dates.length>1?' · '+hd.length+' ngày có điểm danh':'')+'"><span class="adst-p">'+pct+'%</span><div class="adst-bar"><i style="width:'+pct+'%"></i></div>'+sub+'</td>';
+    var sub='<small><b>'+n+'</b>/'+tot+' người'+(p.dates.length>1?' · TB/ngày '+avg+'%':'')+'</small>';
+    return '<td class="adst-c'+cls+'" title="'+n+'/'+tot+' người có mặt ≥1 buổi'+(p.dates.length>1?' · '+hd.length+' ngày có điểm danh':'')+'"><span class="adst-p">'+pct+'%</span><div class="adst-bar"><i style="width:'+pct+'%"></i></div>'+sub+'</td>';
   }
   var rows=[['⬅️ Nhánh Trái',L],['➡️ Nhánh Phải',R],['🌳 Tổng 2 nhánh',T]];
-  var h='<div class="adst-box"><div class="adst-ttl">👥 % thành viên hiện diện / tổng số thành viên</div><div class="adst-wrap"><table class="adst"><tr><th></th>';
+  var h='<div class="adst-box"><div class="adst-ttl">👥 % người hiện diện / tổng số người <small style="font-weight:600">(ID chính + ID 2+ tính 1 người)</small></div><div class="adst-wrap"><table class="adst"><tr><th></th>';
   periods.forEach(function(p){h+='<th'+(p.rng?' class="adst-rngh"':'')+'>'+p.lb+'</th>';});
   h+='</tr>';
   rows.forEach(function(r,i){
-    h+='<tr'+(i===2?' class="adst-tot"':'')+'><td class="adst-lb">'+r[0]+'<small>'+r[1].length+' TV</small></td>';
+    h+='<tr'+(i===2?' class="adst-tot"':'')+'><td class="adst-lb">'+r[0]+'<small>'+r[1].length+' người</small></td>';
     periods.forEach(function(p){h+=cell(r[1],p);});
     h+='</tr>';
   });
-  h+='</table></div><div class="adst-note">TV <b>hiện diện</b> trong kỳ = có ít nhất 1 buổi ✓/⏰. Ngày đang tính: <b>'+d0+'/'+(mo+1)+'</b> — <b>bấm số ngày ở đầu cột</b> để đổi ngày (tuần đổi theo, Thứ 2 → CN). Cột <b>✍️ Tự chọn</b>: chọn ngày đầu – ngày cuối bất kỳ ('+rA.getDate()+'/'+(rA.getMonth()+1)+'/'+rA.getFullYear()+' → '+rB.getDate()+'/'+(rB.getMonth()+1)+'/'+rB.getFullYear()+(rCut?', tối đa 366 ngày':'')+'). Không tính ID gốc ('+escHtml(seq[0]?seq[0].m.name:'')+').</div></div>';
+  h+='</table></div><div class="adst-note">Người <b>hiện diện</b> trong kỳ = có ít nhất 1 buổi ✓/⏰ ở bất kỳ ID nào của họ; ID chính nằm ngoài khung thì đếm theo ID cao nhất trong khung. Ngày đang tính: <b>'+d0+'/'+(mo+1)+'</b> — <b>bấm số ngày ở đầu cột</b> để đổi ngày (tuần đổi theo, Thứ 2 → CN). Cột <b>✍️ Tự chọn</b>: chọn ngày đầu – ngày cuối bất kỳ ('+rA.getDate()+'/'+(rA.getMonth()+1)+'/'+rA.getFullYear()+' → '+rB.getDate()+'/'+(rB.getMonth()+1)+'/'+rB.getFullYear()+(rCut?', tối đa 366 ngày':'')+'). Không tính ID gốc ('+escHtml(seq[0]?seq[0].m.name:'')+').</div></div>';
   return h;
 }
 var _attDashRange=null; // v7.01 — {a:'YYYY-MM-DD',b:'YYYY-MM-DD'} khoảng tự chọn; null = mặc định
@@ -7031,9 +7055,15 @@ function renderDailyCombined(){
     return noAccent(a.name).localeCompare(noAccent(b.name),undefined,{numeric:true}); // 6) A-B-C
   }
   leftArr.sort(srt);rightArr.sort(srt);
+  // v7.55 — tỷ lệ đầu cột theo NGƯỜI
+  var _pm=attPersonMap();
+  function _node(m){return treeNodes.find(function(t){return t.name===m.name;});}
+  var _reps=enPersonReps([center].concat(leftArr.map(_node),rightArr.map(_node)));
+  function _actP(m){return _pm.ids(m.id).some(function(id){return memberActive({id:id});});}
   function colHtml(arr,headTxt,actColor){
-    var act=arr.filter(memberActive).length;
-    var hh='<div class="grp-hd dd-col-hd"><span>'+headTxt+'</span><span style="color:'+actColor+'">'+act+'/'+arr.length+'</span></div>';
+    var ppl=arr.filter(function(m){var n=_node(m);return !n||_reps[n.id];});
+    var act=ppl.filter(_actP).length;
+    var hh='<div class="grp-hd dd-col-hd"><span>'+headTxt+'</span><span style="color:'+actColor+'" title="Số người có mặt / số người (ID chính + ID 2+ tính 1 người)">'+act+'/'+ppl.length+' người</span></div>';
     if(!arr.length){hh+='<div class="dd-empty">— Trống</div>';return hh;}
     arr.forEach(function(m,i){hh+=dailyComboCard(m,String(i+1));});
     return hh;
@@ -7172,11 +7202,14 @@ function renderDdBranchBar(){
     '<span data-clear-ddbranch style="margin-left:auto;cursor:pointer;color:#1A7A5E;font-weight:700;border:1px solid #C8E6D9;background:#E8F5F0;border-radius:8px;padding:2px 9px">⟳ Về gốc</span>';
 }
 function updateStats(){
-  document.getElementById('s-total').textContent=members.length;
-  document.getElementById('s-sang').textContent=members.filter(function(m){return dGet(m.id,'sang')==='yes';}).length;
+  // v7.55 — đếm theo NGƯỜI (ID chính + ID 2+ = 1 người)
+  var pm=attPersonMap(),reps=enPersonReps(treeNodes);
+  var ppl=members.filter(function(m){var n=treeNodes.find(function(t){return t.name===m.name;});return !n||reps[n.id];});
+  document.getElementById('s-total').textContent=ppl.length;
+  document.getElementById('s-sang').textContent=ppl.filter(function(m){return pm.ids(m.id).some(function(id){return dGet(id,'sang')==='yes';});}).length;
   var La=0,Ra=0;
-  members.forEach(function(m){
-    if(!memberActive(m))return;
+  ppl.forEach(function(m){
+    if(!pm.ids(m.id).some(function(id){return memberActive({id:id});}))return;
     var si=memberSideInfo(m.name);
     if(si&&si.side==='L')La++;
     if(si&&si.side==='R')Ra++;
@@ -11698,8 +11731,9 @@ function renderEnergyBar(pos){
   if(!enMode||currentTreeMode!=='binary'||dreamMode||!_enData){el.style.display='none';el.innerHTML='';return;}
   el.style.display='block';
   // đếm theo các ID ĐANG HIỆN trên khung cây (đúng cây nhỏ đang xem)
-  var cnt={1:0,2:0,3:0,4:0,5:0,6:0},tot=0;
-  treeNodes.forEach(function(n){if(pos&&!pos[n.id])return;var e=_enData.by[n.id];if(e&&e.lv){cnt[e.lv]++;tot++;}});
+  var cnt={1:0,2:0,3:0,4:0,5:0,6:0},tot=0,nIds=0;
+  var _rp=enPersonReps(treeNodes.filter(function(n){return !pos||pos[n.id];})); // v7.55 đếm theo người
+  treeNodes.forEach(function(n){if(pos&&!pos[n.id])return;var e=_enData.by[n.id];if(e&&e.lv){nIds++;if(_rp[n.id]){cnt[e.lv]++;tot++;}}});
   var foc=focusNodeId?treeNodes.find(function(x){return x.id===focusNodeId;}):null;
   var h='<div class="en-row"><span class="en-ttl">⚡ Năng lượng hiện diện'+(foc?' — cây của <b>'+escHtml(foc.name)+'</b>':'')+'</span>';
   ['7','30','month'].forEach(function(p){h+='<button class="en-per'+(enPeriod===p?' on':'')+'" data-en-period="'+p+'">'+enPerLbl(p)+'</button>';});
@@ -11713,7 +11747,7 @@ function renderEnergyBar(pos){
       +'<span><b>'+cnt[lv]+'</b> '+L.nm+'<small>'+L.rg+'</small></span></button>';});
   if(enFilter)h+='<button class="en-per" data-en-filter="0">✕ Bỏ lọc</button>';
   h+='</div>';
-  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống; 🔗 ID thứ 2+ — trong Các ID của tôi (theo ID cao nhất của nhóm) hoặc đã chọn "Là ID thứ 2+ của" — chấm theo ID chính). Đang hiện <b>'+tot+'</b> ID — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
+  h+='<div class="en-note">'+(_enData.nHeld?('Kỳ <b>'+enPerLbl(enPeriod)+'</b>: đã điểm danh <b>'+_enData.nHeld+'</b> buổi. % = buổi có mặt (✓/⏰) ÷ số buổi đã điểm danh (🆕 ID mới: chỉ tính các buổi từ ngày vào hệ thống; 🔗 ID thứ 2+ — trong Các ID của tôi (theo ID cao nhất của nhóm) hoặc đã chọn "Là ID thứ 2+ của" — chấm theo ID chính). Đang hiện <b>'+tot+'</b> người ('+nIds+' ID; số đếm tính mỗi người 1 lần) — vàng = hiện diện đều (năng lượng cao), càng về đen = càng vắng. Bấm "xem cây nhỏ" của bất kỳ ID nào để soi riêng nhánh đó.')
     :'Kỳ <b>'+enPerLbl(enPeriod)+'</b> chưa có buổi nào được điểm danh → chưa tô màu. Hãy điểm danh (hoặc dùng 📷 ảnh Zoom) rồi quay lại.')+'</div>';
   el.innerHTML=h;
 }
@@ -11752,13 +11786,15 @@ function renderEnergyStats(pos,rb){
   if(!data||!data.nHeld){el.innerHTML=hd+'<div class="es-empty">Chưa có buổi nào được điểm danh trong kỳ này.</div>';return;}
   var C={T:{},L:{},R:{}},N={T:0,L:0,R:0};
   [1,2,3,4,5,6].forEach(function(l){C.T[l]=C.L[l]=C.R[l]=0;});
+  var _rp=enPersonReps(treeNodes.filter(function(n){return !pos||pos[n.id];})); // v7.55 đếm theo người
   treeNodes.forEach(function(n){
+    if(!_rp[n.id])return;
     if(pos&&!pos[n.id])return;var e=data.by[n.id];if(!e||!e.lv)return;
     C.T[e.lv]++;N.T++;
     var sd=(rb&&n.id!==rb)?rootSideOf(n.id,rb):'';
     if(sd==='L'){C.L[e.lv]++;N.L++;}else if(sd==='R'){C.R[e.lv]++;N.R++;}
   });
-  var h=hd+'<table class="es-tbl"><tr><th></th><th>⬅️</th><th>➡️</th><th>∑</th></tr>';
+  var h=hd+'<table class="es-tbl"><tr><th>👤</th><th>⬅️</th><th>➡️</th><th>∑</th></tr>';
   EN_ORDER.forEach(function(l){
     h+='<tr class="'+(enFilter===l?'on':'')+'" data-en-filter="'+l+'"><td>'+enBadgeSVG(l).replace('class="en-badge"','style="width:22px;height:22px;display:block"')+'</td>'
       +'<td>'+C.L[l]+'</td><td>'+C.R[l]+'</td><td><b>'+C.T[l]+'</b></td></tr>';
