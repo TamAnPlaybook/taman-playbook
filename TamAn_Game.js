@@ -271,6 +271,13 @@ var CSS='\
 .gm-foot button{border:1px solid #C9DCD8;background:#fff;color:#16302F;border-radius:9px;padding:8px 12px;cursor:pointer;font-size:13px}\
 .gm-foot .pri{background:#0F766E;border-color:#0F766E;color:#fff;font-weight:700}\
 .gm-big{font-size:46px;text-align:center;line-height:1.1}\
+#gm-sb-box{padding-bottom:0}\
+.gm-sb-card{border:2px solid #0F766E;background:#E9F6F3;color:#16302F;border-radius:12px;padding:12px 14px;margin-top:12px}\
+#gm-sb-btn{margin-top:10px;border:none;background:#0F766E;color:#fff;font-weight:800;font-size:14px;border-radius:10px;padding:10px 16px;cursor:pointer}\
+.gm-sb-note{font-size:12.5px;color:#3E5857;margin-top:6px}\
+.gm-sbline{font-size:12px;color:#8A4B00;background:#FFF4E5;border-radius:7px;padding:4px 8px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}\
+.gm-sbline button{border:none;background:none;color:#1D63B8;text-decoration:underline;cursor:pointer;font-size:12px;padding:0}\
+html.gm-sb #tab-admin,html.gm-sb .home-card[data-main="admin"]{display:none!important}\
 ';
 function ensureUi(){
   if(!$('#gm-style')){var st=document.createElement('style');st.id='gm-style';st.textContent=CSS;document.head.appendChild(st);}
@@ -284,15 +291,15 @@ function render(){
   var h='',n=doneCount(),pct=Math.round(n/ST.length*100);
   if(G.ch>6){
     h=G.min?'<button class="gm-pill" data-gm="max">🎓 Đã xong buổi đầu</button>'
-      :'<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd"><span class="gm-demo">DEMO</span><b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
-      +'<div class="gm-bar"><i style="width:100%"></i></div><div class="gm-t">🎓 Bạn đã xong buổi đầu</div><div class="gm-why">Toàn bộ app đã mở. Từ ngày mai là 30 ngày thực chiến.</div>'
+      :'<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd">'+badge()+'<b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
+      +''+sbLine()+'<div class="gm-bar"><i style="width:100%"></i></div><div class="gm-t">🎓 Bạn đã xong buổi đầu</div><div class="gm-why">Toàn bộ app đã mở. Từ ngày mai là 30 ngày thực chiến.</div>'
       +'<div class="gm-acts"><button class="gm-go" data-gm="test">📋 Copy kết quả chơi thử</button></div><div class="gm-links"><button data-gm="list">Cả hành trình</button><button data-gm="hide">Ẩn thẻ này</button></div></div>';
   }else{
     var s=curStep();if(!s)return; // chương vừa xong: lượt kiểm tra kế tiếp sẽ chuyển chương
-    if(G.min)h='<button class="gm-pill" data-gm="max">🎯 Bước '+stepNo(s)+'/'+ST.length+' · '+esc(s.t)+'</button>';
+    if(G.min)h='<button class="gm-pill" data-gm="max">'+(SB_ON?'🧪 ':'')+'🎯 Bước '+stepNo(s)+'/'+ST.length+' · '+esc(s.t)+'</button>';
     else{
-      h='<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd"><span class="gm-demo">DEMO</span><b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
-       +'<div class="gm-chp">Chương '+G.ch+'/6 · '+esc(CH[G.ch-1].n)+' · '+n+'/'+ST.length+' bước</div><div class="gm-bar"><i style="width:'+pct+'%"></i></div>'
+      h='<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd">'+badge()+'<b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
+       +''+sbLine()+'<div class="gm-chp">Chương '+G.ch+'/6 · '+esc(CH[G.ch-1].n)+' · '+n+'/'+ST.length+' bước</div><div class="gm-bar"><i style="width:'+pct+'%"></i></div>'
        +'<div class="gm-no">Việc tiếp theo · bước '+stepNo(s)+' · khoảng '+s.m+' phút</div><div class="gm-t">'+esc(s.t)+'</div>'
        +'<div class="gm-why">'+esc(s.why)+'</div><div class="gm-how">'+esc(s.how)+'</div>'
        +'<div class="gm-acts">'+(s.copy?'<button class="gm-go" data-gm="report">📋 Copy tin báo</button>':'<button class="gm-go" data-gm="go">Đưa tôi tới đó</button>')
@@ -305,6 +312,8 @@ function render(){
     root.insertAdjacentHTML('afterbegin',h);_lastHtml=h;
   }
 }
+function badge(){return '<span class="gm-demo">'+(SB_ON?'CHƠI THỬ':'DEMO')+'</span>';}
+function sbLine(){return SB_ON?'<div class="gm-sbline">🧪 Tài khoản giả lập · chỉ lưu trên máy này <button data-gm="sbreset">Làm lại từ đầu</button></div>':'';}
 function closeOv(){var o=$('#gm-ov');if(o)o.remove();}
 function showList(){
   closeOv();
@@ -317,7 +326,7 @@ function showList(){
     });
     h+='</div>';
   });
-  h+='<div class="gm-foot"><button class="pri" data-gm="close">Đóng</button><button data-gm="test">📋 Copy kết quả chơi thử</button>'+(G.openAll||G.grad?'':'<button data-gm="all">Mở tất cả</button>')+'</div></div></div>';
+  h+='<div class="gm-foot"><button class="pri" data-gm="close">Đóng</button><button data-gm="test">📋 Copy kết quả chơi thử</button>'+(SB_ON?'<button data-gm="sbreset">🧪 Làm lại từ đầu</button>':'')+(G.openAll||G.grad?'':'<button data-gm="all">Mở tất cả</button>')+'</div></div></div>';
   $('#gm-root').insertAdjacentHTML('beforeend',h);
 }
 function showGrad(){
@@ -339,6 +348,7 @@ function onUi(e){
   else if(a==='unskip'){delete G.skip[b.getAttribute('data-gm-id')];save();closeOv();tick();toast('👉 Bước này đã quay lại hàng chờ.');}
   else if(a==='report'){try{copyText(reportText());}catch(err){}if(!G.flags.report){G.flags.report=new Date().toISOString();save();}setTimeout(tick,60);}
   else if(a==='test'){try{copyText(testText());}catch(err){}}
+  else if(a==='sbreset'){closeOv();sbReset();}
   else if(a==='list'){showList();}
   else if(a==='close'){closeOv();}
   else if(a==='all'){if(confirm('Mở tất cả tính năng ngay? Thẻ Hành trình vẫn ở đây để bạn đi tiếp nếu muốn.')){G.openAll=true;save(true);closeOv();applyLocks();render();toast('🔓 Đã mở tất cả tính năng');}}
@@ -361,7 +371,69 @@ wrap('renderHomePage',function(o){return function(){var r=o.apply(this,arguments
 wrap('openModal',function(o){return function(mid,type){var r=o.apply(this,arguments);if(type==='kn')setFlag('skill');return r;};});
 wrap('skSelectCond',function(o){return function(v){var r=o.apply(this,arguments);if(v)setFlag('sk');return r;};});
 
+/* ---------- CHẾ ĐỘ CHƠI THỬ — CHỈ QTV: tài khoản giả lập trên máy, không cần email ----------
+   • Chỉ QTV đang đăng nhập (isBranchAdmin) mới thấy nút, ở đầu tab ⚙️ Quản trị.
+   • Bấm → lưu cờ gắn với uid của QTV rồi tải lại trang. Lúc app đăng nhập lại, thay vì vào tài khoản thật,
+     app vào tài khoản giả lập (không nạp dữ liệu thật). Tài khoản QTV KHÔNG bị đăng xuất.
+   • Tắt hẳn Firestore (fbDb=null) → không đọc/ghi gì lên hệ thống; dữ liệu chơi thử chỉ nằm trong localStorage máy này.
+   • Nút "Thoát" của app bị chặn (để không đăng xuất tài khoản thật) → thoát chơi thử, quay về tài khoản QTV. */
+var SB_KEY='ta_sandbox',SB_ON=false,SB_USER=null,_sbEntered=false,_origEnter=window.enterAppFirebase;
+function sbLoad(){try{var o=JSON.parse(localStorage.getItem(SB_KEY)||'null');return (o&&o.uid)?o:null;}catch(e){return null;}}
+function sbSave(o){try{localStorage.setItem(SB_KEY,JSON.stringify(o));}catch(e){}}
+function sbNewFor(owner){var id=('thu'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)).slice(0,20);var o={uid:id,created:new Date().toISOString(),on:false,owner:owner||''};sbSave(o);return o;}
+function sbUserOf(o){return {uid:o.uid,email:'choi-thu@may-nay',displayName:'Người chơi thử',emailVerified:true,isAnonymous:true,providerData:[],metadata:{creationTime:o.created,lastSignInTime:new Date().toISOString()}};}
+function sbEnter(){
+  if(_sbEntered)return;
+  var o=sbLoad();if(!o)return;
+  SB_ON=true;SB_USER=sbUserOf(o);_sbEntered=true;
+  document.documentElement.classList.add('gm-sb');
+  window.fbDb=null;window.fbUser=SB_USER;
+  try{_origEnter.call(window,SB_USER);}catch(e){try{console.error(e);}catch(e2){}}
+}
+function sbGuard(){if(SB_ON){if(window.fbDb)window.fbDb=null;if(window.fbUser!==SB_USER)window.fbUser=SB_USER;}}
+function sbExit(){var o=sbLoad();if(o){o.on=false;sbSave(o);}location.reload();}
+function sbStart(){
+  if(!(window.isBranchAdmin&&window.fbUser&&!window.viewOnlyMode&&!SB_ON)){toast('Chỉ QTV mới dùng được chế độ chơi thử.');return;}
+  if(!confirm('Vào chế độ chơi thử bằng một tài khoản giả lập? Tài khoản QTV của bạn vẫn giữ đăng nhập; bấm Thoát lúc chơi thử là quay về.'))return;
+  var o=sbLoad();if(!o||o.owner!==fbUser.uid)o=sbNewFor(fbUser.uid);
+  o.on=true;sbSave(o);location.reload();
+}
+function sbReset(){
+  if(!confirm('Làm lại từ đầu? Toàn bộ dữ liệu chơi thử trên máy này sẽ bị xoá và tạo người chơi mới.'))return;
+  var o=sbLoad();
+  if(o){var pfx='ta_'+o.uid.slice(0,16)+'_',ks=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf(pfx)===0)ks.push(k);}ks.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});}
+  var n=sbNewFor(o&&o.owner);n.on=true;sbSave(n);location.reload();
+}
+if(typeof _origEnter==='function'){
+  window.enterAppFirebase=function(user){
+    if(SB_ON){sbGuard();return;}
+    var o=sbLoad();
+    if(o&&o.on&&o.owner&&user&&user.uid===o.owner){sbEnter();return;} // QTV đã bật chơi thử trên máy này → vào tài khoản giả lập
+    return _origEnter.apply(this,arguments);
+  };
+}
+function sbAdminBox(){
+  var pg=$('#page-admin');if(!pg)return;
+  var show=!!(window.isBranchAdmin&&window.fbUser&&!window.viewOnlyMode&&!SB_ON),box=$('#gm-sb-box');
+  if(!show){if(box)box.remove();return;}
+  if(box)return;
+  box=document.createElement('div');box.id='gm-sb-box';box.className='content';
+  box.innerHTML='<div class="gm-sb-card"><b>🧪 Chơi thử như người mới · chỉ QTV</b>'
+    +'<div class="gm-sb-note">Vào app bằng một tài khoản giả lập mới tạo, đi Hành trình buổi đầu đúng như thành viên mới. Không cần email. Dữ liệu chơi thử chỉ lưu trên máy này, không gửi lên hệ thống. Tài khoản QTV vẫn giữ đăng nhập: bấm Thoát lúc chơi thử là quay về.</div>'
+    +'<button type="button" id="gm-sb-btn">Bắt đầu chơi thử</button></div>';
+  pg.insertBefore(box,pg.firstChild);
+  $('#gm-sb-btn').addEventListener('click',sbStart);
+}
+document.addEventListener('click',function(e){
+  if(SB_ON&&e.target&&e.target.closest&&e.target.closest('#btn-logout')){
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(confirm('Thoát chế độ chơi thử và quay về tài khoản QTV? Tiến độ chơi thử vẫn giữ trên máy này.'))sbExit();
+  }
+},true);
+
 try{document.title='Tâm An · BẢN DEMO Hành trình';}catch(e){}
+setInterval(sbGuard,700);
+setInterval(sbAdminBox,1500);
 setInterval(tick,1500);
 setInterval(heartbeat,5000);
 window.__gm={state:function(){return G;},steps:ST,tick:tick,active:active};
