@@ -1,4 +1,4 @@
-<!-- VERSION: v7.57-hanh-trinh-tam-an -->
+<!-- VERSION: v7.58-sdt-id-goc -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -5380,6 +5380,15 @@ function wnFinish(){
 var _requpQueue=[],_requpIdx=0,_requpSkipped=false;
 function _requpHasClub(l){return !!(l&&(l.clubName||l.lat!=null||l.address));} // có CLB chính đáng kể
 var REQUIRED_UPDATES=[
+  { id:'root-phone', // v7.58
+    title:'📱 Bổ sung Số điện thoại cho ID Gốc',
+    desc:'Số điện thoại của ID Gốc (chính bạn) nay là thông tin <b>bắt buộc</b>. Số này tự cập nhật lên cây hệ thống của tuyến trên theo <b>Mã ID</b>, để tuyến trên liên lạc hỗ trợ bạn khi cần. Các thông tin khác của bạn giữ nguyên.',
+    need:function(){if(dreamMode)return false;var r=_findRootNode();return !!r&&String(r.phone||'').replace(/\D/g,'').length<9;},
+    html:function(){var r=_findRootNode()||{};return '<div style="font-size:13px;color:#333;margin-bottom:10px">ID Gốc: <b>'+escHtml(r.name||'')+'</b>'+(r.idCode?' · Mã ID '+escHtml(r.idCode):'')+'</div><label class="requp-lbl">Số điện thoại</label><input class="map-inp" id="requp-phone" type="tel" inputmode="tel" placeholder="0901 234 567" value="'+escHtml(r.phone||'')+'">';},
+    save:function(){var v=((document.getElementById('requp-phone')||{}).value||'').trim(),d=v.replace(/\D/g,'');
+      if(d.length<9||d.length>15){showToast('⚠ Số điện thoại cần 9–15 chữ số');return false;}
+      var r=_findRootNode();if(!r){showToast('⚠ Chưa có ID Gốc');return false;}
+      r.phone=v;saveTree2();try{syncTreeToMembers(false);}catch(e){}return true;} },
   { id:'club-branchhead',
     title:'🔗 Chọn "đầu nhánh liên hệ" cho câu lạc bộ của bạn',
     desc:'Bản nâng cấp mới yêu cầu mỗi CLB phải chọn <b>đầu nhánh liên hệ</b> (thay cho số điện thoại) để bảo mật. Hãy chọn đầu nhánh của bạn để tiếp tục.',
@@ -8446,18 +8455,19 @@ function _f3uSummary(a,tree,mem,mir,ap,pros){ // thuần từ dữ liệu đã t
   var rootDisc=root?String(root.disc||'').toUpperCase().replace(/[^DISC]/g,''):'';
   // v7 — Sinh nhật ID Gốc tuyến dưới (mỗi người tự nhập của mình) để đồng bộ lên cây tuyến trên theo Mã ID
   var rootBirthday=root?String(root.birthday||'').trim():'';
+  var rootPhone=root?String(root.phone||'').trim():''; // v7.58 — SĐT ID Gốc tuyến dưới (tự nhập) → đồng bộ lên cây theo Mã ID
   return {uid:a.uid,acctName:a.name||'',email:a.email||'',last:a.last||0,
     rootName:rootName,rootCode:rootCode,rootJoin:root?(root.joinDate||''):'',
     nMembers:uMembers.length,nPros:uPros.length,
     att:attN,actDone:done,actTot:dayA.length,kpi:kpi,
-    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,rootBirthday:rootBirthday,
+    matched:!!myNode,matchBy:matchBy,myNodeId:myNode?myNode.id:'',rootDisc:rootDisc,rootBirthday:rootBirthday,rootPhone:rootPhone,
     rank:myNode?nodeRank(myNode.id):0};
 }
 // v6.63 — Áp DISC downline lên cây của tôi theo Mã ID (myNode khớp idCode với ID Gốc tuyến dưới)
 function applyDownlineDiscToTree(list){
   if(typeof viewOnlyMode!=='undefined'&&viewOnlyMode)return 0;
   if(dreamMode)return 0; // v6.93 — đang mở Cây mơ ước: để lần đồng bộ sau áp lên cây thật
-  var changed=false,cnt=0,bcnt=0,notes=[],bnotes=[];
+  var changed=false,cnt=0,bcnt=0,pcnt=0,notes=[],bnotes=[];
   (list||[]).forEach(function(u){
     if(!u||!u.matched||!u.myNodeId)return;
     var n=treeNodes.find(function(x){return x.id===u.myNodeId;});
@@ -8474,6 +8484,10 @@ function applyDownlineDiscToTree(list){
       n.birthday=u.rootBirthday;changed=true;bcnt++;
       bnotes.push({node:n.name||n.id,idCode:n.idCode||'',birthday:u.rootBirthday,prev:_ob,acctName:u.acctName||u.rootName||'',acctEmail:u.email||'',uid:u.uid||''});
     }
+    // v7.58 — SĐT — chỉ nhận khi khớp bằng MÃ ID (không đoán theo tên) và số hợp lệ
+    if(u.matchBy==='code'&&u.rootPhone&&String(u.rootPhone).replace(/\D/g,'').length>=9&&String(n.phone||'').trim()!==String(u.rootPhone).trim()){
+      n.phone=u.rootPhone;changed=true;pcnt++;
+    }
   });
   if(changed){
     saveTree2();
@@ -8483,9 +8497,10 @@ function applyDownlineDiscToTree(list){
     var _m=[];
     if(cnt)_m.push('🧭 '+cnt+' người vừa hoàn thành đo DISC');
     if(bcnt)_m.push('🎂 '+bcnt+' người vừa cập nhật Sinh nhật');
+    if(pcnt)_m.push('📱 '+pcnt+' người cập nhật Số điện thoại');
     if(_m.length)showToast(_m.join(' · ')+' — đã đồng bộ lên cây của bạn');
   }
-  return cnt+bcnt;
+  return cnt+bcnt+pcnt;
 }
 // v6.63 — đẩy thông báo "hoàn thành đo DISC" vào hộp thư QTV (dùng chung badge với ID mới)
 function _pushDiscInbox(notes){
@@ -12454,8 +12469,8 @@ function buildNodeForm(node,addOpts){
   h+='<input id="nf-f1of-filter" class="sel-filter" style="width:160px;margin-bottom:4px" placeholder="\uD83D\uDD0D G\u00f5 t\u00ecm t\u00ean...">';
   h+='<select id="nf-f1of-sel" class="nmod-inp" style="width:160px"><option value="">\u2014 Ch\u1ecdn \u2014</option>'+tnOpts+'</select>';
   h+='<input id="nf-f1of" class="nmod-inp" style="width:160px" value="'+escHtml(defF1)+'" placeholder="Ho\u1eb7c nh\u1eadp t\u00ean..."></div></div>';
-  h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T</div>';
-  h+='<input id="nf-phone" class="nmod-inp" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
+  h+='<div class="nmod-row"><div class="nmod-lbl">S\u0110T'+((_isRoot&&!dreamMode)?' <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Bắt buộc với ID Gốc — tự cập nhật lên cây hệ thống tuyến trên theo Mã ID</div>':'')+'</div>'; // v7.58
+  h+='<input id="nf-phone" class="nmod-inp" type="tel" inputmode="tel" style="width:140px" value="'+escHtml(v.phone||'')+'" placeholder="0901..."></div>';
   if(_isRoot){
     h+='<div class="nmod-row"><div class="nmod-lbl">DISC <span style="color:#E53935">*</span><div style="font-size:11px;color:#AAA">Bấm "Đo DISC" để làm bài (không gõ tay) — hoàn thành trong 3 lần đăng nhập đầu</div></div>';
     h+='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">';
@@ -12598,6 +12613,13 @@ function saveNodeModal(){
   if(_isRootSave&&!_birthday){
     showToast('🎂 ID Gốc bắt buộc nhập Sinh nhật (chọn Ngày và Tháng, Năm tùy chọn).');
     var _fb=document.getElementById('nf-bday-d');if(_fb){try{_fb.focus();}catch(e){}}
+    return;
+  }
+  // v7.58 — ID Gốc bắt buộc Số điện thoại (9–15 chữ số) → tự cập nhật lên cây hệ thống tuyến trên theo Mã ID
+  var _phDigits=((document.getElementById('nf-phone')||{}).value||'').replace(/\D/g,'');
+  if(_isRootSave&&(_phDigits.length<9||_phDigits.length>15)){
+    showToast('📱 ID Gốc bắt buộc nhập Số điện thoại (9–15 chữ số).');
+    var _fp=document.getElementById('nf-phone');if(_fp){try{_fp.focus();}catch(e){}}
     return;
   }
   var data={
@@ -21485,6 +21507,6 @@ function mgReset(full){
   upd();
 })();
 </script>
-<script src="TamAn_Game.js?v=5"></script>
+<script src="TamAn_Game.js?v=6"></script>
 </body>
 </html>

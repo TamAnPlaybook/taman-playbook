@@ -10,7 +10,7 @@
 (function(){
 'use strict';
 var GM_FROM='2026-11-28';
-var prefsReady=false,G=null,_saveT=null,_secDirty=0;
+var prefsReady=false,G=null,_saveT=null,_secDirty=0,_quietUntil=0;
 function $(s,r){return (r||document).querySelector(s);}
 function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
 function esc(s){try{return escHtml(s);}catch(e){return String(s||'');}}
@@ -40,7 +40,7 @@ var CH=[
   {n:'Khép ngày và báo tin',q:'Hôm nay mình học được gì, và ai cần biết?',open:'Nhật ký, 6 Cái Lọ'}
 ];
 var ST=[
- {id:'root',ch:1,m:2,noSkip:1,t:'Nhập ID Gốc và Mã ID',why:'Để tên bạn lên cây và tuyến trên nhận ra bạn.',how:'Mã ID lấy trên web PRIFE. Điền tên, Mã ID rồi bấm Lưu.',
+ {id:'root',ch:1,m:2,t:'Nhập ID Gốc và Mã ID',why:'Để tên bạn lên cây và tuyến trên nhận ra bạn.',how:'Mã ID lấy trên web PRIFE. Điền tên, Mã ID, số điện thoại rồi bấm Lưu. Ai đã có ID Gốc thì bước này tự xong.',
    ok:function(){var r=realRoot();return !!(r&&String(r.idCode||'').trim());},go:goRoot},
  {id:'self',ch:1,m:1,t:'Mở Sơ đồ, bấm vào ô của chính mình',why:'Biết chỗ xem và sửa thông tin của mình.',how:'Ô có viền sáng là bạn. Bấm vào để xem, rồi đóng lại.',
    ok:flag('self'),go:goSelf},
@@ -100,6 +100,7 @@ function loadState(){
   if(g&&!(window.fbUser&&g.uid===fbUser.uid))g=null; // _prefs có bản sao trên máy: không nhận tiến độ của tài khoản khác cùng máy
   G=g||blank();['done','skip','flags','sec','chAt'].forEach(function(k){if(!G[k]||typeof G[k]!=='object')G[k]={};});
   if(typeof G.lock!=='boolean')G.lock=isNewAcct();
+  if(!G.full&&G.grad&&ST.every(function(s){return !!G.done[s.id];}))G.full=G.grad;
   if(!G.ch)G.ch=1;
   if(!g)save(true);
 }
@@ -126,20 +127,28 @@ function tick(){
     ST.forEach(function(s){if(G.done[s.id])return;var ok=false;try{ok=!!s.ok();}catch(e){}if(ok){G.done[s.id]=now;pre++;}});
     G.seeded=true;G.ch=calcCh();if(!G.chAt[1])G.chAt[1]=G.start;if(G.ch<=6&&!G.chAt[G.ch])G.chAt[G.ch]=now;
     if(G.ch===7&&!G.grad)G.grad=now;
+    if(doneCount()===ST.length&&!G.full)G.full=now;
     save(true);pubSchedule();
-    if(pre>0&&!G.lock)setTimeout(function(){toast('🎯 Hành trình Tâm An: bạn đã có sẵn '+pre+'/'+ST.length+' bước từ dữ liệu đang dùng.');},1500);
   }
+  // Ngay sau đăng nhập, dữ liệu cũ còn đang tải từ máy chủ về: bước nào tự xong trong lúc này thì tick IM LẶNG
+  // (người cũ không bị dội "Xong bước…" cho việc họ đã làm từ trước).
+  var quiet=!G.lock&&Date.now()<_quietUntil; // chỉ tài khoản cũ; người mới vẫn được chúc mừng ngay khi xong bước
   ST.forEach(function(s){
     if(G.done[s.id])return;
     var ok=false;try{ok=!!s.ok();}catch(e){}
-    if(ok){G.done[s.id]=now;delete G.skip[s.id];changed=true;G.min=false;toast('✓ Xong bước '+stepNo(s)+': '+s.t);}
+    if(ok){G.done[s.id]=now;delete G.skip[s.id];changed=true;if(!quiet){G.min=false;toast('✓ Xong bước '+stepNo(s)+': '+s.t);}}
   });
   var c=calcCh();
   if(c!==G.ch){
     var old=G.ch;G.ch=c;changed=true;
-    if(c<=6){G.chAt[c]=G.chAt[c]||now;if(c>old)setTimeout(function(){toast('🎉 Xong chương '+old+'!'+(G.lock?' Đã mở: '+CH[c-1].open:''));},900);}
-    if(c===7&&!G.grad){G.grad=now;setTimeout(showGrad,700);}
-    G.min=false;pubSchedule();
+    if(c<=6){G.chAt[c]=G.chAt[c]||now;if(c>old&&!quiet)setTimeout(function(){toast('🎉 Xong chương '+old+'!'+(G.lock?' Đã mở: '+CH[c-1].open:''));},900);}
+    if(c===7&&!G.grad){G.grad=now;if(!quiet&&doneCount()<ST.length)setTimeout(function(){toast('🏁 Bạn đã đi hết Hành trình, toàn bộ app đã mở. Làm nốt '+(ST.length-doneCount())+' bước đã bỏ qua để nhận 🎓.');},700);}
+    if(!quiet)G.min=false;pubSchedule();
+  }
+  if(doneCount()===ST.length&&!G.full){G.full=now;changed=true;if(!quiet){G.min=false;setTimeout(showGrad,700);}pubSchedule();} // 🎓 chỉ khi làm THẬT đủ 20 bước
+  if(!quiet&&!G.seedMsg){ // 1 lần cho mỗi tài khoản: báo số bước đã có sẵn từ dữ liệu cũ
+    G.seedMsg=true;changed=true;var pre=doneCount();
+    if(pre>0&&!G.lock)toast('🎯 Hành trình Tâm An: bạn đã có sẵn '+pre+'/'+ST.length+' bước từ dữ liệu đang dùng. Bước nào không cần thì bấm Bỏ qua.');
   }
   if(changed)save();
   applyLocks();fixSub();render();
@@ -238,7 +247,7 @@ function fmtT(iso){if(!iso)return '—';var d=new Date(iso);if(isNaN(d.getTime()
 function fmtD(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d.getTime()))return '';return d.getDate()+'/'+(d.getMonth()+1);}
 function testText(){
   var L=['KẾT QUẢ · Hành trình Tâm An','Người chơi: '+myName()+(myCode()?' · '+myCode():''),
-    'Bắt đầu: '+fmtT(G.start)+' · Xong: '+(G.grad?fmtT(G.grad):'chưa xong')+(G.openAll?' · đã bấm Mở tất cả':''),
+    'Bắt đầu: '+fmtT(G.start)+' · Đi hết: '+(G.grad?fmtT(G.grad):'chưa')+' · 🎓: '+(G.full?fmtT(G.full):'chưa đủ 20 bước')+(G.openAll?' · đã bấm Mở tất cả':''),
     'Thiết bị: '+(/Mobi|Android|iPhone/i.test(navigator.userAgent)?'điện thoại':'máy tính'),''];
   CH.forEach(function(c,i){
     var ss=chSteps(i+1),d=ss.filter(function(s){return G.done[s.id];}).length;
@@ -262,8 +271,8 @@ function pubSchedule(){clearTimeout(_pubT);_pubT=setTimeout(pubPush,3000);}
 async function pubPush(){
   if(!G||!window.fbDb||!window.fbUser||window.viewOnlyMode||SB_ON)return;
   var r=realRoot();
-  var pub={v:1,c:String((r&&r.idCode)||'').trim(),n:(r&&r.name)||'',done:doneCount(),ch:G.ch,grad:G.grad||'',start:G.start||'',at:new Date().toISOString()};
-  var sig=JSON.stringify([pub.c,pub.n,pub.ch,pub.grad]);if(sig===_pubLast)return;
+  var pub={v:1,c:String((r&&r.idCode)||'').trim(),n:(r&&r.name)||'',done:doneCount(),ch:G.ch,grad:G.full||'',start:G.start||'',at:new Date().toISOString()};
+  var sig=JSON.stringify([pub.c,pub.n,pub.ch,pub.grad]); // grad = ngày 🎓 (đủ 20 bước)if(sig===_pubLast)return;
   try{
     var m=await import(FB_STORE);
     var name=(fbUser.displayName)||((fbUser.email||'').split('@')[0])||'';
@@ -296,14 +305,14 @@ function calcTeam(){
   if(window.dreamMode)return _calc; // cây mơ ước không phải người thật
   var nodes=window.treeNodes||[];
   var meUid=(window.fbUser&&fbUser.uid)||'';
-  var key=[TEAM.ver,nodes.length,G?G.ch:0,G?G.grad:'',window.viewOnlyMode?1:0,Math.floor(Date.now()/30000)].join('|');
+  var key=[TEAM.ver,nodes.length,G?G.ch:0,G?G.full:'',window.viewOnlyMode?1:0,Math.floor(Date.now()/30000)].join('|');
   if(_calc&&key===_calcKey)return _calc;
   var byCode={},byName={},nameCnt={};
   (TEAM.list||[]).forEach(function(e){if(e.uid===meUid&&!window.viewOnlyMode)return;var c=nrm(e.c);if(c)byCode[c]=e;var nn=nrm(e.n);if(nn){byName[nn]=e;nameCnt[nn]=(nameCnt[nn]||0)+1;}});
   var root=nodes.find(function(n){return !n.parentId;})||null;
   function stOf(n){
     if(!n)return null;
-    if(root&&n.id===root.id&&G&&!window.viewOnlyMode)return {done:doneCount(),ch:G.ch,grad:G.grad,start:G.start,me:1};
+    if(root&&n.id===root.id&&G&&!window.viewOnlyMode)return {done:doneCount(),ch:G.ch,grad:G.full||'',start:G.start,me:1};
     var c=nrm(n.idCode);if(c)return byCode[c]||null;
     var nn=nrm(n.name);return (nn&&nameCnt[nn]===1)?byName[nn]:null;
   }
@@ -436,7 +445,12 @@ function render(){
   var teamLink=teamOk?'<button data-gm="team">🏅 Hành trình đội</button>':'';
   if(G.ch>6){
     var ti=myTierIcon();
-    h=G.min?'<button class="gm-pill" data-gm="max">🎓'+(ti?' '+ti:'')+' Hành trình đội</button>'
+    var left=ST.length-doneCount();
+    if(left>0)h=G.min?'<button class="gm-pill" data-gm="max">🏁 Còn '+left+' bước để nhận 🎓</button>'
+      :'<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd">'+badge()+'<b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
+      +sbLine()+'<div class="gm-chp">'+doneCount()+'/'+ST.length+' bước đã làm</div><div class="gm-bar"><i style="width:'+Math.round(doneCount()/ST.length*100)+'%"></i></div><div class="gm-t">🏁 Bạn đã đi hết Hành trình</div><div class="gm-why">Toàn bộ app đã mở. Còn '+left+' bước bạn đã bỏ qua: làm nốt lúc nào cũng được để nhận 🎓 và huy hiệu Người dẫn.</div>'
+      +'<div class="gm-acts"><button class="gm-go" data-gm="list">Xem bước còn lại</button></div><div class="gm-links"><button data-gm="team">🏅 Hành trình đội</button><button data-gm="min">Thu nhỏ</button></div></div>';
+    else h=G.min?'<button class="gm-pill" data-gm="max">🎓'+(ti?' '+ti:'')+' Hành trình đội</button>'
       :'<div class="gm-card" role="region" aria-label="Hành trình Tâm An"><div class="gm-hd">'+badge()+'<b>Hành trình Tâm An</b><button class="gm-x" data-gm="min" aria-label="Thu nhỏ">–</button></div>'
       +sbLine()+'<div class="gm-bar"><i style="width:100%"></i></div><div class="gm-t">🎓 Bạn đã xong Hành trình'+(ti?' · '+ti:'')+'</div><div class="gm-why">Giờ là lúc kèm F1 của bạn cùng đi. Mỗi F1 tốt nghiệp đưa bạn lên huy hiệu Người dẫn.</div>'
       +'<div class="gm-acts"><button class="gm-go" data-gm="team">🏅 Hành trình đội</button></div><div class="gm-links"><button data-gm="list">Cả hành trình</button><button data-gm="min">Thu nhỏ</button></div></div>';
@@ -461,9 +475,9 @@ function render(){
 function badge(){return SB_ON?'<span class="gm-demo">CHƠI THỬ</span>':'';}
 function sbLine(){return SB_ON?'<div class="gm-sbline">🧪 Tài khoản giả lập · chỉ lưu trên máy này <button data-gm="sbreset">Làm lại từ đầu</button></div>':'';}
 function closeOv(){var o=$('#gm-ov');if(o)o.remove();}
-function chBadgesHtml(done,ch,grad){
+function chBadgesHtml(){ // huy hiệu chương = làm THẬT đủ các bước của chương (bỏ qua không tính)
   var h='<div class="gm-badges">';
-  CH_BADGE.forEach(function(b,i){var ok=grad||(ch>i+1);h+='<span class="'+(ok?'':'off')+'" title="Chương '+(i+1)+' · '+esc(CH[i].n)+'">'+b+'</span>';});
+  CH_BADGE.forEach(function(b,i){var ok=!!G&&chSteps(i+1).every(function(s){return !!G.done[s.id];});h+='<span class="'+(ok?'':'off')+'" title="Chương '+(i+1)+' · '+esc(CH[i].n)+'">'+b+'</span>';});
   return h+'</div>';
 }
 function showList(){
@@ -496,7 +510,7 @@ function showTeam(){
   var c=calcTeam()||{P:{}},me=c.P[c.mePid]||null,t=tierOf(me),isQtv=!!window.isBranchAdmin;
   var h='<div class="gm-ov" id="gm-ov" data-team="1"><div class="gm-box wide" role="dialog" aria-label="Hành trình đội"><h3>🏅 Hành trình đội</h3>';
   if(window.dreamMode)h+='<p class="gm-how">Bạn đang mở 🌠 Cây mơ ước. Chuyển về cây Nhị phân để xem số liệu đội thật.</p>';
-  h+='<div class="gm-no">Hành trình của tôi: '+(G?doneCount():0)+'/'+ST.length+' bước'+(G&&G.grad?' · 🎓 tốt nghiệp '+fmtD(G.grad):'')+'</div>'+chBadgesHtml(G?doneCount():0,G?G.ch:1,G&&G.grad);
+  h+='<div class="gm-no">Hành trình của tôi: '+(G?doneCount():0)+'/'+ST.length+' bước'+(G&&G.full?' · 🎓 tốt nghiệp '+fmtD(G.full):'')+'</div>'+chBadgesHtml();
   h+='<div class="gm-tier"><b>'+(t.i?t.i+' '+t.n:'Chưa có huy hiệu Người dẫn')+'</b>'
     +(me&&me.st&&me.st.grad?'<div class="gm-no">F1 tốt nghiệp: '+(me.f1grad||0)+' / '+(me.f1acc||0)+' F1 đã vào Hành trình ('+(me.f1n||0)+' F1 trên cây)'+(me.fast>=3?' · ⚡ Dẫn nhanh':'')+'</div>':'')
     +'<div class="gm-no" style="margin-top:4px">'+esc(nextTierText(me))+'</div></div>';
@@ -586,7 +600,7 @@ wrap('startOnboarding',function(o){return async function(){
   prefsReady=false;
   try{return await o.apply(this,arguments);}
   finally{
-    prefsReady=true;G=null;_lastHtml='';_calc=null;TEAM.list=null;TEAM.at=0;_pubLast='';
+    prefsReady=true;G=null;_lastHtml='';_calc=null;TEAM.list=null;TEAM.at=0;_pubLast='';_quietUntil=Date.now()+25000;
     if(eligible()){loadState();teamCacheLoad();tick();setTimeout(function(){teamFetch(false);},20000);}else render();
   }
 };});
