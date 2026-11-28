@@ -202,21 +202,21 @@ body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #s
 #disc-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-left:2px}
 /* v7.35 — Năng lượng hiện diện (kiểu bảng Magnoseek 1–6) trên cây Nhị phân */
 #tree-fabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:950;display:flex;gap:12px;pointer-events:none}
-.tfab{pointer-events:auto;border:2px solid #fff;border-radius:50%;width:46px;height:46px;padding:0;display:flex;align-items:center;justify-content:center;font:22px Arial;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.tfab{pointer-events:auto;box-sizing:border-box;border:2px solid #fff;border-radius:50%;width:46px;height:46px;padding:0;display:flex;align-items:center;justify-content:center;font:22px Arial;line-height:1;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25)}
 #fab-att{color:#fff;background:linear-gradient(135deg,#2E7D32,#43A047);animation:fabPulse 2.4s ease-in-out infinite}
 #fab-en{color:#5D4000;background:#FFF8D6;border-color:#E6C200}
 #fab-en.on{color:#2A1E00;background:#FFD600;border-color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(255,214,0,.45)}
 #tree-fabs{align-items:center}
 /* v7.43 — DISC nổi: hình tròn chia 4 góc (D đỏ · I cam · C xanh dương · S xanh lá — đúng vị trí bánh xe DISC) */
-#fab-disc{pointer-events:auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:58px;height:58px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);background:#fff}
-.fd-q{border:none;padding:0;margin:0;cursor:pointer;color:#fff;font:900 13px Arial;line-height:1;display:flex;transition:opacity .15s,filter .15s}
-.fd-D{background:#E53935;align-items:flex-end;justify-content:flex-end;padding:0 5px 5px 0}
-.fd-I{background:#FB8C00;align-items:flex-end;justify-content:flex-start;padding:0 0 5px 5px}
-.fd-C{background:#1E88E5;align-items:flex-start;justify-content:flex-end;padding:5px 5px 0 0}
-.fd-S{background:#43A047;align-items:flex-start;justify-content:flex-start;padding:5px 0 0 5px}
+#fab-disc{pointer-events:auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:46px;height:46px;box-sizing:border-box;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);background:#fff}
+.fd-q{border:none;padding:0;margin:0;cursor:pointer;color:#fff;font:900 11px Arial;line-height:1;display:flex;transition:opacity .15s,filter .15s}
+.fd-D{background:#E53935;align-items:flex-end;justify-content:flex-end;padding:0 3px 3px 0}
+.fd-I{background:#FB8C00;align-items:flex-end;justify-content:flex-start;padding:0 0 3px 3px}
+.fd-C{background:#1E88E5;align-items:flex-start;justify-content:flex-end;padding:3px 3px 0 0}
+.fd-S{background:#43A047;align-items:flex-start;justify-content:flex-start;padding:3px 0 0 3px}
 #fab-disc.has-on .fd-q{opacity:.3}
 #fab-disc.has-on .fd-q.on{opacity:1;filter:brightness(1.1)}
-@media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}#fab-disc{width:54px;height:54px}}
+@media(max-width:480px){.tfab{width:42px;height:42px;font-size:20px}#tree-fabs{bottom:10px;gap:10px}#fab-disc{width:42px;height:42px}}
 #fab-att:hover{filter:brightness(1.08)}
 /* v7.54 — chỉ báo vắng liên tiếp */
 .abs-b{display:inline-block;vertical-align:middle;line-height:0}
@@ -267,10 +267,10 @@ body.has-appbg .page .content,body.has-appbg #tree-canvas-wrap,body.has-appbg #s
 .es-tbl td:first-child{padding-left:2px}
 .es-tbl tr[data-en-filter]{cursor:pointer}.es-tbl tr.on td{background:#FFF1A8}
 .es-sum td{font-weight:800;color:#5D4000;background:#FBF4D6}
-#fab-es{pointer-events:auto;width:50px;height:50px;border-radius:50%;border:2px solid #fff;padding:0;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#fab-es{pointer-events:auto;width:46px;height:46px;box-sizing:border-box;border-radius:50%;border:2px solid #fff;padding:0;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.25);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #fab-es svg{width:100%;height:100%;display:block}
 #fab-es.on{box-shadow:0 3px 10px rgba(0,0,0,.25),0 0 0 3px rgba(93,64,0,.55)}
-@media(max-width:480px){#fab-es{width:46px;height:46px}#energy-stats{bottom:70px}}
+@media(max-width:480px){#fab-es{width:42px;height:42px}#energy-stats{bottom:70px}}
 .disc-btn{display:inline-flex;align-items:center;gap:5px;border:1.5px solid #E0E0E0;background:#fff;border-radius:9px;padding:4px 9px;font-size:12px;font-weight:700;font-family:Arial;cursor:pointer;color:#333}
 .disc-btn .disc-dot{width:13px;height:13px;border-radius:50%;display:inline-block}
 .disc-btn.on{color:#fff}
@@ -2363,7 +2363,7 @@ html.skin-kualalumpur .nmod-title,html.skin-kualalumpur .modal-name{color:var(--
     <div id="focus-bar" class="focus-bar" style="display:none"></div>
     <div id="vline-bar" class="focus-bar" style="display:none;background:#F3EEFC;border-bottom-color:#D1C4E9"></div>
     <div id="tree-binary">
-      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh">&#9989;</button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button><button id="fab-es" data-es-toggle="1" title="Tỷ lệ ID theo 6 mức năng lượng (Trái · Phải · Tổng)" aria-label="Tỷ lệ năng lượng"></button><div id="fab-disc" title="Lọc nhóm DISC — chạm 1 góc để làm nổi nhóm đó, chạm lại để bỏ lọc"><button class="fd-q fd-D" data-disc-letter="D">D</button><button class="fd-q fd-I" data-disc-letter="I">I</button><button class="fd-q fd-C" data-disc-letter="C">C</button><button class="fd-q fd-S" data-disc-letter="S">S</button></div></div>
+      <div id="tree-fabs"><button id="fab-att" class="tfab" data-en-att="1" title="Mở Điểm danh &amp; bảng hiện diện của nhánh đang xem" aria-label="Điểm danh"><svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" aria-hidden="true"><circle cx="12" cy="7.2" r="4.3"/><path d="M3.6 21.5c0-4.9 3.8-8.3 8.4-8.3s8.4 3.4 8.4 8.3z"/></svg></button><button id="fab-en" class="tfab" data-en-toggle="1" title="Bật/tắt tô màu Năng lượng hiện diện (1 vàng nhạt → 6 đen)" aria-label="Năng lượng">&#9889;</button><button id="fab-es" data-es-toggle="1" title="Tỷ lệ ID theo 6 mức năng lượng (Trái · Phải · Tổng)" aria-label="Tỷ lệ năng lượng"></button><div id="fab-disc" title="Lọc nhóm DISC — chạm 1 góc để làm nổi nhóm đó, chạm lại để bỏ lọc"><button class="fd-q fd-D" data-disc-letter="D">D</button><button class="fd-q fd-I" data-disc-letter="I">I</button><button class="fd-q fd-C" data-disc-letter="C">C</button><button class="fd-q fd-S" data-disc-letter="S">S</button></div></div>
       <div id="tree-canvas-wrap" style="overflow:hidden;width:100%;height:520px;background:#FFFFFF;position:relative;cursor:grab;user-select:none">
         <div id="tree-canvas" style="position:absolute;transform-origin:0 0;will-change:transform">
           <svg id="tree-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none"></svg>
