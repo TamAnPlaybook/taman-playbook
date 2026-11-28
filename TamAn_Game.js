@@ -430,6 +430,7 @@ var CSS='\
 .gm-sbline{font-size:12px;color:#8A4B00;background:#FFF4E5;border-radius:7px;padding:4px 8px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}\
 .gm-sbline button{border:none;background:none;color:#1D63B8;text-decoration:underline;cursor:pointer;font-size:12px;padding:0}\
 html.gm-sb #tab-admin,html.gm-sb .home-card[data-main="admin"]{display:none!important}\
+#gm-sb-exit{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:3500;border:2px solid #fff;background:#E8741F;color:#fff;font:800 13.5px system-ui,-apple-system,"Segoe UI",sans-serif;border-radius:20px;padding:7px 14px;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;white-space:nowrap}\
 ';
 function ensureUi(){
   if(!$('#gm-style')){var st=document.createElement('style');st.id='gm-style';st.textContent=CSS;document.head.appendChild(st);}
@@ -473,7 +474,7 @@ function render(){
   }
 }
 function badge(){return SB_ON?'<span class="gm-demo">CHƠI THỬ</span>':'';}
-function sbLine(){return SB_ON?'<div class="gm-sbline">🧪 Tài khoản giả lập · chỉ lưu trên máy này <button data-gm="sbreset">Làm lại từ đầu</button></div>':'';}
+function sbLine(){return SB_ON?'<div class="gm-sbline">🧪 Tài khoản giả lập · chỉ lưu trên máy này <button data-gm="sbreset">Làm lại từ đầu</button><button data-gm="sbexit"><b>Thoát chơi thử</b></button></div>':'';}
 function closeOv(){var o=$('#gm-ov');if(o)o.remove();}
 function chBadgesHtml(){ // huy hiệu chương = làm THẬT đủ các bước của chương (bỏ qua không tính)
   var h='<div class="gm-badges">';
@@ -589,6 +590,7 @@ function onUi(e){
   else if(a==='honor'){try{copyText(honorText());}catch(err){}}
   else if(a==='tref'){toast('⏳ Đang cập nhật số liệu đội…');teamFetch(true).then(function(){_calc=null;if($('#gm-ov[data-team]'))showTeam();});}
   else if(a==='sbreset'){closeOv();sbReset();}
+  else if(a==='sbexit'){if(confirm('Thoát chế độ chơi thử và quay về tài khoản QTV? Tiến độ chơi thử vẫn giữ trên máy này.'))sbExit();}
   else if(a==='list'){showList();}
   else if(a==='close'){closeOv();}
   else if(a==='all'){if(confirm('Mở tất cả tính năng ngay? Thẻ Hành trình vẫn ở đây để bạn đi tiếp nếu muốn.')){G.openAll=true;save(true);closeOv();applyLocks();render();toast('🔓 Đã mở tất cả tính năng');}}
@@ -637,7 +639,17 @@ function sbEnter(){
   try{_origEnter.call(window,SB_USER);}catch(e){try{console.error(e);}catch(e2){}}
 }
 function sbGuard(){if(SB_ON){if(window.fbDb)window.fbDb=null;if(window.fbUser!==SB_USER)window.fbUser=SB_USER;}}
-function sbExit(){var o=sbLoad();if(o){o.on=false;sbSave(o);}location.reload();}
+function sbExitChip(){ // nút Thoát luôn nằm TRÊN mọi form bắt buộc (form ID Gốc của tài khoản giả lập che mất nút Thoát của app)
+  var b=document.getElementById('gm-sb-exit');
+  if(!SB_ON){if(b)b.remove();return;}
+  if(b)return;
+  b=document.createElement('button');b.id='gm-sb-exit';b.type='button';b.textContent='🧪 Đang chơi thử · Thoát';
+  b.addEventListener('click',function(){if(confirm('Thoát chế độ chơi thử và quay về tài khoản QTV? Tiến độ chơi thử vẫn giữ trên máy này.'))sbExit();});
+  document.body.appendChild(b);
+}
+function sbExit(){var o=sbLoad();if(o){o.on=false;sbSave(o);}location.href=location.pathname;} // bỏ cả ?thoat=1 nếu có
+// Lối thoát dự phòng: mở app với ?thoat=1 → tắt chế độ chơi thử trước khi đăng nhập (khi form bắt buộc che mất nút Thoát)
+(function(){if(/[?&]thoat=1(&|$)/.test(location.search)){var o=sbLoad();if(o&&o.on){o.on=false;sbSave(o);}try{history.replaceState(null,'',location.pathname);}catch(e){}}})();
 function sbStart(){
   if(!(window.isBranchAdmin&&window.fbUser&&!window.viewOnlyMode&&!SB_ON)){toast('Chỉ QTV mới dùng được chế độ chơi thử.');return;}
   if(!confirm('Vào chế độ chơi thử bằng một tài khoản giả lập? Tài khoản QTV của bạn vẫn giữ đăng nhập; bấm Thoát lúc chơi thử là quay về.'))return;
@@ -677,7 +689,7 @@ document.addEventListener('click',function(e){
   }
 },true);
 
-setInterval(sbGuard,700);
+setInterval(function(){sbGuard();try{ensureUi();sbExitChip();}catch(e){}},700);
 setInterval(sbAdminBox,1500);
 setInterval(tick,1500);
 setInterval(heartbeat,5000);
