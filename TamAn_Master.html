@@ -1,4 +1,4 @@
-<!-- VERSION: v7.58-sdt-id-goc -->
+<!-- VERSION: v7.59-danh-ba-tuyen-tren -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -5234,6 +5234,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v759-sdt-tuyen-tren', ver:'7.59', icon:'📱', title:'Số điện thoại ID Gốc: chỉ tuyến trên xem được',
+    desc:'Số điện thoại bạn nhập cho ID Gốc tự cập nhật lên đúng ID của bạn trên cây của <b>tuyến trên</b> (cả nhánh đặt cây lẫn tuyến bảo trợ), khớp theo <b>Mã ID</b>. Ngoài tuyến trên và Quản trị viên, không ai đọc được số này.' },
   { id:'v757-hanh-trinh', ver:'7.57', icon:'🎯', title:'Hành trình Tâm An: 20 bước dùng thạo app + huy hiệu Người dẫn',
     desc:'Góc dưới bên trái có thẻ <b>Hành trình Tâm An</b>: 6 chương, 20 bước. Bấm <b>Đưa tôi tới đó</b> là app chỉ đúng chỗ cần làm; bước nào bạn đã làm từ trước app tự tick, bước nào không cần thì bấm <b>Bỏ qua</b>. Dữ liệu của bạn giữ nguyên, không tính năng nào bị khoá. Xong 20 bước nhận 🎓. Khi F1 của bạn cũng xong, bạn nhận huy hiệu <b>Người dẫn</b> 🥉 Đồng · 🥈 Bạc · 🥇 Vàng · 💎 Kim cương, hiện ngay trên ô ID trong cây. Xem tiến độ F1 và cả nhánh ở nút <b>🏅 Hành trình đội</b> trong tab Sơ đồ.' },
   { id:'v731-clip-home', ver:'7.31', icon:'🎬', title:'Trang chủ có 2 khung clip',
@@ -5616,6 +5618,7 @@ function enterAppFirebase(user){
   startBanner();loadBannerCloud(); // v6.5 — banner chạy chữ (động lực mặc định + thông báo/chúc mừng QTV)
   trackInit();trackEvent('tree'); // v6.13 — bật lớp theo dõi hành vi (Analytics) + tab mặc định
   startOnboarding(); // v7 — Chào mừng → BẮT BUỘC ID Gốc → Tutorial → "Có gì mới" → cổng cập nhật thông tin
+  setTimeout(function(){try{pbPullUpline(false);}catch(e){}},25000); // v7.59 — nhận SĐT tuyến dưới (chỉ tuyến trên được đọc)
 }
 function applyBranchFeatureUI(){
   // QTV LUÔN thấy cả 2 nút; thành viên theo cấu hình QTV chính
@@ -5748,6 +5751,7 @@ function loadBranchFeature(){
     branchImportEnabled=!(reg&&reg.branchImportEnabled===false);
     startModuleCfg=(reg&&reg.startModule&&_isStartModuleValid(reg.startModule))?reg.startModule:'tree'; // v6.80
     applyBranchFeatureUI();
+    if(isBranchAdmin&&!viewOnlyMode)setTimeout(function(){try{pbSyncQtv(false);}catch(e){}},40000); // v7.59 — QTV dựng danh bạ SĐT tuyến trên (≤ 6 giờ/lần)
     applyStartModule(); // v6.80 — mở module QTV đã đặt (nếu khác Sơ đồ)
   }).catch(function(){applyBranchFeatureUI();});
 }
@@ -8501,6 +8505,115 @@ function applyDownlineDiscToTree(list){
     if(_m.length)showToast(_m.join(' · ')+' — đã đồng bộ lên cây của bạn');
   }
   return cnt+bcnt+pcnt;
+}
+// ================================================================
+// v7.59 — DANH BẠ SĐT ID GỐC: CHỈ TUYẾN TRÊN (trực hệ parentId + phả hệ f1of) VÀ QTV ĐỌC ĐƯỢC
+//   • SĐT nằm trong cây riêng của từng tài khoản (users/{uid}/data/tree — Rules: chỉ chủ + QTV đọc).
+//   • QTV (cây hệ thống) đọc SĐT ID Gốc từng tài khoản, tính các TÀI KHOẢN tuyến trên của người đó trên cây hệ thống
+//     (đi ngược cả nhánh đặt cây lẫn tuyến bảo trợ, gộp ID 2+ theo người), ghi phonebook/{uid}={c,n,phone,readers:[uid…]}.
+//   • Firestore Rules (FIRESTORE_RULES, mục phonebook): chỉ QTV ghi; chỉ QTV + uid có trong readers đọc.
+//   • Mỗi tài khoản đọc phonebook where readers array-contains uid của mình → điền SĐT vào đúng ID theo MÃ ID.
+//   • Chưa publish Rules mới → ghi/đọc bị từ chối → không ai thấy gì thêm (an toàn), QTV được nhắc cập nhật Rules.
+// ================================================================
+function _pbNorm(s){return noAccent(String(s||'').trim()).toLowerCase();}
+function _pbPhoneOk(p){var d=String(p||'').replace(/\D/g,'');return d.length>=9&&d.length<=15;}
+// THUẦN (test được): accts=[{uid,code,name,phone}], nodes = cây hệ thống → {uid:{uid,c,n,phone,readers:[uid…]}}
+function pbBuildDocs(accts,nodes){
+  nodes=nodes||[];
+  var byId={},byName={},uidByCode={},out={};
+  nodes.forEach(function(n){if(!n)return;byId[n.id]=n;if(n.name&&!byName[n.name])byName[n.name]=n;});
+  (accts||[]).forEach(function(a){var c=a&&_pbNorm(a.code);if(c&&!uidByCode[c])uidByCode[c]=a.uid;});
+  function nodeByCode(c){c=_pbNorm(c);if(!c)return null;for(var i=0;i<nodes.length;i++)if(nodes[i]&&_pbNorm(nodes[i].idCode)===c)return nodes[i];return null;}
+  function ownerNode(n){var cur=n,seen={};for(var k=0;k<6&&cur&&cur.mainId&&!seen[cur.id];k++){seen[cur.id]=1;var nx=byId[cur.mainId];if(!nx)break;cur=nx;}return cur||n;}
+  function uidOf(n){if(!n)return '';var u=uidByCode[_pbNorm(n.idCode)];if(u)return u;var o=ownerNode(n);return (o&&o!==n)?(uidByCode[_pbNorm(o.idCode)]||''):'';}
+  (accts||[]).forEach(function(a){
+    if(!a||!a.uid||!_pbPhoneOk(a.phone))return;
+    var me=nodeByCode(a.code);if(!me)return; // chưa có trên cây hệ thống (thiếu / sai Mã ID) → không ai được đọc
+    var meOwner=ownerNode(me),readers={},seen={},g=0;
+    var q=nodes.filter(function(n){return n&&ownerNode(n)===meOwner;}); // mọi ID của cùng 1 người
+    while(q.length&&g<20000){
+      var cur=q.shift();g++;if(!cur||seen[cur.id])continue;seen[cur.id]=1;
+      if(ownerNode(cur)!==meOwner){var u=uidOf(cur);if(u&&u!==a.uid)readers[u]=1;}
+      if(cur.parentId&&byId[cur.parentId])q.push(byId[cur.parentId]);  // trực hệ (nhánh đặt cây)
+      if(cur.f1of&&byName[cur.f1of])q.push(byName[cur.f1of]);           // phả hệ (bảo trợ)
+    }
+    out[a.uid]={uid:a.uid,c:String(a.code||'').trim(),n:a.name||'',phone:String(a.phone).trim(),readers:Object.keys(readers).sort()};
+  });
+  return out;
+}
+var _pbSyncing=false;
+async function pbSyncQtv(force,_t){ // _t: chỉ dùng khi kiểm thử {m,accts,getTree,nodes,meUid}
+  if(_pbSyncing)return null;
+  if(!_t&&(!isBranchAdmin||viewOnlyMode||!fbDb||!fbUser))return null;
+  if(!force&&!_t){var last=+(acctGet('pbsync_at')||0);if(Date.now()-last<6*3600e3)return null;}
+  _pbSyncing=true;
+  try{
+    var m=(_t&&_t.m)||await import(FB_STORE);
+    var meUid=(_t&&_t.meUid)||fbUser.uid;
+    var accts=(_t&&_t.accts)||await fetchAccounts();
+    var getT=(_t&&_t.getTree)||function(uid){return fsGetUser(uid,'tree');};
+    var failed={};
+    var list=await Promise.all(accts.map(function(a){
+      var p=(a.uid===meUid&&!_t)?Promise.resolve({nodes:_realTreeNodes()}):getT(a.uid);
+      return Promise.resolve(p).then(function(t){
+        var r=((t&&t.nodes)||[]).find(function(n){return n&&!n.parentId;});
+        return r?{uid:a.uid,code:r.idCode||'',name:r.name||'',phone:r.phone||''}:null;
+      },function(){failed[a.uid]=1;return null;});
+    }));
+    list=list.filter(Boolean);
+    var sys=(_t&&_t.nodes)||_realTreeNodes(); // cây hệ thống = cây thật của QTV (kể cả khi đang mở Cây mơ ước)
+    var want=pbBuildDocs(list,sys);
+    // Cây hệ thống của QTV cũng nhận SĐT (giống DISC / Sinh nhật) — chỉ khi khớp Mã ID
+    var sysRoot=sys.find(function(n){return n&&!n.parentId;}),qc=0;
+    list.forEach(function(x){if(!_pbPhoneOk(x.phone))return;var c=_pbNorm(x.code);if(!c)return;
+      var n=sys.find(function(t){return t&&_pbNorm(t.idCode)===c;});if(!n||(sysRoot&&n.id===sysRoot.id))return;
+      if(String(n.phone||'').trim()!==String(x.phone).trim()){n.phone=String(x.phone).trim();qc++;}});
+    if(qc&&!_t){if(dreamMode&&_dreamSaved){nmSet('tree_v2',JSON.stringify(sys));if(fbDb&&fbUser)fsSet('tree',{nodes:sys}).catch(function(){});}else saveTree2();}
+    var have={},snap=await m.getDocs(m.collection(fbDb,'phonebook'));
+    snap.forEach(function(d){have[d.id]=d.data()||{};});
+    var w=0,del=0,now=new Date().toISOString();
+    for(var uid in want){
+      var x=want[uid],h=have[uid];
+      if(h&&h.phone===x.phone&&h.c===x.c&&h.n===x.n&&JSON.stringify((h.readers||[]).slice().sort())===JSON.stringify(x.readers))continue;
+      x.at=now;await m.setDoc(m.doc(fbDb,'phonebook',uid),x);w++;
+    }
+    for(var uid2 in have){ // gỡ khi người đó xoá SĐT / không còn trên cây hệ thống (KHÔNG gỡ khi chỉ là đọc lỗi)
+      if(want[uid2]||failed[uid2])continue;
+      await m.deleteDoc(m.doc(fbDb,'phonebook',uid2));del++;
+    }
+    if(!_t)acctSet('pbsync_at',String(Date.now()));
+    if(force&&!_t)showToast('📒 Danh bạ tuyến trên: '+Object.keys(want).length+' người có SĐT · cập nhật '+w+(del?' · gỡ '+del:'')+(qc?' · cây hệ thống +'+qc+' SĐT':''));
+    return {want:want,written:w,deleted:del,sysPhones:qc};
+  }catch(e){
+    if(!_t&&/permission/i.test(String((e&&e.code)||e)))showToast('📒 Danh bạ SĐT tuyến trên chưa chạy: QTV chính cần cập nhật Firestore Rules (Quản trị → 🔧 Firestore Rules nâng cao → Copy → Publish).');
+    return null;
+  }finally{_pbSyncing=false;}
+}
+var _pbPulling=false;
+async function pbPullUpline(force,_t){ // _t: chỉ dùng khi kiểm thử {m,uid}
+  if(_pbPulling)return 0;
+  if(!_t&&(!fbDb||!fbUser||viewOnlyMode))return 0;
+  if(!force&&!_t){var last=+(acctGet('pbpull_at')||0);if(Date.now()-last<30*60e3)return 0;}
+  _pbPulling=true;
+  try{
+    var m=(_t&&_t.m)||await import(FB_STORE),uid=(_t&&_t.uid)||fbUser.uid;
+    var snap=await m.getDocs(m.query(m.collection(fbDb,'phonebook'),m.where('readers','array-contains',uid)));
+    if(viewOnlyMode)return 0;
+    var nodes=_realTreeNodes(),root=nodes.find(function(n){return n&&!n.parentId;}),cnt=0;
+    snap.forEach(function(d){
+      var x=d.data()||{};if(!_pbPhoneOk(x.phone))return;var c=_pbNorm(x.c);if(!c)return;
+      var n=nodes.find(function(t){return t&&_pbNorm(t.idCode)===c;});if(!n||(root&&n.id===root.id))return; // không ghi đè ID Gốc của chính mình
+      if(String(n.phone||'').trim()!==String(x.phone).trim()){n.phone=String(x.phone).trim();cnt++;}
+    });
+    if(!_t)acctSet('pbpull_at',String(Date.now()));
+    if(cnt){
+      if(dreamMode&&_dreamSaved){nmSet('tree_v2',JSON.stringify(nodes));if(fbDb&&fbUser)fsSet('tree',{nodes:nodes}).catch(function(){});}
+      else{saveTree2();try{syncTreeToMembers(false);}catch(e){}
+        try{var pg=document.getElementById('page-tree');if(pg&&pg.classList.contains('on')){if(currentTreeMode==='binary')renderTree();else renderStarChart();}}catch(e){}}
+      showToast('📱 '+cnt+' số điện thoại tuyến dưới vừa cập nhật lên cây của bạn');
+    }
+    return cnt;
+  }catch(e){return 0;}finally{_pbPulling=false;}
 }
 // v6.63 — đẩy thông báo "hoàn thành đo DISC" vào hộp thư QTV (dùng chung badge với ID mới)
 function _pushDiscInbox(notes){
@@ -13638,6 +13751,11 @@ var FIRESTORE_RULES="rules_version = '2';\n"+
 "      allow write, delete: if isAdmin();\n"+
 "    }\n"+
 "    // v7.17 — Hồ sơ khách MagnoSeek users/{uid}/mgkh/{khId}: dùng luật users/** ở trên (chủ + QTV đọc, chủ ghi)\n"+
+"    // v7.59 — Danh bạ SĐT ID Gốc: CHỈ QTV ghi; CHỈ QTV + tài khoản tuyến trên (uid có trong readers) đọc\n"+
+"    match /phonebook/{uid} {\n"+
+"      allow read: if isAdmin() || (request.auth != null && request.auth.uid in resource.data.readers);\n"+
+"      allow write, delete: if isAdmin();\n"+
+"    }\n"+
 "    match /appConfig/registration {\n"+
 "      allow read: if true;\n"+
 "      allow write: if isAdmin();\n"+
@@ -13982,6 +14100,8 @@ function renderAdminPage(){
         h+='<button class="btn btn-d btn-sm" id="btn-copy-rules" style="margin-top:8px">📋 Copy Rules (mới nhất)</button></div></details>';
         // v6.40 — danh sách tài khoản đã GỘP vào box "Đang online & Tài khoản đã đăng ký" phía trên
       }
+      // v7.59 — Danh bạ SĐT chỉ tuyến trên đọc
+      h+='<div class="adm-box"><div class="adm-title">📒 Danh bạ SĐT tuyến trên</div><div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Số điện thoại ID Gốc của mỗi người chỉ <b>tuyến trên</b> (trực hệ + phả hệ, tính theo cây hệ thống của QTV) và QTV đọc được. App tự đồng bộ khi QTV đăng nhập (tối đa 6 giờ/lần). Cần <b>Firestore Rules</b> bản mới có mục <code>phonebook</code> (QTV chính: 🔧 Firestore Rules nâng cao → Copy → Publish).</div><button class="btn btn-g btn-sm" id="btn-pb-sync">🔄 Đồng bộ danh bạ ngay</button><div style="font-size:12px;color:#888;margin-top:6px">Lần gần nhất trên máy này: '+(function(){var t=+(acctGet('pbsync_at')||0);return t?fmtDT(new Date(t).toISOString()):'chưa chạy';})()+'</div></div>';
       h+='<div class="adm-box"><div class="adm-title">🌿 Chức năng Xuất nhánh (tách nhánh)</div>';
       h+='<div style="font-size:13px;color:#666;line-height:1.7;margin-bottom:10px">Cho phép xuất 1 nhánh ra file để chuyển sang tài khoản khác. <b>Tắt</b> = ẩn nút "Xuất nhánh" trên trang <b>thành viên</b> (quản trị viên luôn dùng được).</div>';
       if(isMainAdmin){
@@ -15565,6 +15685,7 @@ document.addEventListener('click',function(e){
 
   // Copy Firestore Rules
   if(e.target.id==='btn-copy-rules'){copyText(FIRESTORE_RULES);return;}
+  if(e.target.id==='btn-pb-sync'){showToast('⏳ Đang đồng bộ danh bạ SĐT tuyến trên…');pbSyncQtv(true);return;} // v7.59
 
   // Focus nhánh (pill)
   t=e.target.closest('[data-hidelk]'); // v7.40 — ẩn nhánh F1 khỏi hàng tiếp cận nhanh
