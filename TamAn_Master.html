@@ -1,4 +1,4 @@
-<!-- VERSION: v7.56-du-lieu-theo-tai-khoan -->
+<!-- VERSION: v7.57-hanh-trinh-tam-an -->
 <!-- v7.22 — Cẩm nang v2.2: trình xem nhận số vùng theo dữ liệu (không cố định 248) – liên kết số vùng, trang 'N vùng theo số', ô trang đầu; trang danh mục vùng ghi đúng là số trong sách xếp theo nhóm; kiểm tra file nạp: 248–400 vùng, số vùng liền mạch 1..N. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.21 — Cẩm nang v2.1: gom 'Vấn đề' và 'VĐ quan trọng' thành một mục 'VĐ' (trang VĐ theo nhóm / mục lục / A–Z gồm cả VĐ hay gặp; bộ phận có một mục 'VĐ ở bộ phận này'; tìm kiếm một loại 'VĐ'); thẻ VĐ có mục 'Chi tiết đầy đủ' (ct, mở sẵn khi vào thẳng thẻ); ô trang đầu 'VĐ' và 'Bộ phận A–Z'; kiểm tra file nạp thêm card.ct, nVdAll. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
 <!-- v7.20 — Cẩm nang v2.0: trang 'Bộ phận cơ thể (nam – nữ)' (#bp-az, lọc #bp-nam / #bp-nu) theo 13 vùng cơ thể; thẻ bộ phận kind 'b' (là gì Tây y · hay gặp · Trung y · vùng gần nhất trên máy · cân bằng · đi khám) cho bộ phận máy không có vùng riêng (dương vật, âm hộ, lưỡi, móng…); trang thẻ #bp-*; mục 'Bộ phận nhỏ xem ở vùng này' ở từng bộ phận; A–Z và tìm kiếm có bộ phận bổ sung; kiểm tra file nạp thêm db.bp/organ.bp/card.al. Không đổi dữ liệu khách, phiếu buổi quét, Rules. -->
@@ -5234,6 +5234,8 @@ async function doGoogle(){
 //   • Xong tour → chain sang cổng cập nhật thông tin BẮT BUỘC (checkRequiredUpdates).
 // ================================================================
 var WHATS_NEW=[
+  { id:'v757-hanh-trinh', ver:'7.57', icon:'🎯', title:'Hành trình Tâm An: 20 bước dùng thạo app + huy hiệu Người dẫn',
+    desc:'Góc dưới bên trái có thẻ <b>Hành trình Tâm An</b>: 6 chương, 20 bước. Bấm <b>Đưa tôi tới đó</b> là app chỉ đúng chỗ cần làm; bước nào bạn đã làm từ trước app tự tick, bước nào không cần thì bấm <b>Bỏ qua</b>. Dữ liệu của bạn giữ nguyên, không tính năng nào bị khoá. Xong 20 bước nhận 🎓. Khi F1 của bạn cũng xong, bạn nhận huy hiệu <b>Người dẫn</b> 🥉 Đồng · 🥈 Bạc · 🥇 Vàng · 💎 Kim cương, hiện ngay trên ô ID trong cây. Xem tiến độ F1 và cả nhánh ở nút <b>🏅 Hành trình đội</b> trong tab Sơ đồ.' },
   { id:'v731-clip-home', ver:'7.31', icon:'🎬', title:'Trang chủ có 2 khung clip',
     desc:'Ngay dưới tranh ở <b>Trang chủ</b> có <b>2 khung clip</b> do QTV chọn — bấm ▶ để xem ngay (YouTube, Google Drive phát trong khung; link khác mở tab mới). <b>QTV</b>: bấm <b>＋ Thêm clip</b> hoặc <b>✏️</b> trên khung, dán link + đặt tên, bấm Lưu → cả team thấy.' },
   { id:'v730-kualalumpur', ver:'7.30', icon:'🌆', title:'Thêm giao diện Kuala Lumpur + ô chọn có tranh',
@@ -21483,5 +21485,6 @@ function mgReset(full){
   upd();
 })();
 </script>
+<script src="TamAn_Game.js?v=5"></script>
 </body>
 </html>
